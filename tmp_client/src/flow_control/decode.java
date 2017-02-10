@@ -1,4 +1,4 @@
-package public_lib;
+package flow_control;
  
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -22,9 +22,9 @@ public class decode {
     }
  
     /**
-     * Description ¸ù¾Ý¼üÖµ½øÐÐ½âÃÜ
+     * Description ï¿½ï¿½ï¿½Ý¼ï¿½Öµï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½
      * @param data
-     * @param key  ¼ÓÃÜ¼übyteÊý×é
+     * @param key  ï¿½ï¿½ï¿½Ü¼ï¿½byteï¿½ï¿½ï¿½ï¿½
      * @return
      * @throws IOException
      * @throws Exception
@@ -40,27 +40,27 @@ public class decode {
     }
     
     /**
-     * Description ¸ù¾Ý¼üÖµ½øÐÐ½âÃÜ
+     * Description ï¿½ï¿½ï¿½Ý¼ï¿½Öµï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½
      * @param data
-     * @param key  ¼ÓÃÜ¼übyteÊý×é
+     * @param key  ï¿½ï¿½ï¿½Ü¼ï¿½byteï¿½ï¿½ï¿½ï¿½
      * @return
      * @throws Exception
      */
     private static byte[] decrypt(byte[] data, byte[] key) throws Exception {
-        // Éú³ÉÒ»¸ö¿ÉÐÅÈÎµÄËæ»úÊýÔ´
+        // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
         SecureRandom sr = new SecureRandom();
  
-        // ´ÓÔ­Ê¼ÃÜÔ¿Êý¾Ý´´½¨DESKeySpec¶ÔÏó
+        // ï¿½ï¿½Ô­Ê¼ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½DESKeySpecï¿½ï¿½ï¿½ï¿½
         DESKeySpec dks = new DESKeySpec(key);
  
-        // ´´½¨Ò»¸öÃÜÔ¿¹¤³§£¬È»ºóÓÃËü°ÑDESKeySpec×ª»»³ÉSecretKey¶ÔÏó
+        // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½DESKeySpec×ªï¿½ï¿½ï¿½ï¿½SecretKeyï¿½ï¿½ï¿½ï¿½
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(DES);
         SecretKey securekey = keyFactory.generateSecret(dks);
  
-        // Cipher¶ÔÏóÊµ¼ÊÍê³É½âÃÜ²Ù×÷
+        // Cipherï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½É½ï¿½ï¿½Ü²ï¿½ï¿½ï¿½
         Cipher cipher = Cipher.getInstance(DES);
  
-        // ÓÃÃÜÔ¿³õÊ¼»¯Cipher¶ÔÏó
+        // ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½Ê¼ï¿½ï¿½Cipherï¿½ï¿½ï¿½ï¿½
         cipher.init(Cipher.DECRYPT_MODE, securekey, sr);
  
         return cipher.doFinal(data);

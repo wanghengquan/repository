@@ -1,4 +1,5 @@
-package public_lib;
+package connect_tube;
+
 import com.rabbitmq.client.*;
 
 import java.io.File;

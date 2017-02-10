@@ -1,4 +1,4 @@
-package public_lib;
+package utility_funcs;
 
 import java.io.BufferedReader;
 import java.io.File;

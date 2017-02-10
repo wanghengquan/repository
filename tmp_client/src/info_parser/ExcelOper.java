@@ -1,4 +1,4 @@
-package public_lib;
+package info_parser;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -104,7 +104,7 @@ public class ExcelOper {
                     // get the cell type for every cell
                     switch (cell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
-                        // ±í¸ñÖÐ·µ»ØµÄÊý×ÖÀàÐÍÊÇ¿ÆÑ§¼ÆÊý·¨Òò´Ë²»ÄÜÖ±½Ó×ª»»³É×Ö·û´®¸ñÊ½
+                        // ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¿ï¿½Ñ§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë²ï¿½ï¿½ï¿½Ö±ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ê½
                         cellValue = new BigDecimal(cell.getNumericCellValue()).toPlainString();
                         break;
                     case Cell.CELL_TYPE_STRING:
@@ -137,7 +137,7 @@ public class ExcelOper {
     }
     
     /**
-     * ¸ù¾Ý¸ø¶¨µÄÊý¾ÝÖ±½ÓÉú³Éworkbook
+     * ï¿½ï¿½ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½workbook
      * 
      * @param workbook
      * @param sheetName
@@ -158,7 +158,7 @@ public class ExcelOper {
     }
 
     /**
-     * ÍùÖ¸¶¨µÄsheet±íÖÐ²åÈëÊý¾Ý£¬²åÈëµÄ·½·¨ÊÇÌá¹©Ò»×évalueMap¡£int[]ÊÇ2Î¬Êý×é´ú±íÐèÒª²åÈëµÄÊý¾Ý×ø±ê£¬´Ó0¿ªÊ¼
+     * ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½sheetï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹©Ò»ï¿½ï¿½valueMapï¿½ï¿½int[]ï¿½ï¿½2Î¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê£¬ï¿½ï¿½0ï¿½ï¿½Ê¼
      * 
      * @param workbook
      * @param sheetIndex
@@ -181,7 +181,7 @@ public class ExcelOper {
     }
 
     /**
-     * ÉèÖÃÖ¸¶¨ÐÐµÄÐÐ¸ß
+     * ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ðµï¿½ï¿½Ð¸ï¿½
      * 
      * @param workbook
      * @param rowHeight
@@ -197,7 +197,7 @@ public class ExcelOper {
     }
 
     /**
-     * ÉèÖÃÁÐ¿í
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½
      * 
      * @param workbook
      * @param columnWidth
@@ -212,7 +212,7 @@ public class ExcelOper {
     }
 
     /**
-     * É¾³ýÖ¸¶¨ÐÐ
+     * É¾ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½
      * 
      * @param workbook
      * @param sheetIndex
@@ -232,7 +232,7 @@ public class ExcelOper {
     }
 
     /**
-     * ÔÚÖ¸¶¨Î»ÖÃ²åÈë¿Õ°×ÐÐ
+     * ï¿½ï¿½Ö¸ï¿½ï¿½Î»ï¿½Ã²ï¿½ï¿½ï¿½Õ°ï¿½ï¿½ï¿½
      * 
      * @param workbook
      * @param sheetIndex
@@ -244,11 +244,11 @@ public class ExcelOper {
         int lastRowNum = sheet.getLastRowNum();
         if (rowIndex >= 0 && rowIndex <= lastRowNum) {
             sheet.shiftRows(rowIndex, lastRowNum, 1);
-            // »ñµÃÉÏÒ»ÐÐµÄRow¶ÔÏó
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Ðµï¿½Rowï¿½ï¿½ï¿½ï¿½
             Row preRow = sheet.getRow(rowIndex - 1);
             short rowNum = preRow.getLastCellNum();
             Row curRow = sheet.createRow(rowIndex);
-            // ÐÂÉú³ÉµÄRow´´½¨ÓëÉÏÒ»¸öÐÐÏàÍ¬·ç¸ñµÄCell
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½Rowï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½Cell
             for (short i = preRow.getFirstCellNum(); i < rowNum; i++) {
                 Cell cell = preRow.getCell(i);
                 CellStyle style = cell.getCellStyle();
@@ -260,7 +260,7 @@ public class ExcelOper {
     }
 
     /**
-     * ¸ù¾Ýsheet(0)×÷ÎªÄ£°åÖØ½¨workbook
+     * ï¿½ï¿½ï¿½ï¿½sheet(0)ï¿½ï¿½ÎªÄ£ï¿½ï¿½ï¿½Ø½ï¿½workbook
      * 
      * @param workbook
      * @param sheetNum
@@ -271,10 +271,10 @@ public class ExcelOper {
         if(sheetNames.length == sheetNum){
             for (int i = 0; i < sheetNum; i++) {
                 workbook.cloneSheet(0);
-                // Éú³ÉºóÃæµÄ¹¤×÷±í²¢Ö¸¶¨±íÃû
+                // ï¿½ï¿½ï¿½Éºï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 workbook.setSheetName(i + 1, sheetNames[i]);
             }
-            // É¾³ýµÚÒ»ÕÅ¹¤×÷±í
+            // É¾ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Å¹ï¿½ï¿½ï¿½ï¿½ï¿½
             workbook.removeSheetAt(0);
             return workbook;
         }

@@ -1,6 +1,4 @@
-//jason wang 2016/06/16 updated
-//
-package public_lib;
+package utility_funcs;
 
 
 import java.io.*;

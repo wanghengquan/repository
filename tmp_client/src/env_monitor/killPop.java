@@ -1,4 +1,4 @@
-package public_lib;
+package env_monitor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class killPop extends Thread {
 		 	    String localeString=dt.toString();
 				file_action.print_out_to_file_to_gui("In killPop\n"+localeString+"\nWhen run python,can not to run");
 				
-			} // Ö´ÐÐÒ»¸öÏµÍ³ÃüÁî
+			} // Ö´ï¿½ï¿½Ò»ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½ï¿½
 		    
 		}
 		}

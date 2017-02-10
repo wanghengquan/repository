@@ -1,4 +1,4 @@
-package public_lib;
+package data_structure;
 
 import java.io.IOException;
 
