@@ -8,6 +8,8 @@ import java.util.Date;
 
 import javax.swing.JOptionPane;
 
+import utility_funcs.file_action;
+
 public class killPop extends Thread {
 	public void run_lab() {
 		/*
@@ -65,5 +67,8 @@ public class killPop extends Thread {
 		    
 		}
 		}
-		
+	
+	public static void main(String[] args){
+	    System.out.println("haha");
+	}
 	}

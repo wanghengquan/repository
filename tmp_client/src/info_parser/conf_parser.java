@@ -10,14 +10,20 @@
 package info_parser;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.configuration2.*;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 /*
  * PlatUML graph
@@ -38,36 +44,26 @@ class conf_parser {
 	/*
 	 * read properties
 	 */	
-    public static void readProperties(String filePath) throws FileNotFoundException{
-        Properties props = new Properties();
-        FileInputStream fis = new FileInputStream(filePath);
-        InputStream instr = new BufferedInputStream(fis);
-        try {
-			props.load(instr);
+    public static void readProperties(String file_path) throws FileNotFoundException{
+    	INIConfiguration iniConfiguration = new INIConfiguration();
+    	System.out.println(file_path);
+    	try {
+			iniConfiguration.read(new FileReader(file_path));
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-        Enumeration<?> en = props.propertyNames();
-        while (en.hasMoreElements()) {
-            String key = (String) en.nextElement();
-            String Property = props.getProperty (key);
-            System.out.println(key+Property);
-        }
+		} 
+    	Iterator<String> key_iterator = iniConfiguration.getKeys();
+    	while(key_iterator.hasNext()){
+    		System.out.println(key_iterator.next());
+    	}
     }
     
-	/*
-	 * main entry for test
-	 */
 	public static void main(String[] args){
-		System.out.println(System.getProperty("user.dir"));
-		try {
-			readProperties("S:/repository/tmp_client/conf/default.conf");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println("haha");
 	}
-    
     
 }

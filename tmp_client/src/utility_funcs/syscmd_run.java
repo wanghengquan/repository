@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-public class execute_system_cmd {
+public class syscmd_run {
 	
 	public static void main(String [] args) throws Exception{	
 		String cmd = "conf/cp -r //lsh-prince/sw/SW_Validation/LSH_Results/GUI_Automation_Squish/regression3.9/Silicon/00_gui_silicon/D38_suite_device_feature/allviews/tst_cmos_to_dphy_dsi_rgb666_222 result/prj3/run366/T803147/tst_cmos_to_dphy_dsi_rgb666_222";
