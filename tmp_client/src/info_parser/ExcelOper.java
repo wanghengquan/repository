@@ -104,7 +104,6 @@ public class ExcelOper {
                     // get the cell type for every cell
                     switch (cell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
-                        // ����з��ص����������ǿ�ѧ��������˲���ֱ��ת�����ַ�����ʽ
                         cellValue = new BigDecimal(cell.getNumericCellValue()).toPlainString();
                         break;
                     case Cell.CELL_TYPE_STRING:
@@ -181,7 +180,6 @@ public class ExcelOper {
     }
 
     /**
-     * ����ָ���е��и�
      * 
      * @param workbook
      * @param rowHeight
@@ -196,8 +194,7 @@ public class ExcelOper {
         return workbook;
     }
 
-    /**
-     * �����п�
+    /*
      * 
      * @param workbook
      * @param columnWidth
@@ -212,7 +209,6 @@ public class ExcelOper {
     }
 
     /**
-     * ɾ��ָ����
      * 
      * @param workbook
      * @param sheetIndex
@@ -232,7 +228,6 @@ public class ExcelOper {
     }
 
     /**
-     * ��ָ��λ�ò���հ���
      * 
      * @param workbook
      * @param sheetIndex
@@ -244,11 +239,9 @@ public class ExcelOper {
         int lastRowNum = sheet.getLastRowNum();
         if (rowIndex >= 0 && rowIndex <= lastRowNum) {
             sheet.shiftRows(rowIndex, lastRowNum, 1);
-            // �����һ�е�Row����
             Row preRow = sheet.getRow(rowIndex - 1);
             short rowNum = preRow.getLastCellNum();
             Row curRow = sheet.createRow(rowIndex);
-            // �����ɵ�Row��������һ������ͬ����Cell
             for (short i = preRow.getFirstCellNum(); i < rowNum; i++) {
                 Cell cell = preRow.getCell(i);
                 CellStyle style = cell.getCellStyle();
@@ -260,7 +253,6 @@ public class ExcelOper {
     }
 
     /**
-     * ����sheet(0)��Ϊģ���ؽ�workbook
      * 
      * @param workbook
      * @param sheetNum
@@ -271,10 +263,8 @@ public class ExcelOper {
         if(sheetNames.length == sheetNum){
             for (int i = 0; i < sheetNum; i++) {
                 workbook.cloneSheet(0);
-                // ���ɺ���Ĺ�����ָ������
                 workbook.setSheetName(i + 1, sheetNames[i]);
             }
-            // ɾ����һ�Ź�����
             workbook.removeSheetAt(0);
             return workbook;
         }
