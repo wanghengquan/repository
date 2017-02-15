@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class ExcelOper {
+public class xls_parser {
 	public static final int Excel2003 = 0;
 	public static final int Excel2007 = 1;
 
@@ -102,23 +102,23 @@ public class ExcelOper {
                 String cellValue = null;
                 if (cell != null) {
                     // get the cell type for every cell
-                    switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_NUMERIC:
+                    switch (cell.getCellTypeEnum()) {
+                    case NUMERIC:
                         cellValue = new BigDecimal(cell.getNumericCellValue()).toPlainString();
                         break;
-                    case Cell.CELL_TYPE_STRING:
+                    case STRING:
                         cellValue = cell.getStringCellValue();
                         break;
-                    case Cell.CELL_TYPE_FORMULA:
+                    case FORMULA:
                         cellValue = new BigDecimal(cell.getNumericCellValue()).toPlainString();
                         break;
-                    case Cell.CELL_TYPE_BLANK:
+                    case BLANK:
                         cellValue = "";
                         break;
-                    case Cell.CELL_TYPE_BOOLEAN:
+                    case BOOLEAN:
                         cellValue = Boolean.toString(cell.getBooleanCellValue());
                         break;
-                    case Cell.CELL_TYPE_ERROR:
+                    case ERROR:
                         cellValue = "ERROR";
                         break;
                     default:
@@ -136,7 +136,6 @@ public class ExcelOper {
     }
     
     /**
-     * ���ݸ���������ֱ������workbook
      * 
      * @param workbook
      * @param sheetName
@@ -156,8 +155,7 @@ public class ExcelOper {
         return workbook;
     }
 
-    /**
-     * ��ָ����sheet���в������ݣ�����ķ������ṩһ��valueMap��int[]��2ά���������Ҫ������������꣬��0��ʼ
+    /*
      * 
      * @param workbook
      * @param sheetIndex
@@ -208,7 +206,7 @@ public class ExcelOper {
         return workbook;
     }
 
-    /**
+    /*
      * 
      * @param workbook
      * @param sheetIndex
@@ -273,7 +271,7 @@ public class ExcelOper {
     
     public Map<String, List<List <String>>> GetExcelData(String excel_file){
     	Map<String, List<List <String>>> ExcelData = new HashMap<String, List<List <String>>>();
-    	ExcelOper excel_obj = new ExcelOper();
+    	xls_parser excel_obj = new xls_parser();
     	File xlsx_file = new File(excel_file);
     	Workbook workbook_obj = null;
     	try {
@@ -306,7 +304,7 @@ public class ExcelOper {
     }
     
 	public static void main(String[] argv) throws Exception{
-		ExcelOper excel_obj = new ExcelOper();
+		xls_parser excel_obj = new xls_parser();
 		File xlsx_file = new File("suite_info3.xlsx");
 		Workbook workbook_obj = excel_obj.openWorkbook(xlsx_file);
 		List<List <String>> sheetdata = excel_obj.getExcelString(workbook_obj, 0, 0, 1);
@@ -316,6 +314,4 @@ public class ExcelOper {
 			//System.out.println(System.lineSeparator());
 		}
 	}
-
-	
 }
