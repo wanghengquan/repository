@@ -9,6 +9,7 @@
  */
 package info_parser;
 
+
 import java.util.Properties;
 import java.util.Set;
 
@@ -131,6 +132,25 @@ class cfg_parser {
 		ini_config.addProperty(key, value);
 		return 0;
 	}	
+	
+	/*
+	 * delete key 
+	 * @input INIConfiguration ini_config
+	 * @input String section
+	 * @input String option
+	 * @input String value 
+	 * @return Set<String>
+	 */	
+	public int del_ini_property(INIConfiguration ini_config, String section, String option){
+		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", ".."); 
+		if(ini_config.containsKey(key)){
+			ini_config.clearProperty(key);;
+			return 0;
+		} else {
+			CFG_LOGGER.warn("Config file " + key + " not exists, skipped.");
+			return 1;
+		}
+	}
 	
 	/*
 	 * set key 
