@@ -10,10 +10,14 @@
 
 package env_monitor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import data_center.public_data;
+import utility_funcs.system_cmd;
 
 /*
  * This class used to get the basic information of the client.
@@ -39,43 +43,32 @@ public class client_info extends Thread {
 
 	}
 
-	public String get_os() {
-		String run_cmd = "python " + osScript;
-		try {
-			ArrayList<String> excute_retruns = execute_system_cmd.run(cmd);
-			this.os = excute_retruns.get(1);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			this.os = "unknown";
-		}
-		return this.os;
-	}
-
-	public String getOsArch() {
-		String cmd = "python " + osScript;
-		try {
-			ArrayList<String> excute_retruns = execute_system_cmd.run(cmd);
-			this.os = excute_retruns.get(1);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			this.os = "unknown";
-		}
-		if (this.os.contains("_")) {
-			this.os_arch = this.os.split("_")[1];
-		} else {
-			this.os_arch = "unknown";
-		}
-		return this.os_arch;
-	}
-
-	public void setOs() {
-		/*
-		 * left empty
-		 */
-	}
 	// protected function
 	// private function
+	private String get_os() {
+		String run_cmd = "python " + public_data.os_name_tool;
+		String os_name = new String();
+		try {
+			ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
+			os_name = excute_retruns.get(1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			INFO_LOGGER.warn("Cannot resolve Operation System name");
+			os_name = "unknown";
+		}
+		return os_name;
+	}
 
+	public String get_disk_left() {
+		File file = new File("..");
+		String disk_left = new String();
+		// long total_space = file.getTotalSpace();
+		long free_space = file.getFreeSpace();
+		// long used_space = total_space - free_space;
+		disk_left = free_space / 1024 / 1024 / 1024 + "G";
+		return disk_left;
+	}
+	
+	
 }

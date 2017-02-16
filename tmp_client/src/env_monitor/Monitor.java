@@ -137,33 +137,6 @@ public class Monitor extends Thread{
         
     }
 
-	public void setHost_ip() {
-		/*
-		 * left empty
-		 */
-	}
-	public String getMax_procs() {
-		max_procs = ReadWriteConf.readValue(confFile, "max_procs");
-		return max_procs;
-	}
-	public void setMax_procs(String max_procs) {
-		this.max_procs = max_procs;
-		ReadWriteConf.writeProperties(confFile, "max_procs", this.max_procs);
-	}
-	public String getOsType() {
-		String os = System.getProperty("os.name").toLowerCase();
-		if (os.indexOf("windows") >= 0){
-			this.os_type = "windows";
-		}
-		else if (os.indexOf("linux") >= 0){
-			this.os_type = "linux";
-		}
-		else{
-			this.os_type = "unknown";
-		}
-		return this.os_type;
-	}
-	
 
 	public String getMemory_left() {
 		return memory_left;
@@ -188,26 +161,6 @@ public class Monitor extends Thread{
 	public String getCpu_used() {
 		
 		return cpu_used;
-	}
-	public void setCpu_used(String cpu_used) {
-		/*
-		 * left empty
-		 */
-	}
-	public String getDisk_left() {
-		File file = new File(".."); 
-        long total_space = file.getTotalSpace();  
-        long free_space = file.getFreeSpace();  
-        long used_space = total_space - free_space;  
-		this.disk_left = free_space / 1024 / 1024 / 1024 + "G";
-		//disk_left = ReadWriteConf.readValue(confFile, "disk_left");
-		return this.disk_left;
-	}
-	public void setDisk_left(String disk_left) {
-		/*
-		 * Left empty
-		 */
-		
 	}
 
 	public static void SetScanDiamond(){

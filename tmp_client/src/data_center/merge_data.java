@@ -1,26 +1,23 @@
 /*
- * File: xml_parser.java
+ * File: cmd_parser.java
  * Description: Software command line parser definition
  * Author: Jason.Wang
- * Date:2017/02/16
+ * Date:2017/02/13
  * Modifier:
  * Date:
  * Description:
  */
-package info_parser;
+package data_center;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/*
- * This class used to get the basic information of the client.
- * 1: Memory 
- */
-public class xml_parser{
+
+public class merge_data {
 	// public property
 	// protected property
 	// private property
-	private static final Logger XML_LOGGER = LogManager.getLogger(xml_parser.class.getName());
+	private static final Logger MERGE_LOGGER = LogManager.getLogger(merge_data.class.getName());
 	// public function
 	// protected function
 	// private function	
