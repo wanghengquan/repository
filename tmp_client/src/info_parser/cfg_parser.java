@@ -9,7 +9,6 @@
  */
 package info_parser;
 
-
 import java.util.Properties;
 import java.util.Set;
 
@@ -19,7 +18,6 @@ import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.ex.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 
 /*
  * PlatUML graph
@@ -31,157 +29,188 @@ import org.apache.logging.log4j.Logger;
  */
 class cfg_parser {
 
-	//public property
-	//protect property
-	//private property
+	// public property
+	// protect property
+	// private property
 	private static final Logger CFG_LOGGER = LogManager.getLogger(cfg_parser.class.getName());
 	private String cfg_path = null;
-	
-	public cfg_parser(String file_path){
+
+	public cfg_parser(String file_path) {
 		this.cfg_path = file_path;
-	}	
-	//public function
-	//protect function
-	//private function
-	
+	}
+	// public function
+	// protect function
+	// private function
+
 	/*
 	 * build ini_builder
+	 * 
 	 * @input String file_path
+	 * 
 	 * @return INIConfiguration
-	 */	
-	public FileBasedConfigurationBuilder<INIConfiguration> get_ini_builder(){
+	 */
+	public FileBasedConfigurationBuilder<INIConfiguration> get_ini_builder() {
 		Parameters params = new Parameters();
-		FileBasedConfigurationBuilder<INIConfiguration> builder =
-		    new FileBasedConfigurationBuilder<INIConfiguration>(INIConfiguration.class)
-		    .configure(params.hierarchical().setFileName(cfg_path));
+		FileBasedConfigurationBuilder<INIConfiguration> builder = new FileBasedConfigurationBuilder<INIConfiguration>(
+				INIConfiguration.class).configure(params.hierarchical().setFileName(cfg_path));
 		return builder;
-	}	
-	
+	}
+
 	/*
 	 * get ini_config
+	 * 
 	 * @input String file_path
+	 * 
 	 * @return INIConfiguration
-	 */	
-	public INIConfiguration get_ini_confg(FileBasedConfigurationBuilder<INIConfiguration> builder) throws ConfigurationException{
+	 */
+	public INIConfiguration get_ini_confg(FileBasedConfigurationBuilder<INIConfiguration> builder)
+			throws ConfigurationException {
 		INIConfiguration ini_config = builder.getConfiguration();
 		return ini_config;
 	}
-	
+
 	/*
 	 * read sections
+	 * 
 	 * @input String file_path
+	 * 
 	 * @return Set<String>
-	 */	
-	public Set<String> read_ini_sections() throws ConfigurationException{
+	 */
+	public Set<String> read_ini_sections() throws ConfigurationException {
 		Parameters params = new Parameters();
-		FileBasedConfigurationBuilder<INIConfiguration> builder =
-		    new FileBasedConfigurationBuilder<INIConfiguration>(INIConfiguration.class)
-		    .configure(params.hierarchical().setFileName(cfg_path));
+		FileBasedConfigurationBuilder<INIConfiguration> builder = new FileBasedConfigurationBuilder<INIConfiguration>(
+				INIConfiguration.class).configure(params.hierarchical().setFileName(cfg_path));
 		INIConfiguration ini_config = builder.getConfiguration();
 		Set<String> sections = ini_config.getSections();
 		return sections;
 	}
-	
+
 	/*
 	 * read sections
+	 * 
 	 * @input INIConfiguration ini_config
+	 * 
 	 * @return Set<String>
-	 */	
-	public Set<String> read_ini_sections(INIConfiguration ini_config){
+	 */
+	public Set<String> read_ini_sections(INIConfiguration ini_config) {
 		Set<String> sections = ini_config.getSections();
 		return sections;
-	}	
-	
+	}
+
 	/*
 	 * read properties
+	 * 
 	 * @input INIConfiguration ini_config
+	 * 
 	 * @input String section
+	 * 
 	 * @return Set<String>
-	 */	
-	public Properties read_ini_properties(INIConfiguration ini_config, String section){
+	 */
+	public Properties read_ini_properties(INIConfiguration ini_config, String section) {
 		Properties section_properties = ini_config.getProperties(section);
 		return section_properties;
 	}
-	
+
 	/*
 	 * read key
+	 * 
 	 * @input INIConfiguration ini_config
+	 * 
 	 * @input String key
+	 * 
 	 * @return Set<String>
-	 */	
-	public String read_ini_property(INIConfiguration ini_config, String section, String option){
+	 */
+	public String read_ini_property(INIConfiguration ini_config, String section, String option) {
 		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
 		String value = (String) ini_config.getProperty(key);
 		return value;
-	}	
-	
+	}
+
 	/*
-	 * add key 
+	 * add key
+	 * 
 	 * @input INIConfiguration ini_config
+	 * 
 	 * @input String section
+	 * 
 	 * @input String option
-	 * @input String value 
+	 * 
+	 * @input String value
+	 * 
 	 * @return Set<String>
-	 */	
-	public int add_ini_property(INIConfiguration ini_config, String section, String option, String value){
-		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", ".."); 
-		if(ini_config.containsKey(key)){
+	 */
+	public int add_ini_property(INIConfiguration ini_config, String section, String option, String value) {
+		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
+		if (ini_config.containsKey(key)) {
 			CFG_LOGGER.warn("Config file " + key + " already exists, skipped.");
 			return 1;
 		}
 		ini_config.addProperty(key, value);
 		return 0;
-	}	
-	
+	}
+
 	/*
-	 * delete key 
+	 * delete key
+	 * 
 	 * @input INIConfiguration ini_config
+	 * 
 	 * @input String section
+	 * 
 	 * @input String option
-	 * @input String value 
+	 * 
+	 * @input String value
+	 * 
 	 * @return Set<String>
-	 */	
-	public int del_ini_property(INIConfiguration ini_config, String section, String option){
-		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", ".."); 
-		if(ini_config.containsKey(key)){
-			ini_config.clearProperty(key);;
+	 */
+	public int del_ini_property(INIConfiguration ini_config, String section, String option) {
+		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
+		if (ini_config.containsKey(key)) {
+			ini_config.clearProperty(key);
+			;
 			return 0;
 		} else {
 			CFG_LOGGER.warn("Config file " + key + " not exists, skipped.");
 			return 1;
 		}
 	}
-	
+
 	/*
-	 * set key 
+	 * set key
+	 * 
 	 * @input INIConfiguration ini_config
+	 * 
 	 * @input String section
+	 * 
 	 * @input String option
-	 * @input String value 
+	 * 
+	 * @input String value
+	 * 
 	 * @return Set<String>
-	 */	
-	public int set_ini_property(INIConfiguration ini_config, String section, String option, String value){
+	 */
+	public int set_ini_property(INIConfiguration ini_config, String section, String option, String value) {
 		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
-		if(ini_config.containsKey(key)){
+		if (ini_config.containsKey(key)) {
 			ini_config.setProperty(key, value);
-		}else{
+		} else {
 			CFG_LOGGER.warn("Config file " + key + " not exists, skipped.");
-			return 1;			
+			return 1;
 		}
 		return 0;
 	}
-	
+
 	/*
-	 * save build 
+	 * save build
+	 * 
 	 * @input String file_path
+	 * 
 	 * @return INIConfiguration
-	 */	
-	public void save_ini_builder(FileBasedConfigurationBuilder<INIConfiguration> builder) throws ConfigurationException{
+	 */
+	public void save_ini_builder(FileBasedConfigurationBuilder<INIConfiguration> builder)
+			throws ConfigurationException {
 		builder.save();
-	}	
-		
-	
-	public static void main(String[] args){
+	}
+
+	public static void main(String[] args) {
 		cfg_parser ini_parser2 = new cfg_parser("conf/default.conf");
 		FileBasedConfigurationBuilder<INIConfiguration> ini_builder = ini_parser2.get_ini_builder();
 		INIConfiguration ini_config = new INIConfiguration();

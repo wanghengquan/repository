@@ -21,7 +21,6 @@ p_cancel = [re.compile('edif2ngd\.exe', re.I),
             re.compile('sbtimer\.exe', re.I),
             re.compile('vsim\sstandalone', re.I),
             re.compile('timing\.exe', re.I),
-			re.compile('active-hdl', re.I),
            ]
 def kill_error_box(break_title=""):
     #print 'check all commands status....'

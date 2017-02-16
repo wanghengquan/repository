@@ -2,7 +2,7 @@ package data_structure;
 
 import java.io.IOException;
 
-public class publicData {
+public class public_data {
 	public static String CurrentVersion = "2.04.01"; //External.Internal.DEV
 	public static String BuildDate = "2017/1/4";
 	public static String SuiteFileVersion = "1.05";

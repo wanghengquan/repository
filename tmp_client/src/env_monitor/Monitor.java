@@ -164,42 +164,7 @@ public class Monitor extends Thread{
 		return this.os_type;
 	}
 	
-	public String getOs() {
-		String cmd = "python " + osScript;
-		try {
-			ArrayList<String> excute_retruns =  execute_system_cmd.run(cmd);
-			this.os = excute_retruns.get(1);
-		} catch (IOException e) {
-			//TODO Auto-generated catch block
-			e.printStackTrace();
-			this.os = "unknown";
-		}
-		return this.os;
-	}	
-	
-	public String getOsArch() {
-		String cmd = "python " + osScript;
-		try {
-			ArrayList<String> excute_retruns =  execute_system_cmd.run(cmd);
-			this.os = excute_retruns.get(1);
-		} catch (IOException e) {
-			//TODO Auto-generated catch block
-			e.printStackTrace();
-			this.os = "unknown";
-		}
-		if (this.os.contains("_")){
-			this.os_arch = this.os.split("_")[1];
-		} else{
-			this.os_arch = "unknown";
-		}
-		return this.os_arch;
-	}	
-	
-	public void setOs() {
-		/*
-		 * left empty
-		 */
-	}
+
 	public String getMemory_left() {
 		return memory_left;
 	}
@@ -461,7 +426,7 @@ public class Monitor extends Thread{
 	}
 	public String xmlString(Boolean simple) throws Exception{
 		/*<?xml version="1.0" encoding="UTF-8" ?>
-		<client ip=锟斤拷192.168.48.81锟斤拷 machine=锟斤拷d25315锟斤拷 group=锟斤拷FE锟斤拷 processNum=5>
+		<client ip=閿熸枻鎷�192.168.48.81閿熸枻鎷� machine=閿熸枻鎷穌25315閿熸枻鎷� group=閿熸枻鎷稦E閿熸枻鎷� processNum=5>
 		<info>
 			<memory-left>200M</memory-left>
 			<cpu-used>30%</cpu-used>

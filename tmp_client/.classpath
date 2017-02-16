@@ -58,5 +58,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="D:/java_dev/lib/poi-3.16-beta2/poi-ooxml-schemas-3.16-beta2.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/commons-compress-1.12/commons-compress-1.12.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/commons-compress-1.12/commons-compress-1.12-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
