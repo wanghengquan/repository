@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
 import utility_funcs.system_cmd;
+import utility_funcs.linux_info;
 
 /*
  * This class used to get the basic information of the client.
@@ -70,5 +71,8 @@ public class client_info extends Thread {
 		return disk_left;
 	}
 	
-	
+	public String get_cpu_usage() {
+		
+		return disk_left;
+	}
 }

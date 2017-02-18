@@ -132,7 +132,7 @@ public class linux_info {
 
 	public static void main(String argv[]) {
 		System.out.println(linux_info.cpu_info().toString());
-		System.out.println(linux_info.cpu_usage(10) + "%");
-		System.out.println(linux_info.memory_usage() + "%");
+		System.out.println(linux_info.cpu_usage(10));
+		System.out.println(linux_info.memory_usage());
 	}
 }
