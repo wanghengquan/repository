@@ -1,5 +1,5 @@
 /*
- * File: cfg_parser.java
+ * File: ini_parser.java
  * Description: Software configure parser definition
  * Author: Jason.Wang
  * Date:2017/02/15
@@ -27,15 +27,15 @@ import org.apache.logging.log4j.Logger;
  * several **lines**;
  * @enduml
  */
-class cfg_parser {
+class ini_parser {
 
 	// public property
 	// protect property
 	// private property
-	private static final Logger CFG_LOGGER = LogManager.getLogger(cfg_parser.class.getName());
+	private static final Logger CFG_LOGGER = LogManager.getLogger(ini_parser.class.getName());
 	private String cfg_path = null;
 
-	public cfg_parser(String file_path) {
+	public ini_parser(String file_path) {
 		this.cfg_path = file_path;
 	}
 	// public function
@@ -211,7 +211,7 @@ class cfg_parser {
 	}
 
 	public static void main(String[] args) {
-		cfg_parser ini_parser2 = new cfg_parser("conf/default.conf");
+		ini_parser ini_parser2 = new ini_parser("conf/default.conf");
 		FileBasedConfigurationBuilder<INIConfiguration> ini_builder = ini_parser2.get_ini_builder();
 		INIConfiguration ini_config = new INIConfiguration();
 		try {

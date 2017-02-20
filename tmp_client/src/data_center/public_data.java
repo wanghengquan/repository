@@ -45,6 +45,10 @@ public class public_data {
 	public static String RABBITMQ_HOST = "lsh-reg01";
 	public static String RABBITMQ_USER = "root";
 	public static String RABBITMQ_PWD = "root";
+	public final static String QUEUE_RESULT_NAME = "Result";
+	public final static String QUEUE_INFO_NAME = "Info";
+	public final static String TASK_QUEUE_NAME = "task_queue";
+	public final static String ADMIN_QUEUE_NAME = "admin_queue";
 
 	// min system requirements:
 	public static Long DiskLeft = 2L; // G
