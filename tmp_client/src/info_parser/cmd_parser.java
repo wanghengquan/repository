@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
  * several **lines**;
  * @enduml
  */
-class cmd_parser {
+public class cmd_parser {
 	// public property
 	// protected property
 	static HashMap<String, String> cmd_hash = new HashMap<String, String>();

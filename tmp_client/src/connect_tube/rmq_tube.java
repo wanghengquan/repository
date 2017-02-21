@@ -12,6 +12,8 @@ package connect_tube;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.rabbitmq.client.*;
+
 import data_center.public_data;
 
 import java.io.File;

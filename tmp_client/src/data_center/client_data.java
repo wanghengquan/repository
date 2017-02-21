@@ -13,11 +13,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-public class merge_data {
+public class client_data {
 	// public property
 	// protected property
 	// private property
-	private static final Logger MERGE_LOGGER = LogManager.getLogger(merge_data.class.getName());
+	private static final Logger CLIENT_LOGGER = LogManager.getLogger(client_data.class.getName());
 	// public function
 	// protected function
 	// private function	

@@ -9,8 +9,11 @@
  */
 package info_parser;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.configuration2.INIConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
@@ -27,8 +30,7 @@ import org.apache.logging.log4j.Logger;
  * several **lines**;
  * @enduml
  */
-class ini_parser {
-
+public class ini_parser {
 	// public property
 	// protect property
 	// private property
@@ -49,7 +51,7 @@ class ini_parser {
 	 * 
 	 * @return INIConfiguration
 	 */
-	public FileBasedConfigurationBuilder<INIConfiguration> get_ini_builder() {
+	private FileBasedConfigurationBuilder<INIConfiguration> get_ini_builder() {
 		Parameters params = new Parameters();
 		FileBasedConfigurationBuilder<INIConfiguration> builder = new FileBasedConfigurationBuilder<INIConfiguration>(
 				INIConfiguration.class).configure(params.hierarchical().setFileName(cfg_path));
@@ -63,7 +65,7 @@ class ini_parser {
 	 * 
 	 * @return INIConfiguration
 	 */
-	public INIConfiguration get_ini_confg(FileBasedConfigurationBuilder<INIConfiguration> builder)
+	private INIConfiguration get_ini_confg(FileBasedConfigurationBuilder<INIConfiguration> builder)
 			throws ConfigurationException {
 		INIConfiguration ini_config = builder.getConfiguration();
 		return ini_config;
@@ -76,7 +78,8 @@ class ini_parser {
 	 * 
 	 * @return Set<String>
 	 */
-	public Set<String> read_ini_sections() throws ConfigurationException {
+	@SuppressWarnings("unused")
+	private Set<String> read_ini_sections() throws ConfigurationException {
 		Parameters params = new Parameters();
 		FileBasedConfigurationBuilder<INIConfiguration> builder = new FileBasedConfigurationBuilder<INIConfiguration>(
 				INIConfiguration.class).configure(params.hierarchical().setFileName(cfg_path));
@@ -92,7 +95,7 @@ class ini_parser {
 	 * 
 	 * @return Set<String>
 	 */
-	public Set<String> read_ini_sections(INIConfiguration ini_config) {
+	private Set<String> read_ini_sections(INIConfiguration ini_config) {
 		Set<String> sections = ini_config.getSections();
 		return sections;
 	}
@@ -106,7 +109,8 @@ class ini_parser {
 	 * 
 	 * @return Set<String>
 	 */
-	public Properties read_ini_properties(INIConfiguration ini_config, String section) {
+	@SuppressWarnings("unused")
+	private Properties read_ini_properties(INIConfiguration ini_config, String section) {
 		Properties section_properties = ini_config.getProperties(section);
 		return section_properties;
 	}
@@ -139,7 +143,7 @@ class ini_parser {
 	 * 
 	 * @return Set<String>
 	 */
-	public int add_ini_property(INIConfiguration ini_config, String section, String option, String value) {
+	private int add_ini_property(INIConfiguration ini_config, String section, String option, String value) {
 		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
 		if (ini_config.containsKey(key)) {
 			CFG_LOGGER.warn("Config file " + key + " already exists, skipped.");
@@ -162,7 +166,8 @@ class ini_parser {
 	 * 
 	 * @return Set<String>
 	 */
-	public int del_ini_property(INIConfiguration ini_config, String section, String option) {
+	@SuppressWarnings("unused")
+	private int del_ini_property(INIConfiguration ini_config, String section, String option) {
 		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
 		if (ini_config.containsKey(key)) {
 			ini_config.clearProperty(key);
@@ -187,7 +192,8 @@ class ini_parser {
 	 * 
 	 * @return Set<String>
 	 */
-	public int set_ini_property(INIConfiguration ini_config, String section, String option, String value) {
+	@SuppressWarnings("unused")
+	private int set_ini_property(INIConfiguration ini_config, String section, String option, String value) {
 		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
 		if (ini_config.containsKey(key)) {
 			ini_config.setProperty(key, value);
@@ -198,37 +204,76 @@ class ini_parser {
 		return 0;
 	}
 
-	/*
-	 * save build
-	 * 
-	 * @input String file_path
-	 * 
-	 * @return INIConfiguration
-	 */
-	public void save_ini_builder(FileBasedConfigurationBuilder<INIConfiguration> builder)
-			throws ConfigurationException {
+	public HashMap<String, HashMap<String, String>> read_ini_data() throws ConfigurationException{
+		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
+		FileBasedConfigurationBuilder<INIConfiguration> builder = get_ini_builder();
+		INIConfiguration configure = get_ini_confg(builder);
+		Set<String> sections = read_ini_sections(configure);
+		Iterator<String> sections_it = sections.iterator();
+		while(sections_it.hasNext()){
+			String section = sections_it.next();
+			HashMap<String, String> section_data = new HashMap<String, String>();
+			Iterator<String> keys_it = configure.getKeys(section + ".");
+			while(keys_it.hasNext()){
+				String key = keys_it.next();
+				String option = key.replace(section + ".", "").replaceAll("\\.\\.", ".");
+				String value = (String) configure.getProperty(key);
+				section_data.put(option, value);
+			}
+			ini_data.put(section, section_data);
+		}
+		return ini_data;
+	}
+	
+	public void write_ini_data(HashMap<String, HashMap<String, String>> write_data) throws ConfigurationException{
+		FileBasedConfigurationBuilder<INIConfiguration> builder = get_ini_builder();
+		INIConfiguration configure = get_ini_confg(builder);
+		//remove previous key sets
+		Iterator<String> key_it = configure.getKeys();
+		while(key_it.hasNext()){
+			String key = key_it.next();
+			configure.clearProperty(key);
+		}
+		//add new key set form map data
+		Set<String> section_set = write_data.keySet();
+		TreeSet<String> tree_section = new TreeSet<String>();
+		tree_section.addAll(section_set);
+		Iterator<String> section_it = tree_section.iterator();
+		while(section_it.hasNext()){
+			String section = section_it.next();
+			Set<String> option_set = write_data.get(section).keySet();
+			TreeSet<String> tree_option = new TreeSet<String>();
+			tree_option.addAll(option_set);
+			Iterator<String> option_it = tree_option.iterator();
+			while(option_it.hasNext()){
+				String option = option_it.next();
+				String value = write_data.get(section).get(option);
+				add_ini_property(configure, section, option, value);
+			}
+		}
+		//save configuration
 		builder.save();
 	}
-
+	
 	public static void main(String[] args) {
 		ini_parser ini_parser2 = new ini_parser("conf/default.conf");
-		FileBasedConfigurationBuilder<INIConfiguration> ini_builder = ini_parser2.get_ini_builder();
-		INIConfiguration ini_config = new INIConfiguration();
+		HashMap<String, HashMap<String, String>> read_data = null;
 		try {
-			ini_config = ini_parser2.get_ini_confg(ini_builder);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		@SuppressWarnings("unused")
-		Set<String> sections = ini_parser2.read_ini_sections(ini_config);
-		ini_parser2.add_ini_property(ini_config, "base", "test", "test1");
-		ini_parser2.set_ini_property(ini_config, "base", "rmq_host", "lsh-opera");
-		try {
-			ini_parser2.save_ini_builder(ini_builder);
+			read_data= ini_parser2.read_ini_data();
 		} catch (ConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		HashMap<String, String> section_data= read_data.get("tmp_base");
+		section_data.put("test2.10", "123");
+		read_data.put("tmp_base", section_data);
+		try {
+			ini_parser2.write_ini_data(read_data);
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(read_data.toString());
+		System.out.println(read_data.get("diamond").containsKey("scan_dir"));
 	}
 }

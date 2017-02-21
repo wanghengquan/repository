@@ -27,7 +27,7 @@ import utility_funcs.linux_info;
 
 /*
  * This class used to get the basic information of the client.
- * return client_hash:
+ * return machine_hash:
  * 		System	:	os		=	type_arch
  * 					type	=	windows/linux
  * 					arch	=	32b/64b
@@ -37,32 +37,32 @@ import utility_funcs.linux_info;
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx 	
  */
-public class client_info extends Thread {
+public class machine_sync extends Thread {
 	// public property
 	// protected property
-	public static ConcurrentHashMap<String, HashMap<String, String>> client_hash = new ConcurrentHashMap<String, HashMap<String, String>>();
+	public static ConcurrentHashMap<String, HashMap<String, String>> machine_hash = new ConcurrentHashMap<String, HashMap<String, String>>();
 	// private property
 	public static Boolean data_updating = new Boolean(false);
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread info_thread;
 	public int interval;
-	private static final Logger INFO_LOGGER = LogManager.getLogger(client_info.class.getName());
+	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 
 	// public function update data every interval seconds
-	public client_info(int interval) {
+	public machine_sync(int interval) {
 		this.interval = interval;
 	}
 
 	// public function default update data every 5 seconds
-	public client_info() {
+	public machine_sync() {
 		this.interval = 5;
 	}
 
 	// protected function
 	// private function
 	private String get_os() {
-		String run_cmd = "python " + public_data.os_name_tool;
+		String run_cmd = "python " + public_data.OS_NAME_TOOL;
 		String os_name = new String();
 		try {
 			ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
@@ -90,7 +90,7 @@ public class client_info extends Thread {
 		String systemType = System.getProperties().getProperty("os.name");
 		String cpu_usage = new String();
 		if (systemType.contains("Windows")) {
-			String run_cmd = "python " + public_data.get_cpu_tool;
+			String run_cmd = "python " + public_data.GET_CPU_TOOL;
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				cpu_usage = excute_retruns.get(1);
@@ -111,7 +111,7 @@ public class client_info extends Thread {
 		String systemType = System.getProperties().getProperty("os.name");
 		String mem_usage = new String();
 		if (systemType.contains("Windows")) {
-			String run_cmd = "python " + public_data.get_mem_tool;
+			String run_cmd = "python " + public_data.GET_MEM_TOOL;
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				mem_usage = excute_retruns.get(1);
@@ -168,7 +168,7 @@ public class client_info extends Thread {
 	}
 
 	/*
-	 * update client_hash: System : os = type_arch type = windows/linux arch =
+	 * update machine_hash: System : os = type_arch type = windows/linux arch =
 	 * 32b/64b Machine : terminal= xxx ip = xxx
 	 */
 	private void update_static_data() {
@@ -191,12 +191,12 @@ public class client_info extends Thread {
 		system_data.put("arch", arch);
 		machine_data.put("terminal", terminal);
 		machine_data.put("ip", ip);
-		client_hash.put("System", system_data);
-		client_hash.put("Machine", machine_data);
+		machine_hash.put("System", system_data);
+		machine_hash.put("Machine", machine_data);
 	}
 
 	/*
-	 * update client_hash: System : space = xxG cpu = xx% mem = xx%
+	 * update machine_hash: System : space = xxG cpu = xx% mem = xx%
 	 */
 	private void update_dynamic_data() {
 		HashMap<String, String> system_data = new HashMap<String, String>();
@@ -206,7 +206,7 @@ public class client_info extends Thread {
 		system_data.put("space", space);
 		system_data.put("cpu", cpu);
 		system_data.put("mem", mem);
-		client_hash.put("System", system_data);
+		machine_hash.put("System", system_data);
 	}
 
 	public void run() {
@@ -274,7 +274,7 @@ public class client_info extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		client_info client_update = new client_info(1);
+		machine_sync client_update = new machine_sync(1);
 		client_update.start();
 		INFO_LOGGER.warn("thread start...");
 		try {
@@ -283,7 +283,7 @@ public class client_info extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(client_info.client_hash.toString());
+		System.out.println(machine_sync.machine_hash.toString());
 		client_update.wait_request();
 		INFO_LOGGER.warn("thread wait...");
 		try {
