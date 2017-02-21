@@ -46,7 +46,7 @@ public class machine_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread info_thread;
-	public int interval;
+	private int interval;
 	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 
 	// public function update data every interval seconds
@@ -249,7 +249,6 @@ public class machine_sync extends Thread {
 
 	public void soft_stop() {
 		stop_request = true;
-
 	}
 
 	public void hard_stop() {

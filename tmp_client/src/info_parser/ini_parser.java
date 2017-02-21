@@ -218,7 +218,7 @@ public class ini_parser {
 				String key = keys_it.next();
 				String option = key.replace(section + ".", "").replaceAll("\\.\\.", ".");
 				String value = (String) configure.getProperty(key);
-				section_data.put(option, value);
+				section_data.put(option, value.replaceAll("\\\\", "/"));
 			}
 			ini_data.put(section, section_data);
 		}

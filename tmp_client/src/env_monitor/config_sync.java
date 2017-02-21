@@ -18,10 +18,12 @@ import java.net.NetworkInterface;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
+import data_center.exchange_data;
 import data_center.public_data;
 
 /*
@@ -51,14 +53,72 @@ public class config_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread info_thread;
-
+	private int interval;
 	// public function
-	public config_sync() {
-
+	public config_sync(int interval) {
+		this.interval = interval;
 	}
 
+	public config_sync() {
+		this.interval = 5;
+	}	
 	// protected function
 	// private function
+	private HashMap<String, String> get_scan_dirs(String scan_path){
+		HashMap<String, String> scan_dirs = new HashMap<String, String>();
+		File scan_handler = new File(scan_path);
+		File [] all_handlers = scan_handler.listFiles();
+		for(File sub_handler: all_handlers){
+			String build_name = sub_handler.getName();
+			if (!sub_handler.isDirectory()){
+				continue;
+			}
+			File success_file = new File(sub_handler.getAbsolutePath() + "/success.ini");
+			if (!success_file.exists() || !success_file.canRead()){
+				continue;
+			}
+			ini_parser build_parser = new ini_parser(success_file.getAbsolutePath().replaceAll("\\\\", "/"));
+			HashMap<String, HashMap<String, String>> build_data = new HashMap<String, HashMap<String, String>>();
+			try {
+				build_data = build_parser.read_ini_data();
+			} catch (ConfigurationException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				CONFIG_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
+				continue;
+			}
+			if (!build_data.containsKey("base")){
+				continue;
+			}
+			if (!build_data.get("base").containsKey("path")){
+				continue;
+			}
+			String path = build_data.get("base").get("path");
+			scan_dirs.put(build_name,path);
+		}
+		return scan_dirs;
+	}
+	
+	private Boolean get_build_diff(String section, HashMap<String, String> scan_data){
+		if (scan_data.isEmpty()){
+			return false;
+		}
+		HashMap<String, String> recording_data = config_hash.get(section);
+		Set<String> scan_options = scan_data.keySet();
+		Iterator<String> scan_options_it = scan_options.iterator();
+		while(scan_options_it.hasNext()){
+			String scan_option = scan_options_it.next();
+			String scan_value = scan_data.get(scan_option);
+			if (!recording_data.containsKey(scan_option)){
+				return true;
+			}
+			if (!scan_value.equalsIgnoreCase(recording_data.get(scan_option))){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private void update_static_data(HashMap<String, HashMap<String, String>> ini_data) {
 		Set<String> config_sections = ini_data.keySet();
 		Iterator<String> section_it = config_sections.iterator();
@@ -70,8 +130,29 @@ public class config_sync extends Thread {
 				config_hash.put(section, section_data);
 			} else {
 				// consider as software section
+				Set<String> options_set = section_data.keySet();
+				Iterator<String> option_it = options_set.iterator();
+				while(option_it.hasNext()){
+					String option = option_it.next();
+					String value = section_data.get(option);
+					if (option.equalsIgnoreCase("scan_dir") || option.equalsIgnoreCase("max_insts")){
+						continue;
+					} else {
+						File sw_path = new File(value);
+						if (sw_path.exists() && sw_path.isDirectory()){
+							update_data.put(option, value);
+						} else {
+							CONFIG_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
+						}
+					}
+				}
 				if (section_data.containsKey("scan_dir") && !section_data.get("scan_dir").equals("")){
-					update_data.put("scan_dir", section_data.get("scan_dir"));
+					File scan_dir = new File(section_data.get("scan_dir"));
+					if (scan_dir.exists() && scan_dir.isDirectory()){
+						update_data.put("scan_dir", section_data.get("scan_dir"));
+					} else {
+						CONFIG_LOGGER.warn(section + ".scan_dir, not exist. skipped");
+					}
 				}
 				if (section_data.containsKey("max_insts") && !section_data.get("max_insts").equals("")){
 					update_data.put("max_insts", section_data.get("max_insts"));
@@ -83,8 +164,48 @@ public class config_sync extends Thread {
 		}
 	}
 
-	private void update_dynamic_data() {
-
+	private Boolean update_dynamic_data() {
+		int config_updated = 0;
+		Set<String> config_sections = config_hash.keySet();
+		Iterator<String> section_it = config_sections.iterator();
+		while(section_it.hasNext()){
+			String section = section_it.next();
+			HashMap<String, String> section_data = config_hash.get(section);
+			if (section.equalsIgnoreCase("tmp_base") || section.equalsIgnoreCase("tmp_machine")){
+				continue;
+			}
+			HashMap<String, String> update_data = new HashMap<String, String>();
+			Set<String> options_set = section_data.keySet();
+			Iterator<String> option_it = options_set.iterator();
+			while(option_it.hasNext()){
+				String option = option_it.next();
+				String value = section_data.get(option);
+				if (option.equals("scan_dir")){
+					HashMap<String, String> scan_data = get_scan_dirs(value);
+					Boolean new_update  = get_build_diff(section, scan_data);
+					if (new_update){
+						update_data.putAll(scan_data);
+						config_updated++; //internal config file save
+						exchange_data.config_updated++; // external admin request
+					}
+				} else if (option.equals("max_insts")){
+					update_data.put(option, value);
+				} else {
+					File sw_path = new File(value);
+					if (sw_path.exists()){
+						update_data.put(option, value);
+					} else {
+						CONFIG_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
+					}
+				}
+			}
+			config_hash.put(section, update_data);
+		}
+		if (config_updated > 0){
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public void run() {
@@ -99,8 +220,14 @@ public class config_sync extends Thread {
 	private void monitor_run() {
 		info_thread = Thread.currentThread();
 		ini_parser ini_runner = new ini_parser(public_data.DEFAULT_INI);
-		HashMap<String, HashMap<String, String>> read_data = ini_runner.read_ini_data();
-		update_static_data(read_data);
+		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			ini_data = ini_runner.read_ini_data();
+		} catch (ConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		update_static_data(ini_data);
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -112,12 +239,22 @@ public class config_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				CONFIG_LOGGER.debug("Client info Thread running...");
+				CONFIG_LOGGER.debug("config sync Thread running...");
 			}
-			update_dynamic_data();
+			Boolean config_updated = update_dynamic_data();
+			if (config_updated){
+				HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
+				write_data.putAll(config_hash);
+				try {
+					ini_runner.write_ini_data(write_data);
+				} catch (ConfigurationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			// System.out.println("Thread running...");
 			try {
-				Thread.sleep(5 * 1000);
+				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -127,7 +264,6 @@ public class config_sync extends Thread {
 
 	public void soft_stop() {
 		stop_request = true;
-
 	}
 
 	public void hard_stop() {
@@ -152,10 +288,8 @@ public class config_sync extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		ini_parser ini_runner = new ini_parser(public_data.DEFAULT_INI);
-		TreeMap<String, TreeMap<String, String>> read_data = ini_runner.read_ini_data();
-		config_sync.config_hash.putAll(read_data);;
-
+		config_sync ini_runner = new config_sync();
+		ini_runner.run();
 	}
 
 }

@@ -14,6 +14,8 @@ import org.apache.logging.log4j.Logger;
 
 public class exchange_data {
 	// public property
+	// Configuration update
+	public static int config_updated = 0;
 	// protected property
 	// private property
 	private static final Logger EXCHANGE_LOGGER = LogManager.getLogger(exchange_data.class.getName());
