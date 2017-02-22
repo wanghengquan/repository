@@ -7,34 +7,29 @@
  * Date:
  * Description:
  */
-package data_center;
+package connect_tube;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
-import env_monitor.config_sync;
-import env_monitor.machine_sync;
 
 
-public class client_data extends Thread  {
+public class run_tube extends Thread  {
 	// public property
 	// protected property
 	// private property
-	private static final Logger CLIENT_LOGGER = LogManager.getLogger(client_data.class.getName());
+	private static final Logger TUBE_LOGGER = LogManager.getLogger(run_tube.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Thread client_thread;
-	private String line_seprator = System.getProperty("line.separator");
+	private Thread tube_thread;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
 	// public function
-	// protected function
-	// private function	
-	
-	private void merge_client_data(){
+	public run_tube(){
 		
 	}
-	
+	// protected function
+	// private function	
 	public void run() {
 		try {
 			monitor_run();
@@ -45,7 +40,7 @@ public class client_data extends Thread  {
 	}
 
 	private void monitor_run() {
-		client_thread = Thread.currentThread();
+		tube_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -57,9 +52,8 @@ public class client_data extends Thread  {
 					e.printStackTrace();
 				}
 			} else {
-				CLIENT_LOGGER.debug("Client Thread running...");
+				TUBE_LOGGER.warn("Client Thread running...");
 			}
-			merge_client_data();
 			// System.out.println("Thread running...");
 			try {
 				Thread.sleep(interval * 1000);
@@ -76,8 +70,8 @@ public class client_data extends Thread  {
 
 	public void hard_stop() {
 		stop_request = true;
-		if (client_thread != null) {
-			client_thread.interrupt();
+		if (tube_thread != null) {
+			tube_thread.interrupt();
 		}
 	}
 
@@ -101,7 +95,6 @@ public class client_data extends Thread  {
 		machine_sync machine_runner = new machine_sync();
 		ini_runner.run();
 		machine_runner.run();
-		
 		ini_runner.run();
 	}
 }

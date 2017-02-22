@@ -21,8 +21,12 @@ def get_Windows_name():
     import subprocess, re
     o = subprocess.Popen('systeminfo', stdout=subprocess.PIPE).communicate()[0]
     try: o = str(o, "latin-1")  # Python 3+
-    except: pass  
-    return re.search("OS Name:\s*(.*)", o).group(1).strip()
+    except: pass
+    os_search = re.search("OS Name:\s*(.*)", o)
+    if(os_search):
+        return os_search.group(1).strip()
+    else:
+        return "unknown"
         
 if (platform.system() == 'Linux'):
     dist_tuple = platform.dist()

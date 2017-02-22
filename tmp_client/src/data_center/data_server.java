@@ -1,5 +1,5 @@
 /*
- * File: cmd_parser.java
+ * File: data_server.java
  * Description: Software command line parser definition
  * Author: Jason.Wang
  * Date:2017/02/13
@@ -49,61 +49,63 @@ import info_parser.cmd_parser;
  * 					local_remore = remote
  * 					debug		= false
  */
-public class client_data extends Thread  {
+public class data_server extends Thread {
 	// public property
 	public static ConcurrentHashMap<String, HashMap<String, String>> client_hash = new ConcurrentHashMap<String, HashMap<String, String>>();
 	// protected property
 	// private property
-	private static final Logger CLIENT_LOGGER = LogManager.getLogger(client_data.class.getName());
+	private static final Logger DATA_LOGGER = LogManager.getLogger(data_server.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
-	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
+	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
-	// private function	
-	
-	private void merge_client_data(HashMap<String, String> cmd_hash){
+	// private function
+
+	private void merge_client_data(HashMap<String, String> cmd_hash) {
 		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
 		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
-		//0. ready check
-		if (machine_hash.size() <2){
+		// 0. ready check
+		if (machine_hash.size() < 2) {
 			return;
 		}
-		if (config_hash.size() <2){
+		if (config_hash.size() < 2) {
 			return;
-		}		
-		//1. merge Software data
+		}
+		// 1. merge Software data
 		Set<String> config_section = config_hash.keySet();
 		Iterator<String> config_it = config_section.iterator();
-		while(config_it.hasNext()){
+		while (config_it.hasNext()) {
 			String option = config_it.next();
 			HashMap<String, String> option_data = config_hash.get(option);
-			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")){
+			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
 				continue;
 			}
 			client_hash.put(option, option_data);
 		}
-		//2. merge System data
+		// 2. merge System data
 		client_hash.put("System", machine_hash.get("System"));
-		//3. merge Machine data	   config data > scan data > default data in public_data
+		// 3. merge Machine data config data > scan data > default data in
+		// public_data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("max_procs", public_data.DEF_MAX_PROCS);
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
-		machine_data.putAll(machine_hash.get("Machine")); //Scan data
-		machine_data.putAll(config_hash.get("tmp_machine")); //Config data
+		machine_data.putAll(machine_hash.get("Machine")); // Scan data
+		machine_data.putAll(config_hash.get("tmp_machine")); // Config data
 		client_hash.put("Machine", machine_data);
-		//4. merge base data (for software use) command data > config data > default data in public_data
+		// 4. merge base data (for software use) command data > config data >
+		// default data in public_data
 		HashMap<String, String> base_data = new HashMap<String, String>();
 		base_data.put("save_path", public_data.DEF_SAVE_PATH);
 		base_data.put("work_path", public_data.DEF_WORK_PATH);
 		base_data.putAll(config_hash.get("tmp_base"));
 		base_data.putAll(cmd_hash);
 		client_hash.put("base", base_data);
-		CLIENT_LOGGER.warn(client_hash.toString());
+		DATA_LOGGER.warn(client_hash.toString());
 	}
-	
+
 	public void run() {
 		try {
 			monitor_run();
@@ -127,7 +129,7 @@ public class client_data extends Thread  {
 					e.printStackTrace();
 				}
 			} else {
-				CLIENT_LOGGER.warn("client_data Thread running...");
+				DATA_LOGGER.warn("client_data Thread running...");
 			}
 			merge_client_data(cmd_hash);
 			// System.out.println("Thread running...");
@@ -161,7 +163,7 @@ public class client_data extends Thread  {
 			this.notify();
 		}
 	}
-	
+
 	/*
 	 * main entry for test
 	 */
@@ -171,7 +173,7 @@ public class client_data extends Thread  {
 		exchange_data share_data = new exchange_data();
 		config_sync config_runner = new config_sync(share_data);
 		machine_sync machine_runner = new machine_sync();
-		client_data client_available = new client_data();
+		data_server client_available = new data_server();
 		config_runner.start();
 		machine_runner.start();
 		client_available.start();

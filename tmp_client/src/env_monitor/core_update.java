@@ -49,12 +49,14 @@ public class core_update {
 				if (find_url) {
 					try {
 						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd);
+						CORE_LOGGER.debug(excute_returns.toString());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						// e.printStackTrace();
 					}
 				} else {
-					ArrayList<String> export_retruns = system_cmd.run("svn co " + user_cmd + " " + core_addr);
+					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr);
+					CORE_LOGGER.debug(excute_returns.toString());
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -62,7 +64,8 @@ public class core_update {
 			}
 		} else {
 			try {
-				ArrayList<String> excute_retruns = system_cmd.run("svn co " + core_addr + " " + user_cmd);
+				ArrayList<String> excute_returns = system_cmd.run("svn co " + core_addr + " " + user_cmd);
+				CORE_LOGGER.debug(excute_returns.toString());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

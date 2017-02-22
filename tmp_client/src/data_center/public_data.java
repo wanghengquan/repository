@@ -91,7 +91,7 @@ public class public_data {
 	public static void main(String[] args) {
 		@SuppressWarnings("unused")
 		public_data my_data = new public_data();
-		PUB_LOGGER.warn(KILL_PROCESS_TOOL);
+		PUB_LOGGER.warn(TOOLS_KILL_PROCESS);
 		
 	}	
 }

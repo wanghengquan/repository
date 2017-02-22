@@ -23,6 +23,7 @@ class system_call implements Callable<Object> {
 	private String[] cmds;
 	private Map<String, String> envs;
 	private int timeout = 0;
+	private String line_seprator = System.getProperty("line.separator");
 
 	void run_case(String[] cmds, Map<String, String> envs) {
 		this.cmds = cmds;
@@ -46,20 +47,17 @@ class system_call implements Callable<Object> {
 			file_action.append_file("log/run.log", string_list.toString());
 		} else {
 			String local_rpt_path = case_dir + "/" + public_data.case_rpt;
-			file_action.append_file(local_rpt_path, public_data.line_separator);
-			file_action.append_file(local_rpt_path, "[Run]" + public_data.line_separator);
-			file_action.append_file(local_rpt_path, ">>>Eev set:" + public_data.line_separator);
 			Set<String> env_set = envs.keySet();
 			Iterator<String> env_it = env_set.iterator();
 			while (env_it.hasNext()) {
 				String env_key = env_it.next();
 				String env_value = envs.get(env_key);
 				file_action.append_file(local_rpt_path,
-						"Eev variable: " + env_key + " = " + env_value + " " + publicData.line_separator);
+						"Eev variable: " + env_key + " = " + env_value + " " + line_seprator);
 			}
-			file_action.append_file(local_rpt_path, ">>>Case run:" + publicData.line_separator);
+			file_action.append_file(local_rpt_path, ">>>Case run:" + line_seprator);
 			for (String line : string_list)
-				file_action.append_file(local_rpt_path, line + publicData.line_separator);
+				file_action.append_file(local_rpt_path, line + line_seprator);
 		}
 		return string_list;
 	}
