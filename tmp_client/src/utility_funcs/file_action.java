@@ -168,8 +168,7 @@ public class file_action {
 			Iterator<File> files = FileUtils.iterateFiles(new File(zipDir), null, true);
 			while (files.hasNext()) {
 				File file = files.next();
-				String file_path = file.getPath().replace("\\", "/"); // for
-																		// windows
+				String file_path = file.getPath().replace("\\", "/"); // for windows
 				String entry_name = file_path.replace(zipDir, "");
 				ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry(file, entry_name);
 				out.putArchiveEntry(zipArchiveEntry);

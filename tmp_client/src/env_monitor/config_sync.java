@@ -11,10 +11,6 @@
 package env_monitor;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,15 +48,16 @@ public class config_sync extends Thread {
 	private static final Logger CONFIG_LOGGER = LogManager.getLogger(config_sync.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Thread info_thread;
-	private int interval;
+	private Thread conf_thread;
+	private exchange_data share_data;
+	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	public config_sync(int interval) {
 		this.interval = interval;
 	}
 
-	public config_sync() {
-		this.interval = 5;
+	public config_sync(exchange_data share_data) {
+		this.share_data = share_data;
 	}	
 	// protected function
 	// private function
@@ -87,13 +84,14 @@ public class config_sync extends Thread {
 				CONFIG_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
 				continue;
 			}
-			if (!build_data.containsKey("base")){
+			if (!build_data.containsKey("root")){
 				continue;
 			}
-			if (!build_data.get("base").containsKey("path")){
+			if (!build_data.get("root").containsKey("path")){
 				continue;
 			}
-			String path = build_data.get("base").get("path");
+			String path = build_data.get("root").get("path");
+			CONFIG_LOGGER.debug("Catch SW path: path");
 			scan_dirs.put(build_name,path);
 		}
 		return scan_dirs;
@@ -157,7 +155,7 @@ public class config_sync extends Thread {
 				if (section_data.containsKey("max_insts") && !section_data.get("max_insts").equals("")){
 					update_data.put("max_insts", section_data.get("max_insts"));
 				} else {
-					update_data.put("max_insts", public_data.SW_MAX_INSTANCES);
+					update_data.put("max_insts", public_data.DEF_SW_MAX_INSTANCES);
 				}
 				config_hash.put(section, update_data);
 			}
@@ -181,12 +179,13 @@ public class config_sync extends Thread {
 				String option = option_it.next();
 				String value = section_data.get(option);
 				if (option.equals("scan_dir")){
+					update_data.put(option, value);
 					HashMap<String, String> scan_data = get_scan_dirs(value);
 					Boolean new_update  = get_build_diff(section, scan_data);
 					if (new_update){
 						update_data.putAll(scan_data);
 						config_updated++; //internal config file save
-						exchange_data.config_updated++; // external admin request
+						share_data.set_config_update_announce(1);
 					}
 				} else if (option.equals("max_insts")){
 					update_data.put(option, value);
@@ -208,6 +207,17 @@ public class config_sync extends Thread {
 		}
 	}
 
+	private void save_config_data(ini_parser ini_runner){
+		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
+		write_data.putAll(config_hash);
+		try {
+			ini_runner.write_ini_data(write_data);
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -218,8 +228,9 @@ public class config_sync extends Thread {
 	}
 
 	private void monitor_run() {
-		info_thread = Thread.currentThread();
-		ini_parser ini_runner = new ini_parser(public_data.DEFAULT_INI);
+		//step 0:get config data
+		conf_thread = Thread.currentThread();
+		ini_parser ini_runner = new ini_parser(public_data.CONF_DEFAULT_INI);
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			ini_data = ini_runner.read_ini_data();
@@ -227,6 +238,7 @@ public class config_sync extends Thread {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		//step 1:update initial(static) data
 		update_static_data(ini_data);
 		while (!stop_request) {
 			if (wait_request) {
@@ -239,20 +251,19 @@ public class config_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				CONFIG_LOGGER.debug("config sync Thread running...");
+				CONFIG_LOGGER.warn("config sync Thread running...");
 			}
+			//step2:update data in loop
 			Boolean config_updated = update_dynamic_data();
 			if (config_updated){
-				HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-				write_data.putAll(config_hash);
-				try {
-					ini_runner.write_ini_data(write_data);
-				} catch (ConfigurationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				save_config_data(ini_runner);
 			}
-			// System.out.println("Thread running...");
+			//step3:save request acknowledge
+			int save_request = share_data.get_config_save_request();
+			if (save_request > 0){
+				save_config_data(ini_runner);
+			}
+			share_data.set_config_save_request(0);
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
@@ -268,8 +279,8 @@ public class config_sync extends Thread {
 
 	public void hard_stop() {
 		stop_request = true;
-		if (info_thread != null) {
-			info_thread.interrupt();
+		if (conf_thread != null) {
+			conf_thread.interrupt();
 		}
 	}
 
@@ -288,8 +299,8 @@ public class config_sync extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		config_sync ini_runner = new config_sync();
-		ini_runner.run();
+		exchange_data share_data = new exchange_data();
+		config_sync ini_runner = new config_sync(share_data);
+		ini_runner.start();
 	}
-
 }

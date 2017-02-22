@@ -93,13 +93,9 @@ public class xls_parser {
 	 * readrow from specific worksheet
 	 * 
 	 * @param workbook
-	 * 
 	 * @param startRow
-	 * 
 	 * @param startCol
-	 * 
 	 * @param indexSheet
-	 * 
 	 * @return
 	 */
 	public List<List<String>> getExcelString(Workbook workbook, int startRow, int startCol, int indexSheet) {
@@ -160,13 +156,9 @@ public class xls_parser {
 	}
 
 	/*
-	 * 
 	 * @param workbook
-	 * 
 	 * @param sheetName
-	 * 
 	 * @param data
-	 * 
 	 * @return
 	 */
 	public static Workbook createExcel(Workbook workbook, String sheetName, List<List<String>> data) {
@@ -183,13 +175,9 @@ public class xls_parser {
 	}
 
 	/*
-	 * 
 	 * @param workbook
-	 * 
 	 * @param sheetIndex
-	 * 
 	 * @param valueMap
-	 * 
 	 * @return
 	 */
 	public static Workbook insertExcel(Workbook workbook, int sheetIndex, Map<int[], String> valueMap) {
@@ -207,16 +195,11 @@ public class xls_parser {
 		return workbook;
 	}
 
-	/*
-	 * 
+	/* 
 	 * @param workbook
-	 * 
 	 * @param rowHeight
-	 * 
 	 * @param sheetIndex
-	 * 
-	 * @param rowIndex
-	 * 
+	 * @param rowIndex 
 	 * @return
 	 */
 	public static Workbook setRowHeight(Workbook workbook, int rowHight, int sheetIndex, int rowIndex) {
@@ -229,13 +212,9 @@ public class xls_parser {
 	/*
 	 * 
 	 * @param workbook
-	 * 
 	 * @param columnWidth
-	 * 
 	 * @param sheetIndex
-	 * 
 	 * @param columnIndex
-	 * 
 	 * @return
 	 */
 	public static Workbook setColumnWidth(Workbook workbook, int columnWidth, int sheetIndex, int columnIndex) {
@@ -246,11 +225,8 @@ public class xls_parser {
 
 	/*
 	 * @param workbook
-	 * 
 	 * @param sheetIndex
-	 * 
 	 * @param rowIndex
-	 * 
 	 * @return
 	 */
 	public static Workbook removeRow(Workbook workbook, int sheetIndex, int rowIndex) {
@@ -267,11 +243,8 @@ public class xls_parser {
 
 	/*
 	 * @param workbook
-	 * 
 	 * @param sheetIndex
-	 * 
 	 * @param rowIndex
-	 * 
 	 * @return
 	 */
 	public static Workbook insertBlankRow(Workbook workbook, int sheetIndex, int rowIndex) {
@@ -293,7 +266,6 @@ public class xls_parser {
 	}
 
 	/**
-	 * 
 	 * @param workbook
 	 * @param sheetNum
 	 * @param sheetNames

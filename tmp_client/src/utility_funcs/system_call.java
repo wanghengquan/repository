@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import data_center.public_data;
 import utility_funcs.system_cmd;
 
 class system_call implements Callable<Object> {
@@ -44,10 +45,10 @@ class system_call implements Callable<Object> {
 		if (case_dir == null) {
 			file_action.append_file("log/run.log", string_list.toString());
 		} else {
-			String local_rpt_path = case_dir + "/" + publicData.case_rpt;
-			file_action.append_file(local_rpt_path, publicData.line_separator);
-			file_action.append_file(local_rpt_path, "[Run]" + publicData.line_separator);
-			file_action.append_file(local_rpt_path, ">>>Eev set:" + publicData.line_separator);
+			String local_rpt_path = case_dir + "/" + public_data.case_rpt;
+			file_action.append_file(local_rpt_path, public_data.line_separator);
+			file_action.append_file(local_rpt_path, "[Run]" + public_data.line_separator);
+			file_action.append_file(local_rpt_path, ">>>Eev set:" + public_data.line_separator);
 			Set<String> env_set = envs.keySet();
 			Iterator<String> env_it = env_set.iterator();
 			while (env_it.hasNext()) {

@@ -45,8 +45,8 @@ public class machine_sync extends Thread {
 	public static Boolean data_updating = new Boolean(false);
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Thread info_thread;
-	private int interval;
+	private Thread machine_thread;
+	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 
 	// public function update data every interval seconds
@@ -62,7 +62,7 @@ public class machine_sync extends Thread {
 	// protected function
 	// private function
 	private String get_os() {
-		String run_cmd = "python " + public_data.OS_NAME_TOOL;
+		String run_cmd = "python " + public_data.TOOLS_OS_NAME;
 		String os_name = new String();
 		try {
 			ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
@@ -82,7 +82,7 @@ public class machine_sync extends Thread {
 		// long total_space = file.getTotalSpace();
 		long free_space = file.getFreeSpace();
 		// long used_space = total_space - free_space;
-		disk_left = free_space / 1024 / 1024 / 1024 + "G";
+		disk_left = free_space / 1024 / 1024 / 1024 + "";
 		return disk_left;
 	}
 
@@ -90,7 +90,7 @@ public class machine_sync extends Thread {
 		String systemType = System.getProperties().getProperty("os.name");
 		String cpu_usage = new String();
 		if (systemType.contains("Windows")) {
-			String run_cmd = "python " + public_data.GET_CPU_TOOL;
+			String run_cmd = "python " + public_data.TOOLS_GET_CPU;
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				cpu_usage = excute_retruns.get(1);
@@ -111,7 +111,7 @@ public class machine_sync extends Thread {
 		String systemType = System.getProperties().getProperty("os.name");
 		String mem_usage = new String();
 		if (systemType.contains("Windows")) {
-			String run_cmd = "python " + public_data.GET_MEM_TOOL;
+			String run_cmd = "python " + public_data.TOOLS_GET_MEM;
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				mem_usage = excute_retruns.get(1);
@@ -199,10 +199,12 @@ public class machine_sync extends Thread {
 	 * update machine_hash: System : space = xxG cpu = xx% mem = xx%
 	 */
 	private void update_dynamic_data() {
+		HashMap<String, String> ori_data = machine_hash.get("System");
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		String space = get_disk_left();
 		String cpu = get_cpu_usage();
 		String mem = get_mem_usage();
+		system_data.putAll(ori_data);
 		system_data.put("space", space);
 		system_data.put("cpu", cpu);
 		system_data.put("mem", mem);
@@ -219,7 +221,7 @@ public class machine_sync extends Thread {
 	}
 
 	private void monitor_run() {
-		info_thread = Thread.currentThread();
+		machine_thread = Thread.currentThread();
 		update_static_data();
 		while (!stop_request) {
 			if (wait_request) {
@@ -232,7 +234,7 @@ public class machine_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				INFO_LOGGER.debug("Client info Thread running...");
+				INFO_LOGGER.warn("machine_sync Thread running...");
 			}
 			data_updating = true;
 			update_dynamic_data();
@@ -253,8 +255,8 @@ public class machine_sync extends Thread {
 
 	public void hard_stop() {
 		stop_request = true;
-		if (info_thread != null) {
-			info_thread.interrupt();
+		if (machine_thread != null) {
+			machine_thread.interrupt();
 		}
 	}
 

@@ -22,9 +22,9 @@ public class decode {
     }
  
     /**
-     * Description ���ݼ�ֵ���н���
+     * Description
      * @param data
-     * @param key  ���ܼ�byte����
+     * @param key
      * @return
      * @throws IOException
      * @throws Exception
@@ -40,29 +40,19 @@ public class decode {
     }
     
     /**
-     * Description ���ݼ�ֵ���н���
+     * Description
      * @param data
-     * @param key  ���ܼ�byte����
+     * @param key 
      * @return
      * @throws Exception
      */
     private static byte[] decrypt(byte[] data, byte[] key) throws Exception {
-        // ����һ�������ε������Դ
         SecureRandom sr = new SecureRandom();
- 
-        // ��ԭʼ��Կ���ݴ���DESKeySpec����
         DESKeySpec dks = new DESKeySpec(key);
- 
-        // ����һ����Կ������Ȼ��������DESKeySpecת����SecretKey����
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(DES);
         SecretKey securekey = keyFactory.generateSecret(dks);
- 
-        // Cipher����ʵ����ɽ��ܲ���
         Cipher cipher = Cipher.getInstance(DES);
- 
-        // ����Կ��ʼ��Cipher����
         cipher.init(Cipher.DECRYPT_MODE, securekey, sr);
- 
         return cipher.doFinal(data);
     }
 }

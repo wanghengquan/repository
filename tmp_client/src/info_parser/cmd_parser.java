@@ -28,12 +28,13 @@ import org.apache.logging.log4j.Logger;
 public class cmd_parser {
 	// public property
 	// protected property
-	static HashMap<String, String> cmd_hash = new HashMap<String, String>();
+	public static HashMap<String, String> cmd_hash = new HashMap<String, String>();
 	// private property
-	private static final Logger CMD_LOGGER = LogManager.getLogger(cmd_parser.class.getName());
+	private final Logger CMD_LOGGER = LogManager.getLogger(cmd_parser.class.getName());
+	private String[] args;
 
-	public cmd_parser() {
-
+	public cmd_parser(String[] args) {
+		this.args = args;
 	}
 
 	// public function
@@ -41,20 +42,20 @@ public class cmd_parser {
 	 * @startuml :option definition; :option parser; :option collect;
 	 * 
 	 * @enduml
-	 */
-	public static HashMap<String, String> cmdline_parser(String[] arguments) {
+	 */	
+	public HashMap<String, String> cmdline_parser() {
 		// 1. get defined options
-		Options options_obj = cmd_parser.get_options();
+		Options options_obj = get_options();
 		// 2. option parser
 		CommandLineParser parser = new DefaultParser();
 		CommandLine commandline_obj = null;
 		try {
-			commandline_obj = parser.parse(options_obj, arguments);
+			commandline_obj = parser.parse(options_obj, args);
 		} catch (ParseException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
 			CMD_LOGGER.error("Command line parse Failed.");
-			cmd_parser.get_help(options_obj);
+			get_help(options_obj);
 		}
 		// 3. collect option results
 		// 3.1 cmd or gui model
@@ -76,18 +77,16 @@ public class cmd_parser {
 		// 3.3 suite file value
 		if (commandline_obj.hasOption('f')) {
 			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f'));
+		} else {
+			cmd_hash.put("suite_file", "");
 		}
 		// 3.4 work path
 		if (commandline_obj.hasOption('w')) {
 			cmd_hash.put("work_path", commandline_obj.getOptionValue('w'));
-		} else {
-			cmd_hash.put("work_path", System.getProperty("user.dir"));
 		}
 		// 3.5 save path
 		if (commandline_obj.hasOption('s')) {
 			cmd_hash.put("save_path", commandline_obj.getOptionValue('s'));
-		} else {
-			cmd_hash.put("save_path", cmd_hash.get("work_path"));
 		}
 		// 3.6 debug model
 		if (commandline_obj.hasOption('d')) {
@@ -97,7 +96,7 @@ public class cmd_parser {
 		}
 		// 3.7 help definition
 		if (commandline_obj.hasOption('h')) {
-			cmd_parser.get_help(options_obj);
+			get_help(options_obj);
 		}
 		return cmd_hash;
 	}
@@ -106,8 +105,8 @@ public class cmd_parser {
 	// private function
 	/*
 	 * return option definition
-	 */
-	private static Options get_options() {
+	 */	
+	private Options get_options() {
 		Options options_obj = new Options();
 		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command modle").build());
 		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI modle").build());
@@ -127,7 +126,7 @@ public class cmd_parser {
 	/*
 	 * print help message
 	 */
-	private static void get_help(Options options_obj) {
+	private void get_help(Options options_obj) {
 		String usage = "java -jar tmp_client.jar -c [-l -f <file_path>] [-w <work path>] [-s <save path>]";
 		String header = "Here is details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
@@ -140,7 +139,8 @@ public class cmd_parser {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		cmdline_parser(args);
+		cmd_parser my_parser = new cmd_parser(args);
+		my_parser.cmdline_parser();
 		Set<String> options = cmd_hash.keySet();
 		Iterator<String> it = options.iterator();
 		while (it.hasNext()) {
