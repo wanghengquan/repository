@@ -9,6 +9,11 @@
  */
 package connect_tube;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,6 +22,7 @@ import data_center.public_data;
 
 public class run_tube extends Thread  {
 	// public property
+	public static Map<String, HashMap<String, String>> remote_admin_receive = new HashMap<String, HashMap<String, String>>();
 	// protected property
 	// private property
 	private static final Logger TUBE_LOGGER = LogManager.getLogger(run_tube.class.getName());

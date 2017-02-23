@@ -530,7 +530,7 @@ public class local_tube {
 
 	public static void main(String[] argv) {
 		local_tube sheet_parser = new local_tube();
-		sheet_parser.GetData("suite_file/FE_15_Simulator.xlsx");
+		sheet_parser.GetData("D:/java_dev/diamond_regression.xlsx");
 		sheet_parser.SanityCheck();
 		sheet_parser.get_case_title();
 		Map<String, Map<String, String>> final_data = sheet_parser.get_detail_case_data();
@@ -549,5 +549,4 @@ public class local_tube {
 			System.out.println("----");
 		}
 	}
-
 }

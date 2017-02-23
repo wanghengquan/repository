@@ -1,0 +1,13 @@
+Wed Jan 25 18:59:25 CST 2017:
+<?xml version="1.0" encoding="UTF-8" ?>
+<Test title="D1015">
+  <TestID>
+    <sub name="id" value="1236255"></sub>
+  </TestID>
+  <CaseInfo>
+    <sub name='design_name' value='kaizen_cases/kzen_all/D1015'></sub>
+  </CaseInfo>
+  <LaunchCommand>
+    <sub name='cmd' value='--synthesis=lse   --info=bqs_lse.info'></sub>
+  </LaunchCommand>
+</Test>

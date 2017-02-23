@@ -1,0 +1,31 @@
+Fri Feb 17 14:18:54 CST 2017
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- sent time: Fri Feb 17 14:18:56 2017 -->
+<AdminQ title="run_669_2_011717_085857">
+  <ID>
+    <sub name="project" value="3"></sub>
+    <sub name="run" value="669"></sub>
+    <sub name="suite" value="330"></sub>
+  </ID>
+  <CaseInfo>
+    <sub name='suite_path' value='FE_18_IPRegression'></sub>
+    <sub name='repository' value='http://lshlabd0001/diamond/trunk'></sub>
+  </CaseInfo>
+  <Machine>
+    <sub name='group' value='rna_regression_group'></sub>
+    <sub name='terminal' value='d27415'></sub>
+  </Machine>
+  <LaunchCommand>
+    <sub name='cmd' value='python DEV/bin/run_diamond.py --copy-all'></sub>
+  </LaunchCommand>
+  <System>
+    <sub name='os_type' value='windows'></sub>
+  </System>
+  <Software>
+    <sub name='squish' value='5.1.0'></sub>
+    <sub name='diamond' value='3_9p.88'></sub>
+  </Software>
+  <Status>
+    <sub name="admin_status" value="processing"></sub>
+  </Status>
+</AdminQ>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CaseResults ip="192.168.49.231" machine="D25984">
+<case>
+<testId>1300642</testId>
+<suiteId>329</suiteId>
+<runId>787</runId>
+<projectId>4</projectId>
+<design>T1300642:synp_examples_lse/032_vhdl_prep_prep1</design><status>Processing</status></case>
+<case>
+<testId>1301214</testId>
+<suiteId>329</suiteId>
+<runId>787</runId>
+<projectId>4</projectId>
+<design>T1301214:verilog_ut_lse/235_multiplier_counter_updn_load</design><status>Processing</status></case>
+<case>
+<testId>1301217</testId>
+<suiteId>329</suiteId>
+<runId>787</runId>
+<projectId>4</projectId>
+<design>T1301217:verilog_ut_lse/242_counter_up_sload_multiplier</design><status>Processing</status></case>
+<case>
+<testId>1301211</testId>
+<suiteId>329</suiteId>
+<runId>787</runId>
+<projectId>4</projectId>
+<design>T1301211:verilog_ut_lse/234_multiplier_counter_dn_load</design><status>Passed</status><location>result/prj4/run787/T1301211</location>
+</case></CaseResults>

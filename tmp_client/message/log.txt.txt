@@ -1,0 +1,82 @@
+Thu Feb 16 18:39:15 CST 2017:
+<root>
+<case>
+<testId>1300922</testId>
+<suiteId>329</suiteId>
+<runId>787</runId>
+<projectId>4</projectId>
+<runLog>
+
+####################
+Result Location:
+D25984:Z:/qa/qadata/result/prj4/run787/T1300922
+python  ../../../../DEV/bin/run_icecube.py      --synthesis=lse      --sim-verilog  --post-par  --sim-time=10  --family=iCE40LM  --device=4K    --package=UMG225  --design=106_vlog_prep_prep8
+
+*---------------------------------------------
+* Welcome to Lattice Batch-queuing System Test Suite
+* HOST NAME: D25984
+* Play Time: Thu Feb 16 18:38:15 2017
+*---------------------------------------------
+
+* SRC DESIGN: D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8
+* JOB DESIGN: D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/LSE/bin/nt/synthesis.exe -f run_lse.synproj [Thu Feb 16 18:38:15 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 0.47 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/edifparser.exe &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; &amp;quot;D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8/_scratch/vlog_prep_prep8_Implmnt/vlog_prep_prep8.edf &amp;quot; &amp;quot;D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8/_scratch/vlog_prep_prep8_Implmnt/sbt/netlist&amp;quot; &amp;quot;-pUMG225&amp;quot;   -c --devicename iCE40LM4K [Thu Feb 16 18:38:18 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 0.47 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/sbtplacer.exe --des-lib &amp;quot;D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8/_scratch/vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; --outdir &amp;quot;D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8/_scratch/vlog_prep_prep8_Implmnt/sbt/outputs/placer&amp;quot; --device-file &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; --package UMG225 --deviceMarketName iCE40LM4K --sdc-file &amp;quot;D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8/_scratch/vlog_prep_prep8_Implmnt/sbt/Temp/sbt_temp.sdc&amp;quot; --lib-file &amp;quot;C:/lscc/iCEcube2.2017.08Dev/sbt_backend/devices/ice40LM4K.lib&amp;quot; --effort_level std --out-sdc-file &amp;quot;D:/TestRail_client/result/prj4/run787/T1300922/106_vlog_prep_prep8/_scratch/vlog_prep_prep8_Implmnt/sbt/outputs/placer/vlog_prep_prep8_pl.sdc&amp;quot; [Thu Feb 16 18:38:22 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 1.48 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/packer.exe &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; &amp;quot;./vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; --package UMG225 --outdir &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/packer&amp;quot; --DRC_only --translator &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\bin\sdc_translator.tcl&amp;quot; --src_sdc_file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/placer/vlog_prep_prep8_pl.sdc&amp;quot; --dst_sdc_file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/packer/vlog_prep_prep8_pk.sdc&amp;quot; --devicename iCE40LM4K [Thu Feb 16 18:38:27 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 0.34 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/packer.exe &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; &amp;quot;./vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; --package UMG225 --outdir &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/packer&amp;quot; --translator &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\bin\sdc_translator.tcl&amp;quot; --src_sdc_file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/placer/vlog_prep_prep8_pl.sdc&amp;quot; --dst_sdc_file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/packer/vlog_prep_prep8_pk.sdc&amp;quot; --devicename iCE40LM4K [Thu Feb 16 18:38:30 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 2.45 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/sbrouter.exe &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; &amp;quot;./vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; &amp;quot;C:/lscc/iCEcube2.2017.08Dev/sbt_backend/devices/ice40LM4K.lib&amp;quot; &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/packer/vlog_prep_prep8_pk.sdc&amp;quot; --outdir &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/router&amp;quot; --sdf_file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/simulation_netlist/vlog_prep_prep8_sbt.sdf&amp;quot; --pin_permutation  [Thu Feb 16 18:38:36 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 4.76 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/netlister.exe --verilog &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/simulation_netlist/vlog_prep_prep8_sbt.v&amp;quot; --vhdl &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/simulation_netlist/vlog_prep_prep8_sbt.vhd&amp;quot; --lib &amp;quot;./vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; --view rt --device &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; --splitio --in-sdc-file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/packer/vlog_prep_prep8_pk.sdc&amp;quot; --out-sdc-file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/netlister/vlog_prep_prep8_sbt.sdc&amp;quot;  [Thu Feb 16 18:38:44 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 0.61 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/sbtimer.exe --des-lib &amp;quot;./vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; --lib-file &amp;quot;C:/lscc/iCEcube2.2017.08Dev/sbt_backend/devices/ice40LM4K.lib&amp;quot; --sdc-file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/netlister/vlog_prep_prep8_sbt.sdc&amp;quot; --sdf-file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/simulation_netlist/vlog_prep_prep8_sbt.sdf&amp;quot; --report-file &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/timer/vlog_prep_prep8_timing.rpt&amp;quot; --device-file &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; --timing-summary [Thu Feb 16 18:38:47 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 1.50 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/sbt_backend/bin/win32/opt/bitmap.exe &amp;quot;C:\lscc\iCEcube2.2017.08Dev\sbt_backend\devices\ICE40R04.dev&amp;quot; --design &amp;quot;./vlog_prep_prep8_Implmnt/sbt/netlist/oadb-vlog_prep_prep8&amp;quot; --device_name iCE40LM4K --package UMG225 --outdir &amp;quot;./vlog_prep_prep8_Implmnt/sbt/outputs/bitmap&amp;quot; --low_power on --init_ram on --init_ram_bank 1111 --frequency low --warm_boot on [Thu Feb 16 18:38:52 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch&gt;
+Status: Pass.  Elapsed Time: 0.76 seconds
+
+Running Command: C:/lscc/iCEcube2.2017.08Dev/Aldec/Active-HDL/BIN/vsimsa.exe -do run_activehdl.do [Thu Feb 16 18:38:56 2017]
+&lt;D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8\_scratch\verilog_post_par&gt;
+Status: Pass.  Elapsed Time: 5.27 seconds
+
+
+*---------------------------------------------
+* Finished Lattice Batch-queuing System Test Flow
+* Stop Time: Thu Feb 16 18:39:04 2017
+*
+* Elapsed time: 49 seconds.
+*---------------------------------------------
+
+Launching C:/Python27/python.exe D:/TestRail_client/DEV/tools/check/check.py  --report=check_flow.csv  --report-path=D:/TestRail_client/result/prj4/run787/T1300922  --design=106_vlog_prep_prep8  --top-dir=D:/TestRail_client/result/prj4/run787/T1300922  --tag=_scratch
+- Begin check case: D:\TestRail_client\result\prj4\run787\T1300922\106_vlog_prep_prep8
+- Thu Feb 16 18:39:05 2017
+- Come Into the sim_check_block
+- In sim_check_block_1: pass
+- True
+- End check data:  Thu Feb 16 18:39:05 2017
+- Final check status: 0
+&lt;status&gt;Passed&lt;/status&gt;
+</runLog>
+</case></root>

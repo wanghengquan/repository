@@ -68,5 +68,6 @@
 			<attribute name="javadoc_location" value="file:/D:/java_dev/lib/rabbitmq-java-client-3.6.2/rabbitmq-java-client-javadoc-3.6.2/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="D:/java_dev/lib/poi-3.16-beta2/ooxml-lib/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

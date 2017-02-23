@@ -1,0 +1,43 @@
+Mon Feb 20 21:18:44 CST 2017:
+<?xml version="1.0" encoding="UTF-8" ?>
+<client>
+<host_name>D25984</host_name>
+<status>free</status><processNum>4/0</processNum>
+</client>
+Mon Feb 20 21:19:14 CST 2017:
+<?xml version="1.0" encoding="UTF-8" ?>
+<client>
+
+
+<host_ip>192.168.49.231</host_ip>
+<os>win7_64b</os>
+<group_name>rna_regression_group</group_name>
+<memory_left>63.0%</memory_left>
+<riviera></riviera>
+<squish></squish>
+<radiant>==scan_dir</radiant>
+<disk_left>188G</disk_left>
+<cpu_used>0.0%</cpu_used>
+<diamond>==3_10a.14
+==3_10a.13 
+==3_9p.99
+==3_9p.98 
+==3_9p.98.4 
+==3_9p.88 
+==3_9p.87 
+==3_9p.73 
+==scan_dir</diamond>
+<modelsim>
+10.0b</modelsim>
+<os_type>windows</os_type>
+<questasim>
+10.1</questasim>
+<other_software>
+==perl</other_software>
+<icecube>
+2017.08</icecube>
+<host_name>D25984</host_name>
+<high_priority>null</high_priority>
+<max_procs>4</max_procs>
+<status>free</status><processNum>4/0</processNum>
+</client>
