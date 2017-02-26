@@ -26,39 +26,125 @@ public class local_tube {
 	// public property
 	// protected property
 	// private property
-	private static final Logger LOCAL_LOGGER = LogManager.getLogger(local_tube.class.getName());
+	private final Logger LOCAL_LOGGER = LogManager.getLogger(local_tube.class.getName());
 	private Map<String, List<List <String>>> ExcelData = new HashMap<String, List<List <String>>>();
+	public static TreeMap<String, HashMap<String, HashMap<String, String>>> local_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
+			new Comparator<String>() {
+				public int compare(String queue_name1, String queue_name2) {
+					// x_x_time#runxxx_time :
+					// priority_belong2client_time#run_number
+					int int_pri1 = 0, int_pri2 = 0;
+					int int_clt1 = 0, int_clt2 = 0;
+					int int_id1 = 0, int_id2 = 0;
+					try {
+						int_pri1 = get_srting_int(queue_name1, "^(\\d)_");
+						int_pri2 = get_srting_int(queue_name2, "^(\\d)_");
+						int_clt1 = get_srting_int(queue_name1, "_(\\d)_");
+						int_clt2 = get_srting_int(queue_name2, "_(\\d)_");
+						int_id1 = get_srting_int(queue_name1, "run_(\\d+)_");
+						int_id2 = get_srting_int(queue_name2, "run_(\\d+)_");
+					} catch (Exception e) {
+						return queue_name1.compareTo(queue_name2);
+					}
+					if (int_pri1 > int_pri2) {
+						return 1;
+					} else if (int_pri1 < int_pri2) {
+						return -1;
+					} else {
+						if (int_clt1 > int_clt2) {
+							return 1;
+						} else if (int_clt1 < int_clt2) {
+							return -1;
+						} else {
+							if (int_id1 > int_id2) {
+								return 1;
+							} else if (int_id1 < int_id2) {
+								return -1;
+							} else {
+								return queue_name1.compareTo(queue_name2);
+							}
+						}
+					}
+				}
+			});	
+	public static TreeMap<String, HashMap<String, HashMap<String, HashMap<String, String>>>> local_task_queue = new TreeMap<String, HashMap<String, HashMap<String, HashMap<String, String>>>>(
+			new Comparator<String>() {
+				public int compare(String queue_name1, String queue_name2) {
+					// x_x_time#runxxx_time :
+					// priority_belong2client_time#run_number
+					int int_pri1 = 0, int_pri2 = 0;
+					int int_clt1 = 0, int_clt2 = 0;
+					int int_id1 = 0, int_id2 = 0;
+					try {
+						int_pri1 = get_srting_int(queue_name1, "^(\\d)_");
+						int_pri2 = get_srting_int(queue_name2, "^(\\d)_");
+						int_clt1 = get_srting_int(queue_name1, "_(\\d)_");
+						int_clt2 = get_srting_int(queue_name2, "_(\\d)_");
+						int_id1 = get_srting_int(queue_name1, "run_(\\d+)_");
+						int_id2 = get_srting_int(queue_name2, "run_(\\d+)_");
+					} catch (Exception e) {
+						return queue_name1.compareTo(queue_name2);
+					}
+					if (int_pri1 > int_pri2) {
+						return 1;
+					} else if (int_pri1 < int_pri2) {
+						return -1;
+					} else {
+						if (int_clt1 > int_clt2) {
+							return 1;
+						} else if (int_clt1 < int_clt2) {
+							return -1;
+						} else {
+							if (int_id1 > int_id2) {
+								return 1;
+							} else if (int_id1 < int_id2) {
+								return -1;
+							} else {
+								return queue_name1.compareTo(queue_name2);
+							}
+						}
+					}
+				}
+			});	
 	// public function
 	public local_tube() {
 
 	}
 
-	public HashMap<String, HashMap<String, String>> get_admin_list(String local_file) {
-
+	// protected function
+	// private function
+	private static int get_srting_int(String str, String patt) {
+		int i = 0;
+		try {
+			Pattern p = Pattern.compile(patt);
+			Matcher m = p.matcher(str);
+			if (m.find()) {
+				i = Integer.valueOf(m.group(1));
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		}
+		return i;
 	}
 
-	public HashMap<String, HashMap<String, String>> get_task_list(String local_file) {
-
-	}
-
-	private void GetData(String excel_file) {
+	private void get_excel_data(String excel_file) {
 		xls_parser excel_obj = new xls_parser();
 		ExcelData = excel_obj.GetExcelData(excel_file);
 	}
 
-	public Boolean SanityCheck() {
+	public Boolean sanity_check() {
 		if (!ExcelData.containsKey("suite")) {
-			System.out.println(">>>Error: Cannot find 'suite' sheet ");
+			LOCAL_LOGGER.error(">>>Error: Cannot find 'suite' sheet ");
 			return false;
 		}
 		if (!ExcelData.containsKey("case")) {
-			System.out.println(">>>Error: Cannot find 'case' sheet ");
+			LOCAL_LOGGER.error(">>>Error: Cannot find 'case' sheet ");
 			return false;
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data();
 		if (suite_map.size() > 8) {
-			System.out.println(">>>Error: extra option found in suite sheet::suite info.");
+			LOCAL_LOGGER.error(">>>Error: extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
 			return false;
 		}
@@ -66,7 +152,7 @@ public class local_tube {
 				"System", "Machine" };
 		for (String x : suite_keys) {
 			if (!suite_map.containsKey(x)) {
-				System.out.println(">>>Error: suite sheet missing :" + x);
+				LOCAL_LOGGER.error(">>>Error: suite sheet missing :" + x);
 				return false;
 			}
 		}
@@ -75,25 +161,25 @@ public class local_tube {
 			@SuppressWarnings("unused")
 			int id = Integer.parseInt(prj_id);
 		} catch (NumberFormatException id_e) {
-			System.out.println(">>>Error: project_id value wrong, should be a number.");
+			LOCAL_LOGGER.error(">>>Error: project_id value wrong, should be a number.");
 			return false;
 		}
 		String suite_name = suite_map.get("suite_name");
 		if (suite_name == null || suite_name == "") {
-			System.out.println(">>>Error: suite name missing.");
+			LOCAL_LOGGER.error(">>>Error: suite name missing.");
 			return false;
 		}
 		// case sheet title check
 		List<String> case_title = get_case_title();
 		if (case_title == null) {
-			System.out.println(">>>Error: Cannot find title line in case sheet.");
+			LOCAL_LOGGER.error(">>>Error: Cannot find title line in case sheet.");
 			return false;
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
-				System.out.println(">>>Error: case sheet title missing :" + x);
+				LOCAL_LOGGER.error(">>>Error: case sheet title missing :" + x);
 				return false;
 			}
 		}
@@ -109,11 +195,11 @@ public class local_tube {
 					String item = macro_lines.get(line_index).get(0);
 					String column = macro_lines.get(line_index).get(1);
 					if (!item.equals("condition") && !item.equals("action")) {
-						System.out.println(">>>Error: wrong macro key found in suite sheet:" + item);
+						LOCAL_LOGGER.error(">>>Error: wrong macro key found in suite sheet:" + item);
 						return false;
 					}
 					if (!case_title.contains(column)) {
-						System.out.println(">>>Error: suite sheet cannot find macro column in case sheet:" + column);
+						LOCAL_LOGGER.error(">>>Error: suite sheet cannot find macro column in case sheet:" + column);
 						return false;
 					}
 				}
@@ -122,7 +208,7 @@ public class local_tube {
 		return true;
 	}
 
-	public Map<String, String> get_suite_data() {
+	private Map<String, String> get_suite_data() {
 		// key word verify
 		List<List<String>> suite_sheet = ExcelData.get("suite");
 		Map<String, String> suite_data = new HashMap<String, String>();
@@ -323,14 +409,14 @@ public class local_tube {
 		return case_data;
 	}
 
-	public Map<String, Map<String, String>> get_detail_case_data() {
+	private Map<String, Map<String, String>> get_detail_case_data() {
 		Map<String, Map<String, String>> final_data = new HashMap<String, Map<String, String>>();
 		Map<String, Map<String, String>> sorted_data = new HashMap<String, Map<String, String>>();
 		// start
 		Map<String, List<List<String>>> macro_data = get_macro_data();
 		Map<String, Map<String, String>> raw_data = get_raw_case_data();
 		if (raw_data == null || raw_data.size() < 1) {
-			System.out.println(">>>Warning: No test case found in suite file.");
+			LOCAL_LOGGER.warn(">>>Warning: No test case found in suite file.");
 			return sorted_data;
 		}
 		Set<String> data_set = raw_data.keySet();
@@ -436,7 +522,7 @@ public class local_tube {
 		Boolean condition = true;
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
-				System.out.println(">>>Warning: skip macro line:" + line.toString());
+				LOCAL_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
 				continue;
 			}
 			String behavior = line.get(0).trim();
@@ -467,7 +553,7 @@ public class local_tube {
 		// update case data
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
-				System.out.println(">>>Warning: skip macro line:" + line.toString());
+				LOCAL_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
 				continue;
 			}
 			String behavior = line.get(0).trim();
@@ -484,7 +570,7 @@ public class local_tube {
 			if (column_list.contains(column)) {
 				Boolean update_done = new Boolean(false);
 				if (!value.contains("=")) {
-					System.out.println(
+					LOCAL_LOGGER.warn(
 							">>>Warning: Skip macro action non key=value input for columns" + column_list.toString());
 					continue;
 				}
@@ -528,10 +614,19 @@ public class local_tube {
 		return return_data;
 	}
 
+	
+	public HashMap<String, HashMap<String, String>> get_admin_list(String local_file) {
+
+	}
+
+	public HashMap<String, HashMap<String, String>> get_task_list(String local_file) {
+
+	}
+	
 	public static void main(String[] argv) {
 		local_tube sheet_parser = new local_tube();
-		sheet_parser.GetData("D:/java_dev/diamond_regression.xlsx");
-		sheet_parser.SanityCheck();
+		sheet_parser.get_excel_data("D:/java_dev/misc_design_pool.xlsx");
+		sheet_parser.sanity_check();
 		sheet_parser.get_case_title();
 		Map<String, Map<String, String>> final_data = sheet_parser.get_detail_case_data();
 		if (final_data == null || final_data.size() < 1) {
@@ -548,5 +643,6 @@ public class local_tube {
 			System.out.println(case_data.toString());
 			System.out.println("----");
 		}
+		System.out.println(sheet_parser.get_suite_data().toString());
 	}
 }

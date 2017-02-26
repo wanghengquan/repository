@@ -222,7 +222,7 @@ public class xml_parser {
 		builder.save();
 	}
 
-	public static Map<String, Map<String, Map<String, String>>> parser_xml_string(String xmlString) {
+	public static Map<String, HashMap<String, HashMap<String, String>>> parser_xml_string(String xmlString) {
 		xmlString = xmlString.replaceAll("\\s", " ");
 		// ArrayList <HashMap,String> adminMessage;
 		@SuppressWarnings("unused")
@@ -241,7 +241,7 @@ public class xml_parser {
 				+ "<Sub name=\"LM_LICENSE_FILE\" value=\"27000@lsh-prince\"></Sub>" + "</Environment>"
 				+ "<LaunchCommand>" + "<Sub name=\"cmd\" value=\"python trunk/bin/run_lattice.py --till-map\"></Sub>"
 				+ "</LaunchCommand>" + "</Test>";
-		Map<String, Map<String, Map<String, String>>> level1_data = new HashMap<String, Map<String, Map<String, String>>>();
+		Map<String, HashMap<String, HashMap<String, String>>> level1_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -252,14 +252,14 @@ public class xml_parser {
 			}
 			String title_name = root_node.getAttribute("title");
 			NodeList level2_nodes = root_node.getChildNodes();
-			Map<String, Map<String, String>> level2_data = new HashMap<String, Map<String, String>>();
+			HashMap<String, HashMap<String, String>> level2_data = new HashMap<String, HashMap<String, String>>();
 			for (int i = 0; i < level2_nodes.getLength(); i++) {
 				Node level2_node = level2_nodes.item(i);
 				String level2_node_name = level2_node.getNodeName();
 				if (level2_node_name.equals("#text")) {
 					continue;
 				}
-				Map<String, String> level3_data = new HashMap<String, String>();
+				HashMap<String, String> level3_data = new HashMap<String, String>();
 				NodeList level3_nodes = level2_node.getChildNodes();
 				for (int j = 0; j < level3_nodes.getLength(); j++) {
 					Node level3_node = level3_nodes.item(j);

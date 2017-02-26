@@ -16,13 +16,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Comparator;
 
+import data_center.data_server;
 import data_center.public_data;
+import info_parser.xml_parser;
+import utility_funcs.time_info;
 
 /*
  * This class used to instance rabbitMQ tube between server and center processor.
@@ -30,11 +35,11 @@ import data_center.public_data;
  */
 public class rmq_tube {
 	// public property
-	public static TreeMap<String, HashMap<String, String>> admin_queue_receive = new TreeMap<String, HashMap<String, String>>(
+	public static TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new Comparator<String>() {
 				public int compare(String queue_name1, String queue_name2) {
 					// x_x_time#runxxx_time :
-					// priority_belong2this_client_time#run_number
+					// priority_belong2client_time#run_number
 					int int_pri1 = 0, int_pri2 = 0;
 					int int_clt1 = 0, int_clt2 = 0;
 					int int_id1 = 0, int_id2 = 0;
@@ -75,6 +80,7 @@ public class rmq_tube {
 	private static String rmq_host = public_data.RMQ_HOST;
 	private static String rmq_user = public_data.RMQ_USER;
 	private static String rmq_pwd = public_data.RMQ_PWD;
+	private static String task_msg = new String();
 
 	// public function
 	public rmq_tube() {
@@ -115,9 +121,11 @@ public class rmq_tube {
 			return 0;
 		} catch (IOException e) {
 			e.printStackTrace();
+			RMQ_LOGGER.warn("exchange_send ioexception");
 			return 1;
 		} catch (TimeoutException e) {
 			e.printStackTrace();
+			RMQ_LOGGER.warn("exchange_send timeout exception");
 			return 1;
 		}
 	}
@@ -175,14 +183,13 @@ public class rmq_tube {
 		final Channel channel = connection.createChannel();
 		channel.queueDeclare(queue_name, true, false, false, null);
 		channel.basicQos(1);
-		content = "";
+		task_msg = "";
 		final Consumer consumer = new DefaultConsumer(channel) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				flag = 1;
-				content = message;
+				task_msg = message;
 				channel.basicAck(envelope.getDeliveryTag(), false);
 				if (channel.isOpen())
 					try {
@@ -204,7 +211,7 @@ public class rmq_tube {
 			}
 		if (connection.isOpen())
 			connection.close();
-		return content;
+		return task_msg;
 	}
 
 	public static void read_admin_server(String queue_name) throws Exception {
@@ -227,9 +234,58 @@ public class rmq_tube {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				update_admin_queue(message);
+				admin_queue_receive.putAll(update_admin_queue(message);
 			}
 		};
 		channel.basicConsume(queueName, true, consumer);
+	}
+	
+	private static Map<String, HashMap<String, HashMap<String, String>>> update_admin_queue(String message){
+		Map<String, HashMap<String, HashMap<String, String>>> admin_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.parser_xml_string(message);
+		Set<String> msg_key_set = msg_hash.keySet();
+		if (msg_key_set.isEmpty()){
+			return admin_hash;
+		}
+		String msg_key = (String) msg_key_set.toArray()[0];
+		HashMap<String, HashMap<String, String>> msg_data = msg_hash.get(msg_key);
+		//admin queue priority check:0>1>2..>5(default)>...8>9
+		String priority = new String();
+		if (!msg_data.containsKey("CaseInfo")){
+			priority = "5";
+		} else if (!msg_data.get("CaseInfo").containsKey("priority")){
+			priority = "5";
+		} else {
+			priority = msg_data.get("CaseInfo").get("priority");
+			Pattern p = Pattern.compile("^\\d$");
+			Matcher m = p.matcher(priority);
+			if (!m.find()){
+				priority = "5";
+			}
+		}
+		// task belong to this client: 0, assign task > 1, match task
+		String client = new String();
+		String request_terminal = new String();
+		String available_terminal = data_server.client_hash.get("Machine").get("terminal");
+		if (!msg_data.containsKey("Machine")){
+			client = "1";
+		} else if (!msg_data.get("Machine").containsKey("terminal")){
+			client = "1";
+		} else {
+			request_terminal = msg_data.get("Machine").get("terminal");
+			if (request_terminal.contains(available_terminal)){
+				client = "0"; // assign task 
+			} else {
+				client = "1"; // match task
+			}
+		}
+		// receive time
+		String time = time_info.get_date_time();
+		//pack data
+		// x_x_time#runxxx_time :
+		// priority_belong2client_time#run_number		
+		String new_title = priority + "_" + client + "_" + time + "#" + msg_key;
+		admin_hash.put(new_title, msg_data);
+		return admin_hash;
 	}
 }
