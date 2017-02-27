@@ -29,8 +29,8 @@ import utility_funcs.linux_info;
  * This class used to get the basic information of the client.
  * return machine_hash:
  * 		System	:	os		=	type_arch
- * 					type	=	windows/linux
- * 					arch	=	32b/64b
+ * 					os_type	=	windows/linux
+ * 					os_arch	=	32b/64b
  * 					space	=	xxG
  * 					cpu		=	xx%
  * 					mem		=	xx%
@@ -61,6 +61,19 @@ public class machine_sync extends Thread {
 
 	// protected function
 	// private function
+	public String get_os_type() {
+		String os = System.getProperty("os.name").toLowerCase();
+		String os_type = new String();
+		if (os.contains("windows")) {
+			os_type = "windows";
+		} else if (os.contains("linux")) {
+			os_type = "linux";
+		} else {
+			os_type = "unknown";
+		}
+		return os_type;
+	}
+
 	private String get_os() {
 		String run_cmd = "python " + public_data.TOOLS_OS_NAME;
 		String os_name = new String();
@@ -174,21 +187,22 @@ public class machine_sync extends Thread {
 	private void update_static_data() {
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		HashMap<String, String> machine_data = new HashMap<String, String>();
-		String type = new String();
+		String type = get_os_type();
+		;
 		String arch = new String();
 		String os = get_os();
 		if (os.equalsIgnoreCase("unknown")) {
-			type = "NA";
+			// type = "NA";
 			arch = "NA";
 		} else {
-			type = os.split("_")[0];
+			// type = os.split("_")[0];
 			arch = os.split("_")[1];
 		}
 		String terminal = get_host_name();
 		String ip = get_host_ip();
 		system_data.put("os", os);
-		system_data.put("type", type);
-		system_data.put("arch", arch);
+		system_data.put("os_type", type);
+		system_data.put("os_arch", arch);
 		machine_data.put("terminal", terminal);
 		machine_data.put("ip", ip);
 		machine_hash.put("System", system_data);

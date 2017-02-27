@@ -32,8 +32,8 @@ import info_parser.cmd_parser;
  * 					max_insts = int 
  * 		...
  * 		System	:	os		=	type_arch
- * 					type	=	windows/linux
- * 					arch	=	32b/64b
+ * 					os_type	=	windows/linux
+ * 					os_arch	=	32b/64b
  * 					space	=	xx	G
  * 					cpu		=	xx	%
  * 					mem		=	xx	%

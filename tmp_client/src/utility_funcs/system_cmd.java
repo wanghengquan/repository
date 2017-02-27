@@ -19,9 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -263,12 +260,12 @@ public class system_cmd {
 		// http://lshlabd0001/diamond/trunk/FE_17_POJO2/pojo2_flow/ao4410
 		// result/prj3/run368/T807387/ao4410 --username=guest --password=welcome
 		// --no-auth-cache --force";
-		String[] cmds = { "python", "try_python.py" };
+		//String[] cmds = { "python", "try_python.py" };
 		HashMap<String, String> envs = new HashMap<String, String>();
 		envs.put("aa", "bb");
 		// envs.put("PYTHONUNBUFFERED", "1");
-		String dir = new String("D:/project/lrf_prj/client_prj");
-		int timeout = 5;
+		//String dir = new String("D:/project/lrf_prj/client_prj");
+		//int timeout = 5;
 		ArrayList<String> list = run(cmd);
 		// ArrayList<String> list = run(cmd);
 		System.out.println(list.toString());
