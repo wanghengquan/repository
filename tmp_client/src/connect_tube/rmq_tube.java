@@ -12,9 +12,7 @@ package connect_tube;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.rabbitmq.client.*;
-import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +25,6 @@ import java.util.Comparator;
 import data_center.data_server;
 import data_center.public_data;
 import info_parser.xml_parser;
-import utility_funcs.time_info;
 
 /*
  * This class used to instance rabbitMQ tube between server and center processor.
@@ -35,19 +32,17 @@ import utility_funcs.time_info;
  */
 public class rmq_tube {
 	// public property
-	public static TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
+	//{queue_name : {ID : {suite: suite_name}}}
+	public static TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new Comparator<String>() {
 				public int compare(String queue_name1, String queue_name2) {
-					// x_x_time#runxxx_time :
-					// priority_belong2client_time#run_number
+					// x_x_time@runxxx_time :
+					// priority:match/assign task:job_from@run_number
 					int int_pri1 = 0, int_pri2 = 0;
-					int int_clt1 = 0, int_clt2 = 0;
 					int int_id1 = 0, int_id2 = 0;
 					try {
-						int_pri1 = get_srting_int(queue_name1, "^(\\d)_");
-						int_pri2 = get_srting_int(queue_name2, "^(\\d)_");
-						int_clt1 = get_srting_int(queue_name1, "_(\\d)_");
-						int_clt2 = get_srting_int(queue_name2, "_(\\d)_");
+						int_pri1 = get_srting_int(queue_name1, "^(\\d+)@");
+						int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
 						int_id1 = get_srting_int(queue_name1, "run_(\\d+)_");
 						int_id2 = get_srting_int(queue_name2, "run_(\\d+)_");
 					} catch (Exception e) {
@@ -58,18 +53,12 @@ public class rmq_tube {
 					} else if (int_pri1 < int_pri2) {
 						return -1;
 					} else {
-						if (int_clt1 > int_clt2) {
+						if (int_id1 > int_id2) {
 							return 1;
-						} else if (int_clt1 < int_clt2) {
+						} else if (int_id1 < int_id2) {
 							return -1;
 						} else {
-							if (int_id1 > int_id2) {
-								return 1;
-							} else if (int_id1 < int_id2) {
-								return -1;
-							} else {
-								return queue_name1.compareTo(queue_name2);
-							}
+							return queue_name1.compareTo(queue_name2);
 						}
 					}
 				}
@@ -234,7 +223,7 @@ public class rmq_tube {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				admin_queue_receive.putAll(update_admin_queue(message);
+				remote_admin_queue_receive.putAll(update_admin_queue(message));
 			}
 		};
 		channel.basicConsume(queueName, true, consumer);
@@ -263,28 +252,28 @@ public class rmq_tube {
 				priority = "5";
 			}
 		}
-		// task belong to this client: 0, assign task > 1, match task
-		String client = new String();
+		// task belong to this client(job_attribute): (0, assign task) > (1, match task)
+		String attribute = new String();
 		String request_terminal = new String();
 		String available_terminal = data_server.client_hash.get("Machine").get("terminal");
 		if (!msg_data.containsKey("Machine")){
-			client = "1";
+			attribute = "1";
 		} else if (!msg_data.get("Machine").containsKey("terminal")){
-			client = "1";
+			attribute = "1";
 		} else {
 			request_terminal = msg_data.get("Machine").get("terminal");
 			if (request_terminal.contains(available_terminal)){
-				client = "0"; // assign task 
+				attribute = "0"; // assign task 
 			} else {
-				client = "1"; // match task
+				attribute = "1"; // match task
 			}
 		}
 		// receive time
-		String time = time_info.get_date_time();
+		//String time = time_info.get_date_time();
 		//pack data
-		// x_x_time#runxxx_time :
-		// priority_belong2client_time#run_number		
-		String new_title = priority + "_" + client + "_" + time + "#" + msg_key;
+		// xxx@runxxx_time :     job_from: 1, from remote; 0, from local
+		// priority:match/assign task:job_from@run_number		
+		String new_title = priority +  attribute + "1" + "@" + msg_key;
 		admin_hash.put(new_title, msg_data);
 		return admin_hash;
 	}
