@@ -23,25 +23,29 @@ public class task_waiter extends Thread  {
 	private static final Logger WAITER_LOGGER = LogManager.getLogger(task_waiter.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Integer waiter_index;
+	private int waiter_index;
 	private String waiter_status;
-	private Thread client_thread;
-	private thread_pool pool_instance;
-	private tube_data tube_data_instance;
+	private Thread waiter_thread;
+	private thread_pool pool_data;
+	private tube_data task_data;
 	private String line_seprator = System.getProperty("line.separator");
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
 	// public function
 	// protected function
 	// private function	
 	
-	public task_waiter(thread_pool pool_instance, tube_data tube_data_instance, Integer waiter_index){
-		this.pool_instance = pool_instance;	
-		this.tube_data_instance = tube_data_instance;
+	public task_waiter(thread_pool pool_data, tube_data task_data, int waiter_index){
+		this.pool_data = pool_data;	
+		this.task_data = task_data;
 		this.waiter_index = waiter_index;
 	}
 	
 	protected String get_waiter_status(){
 		return this.waiter_status;
+	}
+	
+	protected Thread get_waiter_thread(){
+		return waiter_thread;
 	}
 	
 	/*
@@ -71,10 +75,10 @@ public class task_waiter extends Thread  {
 	}
 
 	private void monitor_run() {
-		client_thread = Thread.currentThread();
-		waiter_status = "work";
+		waiter_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
+				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) +" waiting...");
 				try {
 					synchronized (this) {
 						this.wait();
@@ -83,14 +87,12 @@ public class task_waiter extends Thread  {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) +" waiting...");
 			} else {
+				this.waiter_status = "work";
 				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) +" running...");
 			}
-			
-			// System.out.println("Thread running...");
 			try {
-				Thread.sleep(1 * 1000);
+				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -100,28 +102,28 @@ public class task_waiter extends Thread  {
 
 	public void soft_stop() {
 		stop_request = true;
-		waiter_status = "stop";
+		this.waiter_status = "stop";
 	}
 
 	public void hard_stop() {
 		stop_request = true;
-		if (client_thread != null) {
-			client_thread.interrupt();
+		if (waiter_thread != null) {
+			waiter_thread.interrupt();
 		}
-		waiter_status = "stop";
+		this.waiter_status = "stop";
 	}
 
 	public void wait_request() {
-		waiter_status = "wait";
+		this.waiter_status = "wait";
 		wait_request = true;
 	}
 
 	public void wake_request() {
+		this.waiter_status = "work";
 		wait_request = false;
 		synchronized (this) {
 			this.notify();
 		}
-		waiter_status = "work";
 	}
 	
 	/*
@@ -134,17 +136,27 @@ public class task_waiter extends Thread  {
 		task_waiter waiter = new task_waiter(null, null, 0);
 		waiter.start();
 		try {
-			Thread.sleep(10 * 1000);
+			Thread.sleep(5 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 		waiter.wait_request();
+		System.out.println(waiter.get_waiter_status());
 		try {
-			Thread.sleep(10 * 1000);
+			Thread.sleep(5 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
+		waiter.wake_request();
+		System.out.println(waiter.get_waiter_status());
+		try {
+			Thread.sleep(5 * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(waiter.get_waiter_status());
 	}
 }

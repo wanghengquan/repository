@@ -9,7 +9,6 @@
  */
 package flow_control;
 
-import java.awt.List;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -31,47 +30,50 @@ public class hall_manager extends Thread  {
 	private boolean wait_request = false;
 	private Thread client_thread;
 	private exchange_data share_data;
-	private tube_data tube_data_instance;
+	private tube_data task_data;
 	private String line_seprator = System.getProperty("line.separator");
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
 	// public function
 	// protected function
 	// private function	
 	
-	private hall_manager(exchange_data share_data, tube_data tube_data_instance) {
+	private hall_manager(exchange_data share_data, tube_data task_data) {
 		this.share_data = share_data;
-		this.tube_data_instance = tube_data_instance;
+		this.task_data = task_data;
 	}
 	
-	private HashMap<Integer, task_waiter> get_waiter_ready(thread_pool pool_instance){
-		HashMap<Integer, task_waiter> waiters = new HashMap<Integer, task_waiter>();
+	private HashMap<String, task_waiter> get_waiter_ready(thread_pool pool_data){
+		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
 		int max_sw_thread = public_data.PERF_SW_MAXIMUM_THREAD;
-		for(Integer i = 0; i < max_sw_thread; i++){
-			task_waiter waiter = new task_waiter(pool_instance, tube_data_instance, i);
+		for(int i = 0; i < max_sw_thread; i++){
+			task_waiter waiter = new task_waiter(pool_data, task_data, i);
+			String waiter_index = "waiter_" + String.valueOf(i);
+			waiters.put(waiter_index, waiter);
 			waiter.start();
 			waiter.wait_request();
-			waiters.put(i, waiter);
+			System.out.println(waiter.get_waiter_status());
 		}
 		return waiters;
 	}
 	
-	private void start_right_waiter(HashMap<Integer, task_waiter> waiters){
+	private void start_right_waiter(HashMap<String, task_waiter> waiters){
 		String start_number = public_data.DEF_MAX_PROCS;
 		Integer right_number = Integer.valueOf(start_number);
-		Set<Integer> waiter_set = waiters.keySet();
-		Iterator<Integer> waiter_it = waiter_set.iterator();
+		Set<String> waiter_set = waiters.keySet();
+		Iterator<String> waiter_it = waiter_set.iterator();
 		while(waiter_it.hasNext()){
-			Integer waiter_index = waiter_it.next();
+			String waiter_index = waiter_it.next();
+			int waiter_id = Integer.valueOf(waiter_index.replace("waiter_", ""));
 			task_waiter waiter = waiters.get(waiter_index);
 			String waiter_status = waiter.get_waiter_status();
-			System.out.println("waiter " + waiter_index.toString() + " " + waiter_status);
-			if (waiter_index < right_number){
+			System.out.println(waiter_index + ":" +waiter_status);
+			if (waiter_id < right_number){
 				if (waiter_status.equals("wait")){
 					waiter.wake_request();
 				}
 			} else {
 				if (waiter_status.equals("work")){
-					waiter.wait_request();;
+					waiter.wait_request();
 				}
 			}
 		}
@@ -89,7 +91,7 @@ public class hall_manager extends Thread  {
 	private void monitor_run() {
 		client_thread = Thread.currentThread();
 		thread_pool pool_instance = new thread_pool(public_data.PERF_SW_MAXIMUM_THREAD);
-		HashMap<Integer, task_waiter> waiters = get_waiter_ready(pool_instance);
+		HashMap<String, task_waiter> waiters = get_waiter_ready(pool_instance);
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -104,7 +106,6 @@ public class hall_manager extends Thread  {
 				HALL_LOGGER.warn("hall manager Thread running...");
 			}
 			start_right_waiter(waiters);
-			// System.out.println("Thread running...");
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {

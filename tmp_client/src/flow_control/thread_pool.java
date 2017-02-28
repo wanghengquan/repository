@@ -43,10 +43,16 @@ public class thread_pool{
 		return used_thread;
 	}
 
+	
+	
 	public synchronized void add_sys_call(Callable sys_call){
 		Future future_call_back = run_pool.submit(sys_call);
 		
 		used_thread++;
+	}
+	
+	public void shutdown_pool(){
+		run_pool.shutdown();
 	}
 	
 	/*

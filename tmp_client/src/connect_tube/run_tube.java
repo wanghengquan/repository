@@ -215,6 +215,10 @@ public class run_tube extends Thread {
 			update_available_admin_queue();
 			share_data.set_available_admin_queue_updating(0);
 			//System.out.println(available_admin_queue_receive.toString());
+			// 4. send machine data
+			
+			
+			
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {

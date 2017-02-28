@@ -63,7 +63,7 @@ public class public_data {
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	// Machine
 	public final static String DEF_MACHINE_PRIVATE = "1"; //1 private, 0 public
-	public final static String DEF_MAX_PROCS = "3"; 
+	public final static String DEF_MAX_PROCS = "5"; 
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	// Base
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");

@@ -29,7 +29,7 @@ public class tube_data {
 	// protected property
 	// private property
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> task_queues_data = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
-	private static final Logger CLIENT_LOGGER = LogManager.getLogger(tube_data.class.getName());
+	private static final Logger TUBE_LOGGER = LogManager.getLogger(tube_data.class.getName());
 	// public function
 	// protected function
 	// private function
