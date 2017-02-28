@@ -9,9 +9,9 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
  
 import sun.misc.BASE64Decoder;
-//import sun.misc.BASE64Encoder;
+import sun.misc.BASE64Encoder;
  
-public class decode {
+public class des_decode {
  
     private final static String DES = "DES";
     protected final static String key = "@Lattice";

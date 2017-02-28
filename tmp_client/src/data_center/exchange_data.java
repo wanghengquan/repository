@@ -28,7 +28,7 @@ public class exchange_data {
 	// other --> config_sync
 	private int config_save_request = 0;
 
-	//run tube avriables
+	//run tube variables
 	private int available_admin_queue_updating = 0;
 	
 	//suite file updating

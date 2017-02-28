@@ -12,25 +12,27 @@ package flow_control;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.tube_data;
 import data_center.public_data;
 
 
-public class thread_temp extends Thread  {
+public class result_waiter extends Thread  {
 	// public property
 	// protected property
 	// private property
-	private static final Logger CLIENT_LOGGER = LogManager.getLogger(thread_temp.class.getName());
+	private static final Logger RESULT_LOGGER = LogManager.getLogger(result_waiter.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
+	private thread_pool pool_instance;
 	private String line_seprator = System.getProperty("line.separator");
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
 	// public function
 	// protected function
 	// private function	
 	
-	private void merge_client_data(){
-		
+	public result_waiter(thread_pool pool_instance){
+		this.pool_instance = pool_instance;	
 	}
 	
 	public void run() {
@@ -55,7 +57,7 @@ public class thread_temp extends Thread  {
 					e.printStackTrace();
 				}
 			} else {
-				CLIENT_LOGGER.debug("Client Thread running...");
+				RESULT_LOGGER.debug("Client Thread running...");
 			}
 			merge_client_data();
 			// System.out.println("Thread running...");

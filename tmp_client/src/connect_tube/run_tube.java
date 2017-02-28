@@ -87,7 +87,7 @@ public class run_tube extends Thread {
 		return i;
 	}
 
-	private Boolean admin_queue_match_check(HashMap<String, HashMap<String, String>> queue_data,
+	public Boolean admin_queue_match_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_current_data) {
 		Boolean client_match = true;
 		// check System match
@@ -214,7 +214,7 @@ public class run_tube extends Thread {
 			share_data.set_available_admin_queue_updating(1);
 			update_available_admin_queue();
 			share_data.set_available_admin_queue_updating(0);
-			// System.out.println("Thread running...");
+			//System.out.println(available_admin_queue_receive.toString());
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {

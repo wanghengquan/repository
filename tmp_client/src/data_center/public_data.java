@@ -71,6 +71,7 @@ public class public_data {
 	
 	// performance calibration
 	public final static int PERF_THREAD_RUN_INTERVAL = 5;
+	public final static int PERF_SW_MAXIMUM_THREAD = 15;
 	
 	private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
 	

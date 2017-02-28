@@ -36,7 +36,6 @@ public class rmq_tube {
 	public static TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new Comparator<String>() {
 				public int compare(String queue_name1, String queue_name2) {
-					// x_x_time@runxxx_time :
 					// priority:match/assign task:job_from@run_number
 					int int_pri1 = 0, int_pri2 = 0;
 					int int_id1 = 0, int_id2 = 0;
@@ -154,7 +153,7 @@ public class rmq_tube {
 	 * server. when the client get one message from the server, it should stop
 	 * the connect!
 	 */
-	public static String read_task_server(String queue_name) throws Exception {
+	public static Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name) throws Exception {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
 		factory.setUsername(rmq_user);
@@ -200,7 +199,8 @@ public class rmq_tube {
 			}
 		if (connection.isOpen())
 			connection.close();
-		return task_msg;
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.parser_xml_string(task_msg);
+		return msg_hash;
 	}
 
 	public static void read_admin_server(String queue_name) throws Exception {
