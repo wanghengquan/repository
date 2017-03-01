@@ -10,7 +10,6 @@
 package data_center;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -23,9 +22,9 @@ public class client_data {
 	// {queue_name: {case_id_or_title: {}}}	
 	// protected property
 	// private property
-	private static final Logger TUBE_LOGGER = LogManager.getLogger(client_data.class.getName());
+	private static final Logger CLIENT_DATA_LOGGER = LogManager.getLogger(client_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
-	public HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+	public HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 	public HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 	public HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
 	// public function
@@ -40,7 +39,7 @@ public class client_data {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
 		try{
-			temp = client_data;
+			temp = client_hash;
 		} finally{
 			rw_lock.readLock().unlock();
 		}
@@ -50,8 +49,8 @@ public class client_data {
 	public void set_client_data(HashMap<String, HashMap<String, String>> update_data){
 		rw_lock.writeLock().lock();
 		try{
-			client_data.clear();
-			client_data.putAll(update_data);
+			client_hash.clear();
+			client_hash.putAll(update_data);
 		} finally{
 			rw_lock.writeLock().unlock();
 		}
@@ -103,6 +102,6 @@ public class client_data {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-
+		CLIENT_DATA_LOGGER.warn("Share data");
 	}
 }

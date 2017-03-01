@@ -15,12 +15,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class exchange_data {
+public class switch_data {
 	// public property
 	// protected property
 	// private property
 	@SuppressWarnings("unused")
-	private static final Logger EXCHANGE_LOGGER = LogManager.getLogger(exchange_data.class.getName());
+	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// configuration static variables
 	// config_sync  --> other
@@ -33,8 +33,12 @@ public class exchange_data {
 	
 	//suite file updating
 	private String suite_file_string = new String();
+	
+	// client work mode serial or parallel
+	private String client_work_mode = public_data.DEF_CLIENT_WORK_MODE;
+	
 	// public function
-	public exchange_data(){
+	public switch_data(){
 		
 	}
 	
@@ -117,6 +121,27 @@ public class exchange_data {
 		}
 		return value;
 	}
+	
+	public void set_client_work_mode(String new_data){
+		rw_lock.writeLock().lock();
+		try{
+			this.client_work_mode = new_data;
+		} finally{
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_client_work_mode(){
+		rw_lock.readLock().lock();
+		String value = new String();
+		try{
+			value = this.client_work_mode;
+		} finally{
+			rw_lock.readLock().unlock();
+		}
+		return value;
+	}
+	
 	// protected function
 	// private function	
 	

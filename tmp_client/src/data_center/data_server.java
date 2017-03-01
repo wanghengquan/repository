@@ -11,7 +11,6 @@ package data_center;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,14 +57,14 @@ public class data_server extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
-	private client_data client_data_inst;
+	private client_data client_info;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
 	// private function
 
-	public data_server(client_data client_data_inst) {
-		this.client_data_inst = client_data_inst;
+	public data_server(client_data client_info) {
+		this.client_info = client_info;
 	}
 
 	private void merge_client_data(HashMap<String, String> cmd_hash) {
@@ -109,7 +108,7 @@ public class data_server extends Thread {
 		base_data.putAll(config_hash.get("tmp_base"));
 		base_data.putAll(cmd_hash);
 		client_data.put("base", base_data);
-		client_data_inst.set_client_data(client_data);
+		client_info.set_client_data(client_data);
 		DATA_LOGGER.warn(client_data.toString());
 	}
 
@@ -129,7 +128,7 @@ public class data_server extends Thread {
 			Integer insts_value = Integer.valueOf(config_hash.get(key).get("max_insts"));
 			max_soft_insts.put(key, insts_value);
 		}
-		client_data_inst.set_max_soft_insts(max_soft_insts);
+		client_info.set_max_soft_insts(max_soft_insts);
 		DATA_LOGGER.warn(max_soft_insts.toString());
 	}
 
@@ -198,8 +197,8 @@ public class data_server extends Thread {
 	public static void main(String[] args) {
 		cmd_parser cmd_run = new cmd_parser(args);
 		cmd_run.cmdline_parser();
-		exchange_data share_data = new exchange_data();
-		config_sync config_runner = new config_sync(share_data);
+		switch_data switch_info = new switch_data();
+		config_sync config_runner = new config_sync(switch_info);
 		machine_sync machine_runner = new machine_sync();
 		client_data share_client_data = new client_data();
 		data_server client_available = new data_server(share_client_data);

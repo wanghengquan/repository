@@ -16,8 +16,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import connect_tube.tube_data;
-import data_center.exchange_data;
+import connect_tube.task_data;
+import data_center.client_data;
+import data_center.switch_data;
 import data_center.public_data;
 
 
@@ -29,24 +30,26 @@ public class hall_manager extends Thread  {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
-	private exchange_data share_data;
-	private tube_data task_data;
+	private switch_data switch_info;
+	private task_data task_info;
+	private client_data client_info;
 	private String line_seprator = System.getProperty("line.separator");
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
 	// public function
 	// protected function
 	// private function	
 	
-	private hall_manager(exchange_data share_data, tube_data task_data) {
-		this.share_data = share_data;
-		this.task_data = task_data;
+	private hall_manager(switch_data switch_info, task_data task_info, client_data client_info) {
+		this.switch_info = switch_info;
+		this.task_info = task_info;
+		this.client_info = client_info;
 	}
 	
-	private HashMap<String, task_waiter> get_waiter_ready(thread_pool pool_data){
+	private HashMap<String, task_waiter> get_waiter_ready(thread_pool pool_info){
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
 		int max_sw_thread = public_data.PERF_SW_MAXIMUM_THREAD;
 		for(int i = 0; i < max_sw_thread; i++){
-			task_waiter waiter = new task_waiter(pool_data, task_data, i);
+			task_waiter waiter = new task_waiter(i, pool_info, task_info, client_info, switch_info);
 			String waiter_index = "waiter_" + String.valueOf(i);
 			waiters.put(waiter_index, waiter);
 			waiter.start();
@@ -90,8 +93,8 @@ public class hall_manager extends Thread  {
 
 	private void monitor_run() {
 		client_thread = Thread.currentThread();
-		thread_pool pool_instance = new thread_pool(public_data.PERF_SW_MAXIMUM_THREAD);
-		HashMap<String, task_waiter> waiters = get_waiter_ready(pool_instance);
+		thread_pool pool_info = new thread_pool(public_data.PERF_SW_MAXIMUM_THREAD);
+		HashMap<String, task_waiter> waiters = get_waiter_ready(pool_info);
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -141,9 +144,10 @@ public class hall_manager extends Thread  {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		exchange_data share_data = new exchange_data();
-		tube_data tube_data_instance = new tube_data(share_data);
-		hall_manager jason = new hall_manager(share_data, tube_data_instance);
+		switch_data switch_info = new switch_data();
+		task_data task_data = new task_data();
+		client_data client_info = new client_data();
+		hall_manager jason = new hall_manager(switch_info, task_data, client_info);
 		jason.start();
 	}
 }

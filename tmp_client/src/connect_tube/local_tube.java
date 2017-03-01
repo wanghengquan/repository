@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import data_center.data_server;
 import info_parser.xls_parser;
 import utility_funcs.time_info;
 
@@ -30,9 +29,9 @@ public class local_tube {
 	// protected property
 	// private property
 	private final Logger LOCAL_LOGGER = LogManager.getLogger(local_tube.class.getName());
-	public static Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queue_designs = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+	public static Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queue_tube_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	// {queue_name : {ID : {suite: suite_name}}}
-	public static TreeMap<String, HashMap<String, HashMap<String, String>>> local_admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
+	public static TreeMap<String, HashMap<String, HashMap<String, String>>> local_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new Comparator<String>() {
 				public int compare(String queue_name1, String queue_name2) {
 					// priority:match/assign task:job_from@runxxx_suite_time :
@@ -731,7 +730,10 @@ public class local_tube {
 		return is_match;
 	}
 
-	private String get_one_queue_name(String admin_queue_base, String queue_pre_fix,
+	private String get_one_queue_name(
+			String admin_queue_base, 
+			String queue_pre_fix,
+			String current_terminal,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// generate queue name
 		String queue_name = new String();
@@ -752,7 +754,7 @@ public class local_tube {
 		// task belong to this client: 0, assign task > 1, match task
 		String attribute = new String();
 		String request_terminal = new String();
-		String available_terminal = data_server.client_hash.get("Machine").get("terminal");
+		String available_terminal = current_terminal;
 		if (!design_data.containsKey("Machine")) {
 			attribute = "1";
 		} else if (!design_data.get("Machine").containsKey("terminal")) {
@@ -778,13 +780,16 @@ public class local_tube {
 	/*
 	 * {queue_name: {ID : {prj : name,suite: name}, System: {os : name}}}
 	 */
-	private Map<String, HashMap<String, HashMap<String, String>>> get_one_queue_hash(String admin_queue_base,
-			String queue_pre_fix, HashMap<String, HashMap<String, String>> design_data) {
+	private Map<String, HashMap<String, HashMap<String, String>>> get_one_queue_hash(
+			String admin_queue_base,
+			String queue_pre_fix, 
+			String current_terminal,
+			HashMap<String, HashMap<String, String>> design_data) {
 		Map<String, HashMap<String, HashMap<String, String>>> one_queue_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		// generate queue name
 		String queue_name = new String();
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-		queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, design_data);
+		queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
 		queue_data.put("ID", design_data.get("ID"));
 		queue_data.put("ID", design_data.get("Machine"));
 		queue_data.put("ID", design_data.get("Software"));
@@ -817,12 +822,12 @@ public class local_tube {
 			Boolean local_admin_queue_exists = false;
 			HashMap<String, HashMap<String, String>> design_data = merge_data.get(case_name);
 			// check current admin queue cover this requirements
-			Set<String> local_admin_queue_keys = local_admin_queue_receive.keySet();
+			Set<String> local_admin_queue_keys = local_admin_queue_receive_treemap.keySet();
 			String local_match_admin_queue_name = new String();
 			Iterator<String> local_admin_queue_it = local_admin_queue_keys.iterator();
 			while (local_admin_queue_it.hasNext()) {
 				local_match_admin_queue_name = local_admin_queue_it.next();
-				HashMap<String, HashMap<String, String>> local_admin_queue_data = local_admin_queue_receive
+				HashMap<String, HashMap<String, String>> local_admin_queue_data = local_admin_queue_receive_treemap
 						.get(local_match_admin_queue_name);
 				if (is_request_match(local_admin_queue_data, design_data)) {
 					local_admin_queue_exists = true;
@@ -833,24 +838,25 @@ public class local_tube {
 			// x_x@runxxx_suite_time
 			if (!local_admin_queue_exists) {
 				String queue_pre_fix = String.valueOf(local_admin_queue_keys.size() + 1);
-				local_match_admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, design_data);
+				local_match_admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
 				Map<String, HashMap<String, HashMap<String, String>>> one_hash_data = get_one_queue_hash(
-						admin_queue_base, queue_pre_fix, design_data);
-				local_admin_queue_receive.putAll(one_hash_data);
+						admin_queue_base, queue_pre_fix, current_terminal, design_data);
+				local_admin_queue_receive_treemap.putAll(one_hash_data);
 			}
 			// insert design into this queue : local_task_queue_designs
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = null;
-			if (local_task_queue_designs.containsKey(local_match_admin_queue_name)) {
-				task_queue_data = local_task_queue_designs.get(local_match_admin_queue_name);
+			if (local_task_queue_tube_map.containsKey(local_match_admin_queue_name)) {
+				task_queue_data = local_task_queue_tube_map.get(local_match_admin_queue_name);
 			}
 			task_queue_data.put(case_name, design_data);
-			local_task_queue_designs.put(local_match_admin_queue_name, task_queue_data);
+			local_task_queue_tube_map.put(local_match_admin_queue_name, task_queue_data);
 		}
 	}
 
 	public static void main(String[] argv) {
 		local_tube sheet_parser = new local_tube();
-		sheet_parser.generate_local_queue_hash("D:/java_dev/diamond_regression.xlsx");
+		String current_terminal = "D27639";
+		sheet_parser.generate_local_queue_hash("D:/java_dev/diamond_regression.xlsx", current_terminal);
 
 	}
 }

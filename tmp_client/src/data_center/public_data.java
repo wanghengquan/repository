@@ -68,6 +68,8 @@ public class public_data {
 	// Base
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	// work model
+	public final static String DEF_CLIENT_WORK_MODE = "serial"; //"serial", "parallel", "auto"
 	
 	// performance calibration
 	public final static int PERF_THREAD_RUN_INTERVAL = 5;

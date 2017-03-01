@@ -32,7 +32,7 @@ import info_parser.xml_parser;
 public class rmq_tube {
 	// public property
 	//{queue_name : {ID : {suite: suite_name}}}
-	public static TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
+	public static TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new Comparator<String>() {
 				public int compare(String queue_name1, String queue_name2) {
 					// priority:match/assign task:job_from@run_number
@@ -222,7 +222,7 @@ public class rmq_tube {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				remote_admin_queue_receive.putAll(update_admin_queue(message, current_terminal));
+				remote_admin_queue_receive_treemap.putAll(update_admin_queue(message, current_terminal));
 			}
 		};
 		channel.basicConsume(queueName, true, consumer);

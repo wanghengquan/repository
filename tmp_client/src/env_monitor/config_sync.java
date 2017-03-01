@@ -19,8 +19,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
-import data_center.exchange_data;
 import data_center.public_data;
+import data_center.switch_data;
 
 /*
  * This class used to get the basic information of the client.
@@ -49,15 +49,15 @@ public class config_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread conf_thread;
-	private exchange_data share_data;
+	private switch_data switch_info;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	public config_sync(int interval) {
 		this.interval = interval;
 	}
 
-	public config_sync(exchange_data share_data) {
-		this.share_data = share_data;
+	public config_sync(switch_data switch_info) {
+		this.switch_info = switch_info;
 	}	
 	// protected function
 	// private function
@@ -185,7 +185,7 @@ public class config_sync extends Thread {
 					if (new_update){
 						update_data.putAll(scan_data);
 						config_updated++; //internal config file save
-						share_data.set_config_update_announce(1);
+						switch_info.set_config_update_announce(1);
 					}
 				} else if (option.equals("max_insts")){
 					update_data.put(option, value);
@@ -259,11 +259,11 @@ public class config_sync extends Thread {
 				save_config_data(ini_runner);
 			}
 			//step3:save request acknowledge
-			int save_request = share_data.get_config_save_request();
+			int save_request = switch_info.get_config_save_request();
 			if (save_request > 0){
 				save_config_data(ini_runner);
 			}
-			share_data.set_config_save_request(0);
+			switch_info.set_config_save_request(0);
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
@@ -299,8 +299,8 @@ public class config_sync extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		exchange_data share_data = new exchange_data();
-		config_sync ini_runner = new config_sync(share_data);
+		switch_data switch_info = new switch_data();
+		config_sync ini_runner = new config_sync(switch_info);
 		ini_runner.start();
 	}
 }

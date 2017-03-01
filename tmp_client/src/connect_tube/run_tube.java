@@ -19,27 +19,26 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.client_data;
-import data_center.data_server;
-import data_center.exchange_data;
 import data_center.public_data;
+import data_center.switch_data;
 
 public class run_tube extends Thread {
 	// public property
-	public static ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>> available_admin_queue_receive = new ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>>();
+	public static ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queues = new ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>>();
 	// protected property
 	// private property
 	private static final Logger TUBE_LOGGER = LogManager.getLogger(run_tube.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread tube_thread;
-	private exchange_data share_data;
-	private client_data client_hash;
+	private switch_data switch_info;
+	private client_data client_info;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 
 	// public function
-	public run_tube(exchange_data share_data, client_data client_hash) {
-		this.share_data = share_data;
-		this.client_hash = client_hash;
+	public run_tube(switch_data switch_info, client_data client_info) {
+		this.switch_info = switch_info;
+		this.client_info = client_info;
 	}
 
 	// protected function
@@ -106,12 +105,12 @@ public class run_tube extends Thread {
 		return client_match;
 	}
 
-	private void update_available_admin_queue() {
+	private void update_captured_admin_queues() {
 		Map<String, HashMap<String, String>> client_current_data = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		client_current_data.putAll(client_hash.client_data);
-		total_admin_queue.putAll(rmq_tube.remote_admin_queue_receive);
-		total_admin_queue.putAll(local_tube.local_admin_queue_receive);
+		client_current_data.putAll(client_info.client_hash);
+		total_admin_queue.putAll(rmq_tube.remote_admin_queue_receive_treemap);
+		total_admin_queue.putAll(local_tube.local_admin_queue_receive_treemap);
 		Set<String> queue_set = total_admin_queue.keySet();
 		Iterator<String> queue_it = queue_set.iterator();
 		while (queue_it.hasNext()) {
@@ -121,7 +120,7 @@ public class run_tube extends Thread {
 			// check System match
 			client_match = admin_queue_match_check(queue_data, client_current_data);
 			if (client_match) {
-				available_admin_queue_receive.put(queue_name, queue_data);
+				captured_admin_queues.put(queue_name, queue_data);
 			}
 		}
 	}
@@ -139,7 +138,7 @@ public class run_tube extends Thread {
 		tube_thread = Thread.currentThread();
 		// 1. start rmq tube (admin queque)
 		try {
-			rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME, client_hash.get_client_data().get("Machine").get("terminal"));
+			rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME, client_info.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
@@ -159,19 +158,19 @@ public class run_tube extends Thread {
 				TUBE_LOGGER.warn("Tube Thread running...");
 			}
 			// 2. update local tube
-			String suite_files = share_data.get_suite_file_string();
+			String suite_files = switch_info.get_suite_file_string();
 			if (suite_files != null && !suite_files.equals("")) {
 				local_tube local_tube_parser = new local_tube();
 				String[] file_list = suite_files.split(";");
 				for (String file : file_list) {
-					local_tube_parser.generate_local_queue_hash(file, client_hash.get_client_data().get("Machine").get("terminal"));
+					local_tube_parser.generate_local_queue_hash(file, client_info.get_client_data().get("Machine").get("terminal"));
 				}
-				share_data.set_suite_file_string("");
+				switch_info.set_suite_file_string("");
 			}
 			// 3. update available admin queue
-			share_data.set_available_admin_queue_updating(1);
-			update_available_admin_queue();
-			share_data.set_available_admin_queue_updating(0);
+			switch_info.set_available_admin_queue_updating(1);
+			update_captured_admin_queues();
+			switch_info.set_available_admin_queue_updating(0);
 			//System.out.println(available_admin_queue_receive.toString());
 			// 4. send machine data
 			
@@ -212,9 +211,9 @@ public class run_tube extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		exchange_data share_data = new exchange_data();
-		client_data client_hash = new client_data();
-		run_tube tube_runner = new run_tube(share_data, client_hash);
+		switch_data switch_info = new switch_data();
+		client_data client_info = new client_data();
+		run_tube tube_runner = new run_tube(switch_info, client_info);
 		tube_runner.start();
 	}
 }
