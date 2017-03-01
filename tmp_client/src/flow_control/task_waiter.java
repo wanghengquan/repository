@@ -13,10 +13,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.tube_data;
+import data_center.client_data;
 import data_center.public_data;
 
-
-public class task_waiter extends Thread  {
+public class task_waiter extends Thread {
 	// public property
 	// protected property
 	// private property
@@ -28,43 +28,45 @@ public class task_waiter extends Thread  {
 	private Thread waiter_thread;
 	private thread_pool pool_data;
 	private tube_data task_data;
+	private client_data terminal_data;
 	private String line_seprator = System.getProperty("line.separator");
-	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
+	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
-	// private function	
-	
-	public task_waiter(thread_pool pool_data, tube_data task_data, int waiter_index){
-		this.pool_data = pool_data;	
+	// private function
+
+	public task_waiter(thread_pool pool_data, tube_data task_data, client_data terminal_data, int waiter_index) {
+		this.pool_data = pool_data;
 		this.task_data = task_data;
+		this.terminal_data = terminal_data;
 		this.waiter_index = waiter_index;
 	}
-	
-	protected String get_waiter_status(){
+
+	protected String get_waiter_status() {
 		return this.waiter_status;
 	}
-	
-	protected Thread get_waiter_thread(){
+
+	protected Thread get_waiter_thread() {
 		return waiter_thread;
 	}
-	
+
+	private ArrayList<String> get_running_tasks() {
+
+	}
+
 	/*
-	private get_running_tasks(){
-		
-	}
-	
-	private get_task_case(){
-		
-	}
-	
-	private prepare_task_case(){
-		
-	}
-	
-	private launch_task_case(){
-		
-	}
-	*/
+	 * private get_task_case(){
+	 * 
+	 * }
+	 * 
+	 * private prepare_task_case(){
+	 * 
+	 * }
+	 * 
+	 * private launch_task_case(){
+	 * 
+	 * }
+	 */
 	public void run() {
 		try {
 			monitor_run();
@@ -78,7 +80,7 @@ public class task_waiter extends Thread  {
 		waiter_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
-				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) +" waiting...");
+				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " waiting...");
 				try {
 					synchronized (this) {
 						this.wait();
@@ -89,7 +91,7 @@ public class task_waiter extends Thread  {
 				}
 			} else {
 				this.waiter_status = "work";
-				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) +" running...");
+				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " running...");
 			}
 			try {
 				Thread.sleep(interval * 1000);
@@ -125,14 +127,14 @@ public class task_waiter extends Thread  {
 			this.notify();
 		}
 	}
-	
+
 	/*
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		//thread_pool pool_instance = new thread_pool(10);
-		//tube_data tube_data_instance = new tube_data(null);
-		
+		// thread_pool pool_instance = new thread_pool(10);
+		// tube_data tube_data_instance = new tube_data(null);
+
 		task_waiter waiter = new task_waiter(null, null, 0);
 		waiter.start();
 		try {
@@ -140,7 +142,7 @@ public class task_waiter extends Thread  {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
 		waiter.wait_request();
 		System.out.println(waiter.get_waiter_status());
 		try {

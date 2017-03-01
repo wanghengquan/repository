@@ -43,13 +43,19 @@ public class thread_pool{
 		return used_thread;
 	}
 
+	public synchronized void set_used_size(int new_int){
+		this.used_thread = new_int;
+	}
 	
 	
 	public synchronized void add_sys_call(Callable sys_call){
 		Future future_call_back = run_pool.submit(sys_call);
 		
-		used_thread++;
+		this.used_thread++;
 	}
+	
+	public synchronized void get_sys_call_results(){
+	}	
 	
 	public void shutdown_pool(){
 		run_pool.shutdown();

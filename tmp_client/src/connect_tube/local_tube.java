@@ -797,7 +797,7 @@ public class local_tube {
 	}
 
 	// generate different admin and task queue hash
-	public void generate_local_queue_hash(String local_file) {
+	public void generate_local_queue_hash(String local_file, String current_terminal) {
 		Map<String, List<List<String>>> ExcelData = get_excel_data(local_file);
 		Map<String, String> suite_data = get_suite_data(ExcelData);
 		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);

@@ -22,7 +22,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Comparator;
 
-import data_center.data_server;
 import data_center.public_data;
 import info_parser.xml_parser;
 
@@ -203,7 +202,7 @@ public class rmq_tube {
 		return msg_hash;
 	}
 
-	public static void read_admin_server(String queue_name) throws Exception {
+	public static void read_admin_server(String queue_name, String current_terminal) throws Exception {
 		/*
 		 * This function used to read the admin queue and return the strings at
 		 * here we use Publish/Subscribe in rabbitmq
@@ -223,13 +222,13 @@ public class rmq_tube {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				remote_admin_queue_receive.putAll(update_admin_queue(message));
+				remote_admin_queue_receive.putAll(update_admin_queue(message, current_terminal));
 			}
 		};
 		channel.basicConsume(queueName, true, consumer);
 	}
 	
-	private static Map<String, HashMap<String, HashMap<String, String>>> update_admin_queue(String message){
+	private static Map<String, HashMap<String, HashMap<String, String>>> update_admin_queue(String message, String current_terminal){
 		Map<String, HashMap<String, HashMap<String, String>>> admin_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.parser_xml_string(message);
 		Set<String> msg_key_set = msg_hash.keySet();
@@ -255,7 +254,7 @@ public class rmq_tube {
 		// task belong to this client(job_attribute): (0, assign task) > (1, match task)
 		String attribute = new String();
 		String request_terminal = new String();
-		String available_terminal = data_server.client_hash.get("Machine").get("terminal");
+		String available_terminal = current_terminal;
 		if (!msg_data.containsKey("Machine")){
 			attribute = "1";
 		} else if (!msg_data.get("Machine").containsKey("terminal")){

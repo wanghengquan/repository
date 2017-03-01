@@ -9,54 +9,23 @@
  */
 package connect_tube;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.client_data;
 import data_center.data_server;
 import data_center.exchange_data;
 import data_center.public_data;
 
 public class run_tube extends Thread {
 	// public property
-	public static TreeMap<String, HashMap<String, HashMap<String, String>>> available_admin_queue_receive = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
-			new Comparator<String>() {
-				public int compare(String queue_name1, String queue_name2) {
-					// x_x_time@runxxx_time :
-					// priority:match/assign task:job_from@run_number
-					int int_pri1 = 0, int_pri2 = 0;
-					int int_id1 = 0, int_id2 = 0;
-					try {
-						int_pri1 = get_srting_int(queue_name1, "^(\\d+)@");
-						int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
-						int_id1 = get_srting_int(queue_name1, "run_(\\d+)_");
-						int_id2 = get_srting_int(queue_name2, "run_(\\d+)_");
-					} catch (Exception e) {
-						return queue_name1.compareTo(queue_name2);
-					}
-					if (int_pri1 > int_pri2) {
-						return 1;
-					} else if (int_pri1 < int_pri2) {
-						return -1;
-					} else {
-						if (int_id1 > int_id2) {
-							return 1;
-						} else if (int_id1 < int_id2) {
-							return -1;
-						} else {
-							return queue_name1.compareTo(queue_name2);
-						}
-					}
-				}
-			});
+	public static ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>> available_admin_queue_receive = new ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>>();
 	// protected property
 	// private property
 	private static final Logger TUBE_LOGGER = LogManager.getLogger(run_tube.class.getName());
@@ -64,28 +33,17 @@ public class run_tube extends Thread {
 	private boolean wait_request = false;
 	private Thread tube_thread;
 	private exchange_data share_data;
+	private client_data client_hash;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 
 	// public function
-	public run_tube(exchange_data share_data) {
+	public run_tube(exchange_data share_data, client_data client_hash) {
 		this.share_data = share_data;
+		this.client_hash = client_hash;
 	}
 
 	// protected function
 	// private function
-	private static int get_srting_int(String str, String patt) {
-		int i = 0;
-		try {
-			Pattern p = Pattern.compile(patt);
-			Matcher m = p.matcher(str);
-			if (m.find()) {
-				i = Integer.valueOf(m.group(1));
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		}
-		return i;
-	}
 
 	public Boolean admin_queue_match_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_current_data) {
@@ -151,7 +109,7 @@ public class run_tube extends Thread {
 	private void update_available_admin_queue() {
 		Map<String, HashMap<String, String>> client_current_data = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		client_current_data.putAll(data_server.client_hash);
+		client_current_data.putAll(client_hash.client_data);
 		total_admin_queue.putAll(rmq_tube.remote_admin_queue_receive);
 		total_admin_queue.putAll(local_tube.local_admin_queue_receive);
 		Set<String> queue_set = total_admin_queue.keySet();
@@ -181,7 +139,7 @@ public class run_tube extends Thread {
 		tube_thread = Thread.currentThread();
 		// 1. start rmq tube (admin queque)
 		try {
-			rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME);
+			rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME, client_hash.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
@@ -206,7 +164,7 @@ public class run_tube extends Thread {
 				local_tube local_tube_parser = new local_tube();
 				String[] file_list = suite_files.split(";");
 				for (String file : file_list) {
-					local_tube_parser.generate_local_queue_hash(file);
+					local_tube_parser.generate_local_queue_hash(file, client_hash.get_client_data().get("Machine").get("terminal"));
 				}
 				share_data.set_suite_file_string("");
 			}
@@ -255,7 +213,8 @@ public class run_tube extends Thread {
 	 */
 	public static void main(String[] args) {
 		exchange_data share_data = new exchange_data();
-		run_tube tube_runner = new run_tube(share_data);
+		client_data client_hash = new client_data();
+		run_tube tube_runner = new run_tube(share_data, client_hash);
 		tube_runner.start();
 	}
 }

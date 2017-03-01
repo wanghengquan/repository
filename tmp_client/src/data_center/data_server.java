@@ -11,6 +11,7 @@ package data_center;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,19 +52,24 @@ import info_parser.cmd_parser;
  */
 public class data_server extends Thread {
 	// public property
-	public static ConcurrentHashMap<String, HashMap<String, String>> client_hash = new ConcurrentHashMap<String, HashMap<String, String>>();
 	// protected property
 	// private property
 	private static final Logger DATA_LOGGER = LogManager.getLogger(data_server.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
+	private client_data client_data_inst;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
 	// private function
 
+	public data_server(client_data client_data_inst) {
+		this.client_data_inst = client_data_inst;
+	}
+
 	private void merge_client_data(HashMap<String, String> cmd_hash) {
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
 		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
 		// 0. ready check
@@ -82,10 +88,10 @@ public class data_server extends Thread {
 			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
 				continue;
 			}
-			client_hash.put(option, option_data);
+			client_data.put(option, option_data);
 		}
 		// 2. merge System data
-		client_hash.put("System", machine_hash.get("System"));
+		client_data.put("System", machine_hash.get("System"));
 		// 3. merge Machine data config data > scan data > default data in
 		// public_data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
@@ -94,7 +100,7 @@ public class data_server extends Thread {
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // Config data
-		client_hash.put("Machine", machine_data);
+		client_data.put("Machine", machine_data);
 		// 4. merge base data (for software use) command data > config data >
 		// default data in public_data
 		HashMap<String, String> base_data = new HashMap<String, String>();
@@ -102,8 +108,29 @@ public class data_server extends Thread {
 		base_data.put("work_path", public_data.DEF_WORK_PATH);
 		base_data.putAll(config_hash.get("tmp_base"));
 		base_data.putAll(cmd_hash);
-		client_hash.put("base", base_data);
-		DATA_LOGGER.warn(client_hash.toString());
+		client_data.put("base", base_data);
+		client_data_inst.set_client_data(client_data);
+		DATA_LOGGER.warn(client_data.toString());
+	}
+
+	private void update_max_sw_insts_limitation() {
+		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
+		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
+		Set<String> key_set = config_hash.keySet();
+		Iterator<String> key_it = key_set.iterator();
+		while(key_it.hasNext()){
+			String key = key_it.next();
+			if (key.equalsIgnoreCase("tmp_")){
+				continue;
+			}
+			if (!config_hash.get(key).containsKey("max_insts")){
+				continue;
+			}
+			Integer insts_value = Integer.valueOf(config_hash.get(key).get("max_insts"));
+			max_soft_insts.put(key, insts_value);
+		}
+		client_data_inst.set_max_soft_insts(max_soft_insts);
+		DATA_LOGGER.warn(max_soft_insts.toString());
 	}
 
 	public void run() {
@@ -132,6 +159,7 @@ public class data_server extends Thread {
 				DATA_LOGGER.warn("client_data Thread running...");
 			}
 			merge_client_data(cmd_hash);
+			update_max_sw_insts_limitation();
 			// System.out.println("Thread running...");
 			try {
 				Thread.sleep(interval * 1000);
@@ -173,7 +201,8 @@ public class data_server extends Thread {
 		exchange_data share_data = new exchange_data();
 		config_sync config_runner = new config_sync(share_data);
 		machine_sync machine_runner = new machine_sync();
-		data_server client_available = new data_server();
+		client_data share_client_data = new client_data();
+		data_server client_available = new data_server(share_client_data);
 		config_runner.start();
 		machine_runner.start();
 		client_available.start();
