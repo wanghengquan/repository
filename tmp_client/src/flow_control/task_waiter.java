@@ -12,15 +12,15 @@ package flow_control;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import connect_tube.local_tube;
+import connect_tube.rmq_tube;
 import connect_tube.run_tube;
 import connect_tube.task_data;
 import data_center.client_data;
@@ -31,7 +31,7 @@ public class task_waiter extends Thread {
 	// public property
 	// protected property
 	// private property
-	private static final Logger WAITER_LOGGER = LogManager.getLogger(task_waiter.class.getName());
+	private static final Logger TASK_WAITER_LOGGER = LogManager.getLogger(task_waiter.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private int waiter_index;
@@ -70,8 +70,9 @@ public class task_waiter extends Thread {
 	
 	private String get_right_task_queue() {
 		String queue_name = new String();
-		ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
-		ArrayList<String> runable_queue_list = get_runable_queue_list(processing_queue_list);
+		//pending_queue_list =  total processing_admin_queue - finished_admin_queue
+		ArrayList<String> pending_queue_list = task_info.get_pending_admin_queue_list();
+		ArrayList<String> runable_queue_list = get_runable_queue_list(pending_queue_list);
 		int queue_list_size = runable_queue_list.size();
 		int select_queue_index = 0;
 		if (queue_list_size == 0) {
@@ -185,15 +186,24 @@ public class task_waiter extends Thread {
 		return i;
 	}
 
-	private HashMap<String, HashMap<String, String>> get_task_case_data(String queue_name){
+	private Map<String, HashMap<String, HashMap<String, String>>> get_task_case_data(String queue_name){
+		Map<String, HashMap<String, HashMap<String, String>>> case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Boolean local_queue = new Boolean(false);
 		if (queue_name.contains("0@")){
 			local_queue = true;
 		}
 		if (local_queue) {
-			TreeMap<String, HashMap<String, HashMap<String, String>>> local_task_data = local_tube.local_task_queue_tube_map.get("queue_name");
-			
+			case_data = task_info.get_one_local_case_data(queue_name);
+		} else {
+			try {
+				case_data = rmq_tube.read_task_server(queue_name);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + ": Found empty/invalid Task Queue:" + queue_name);
+			}
 		}
+		return case_data;
 	}
 	/*
 	 * private get_task_case_data(){
@@ -221,7 +231,7 @@ public class task_waiter extends Thread {
 		waiter_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
-				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " waiting...");
+				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " waiting...");
 				try {
 					synchronized (this) {
 						this.wait();
@@ -232,7 +242,7 @@ public class task_waiter extends Thread {
 				}
 			} else {
 				this.waiter_status = "work";
-				WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " running...");
+				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " running...");
 			}
 			try {
 				Thread.sleep(interval * 1000);
@@ -263,10 +273,21 @@ public class task_waiter extends Thread {
 				pool_info.release_used_thread(1);
 				continue;
 			}
-			// step 3 get one test case
-			HashMap<String, HashMap<String, String>> get_case = get_task_case_data();
+			// step 3 get one task case data
+			Map<String, HashMap<String, HashMap<String, String>>> case_data = get_task_case_data(queue_name);
+			if (case_data.isEmpty() || case_data == null){
+				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + ":Change queue to finished status:" + queue_name);
+				task_info.update_finished_admin_queue_list(queue_name);
+				//release booking info
+				client_info.release_use_soft_insts(software_cost);
+				pool_info.release_used_thread(1);
+				continue;
+			}			
 			// Step 3 prepare case
-			HashMap case_data = get_task_case_ready(queue_name);
+			
+			
+			
+			//HashMap case_data = get_task_case_ready(queue_name);
 		}
 	}
 

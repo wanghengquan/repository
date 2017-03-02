@@ -11,7 +11,9 @@ package connect_tube;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -24,7 +26,7 @@ public class task_data {
 	// {queue_name: {case_id_or_title: {}}}
 	// protected property
 	// private property
-	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	private static final Logger TASK_DATA_LOGGER = LogManager.getLogger(task_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// public function
@@ -47,30 +49,53 @@ public class task_data {
 
 	}
 
-	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data_map(String queue_name) {
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_processed_task_queue_data_map(String queue_name) {
 		rw_lock.readLock().lock();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			if (task_queues_data_map.containsKey(queue_name)){
-				queue_data = this.task_queues_data_map.get(queue_name);
+			if (processed_task_queues_data_map.containsKey(queue_name)){
+				queue_data = this.processed_task_queues_data_map.get(queue_name);
 			}
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return queue_data;
 	}
-
-	public void update_case_to_task_queues_data_map(String queue_name, String case_id, HashMap<String, HashMap<String, String>> case_data) {
-		rw_lock.writeLock().lock();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = task_queues_data_map.get(queue_name);
+	
+	public Map<String, HashMap<String, HashMap<String, String>>> get_one_local_case_data(String queue_name) {
+		rw_lock.readLock().lock();
+		Map<String, HashMap<String, HashMap<String, String>>> case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			if (task_queues_data_map.containsKey(queue_name)){
-				queue_data = task_queues_data_map.get(queue_name);
+			TreeMap<String, HashMap<String, HashMap<String, String>>> local_task_data = local_tube.local_task_queue_tube_map.get(queue_name);
+			TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_data = processed_task_queues_data_map.get(queue_name);
+			Set<String> local_task_data_set = local_task_data.keySet();
+			Iterator<String> local_task_data_it = local_task_data_set.iterator();
+			while(local_task_data_it.hasNext()){
+				String case_id = local_task_data_it.next();
+				if (processed_task_data.containsKey(case_id)){
+					continue;
+				} else {
+					case_data.put(case_id,local_task_data.get(case_id));
+					break;
+				}
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return case_data;
+	}	
+
+	public void update_case_to_processed_task_queues_data_map(String queue_name, String case_id, HashMap<String, HashMap<String, String>> case_data) {
+		rw_lock.writeLock().lock();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = processed_task_queues_data_map.get(queue_name);
+		try {
+			if (processed_task_queues_data_map.containsKey(queue_name)){
+				queue_data = processed_task_queues_data_map.get(queue_name);
 			} else {
 				queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();	
 			}
 			queue_data.put(case_id, case_data);
-			task_queues_data_map.put(queue_name, queue_data);
+			processed_task_queues_data_map.put(queue_name, queue_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -80,9 +105,9 @@ public class task_data {
 		Boolean remove_result = new Boolean(false);
 		rw_lock.writeLock().lock();
 		try {
-			if (task_queues_data_map.containsKey(queue_name)){
-				if(task_queues_data_map.get(queue_name).containsKey(case_id)){
-					task_queues_data_map.get(queue_name).remove(case_id);
+			if (processed_task_queues_data_map.containsKey(queue_name)){
+				if(processed_task_queues_data_map.get(queue_name).containsKey(case_id)){
+					processed_task_queues_data_map.get(queue_name).remove(case_id);
 					remove_result = true;
 				}
 			} 
@@ -155,6 +180,22 @@ public class task_data {
 		}
 	}
 	
+	public ArrayList<String> get_pending_admin_queue_list(){
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			for(String admin_queue:processing_admin_queue_list){
+				if(finished_admin_queue_list.contains(admin_queue)){
+					continue;
+				}
+				temp.add(admin_queue);
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;		
+	}
+	
 	public ArrayList<String> get_running_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -198,6 +239,17 @@ public class task_data {
 		return temp;
 	}
 
+	public void update_finished_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if(!finished_admin_queue_list.contains(queue_name)){
+				finished_admin_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public void set_finished_admin_queue_list(ArrayList<String> update_data) {
 		rw_lock.writeLock().lock();
 		try {
