@@ -35,7 +35,7 @@ public class task_data {
 	private ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();
 	// captured: match with current client, including status in: stop pause
 	private ArrayList<String> captured_admin_queue_list = new ArrayList<String>();
-	// processing: all captured queue with status in processing
+	// processing: all captured queue with status in processing(value form TMP platform)
 	private ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 	// ====updated by waiters====
 	// running: working queue
@@ -47,6 +47,51 @@ public class task_data {
 
 	}
 
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data_map(String queue_name) {
+		rw_lock.readLock().lock();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		try {
+			if (task_queues_data_map.containsKey(queue_name)){
+				queue_data = this.task_queues_data_map.get(queue_name);
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queue_data;
+	}
+
+	public void update_case_to_task_queues_data_map(String queue_name, String case_id, HashMap<String, HashMap<String, String>> case_data) {
+		rw_lock.writeLock().lock();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = task_queues_data_map.get(queue_name);
+		try {
+			if (task_queues_data_map.containsKey(queue_name)){
+				queue_data = task_queues_data_map.get(queue_name);
+			} else {
+				queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();	
+			}
+			queue_data.put(case_id, case_data);
+			task_queues_data_map.put(queue_name, queue_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean remove_case_from_task_queues_data_map(String queue_name, String case_id) {
+		Boolean remove_result = new Boolean(false);
+		rw_lock.writeLock().lock();
+		try {
+			if (task_queues_data_map.containsKey(queue_name)){
+				if(task_queues_data_map.get(queue_name).containsKey(case_id)){
+					task_queues_data_map.get(queue_name).remove(case_id);
+					remove_result = true;
+				}
+			} 
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_result;
+	}
+	
 	public ArrayList<String> get_rejected_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();

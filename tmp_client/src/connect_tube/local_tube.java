@@ -770,7 +770,7 @@ public class local_tube {
 		// receive time
 		String time = time_info.get_date_time();
 		// pack data
-		// xxx@runxxx_suite_time :
+		// xx0@runxxx_suite_time :
 		// priority:match/assign task:job_from@run_number
 		// generate queue data
 		queue_name = priority + attribute + "0" + "@" + "run_" + queue_pre_fix + "_" + admin_queue_base + "_" + time;
@@ -835,7 +835,7 @@ public class local_tube {
 				}
 			}
 			// if admin queue note exists, create one
-			// x_x@runxxx_suite_time
+			// xxx@runxxx_suite_time
 			if (!local_admin_queue_exists) {
 				String queue_pre_fix = String.valueOf(local_admin_queue_keys.size() + 1);
 				local_match_admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);

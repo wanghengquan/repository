@@ -58,7 +58,7 @@ public class public_data {
 	public final static String CORE_NAME = "DEV";
 	public final static String CORE_ADDR = "http://lshlabd0001/platform/trunk/bqs_scripts/DEV";	
 	
-	// Software default data command line, config, GUI have higher priority
+	// Software default data command line > config; GUI have higher priority
 	// Software
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	// Machine
@@ -69,11 +69,12 @@ public class public_data {
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	// work model
-	public final static String DEF_CLIENT_WORK_MODE = "serial"; //"serial", "parallel", "auto"
+	public final static String DEF_QUEUE_WORK_MODE = "auto"; //"serial", "parallel", "auto"
+	public final static String DEF_CLIENT_WORK_MODE = "auto"; //"manual", "auto"
 	
 	// performance calibration
 	public final static int PERF_THREAD_RUN_INTERVAL = 5;
-	public final static int PERF_SW_MAXIMUM_THREAD = 15;
+	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
 	
 	private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
 	

@@ -23,14 +23,14 @@ public class result_waiter extends Thread  {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
-	private thread_pool pool_info;
+	private pool_data pool_info;
 	private String line_seprator = System.getProperty("line.separator");
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
 	// public function
 	// protected function
 	// private function	
 	
-	public result_waiter(thread_pool pool_info){
+	public result_waiter(pool_data pool_info){
 		this.pool_info = pool_info;	
 	}
 	

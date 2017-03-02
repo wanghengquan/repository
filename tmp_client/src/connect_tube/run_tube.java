@@ -45,23 +45,23 @@ public class run_tube extends Thread {
 	// private function
 
 	public Boolean admin_queue_match_check(HashMap<String, HashMap<String, String>> queue_data,
-			Map<String, HashMap<String, String>> client_current_data) {
+			Map<String, HashMap<String, String>> client_hash) {
 		Boolean client_match = true;
 		// check System match
-		HashMap<String, String> system_data = queue_data.get("System");
-		Set<String> system_set = system_data.keySet();
-		Iterator<String> system_it = system_set.iterator();
-		while (system_it.hasNext()) {
-			String key_name = system_it.next();
-			String value = system_data.get(key_name);
+		HashMap<String, String> system_require_data = queue_data.get("System");
+		Set<String> system_require_set = system_require_data.keySet();
+		Iterator<String> system_require_it = system_require_set.iterator();
+		while (system_require_it.hasNext()) {
+			String key_name = system_require_it.next();
+			String value = system_require_data.get(key_name);
 			if (key_name.equals("min_space")) {
-				String client_available_space = client_current_data.get("System").get("space");
+				String client_available_space = client_hash.get("System").get("space");
 				if (Integer.valueOf(value) > Integer.valueOf(client_available_space)) {
 					client_match = false;
 					break;
 				}
 			} else {
-				if (!value.contains(client_current_data.get("System").get(key_name))) {
+				if (!value.contains(client_hash.get("System").get(key_name))) {
 					client_match = false;
 					break;
 				}
@@ -71,32 +71,39 @@ public class run_tube extends Thread {
 			return client_match;
 		}
 		// check machine match
-		HashMap<String, String> machine_data = queue_data.get("Machine");
-		Set<String> machine_set = machine_data.keySet();
-		Iterator<String> machine_it = machine_set.iterator();
-		while (machine_it.hasNext()) {
-			String key_name = machine_it.next();
-			String value = machine_data.get(key_name);
-			if (!value.contains(client_current_data.get("Machine").get(key_name))) {
+		HashMap<String, String> machine_require_data = queue_data.get("Machine");
+		Set<String> machine_require_set = machine_require_data.keySet();
+		Iterator<String> machine_require_it = machine_require_set.iterator();
+		while (machine_require_it.hasNext()) {
+			String key_name = machine_require_it.next();
+			String value = machine_require_data.get(key_name);
+			if (!value.contains(client_hash.get("Machine").get(key_name))) {
 				client_match = false;
 				break;
+			}
+		}
+		String client_current_private = client_hash.get("Machine").get("private");
+		if (client_current_private.equals("1")){
+			if (!machine_require_data.containsKey("terminal")){
+				client_match = false;
+				return client_match;
 			}
 		}
 		if (!client_match) {
 			return client_match;
 		}
 		// check software match
-		HashMap<String, String> software_data = queue_data.get("Software");
-		Set<String> software_set = software_data.keySet();
-		Iterator<String> software_it = software_set.iterator();
-		while (software_it.hasNext()) {
-			String sw_name = software_it.next();
-			String sw_build = software_data.get(sw_name);
-			if (!client_current_data.containsKey(sw_name)) {
+		HashMap<String, String> software_require_data = queue_data.get("Software");
+		Set<String> software_require_set = software_require_data.keySet();
+		Iterator<String> software_require_it = software_require_set.iterator();
+		while (software_require_it.hasNext()) {
+			String sw_name = software_require_it.next();
+			String sw_build = software_require_data.get(sw_name);
+			if (!client_hash.containsKey(sw_name)) {
 				client_match = false;
 				break;
 			}
-			if (!client_current_data.get(sw_name).containsKey(sw_build)) {
+			if (!client_hash.get(sw_name).containsKey(sw_build)) {
 				client_match = false;
 				break;
 			}
@@ -106,9 +113,9 @@ public class run_tube extends Thread {
 	}
 
 	private void update_captured_admin_queues() {
-		Map<String, HashMap<String, String>> client_current_data = new HashMap<String, HashMap<String, String>>();
+		Map<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		client_current_data.putAll(client_info.client_hash);
+		client_hash.putAll(client_info.client_hash);
 		total_admin_queue.putAll(rmq_tube.remote_admin_queue_receive_treemap);
 		total_admin_queue.putAll(local_tube.local_admin_queue_receive_treemap);
 		Set<String> queue_set = total_admin_queue.keySet();
@@ -118,7 +125,7 @@ public class run_tube extends Thread {
 			String queue_name = queue_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			// check System match
-			client_match = admin_queue_match_check(queue_data, client_current_data);
+			client_match = admin_queue_match_check(queue_data, client_hash);
 			if (client_match) {
 				captured_admin_queues.put(queue_name, queue_data);
 			}

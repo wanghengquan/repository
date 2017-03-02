@@ -45,9 +45,9 @@ public class hall_manager extends Thread  {
 		this.client_info = client_info;
 	}
 	
-	private HashMap<String, task_waiter> get_waiter_ready(thread_pool pool_info){
+	private HashMap<String, task_waiter> get_waiter_ready(pool_data pool_info){
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
-		int max_sw_thread = public_data.PERF_SW_MAXIMUM_THREAD;
+		int max_sw_thread = public_data.PERF_POOL_MAXIMUM_THREAD;
 		for(int i = 0; i < max_sw_thread; i++){
 			task_waiter waiter = new task_waiter(i, pool_info, task_info, client_info, switch_info);
 			String waiter_index = "waiter_" + String.valueOf(i);
@@ -93,7 +93,7 @@ public class hall_manager extends Thread  {
 
 	private void monitor_run() {
 		client_thread = Thread.currentThread();
-		thread_pool pool_info = new thread_pool(public_data.PERF_SW_MAXIMUM_THREAD);
+		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_THREAD, switch_info);
 		HashMap<String, task_waiter> waiters = get_waiter_ready(pool_info);
 		while (!stop_request) {
 			if (wait_request) {
