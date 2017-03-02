@@ -44,7 +44,7 @@ public class time_info {
 
 	public static void main(String[] argv) {
 		System.out.println(get_date_time());
-		System.out.println(System.currentTimeMillis());
+		System.out.println(System.currentTimeMillis()); 
 	}
 
 }

@@ -205,7 +205,7 @@ public class local_tube {
 				value = pre_value + ";" + value;
 			}
 			if (suite_area) {
-				suite_data.put(item, value);
+				suite_data.put(item, value.replaceAll("\\\\", "/"));
 			}
 			pre_word = item;
 			pre_value = value;
@@ -357,7 +357,7 @@ public class local_tube {
 					} else if (key.equals("Flow")) {
 						row_data.put("Flow", flow_item);
 					} else {
-						row_data.put(key, column_value);
+						row_data.put(key, column_value.replaceAll("\\\\", "/"));
 					}
 				}
 				case_data.put(case_order, row_data);
@@ -598,13 +598,13 @@ public class local_tube {
 		String case_id = case_data.get("Order").trim();
 		HashMap<String, String> id_map = new HashMap<String, String>();
 		if (project_id.equals("") || project_id == null) {
-			id_map.put("project", "prj");
+			id_map.put("project", "0");
 		} else {
 			id_map.put("project", project_id);
 		}
 		if (suite_id.equals("") || suite_id == null) {
-			id_map.put("suite", "run");
-			id_map.put("run", "run");
+			id_map.put("suite", "suite000");
+			id_map.put("run", "run000");
 		} else {
 			id_map.put("suite", suite_id);
 			id_map.put("run", suite_id);
@@ -679,6 +679,14 @@ public class local_tube {
 			String local_value = local_item.split("=", 2)[1].trim();
 			local_data.put(local_key, local_value);
 		}
+		HashMap<String, String> merged_data = new HashMap<String, String>();
+		merged_data = comm_admin_task_merge(globle_data, local_data);
+		return merged_data;
+	}
+
+	public static HashMap<String, String> comm_admin_task_merge(
+			HashMap<String, String> globle_data,
+			HashMap<String, String> local_data) {
 		Set<String> local_set = local_data.keySet();
 		Iterator<String> local_it = local_set.iterator();
 		while (local_it.hasNext()) {
@@ -707,7 +715,7 @@ public class local_tube {
 		}
 		return globle_data;
 	}
-
+	
 	private Boolean is_request_match(HashMap<String, HashMap<String, String>> queue_data,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// compare sub map data Software, System, Machine
@@ -791,9 +799,11 @@ public class local_tube {
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
 		queue_data.put("ID", design_data.get("ID"));
-		queue_data.put("ID", design_data.get("Machine"));
-		queue_data.put("ID", design_data.get("Software"));
-		queue_data.put("ID", design_data.get("System"));
+		queue_data.put("CaseInfo", design_data.get("CaseInfo"));
+		queue_data.put("Environment", design_data.get("Environment"));
+		queue_data.put("Software", design_data.get("Software"));
+		queue_data.put("System", design_data.get("System"));
+		queue_data.put("Machine", design_data.get("Machine"));
 		HashMap<String, String> queue_status = new HashMap<String, String>();
 		queue_status.put("admin_status", "processing");
 		queue_data.put("Status", queue_status);
@@ -844,7 +854,7 @@ public class local_tube {
 				local_admin_queue_receive_treemap.putAll(one_hash_data);
 			}
 			// insert design into this queue : local_task_queue_designs
-			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = null;
+			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			if (local_task_queue_tube_map.containsKey(local_match_admin_queue_name)) {
 				task_queue_data = local_task_queue_tube_map.get(local_match_admin_queue_name);
 			}
@@ -856,7 +866,8 @@ public class local_tube {
 	public static void main(String[] argv) {
 		local_tube sheet_parser = new local_tube();
 		String current_terminal = "D27639";
-		sheet_parser.generate_local_queue_hash("D:/java_dev/diamond_regression.xlsx", current_terminal);
-
+		sheet_parser.generate_local_queue_hash("D:/java_dev/misc_design_pool.xlsx", current_terminal);
+		System.out.println(local_task_queue_tube_map.toString());
+		System.out.println(local_admin_queue_receive_treemap.toString());
 	}
 }

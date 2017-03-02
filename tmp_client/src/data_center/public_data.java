@@ -9,12 +9,10 @@
  */
 package data_center;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 
 public class public_data {
+	//========================
 	// base
 	public final static String BASE_CURRENTVERSION = "2.05.01"; // External.Internal.DEV
 	public final static String BASE_BUILDDATE = "2017/2/22";
@@ -26,11 +24,13 @@ public class public_data {
 	// Soft ware bin path
 	private static String bin_path = get_bin_path();
 	
+	//========================
 	// external configure based on software bin path
 	public final static String CONF_DEFAULT_INI = bin_path + "/conf/default.conf";
 	public final static String CONF_FRAME_PNG = bin_path + "/conf/frame.png";
 	public final static String CONF_TRAY_PNG = bin_path + "/conf/ico.png";
 
+	//========================
 	// external tools based on software bin path
 	public final static String TOOLS_SSHPASS = bin_path + "/tools/sshpass/sshpass";
 	public final static String TOOLS_KILL_PROCESS = bin_path + "/tools/kill_process.py";
@@ -41,6 +41,7 @@ public class public_data {
 	public final static String TOOLS_PSCP = bin_path + "/tools/pscp.exe";
 	public final static String TOOLS_PUTTY = bin_path + "/tools/putty.exe";
 
+	//========================
 	// link to RabbitMQ configuration data only shown here
 	public final static String RMQ_HOST = "linux-D50553";
 	public final static String RMQ_USER = "root";
@@ -50,14 +51,22 @@ public class public_data {
 	public final static String RMQ_TASK_NAME = "task_queue";
 	public final static String RMQ_ADMIN_NAME = "admin_queue";
 	
+	//========================
+	// Encryption public key
+	public final static String ENCRY_PUBLIC_KEY = "@Lattice";
+	public final static String ENCRY_PRIVATE_KEY = "Yjt7LEio8/f0c3/eaa3otw=="; //SVN read only, guest_+_welcome
+	
+	//========================
 	// link to SVN configuration data only shown here
 	public final static String SVN_USER = "guest";
 	public final static String SVN_PWD = "welcome";
 	
+	//========================
 	// Link to core script 
-	public final static String CORE_NAME = "DEV";
-	public final static String CORE_ADDR = "http://lshlabd0001/platform/trunk/bqs_scripts/DEV";	
+	public final static String CORE_SCRIPT_NAME = "DEV";
+	public final static String CORE_SCRIPT_ADDR = "http://lshlabd0001/platform/trunk/bqs_scripts/DEV";	
 	
+	//========================
 	// Software default data command line > config; GUI have higher priority
 	// Software
 	public final static String DEF_SW_MAX_INSTANCES = "10";
@@ -71,12 +80,19 @@ public class public_data {
 	// work model
 	public final static String DEF_QUEUE_WORK_MODE = "auto"; //"serial", "parallel", "auto"
 	public final static String DEF_CLIENT_WORK_MODE = "auto"; //"manual", "auto"
-	
+
+	//========================
 	// performance calibration
 	public final static int PERF_THREAD_RUN_INTERVAL = 5;
 	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
 	
-	private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
+	//========================
+	// task case default setting
+	public final static String TASK_DEF_TIMEOUT = "3600"; //in Seconds, 1 hour 
+	public final static String TASK_DEF_PRIORITY = "5"; //0 > 2 > 9
+	
+	
+	//private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
 	
 	public public_data(){
 
@@ -95,7 +111,14 @@ public class public_data {
 	public static void main(String[] args) {
 		@SuppressWarnings("unused")
 		public_data my_data = new public_data();
-		PUB_LOGGER.warn(TOOLS_KILL_PROCESS);
-		
+		System.out.println(System.getProperty("file.separator"));
+		System.out.println(System.getProperty("path.separator"));
+		System.out.println(System.getProperty("line.separator"));
+		System.out.println(System.getProperty("user.name")); 
+		System.out.println(System.getProperty("user.home")); 
+		System.out.println(System.getProperty("user.dir")); 
+		System.out.println(System.getProperty("os.name")); 
+		System.out.println(System.getProperty("os.arch")); 
+		System.out.println(System.getProperty("os.version"));
 	}	
 }

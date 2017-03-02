@@ -203,5 +203,6 @@ public class file_action {
 		read_content = file_action.read_file("lab.txt");
 		System.out.println(read_content);
 		System.out.println(file_action.delete_file("lab.txt"));
+		
 	}
 }

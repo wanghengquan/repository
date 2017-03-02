@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.local_tube;
 import connect_tube.rmq_tube;
 import connect_tube.run_tube;
 import connect_tube.task_data;
@@ -205,6 +206,119 @@ public class task_waiter extends Thread {
 		}
 		return case_data;
 	}
+	
+	private HashMap<String, HashMap<String, String>> get_formated_case_hash(HashMap<String, HashMap<String, String>> case_hash){
+		HashMap<String, HashMap<String, String>> formated_data = new HashMap<String, HashMap<String, String>>();
+		//ID  format
+		HashMap<String, String> id_hash = new HashMap<String, String>();
+		String project = null;
+		String run = null;
+		String suite = null;
+		String section = null;
+		id_hash.put("project", project);
+		id_hash.put("run", run);
+		id_hash.put("suite", suite);
+		id_hash.put("section", section);
+		if(case_hash.containsKey("ID")){
+		    id_hash.putAll(case_hash.get("ID"));
+		}
+		formated_data.put("ID", id_hash);
+		//CaseInfo format
+		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
+		String repository = null;
+		String suite_path = null;
+		String design_name = null;
+		String script_address = null;
+		String auth_key = public_data.ENCRY_PRIVATE_KEY;
+		String priority = public_data.TASK_DEF_PRIORITY;
+		String timeout = public_data.TASK_DEF_TIMEOUT;
+		caseinfo_hash.put("repository", repository);
+		caseinfo_hash.put("suite_path", suite_path);
+		caseinfo_hash.put("design_name", design_name);
+		caseinfo_hash.put("script_address", script_address);
+		caseinfo_hash.put("auth_key", auth_key);
+		caseinfo_hash.put("priority", priority);
+		caseinfo_hash.put("timeout", timeout);
+		if(case_hash.containsKey("CaseInfo")){
+			caseinfo_hash.putAll(case_hash.get("CaseInfo"));
+		}		
+		formated_data.put("CaseInfo", caseinfo_hash);
+		//Environment  no default data now
+		HashMap<String, String> envinfo_hash = new HashMap<String, String>();
+		if(case_hash.containsKey("Environment")){
+			envinfo_hash.putAll(case_hash.get("Environment"));
+		}		
+		formated_data.put("Environment", envinfo_hash);
+		//LaunchCommand format
+		HashMap<String, String> command_hash = new HashMap<String, String>();
+		String cmd = null;
+		String override = null;
+		command_hash.put("cmd", cmd);
+		command_hash.put("override", override);
+		if(case_hash.containsKey("LaunchCommand")){
+			command_hash.putAll(case_hash.get("LaunchCommand"));
+		}
+		formated_data.put("LaunchCommand", command_hash);
+		//Machine format
+		HashMap<String, String> machine_hash = new HashMap<String, String>();
+		String terminal = null;
+		String group = null;
+		machine_hash.put("terminal", terminal);
+		machine_hash.put("group", group);
+		if(case_hash.containsKey("Machine")){
+			machine_hash.putAll(case_hash.get("Machine"));
+		}
+		formated_data.put("Machine", machine_hash);
+		//System format
+		HashMap<String, String> system_hash = new HashMap<String, String>();
+		String os = null;
+		String os_type = null;
+		String os_arch = null;
+		String min_space = null;
+		system_hash.put("os", os);
+		system_hash.put("os_type", os_type);
+		system_hash.put("os_arch", os_arch);
+		system_hash.put("min_space", min_space);
+		if(case_hash.containsKey("System")){
+			system_hash.putAll(case_hash.get("System"));
+		}
+		formated_data.put("System", system_hash);		
+		//Software
+		HashMap<String, String> software_hash = new HashMap<String, String>();
+		if(case_hash.containsKey("Software")){
+			software_hash.putAll(case_hash.get("Software"));
+		}		
+		formated_data.put("Software", software_hash);		
+		// Status
+		HashMap<String, String> status_hash = new HashMap<String, String>();
+		if(case_hash.containsKey("Status")){
+			status_hash.putAll(case_hash.get("Status"));
+		}		
+		formated_data.put("Status", status_hash);		
+		return formated_data;
+	}
+	
+	private HashMap<String, HashMap<String, String>> get_merged_remote_task_info(
+			HashMap<String, HashMap<String, String>>admin_hash, 
+			HashMap<String, HashMap<String, String>>case_hash){
+		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
+		//case_hash is formated
+		Set<String> case_hash_set = case_hash.keySet();
+		Iterator<String> case_hash_it = case_hash_set.iterator();
+		while(case_hash_it.hasNext()){
+			String key_name = case_hash_it.next();
+			HashMap<String, String> case_info = case_hash.get(key_name);
+			HashMap<String, String> merge_info = new HashMap<String, String>();
+			if(admin_hash.containsKey(key_name)){
+				HashMap<String, String> admin_info = admin_hash.get(key_name);
+				merge_info = local_tube.comm_admin_task_merge(admin_info, case_info);
+			} else {
+				merge_info = case_info;
+			}
+			merged_data.put(key_name, merge_info);
+		}
+		return merged_data;
+	}	
 	/*
 	 * private get_task_case_data(){
 	 * 
@@ -251,16 +365,16 @@ public class task_waiter extends Thread {
 				e.printStackTrace();
 			}
 			// ============== All job start from here ==============
-			// Step 0 check available thread
+			// >>>Step 0 check available thread
 			if (pool_info.get_available_thread() == 0){
 				continue;
 			}
-			// Step 1 get working queue
+			// >>>Step 1 get working queue
 			String queue_name = get_right_task_queue();
 			if (queue_name == null){
 				continue;
 			}
-			// Step 2 resource booking (thread, software usage)   
+			// >>>Step 2 resource booking (thread, software usage)   
 			// Please release if case not launched  !!!
 			Boolean thread_booking = pool_info.booking_used_thread(1);
 			if (!thread_booking) {
@@ -273,7 +387,7 @@ public class task_waiter extends Thread {
 				pool_info.release_used_thread(1);
 				continue;
 			}
-			// step 3 get one task case data
+			// >>>Step 3 get one task case data
 			Map<String, HashMap<String, HashMap<String, String>>> case_data = get_task_case_data(queue_name);
 			if (case_data.isEmpty() || case_data == null){
 				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + ":Change queue to finished status:" + queue_name);
@@ -282,11 +396,22 @@ public class task_waiter extends Thread {
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
 				continue;
-			}			
-			// Step 3 prepare case
-			
-			
-			
+			}
+			Set<String> case_set = case_data.keySet();
+			Iterator<String> case_it = case_set.iterator();
+			//remote queue have a real case title while local queue case title is same as case id
+			String case_title = case_it.next();
+			HashMap<String, HashMap<String, String>> case_hash = case_data.get(case_title);
+			HashMap<String, HashMap<String, String>> formated_case_hash = get_formated_case_hash(case_hash);
+			// >>>Step 4 merge case data admin queue and local queue (remote need, local is ready)
+			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+			if (queue_name.contains("1@")){
+				HashMap<String, HashMap<String, String>> admin_hash = run_tube.captured_admin_queues.get(queue_name);
+				task_data = get_merged_remote_task_info(admin_hash, formated_case_hash);
+			} else {
+				task_data = formated_case_hash;
+			}
+			// >>>Step 5 get test case ready
 			//HashMap case_data = get_task_case_ready(queue_name);
 		}
 	}
