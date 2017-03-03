@@ -20,8 +20,8 @@ public class core_update {
 	 * it. 4. When the client is start, this function also need to check.
 	 */
 	private static final Logger CORE_LOGGER = LogManager.getLogger(core_update.class.getName());
-	private String core_name = public_data.CORE_NAME;
-	private String core_addr = public_data.CORE_ADDR;
+	private String core_name = public_data.CORE_SCRIPT_NAME;
+	private String core_addr = public_data.CORE_SCRIPT_ADDR;
 	private String svn_user = public_data.SVN_USER;
 	private String svn_pwd = public_data.SVN_PWD;
 	private String line_seprator = System.getProperty("line.separator");

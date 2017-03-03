@@ -405,13 +405,15 @@ public class task_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> formated_case_hash = get_formated_case_hash(case_hash);
 			// >>>Step 4 merge case data admin queue and local queue (remote need, local is ready)
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
-			if (queue_name.contains("1@")){
+			if (queue_name.contains("1@")){ //1@: remote task, 0@: local task
 				HashMap<String, HashMap<String, String>> admin_hash = run_tube.captured_admin_queues.get(queue_name);
 				task_data = get_merged_remote_task_info(admin_hash, formated_case_hash);
 			} else {
 				task_data = formated_case_hash;
 			}
 			// >>>Step 5 get test case ready
+			// >>>Step 6 launch prepare
+			// >>>Step 7 launch (add case info to task data)
 			//HashMap case_data = get_task_case_ready(queue_name);
 		}
 	}
