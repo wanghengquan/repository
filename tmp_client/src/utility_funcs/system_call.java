@@ -18,19 +18,19 @@ import java.util.concurrent.Callable;
 import data_center.public_data;
 import utility_funcs.system_cmd;
 
-class system_call implements Callable<Object> {
+public class system_call implements Callable<Object> {
 	private String case_dir;
 	private String[] cmds;
 	private Map<String, String> envs;
 	private int timeout = 0;
 	private String line_seprator = System.getProperty("line.separator");
 
-	void run_case(String[] cmds, Map<String, String> envs) {
+	public system_call(String[] cmds, Map<String, String> envs) {
 		this.cmds = cmds;
 		this.envs = envs;
 	}
 
-	void run_case(String[] cmds, Map<String, String> envs, String case_dir, int timeout) {
+	public system_call(String[] cmds, Map<String, String> envs, String case_dir, int timeout) {
 		this.cmds = cmds;
 		this.envs = envs;
 		this.case_dir = case_dir;

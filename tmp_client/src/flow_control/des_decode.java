@@ -11,15 +11,11 @@ import javax.crypto.spec.DESKeySpec;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
  
+@SuppressWarnings({ "restriction", "unused" })
 public class des_decode {
  
     private final static String DES = "DES";
-    protected final static String key = "@Lattice";
- 
-    public static void main(String[] args) throws Exception {
-        String data = "GlfbE2rHHgT9xCSyNcCsuA==";
-        System.err.println(decrypt(data, key));
-    }
+    //protected final static String key = "@Lattice";
  
     /**
      * Description
@@ -29,11 +25,11 @@ public class des_decode {
      * @throws IOException
      * @throws Exception
      */
-    public static String decrypt(String data, String key) throws IOException,
+	public static String decrypt(String data, String key) throws IOException,
             Exception {
         if (data == null)
             return null;
-        BASE64Decoder decoder = new BASE64Decoder();
+		BASE64Decoder decoder = new BASE64Decoder();
         byte[] buf = decoder.decodeBuffer(data);
         byte[] bt = decrypt(buf,key.getBytes());
         return new String(bt);
@@ -55,4 +51,9 @@ public class des_decode {
         cipher.init(Cipher.DECRYPT_MODE, securekey, sr);
         return cipher.doFinal(data);
     }
+    
+    public static void main(String[] args) throws Exception {
+        String data = "GlfbE2rHHgT9xCSyNcCsuA==";
+        System.err.println(decrypt(data, "@Lattice"));
+    }    
 }

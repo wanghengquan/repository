@@ -11,7 +11,7 @@ package flow_control;
 
 import java.util.HashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -28,12 +28,12 @@ public class pool_data{
 	// protected property
 	// private property
 	private static final Logger THREAD_POOL_LOGGER = LogManager.getLogger(pool_data.class.getName());
-	private String line_seprator = System.getProperty("line.separator");	
+	//private String line_seprator = System.getProperty("line.separator");	
 	// public function
 	// protected function
 	// private function	
 	private ExecutorService run_pool;
-	private ConcurrentHashMap<String, HashMap<String, String>> call_map = new ConcurrentHashMap<String, HashMap<String, String>>();
+	private HashMap<String, HashMap<String, Object>> call_map = new HashMap<String, HashMap<String, Object>>();
 	private switch_data switch_info;
 	private int used_thread = 0;
 	
@@ -81,14 +81,37 @@ public class pool_data{
 		return release_result;
 	}
 	
-	public synchronized void add_sys_call(Callable sys_call){
-		Future future_call_back = run_pool.submit(sys_call);
-		
-		this.used_thread++;
+	public synchronized void add_sys_call(
+			Callable<?> sys_call, 
+			String queue_name, 
+			String case_id,
+			String case_work_dir,
+			int time_out){
+		Future<?> future_call_back = run_pool.submit(sys_call);
+		String sys_call_key = case_id + "@" + queue_name;
+		HashMap<String, Object> sys_call_value= new HashMap<String, Object>();
+		sys_call_value.put("call_back", future_call_back);
+		sys_call_value.put("queue_name", queue_name);
+		sys_call_value.put("case_id", case_id);
+		long start_time = System.currentTimeMillis()/1000;
+		sys_call_value.put("start_time", start_time);
+		sys_call_value.put("time_out", time_out);
+		call_map.put(sys_call_key, sys_call_value);
 	}
 	
-	public synchronized void get_sys_call_results(){
-	}	
+	public synchronized HashMap<String, HashMap<String, Object>> get_sys_call(){
+		return this.call_map;
+	}
+	
+	public synchronized Boolean remove_sys_call(String sys_call_key){
+		Boolean remove_result = new Boolean(true);
+		if (call_map.containsKey(sys_call_key)){
+			call_map.remove(sys_call_key);
+		} else {
+			remove_result = false;
+		}
+		return remove_result;
+	}
 	
 	public void shutdown_pool(){
 		run_pool.shutdown();

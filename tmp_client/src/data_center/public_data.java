@@ -21,25 +21,27 @@ public class public_data {
 	public final static float BASE_PYTHONBASEVERSION = 2.7f;
 	public final static float BASE_SVNBASEVERSION = 1.4f;
 	
+	//========================
 	// Soft ware bin path
-	private static String bin_path = get_bin_path();
+	public final static String SW_BIN_PATH = get_bin_path();
 	
 	//========================
 	// external configure based on software bin path
-	public final static String CONF_DEFAULT_INI = bin_path + "/conf/default.conf";
-	public final static String CONF_FRAME_PNG = bin_path + "/conf/frame.png";
-	public final static String CONF_TRAY_PNG = bin_path + "/conf/ico.png";
+	public final static String CONF_DEFAULT_INI = SW_BIN_PATH + "/conf/default.conf";
+	public final static String CONF_FRAME_PNG = SW_BIN_PATH + "/conf/frame.png";
+	public final static String CONF_TRAY_PNG = SW_BIN_PATH + "/conf/ico.png";
 
 	//========================
 	// external tools based on software bin path
-	public final static String TOOLS_SSHPASS = bin_path + "/tools/sshpass/sshpass";
-	public final static String TOOLS_KILL_PROCESS = bin_path + "/tools/kill_process.py";
-	public final static String TOOLS_KILL_WINPOP = bin_path + "/tools/kill_winpop.py";
-	public final static String TOOLS_OS_NAME = bin_path + "/tools/os_name.py";
-	public final static String TOOLS_GET_CPU = bin_path + "/tools/get_cpu.py";
-	public final static String TOOLS_GET_MEM = bin_path + "/tools/get_mem.py";
-	public final static String TOOLS_PSCP = bin_path + "/tools/pscp.exe";
-	public final static String TOOLS_PUTTY = bin_path + "/tools/putty.exe";
+	public final static String TOOLS_SSHPASS = SW_BIN_PATH + "/tools/sshpass/sshpass";
+	public final static String TOOLS_KILL_PROCESS = SW_BIN_PATH + "/tools/kill_process.py";
+	public final static String TOOLS_KILL_WINPOP = SW_BIN_PATH + "/tools/kill_winpop.py";
+	public final static String TOOLS_OS_NAME = SW_BIN_PATH + "/tools/os_name.py";
+	public final static String TOOLS_GET_CPU = SW_BIN_PATH + "/tools/get_cpu.py";
+	public final static String TOOLS_GET_MEM = SW_BIN_PATH + "/tools/get_mem.py";
+	public final static String TOOLS_PSCP = SW_BIN_PATH + "/tools/pscp.exe";
+	public final static String TOOLS_CP = SW_BIN_PATH + "/tools/cp.exe";
+	public final static String TOOLS_PUTTY = SW_BIN_PATH + "/tools/putty.exe";
 
 	//========================
 	// link to RabbitMQ configuration data only shown here

@@ -866,7 +866,7 @@ public class local_tube {
 	public static void main(String[] argv) {
 		local_tube sheet_parser = new local_tube();
 		String current_terminal = "D27639";
-		sheet_parser.generate_local_queue_hash("D:/java_dev/misc_design_pool.xlsx", current_terminal);
+		sheet_parser.generate_local_queue_hash("D:/java_dev/diamond_regression.xlsx", current_terminal);
 		System.out.println(local_task_queue_tube_map.toString());
 		System.out.println(local_admin_queue_receive_treemap.toString());
 	}

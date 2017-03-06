@@ -101,7 +101,7 @@ public class task_data {
 		}
 	}
 	
-	public Boolean remove_case_from_task_queues_data_map(String queue_name, String case_id) {
+	public Boolean remove_case_from_processed_task_queues_data_map(String queue_name, String case_id) {
 		Boolean remove_result = new Boolean(false);
 		rw_lock.writeLock().lock();
 		try {

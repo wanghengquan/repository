@@ -27,6 +27,7 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import utility_funcs.system_call;
 
 public class task_waiter extends Thread {
 	// public property
@@ -211,10 +212,10 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, String>> formated_data = new HashMap<String, HashMap<String, String>>();
 		//ID  format
 		HashMap<String, String> id_hash = new HashMap<String, String>();
-		String project = null;
-		String run = null;
-		String suite = null;
-		String section = null;
+		String project = "";
+		String run = "";
+		String suite = "";
+		String section = "";
 		id_hash.put("project", project);
 		id_hash.put("run", run);
 		id_hash.put("suite", suite);
@@ -225,10 +226,10 @@ public class task_waiter extends Thread {
 		formated_data.put("ID", id_hash);
 		//CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
-		String repository = null;
-		String suite_path = null;
-		String design_name = null;
-		String script_address = null;
+		String repository = "";
+		String suite_path = "";
+		String design_name = "";
+		String script_address = "";
 		String auth_key = public_data.ENCRY_PRIVATE_KEY;
 		String priority = public_data.TASK_DEF_PRIORITY;
 		String timeout = public_data.TASK_DEF_TIMEOUT;
@@ -319,19 +320,18 @@ public class task_waiter extends Thread {
 		}
 		return merged_data;
 	}	
-	/*
-	 * private get_task_case_data(){
-	 * 
-	 * }
-	 * 
-	 * private prepare_task_case(){
-	 * 
-	 * }
-	 * 
-	 * private launch_task_case(){
-	 * 
-	 * }
-	 */
+
+	private int get_time_out(String time_out){
+		Pattern p_timeout = Pattern.compile("\\D");
+		Matcher m = p_timeout.matcher(time_out);
+		if(m.find())
+			time_out = "3600";
+		if(time_out.equals("0")){
+			time_out = "18000";
+		}
+		return Integer.parseInt(time_out);
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -399,7 +399,7 @@ public class task_waiter extends Thread {
 			}
 			Set<String> case_set = case_data.keySet();
 			Iterator<String> case_it = case_set.iterator();
-			//remote queue have a real case title while local queue case title is same as case id
+			//remote queue have a real case title while local queue case title == case id
 			String case_title = case_it.next();
 			HashMap<String, HashMap<String, String>> case_hash = case_data.get(case_title);
 			HashMap<String, HashMap<String, String>> formated_case_hash = get_formated_case_hash(case_hash);
@@ -412,9 +412,27 @@ public class task_waiter extends Thread {
 				task_data = formated_case_hash;
 			}
 			// >>>Step 5 get test case ready
-			// >>>Step 6 launch prepare
-			// >>>Step 7 launch (add case info to task data)
-			//HashMap case_data = get_task_case_ready(queue_name);
+			case_prepare prepare_obj = new case_prepare();
+			ArrayList<String> case_prepare_list = new ArrayList<String>();
+			String case_work_path = new String();
+			try {
+				case_work_path = prepare_obj.get_working_dir(task_data, client_info.client_hash.get("base").get("work_path"));
+				case_prepare_list = prepare_obj.get_case_ready(task_data, client_info.client_hash.get("base").get("work_path"));
+			} catch (Exception e) {
+				TASK_WAITER_LOGGER.warn("Case prepare failed, skip this case.");
+				client_info.release_use_soft_insts(software_cost);
+				pool_info.release_used_thread(1);				
+			}
+			// >>>Step 6 launch cmd
+			String[] run_cmd = prepare_obj.get_run_command(task_data, client_info.client_hash.get("base").get("work_path"));
+			// >>>Step 7 launch env
+			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.client_hash);
+			// >>>Step 8 launch (add case info to task data)
+			int case_time_out = get_time_out(task_data.get("CaseInfo").get("time_out"));
+			system_call sys_call = new system_call(run_cmd, run_env, case_work_path, case_time_out);
+			pool_info.add_sys_call(sys_call, queue_name, case_title, case_work_path, case_time_out);
+			// >>>Step 9 register launched case in task_data
+			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_title, task_data);
 		}
 	}
 
