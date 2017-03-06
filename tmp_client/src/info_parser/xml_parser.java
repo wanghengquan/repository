@@ -15,7 +15,6 @@ import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -58,7 +57,7 @@ public class xml_parser {
 	private FileBasedConfigurationBuilder<XMLConfiguration> get_xml_builder() {
 		Parameters params = new Parameters();
 		FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<XMLConfiguration>(
-				XMLConfiguration.class).configure(params.hierarchical().setFileName(xml_path));
+				XMLConfiguration.class).configure(params.xml().setFileName(xml_path));
 		return builder;
 	}
 
@@ -293,8 +292,26 @@ public class xml_parser {
 	}
 
 	public static void main(String[] args) {
-		@SuppressWarnings("unused")
-		xml_parser xml_parser2 = new xml_parser("message/result.txt");
-		System.out.println(parser_xml_string("message/result.txt").toString());
+		xml_parser xml_parser2 = new xml_parser("D:/java_dev/result.xml");
+		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> result_data = new HashMap<String, String>();
+		result_data.put("result", "pass");
+		result_data.put("id", "123456");
+		result_data.put("build", "12.05");
+		write_data.put("T123456", result_data);
+		try {
+			xml_parser2.write_xml_data(write_data);
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		HashMap<String, String> read_data = new HashMap<String, String>();
+		try {
+			read_data = xml_parser2.read_xml_data();
+		} catch (ConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(read_data.toString());
 	}
 }

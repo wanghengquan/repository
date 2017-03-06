@@ -43,7 +43,7 @@ public class task_waiter extends Thread {
 	private task_data task_info;
 	private client_data client_info;
 	private switch_data switch_info;
-	private String line_seprator = System.getProperty("line.separator");
+	//private String line_seprator = System.getProperty("line.separator");
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
