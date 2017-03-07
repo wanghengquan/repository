@@ -73,7 +73,7 @@ public class result_waiter extends Thread {
 			}
 		}
 	}
-	
+
 	public void copy_case_to_save_path(String case_dir, String copy_type) {
 		String save_path = client_info.client_hash.get("base").get("save_path");
 		File save_path_fobj = new File(save_path);

@@ -1,0 +1,45 @@
+in admin
+=================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- sent time: Fri Mar  3 15:48:35 2017 -->
+<AdminQ title="run_778_021417_171853">
+  <ID>
+    <sub name="project" value="3"></sub>
+    <sub name="run" value="778"></sub>
+    <sub name="suite" value="404"></sub>
+  </ID>
+  <CaseInfo>
+    <sub name='suite_path' value='sim_suite'></sub>
+    <sub name='repository' value='http://lshlabd0001/designpool/trunk'></sub>
+  </CaseInfo>
+  <Machine>
+    <sub name='group' value='rna_regression_group'></sub>
+  </Machine>
+  <Software>
+    <sub name='diamond' value='3_10a.13'></sub>
+  </Software>
+  <LaunchCommand>
+    <sub name='cmd' value='python DEV/bin/run_diamond.py'></sub>
+  </LaunchCommand>
+  <System>
+    <sub name='os_type' value='windows'></sub>
+  </System>
+  <Status>
+    <sub name="admin_status" value="processing"></sub>
+  </Status>
+</AdminQ>
+
+in task
+=================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<Test title="AVID_C125026_SwissRoll_sap">
+  <TestID>
+    <sub name="id" value="1314148"></sub>
+  </TestID>
+  <CaseInfo>
+    <sub name='design_name' value='Conversion_Branch/sapphire/AE_suite/AVID_C125026_SwissRoll_sap'></sub>
+  </CaseInfo>
+  <LaunchCommand>
+    <sub name='cmd' value='--synthesis=lse --check-conf=designpool_lse.conf'></sub>
+  </LaunchCommand>
+</Test>

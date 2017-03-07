@@ -69,5 +69,10 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="D:/java_dev/lib/poi-3.16-beta2/ooxml-lib/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/dom4j-1.6.1/dom4j-1.6.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/D:/java_dev/lib/dom4j-1.6.1/docs/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

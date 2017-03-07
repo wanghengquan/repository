@@ -1,0 +1,187 @@
+client send
+=================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<client>
+    <host_ip>192.168.122.58</host_ip>
+    <os>win7_64b</os>
+    <group_name>jason_win7</group_name>
+    <memory_left>48.5%</memory_left>
+    <riviera>2015.10</riviera>
+    <squish>5.1.0,4.2.3</squish>
+    <disk_left>69G</disk_left>
+    <cpu_used>6.0%</cpu_used>
+    <diamond>d38_p1,3.9.0.88,3.8.0.115</diamond>
+    <modelsim>6.6d</modelsim>
+    <os_type>windows</os_type>
+    <questasim>10.1</questasim>
+    <icecube>2016.12,2017.01</icecube>
+    <host_name>D27639</host_name>
+    <high_priority>null</high_priority>
+    <max_procs>4</max_procs>
+    <status>free</status>
+    <processNum>4/0</processNum>
+</client>
+
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<client>
+<host_name>D27639</host_name>
+<admin_request>1</admin_request>
+<status>free</status>
+<processNum>4/0</processNum>
+</client>
+
+result sent
+=================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<CaseResults ip="192.168.122.58" machine="D27639">
+    <case>
+        <testId>1314148</testId>
+        <suiteId>53</suiteId>
+        <runId>798</runId>
+        <projectId>3</projectId>
+        <design>T1314148:Conversion_Branch/sapphire/AE_suite/AVID_C125026_SwissRoll_sap</design>
+        <status>Processing</status>
+    </case>
+
+    <case>
+        <testId>1314149</testId>
+        <suiteId>53</suiteId>
+        <runId>798</runId>
+        <projectId>3</projectId>
+        <design>T1314149:Conversion_Branch/sapphire/AE_suite/AVID_C125026_SwissRoll_sap</design>
+        <status>Processing</status>
+      </case>
+      
+    <case>
+        <testId>1314150</testId>
+        <suiteId>53</suiteId>
+        <runId>798</runId>
+        <projectId>3</projectId>    
+        <design>T1314150:Conversion_Branch/sapphire/AE_suite/BR2_markus_sap</design>
+        <status>Processing</status>
+    </case>
+    
+    <case>
+        <testId>1314151</testId>
+        <suiteId>53</suiteId>
+        <runId>798</runId>
+        <projectId>3</projectId>
+        <design>T1314151:Conversion_Branch/sapphire/AE_suite/BR2_markus_sap</design>
+        <status>Processing</status>
+    </case>
+</CaseResults>
+
+detail_send
+=================================================
+<root>
+    <case>
+        <testId>1314148</testId>
+        <suiteId>53</suiteId>
+        <runId>798</runId>
+        <projectId>3</projectId>
+        <runLog>
+        
+####################
+Result Location:
+D27639:Z:/qa/qadata/result/prj3/run798/T1314148
+python  ../../../../DEV/bin/run_diamond.py    --run-map-trce    --run-par-trce  --synthesis=lse  --check-conf=designpool_lse.conf  --design=AVID_C125026_SwissRoll_sap
+
+*---------------------------------------------
+* Welcome to Lattice Batch-queuing System Test Suite
+* HOST NAME: D27639
+* Play Time: Fri Mar 03 13:19:28 2017
+*---------------------------------------------
+
+* SRC DESIGN: M:/TestRail_client/result/prj3/run798/T1314148/AVID_C125026_SwissRoll_sap
+* JOB DESIGN: M:\TestRail_client\result\prj3\run798\T1314148\AVID_C125026_SwissRoll_sap\_scratch
+
+Running Command: pnmainc synthesis_flow.tcl [Fri Mar 03 13:19:28 2017]
+&lt;M:\TestRail_client\result\prj3\run798\T1314148\AVID_C125026_SwissRoll_sap\_scratch&gt;
+Status: Pass.  Elapsed Time: 0.53 seconds
+
+Running Command: createdevfile -file M:/TestRail_client/DEV/conf/DiamondDevFile_3.9.0.88.0.xml [Fri Mar 03 13:19:34 2017]
+&lt;M:\TestRail_client\DEV\conf&gt;
+Status: Pass.  Elapsed Time: 2.22 seconds
+
+Running Command: pnmainc run_pb.tcl [Fri Mar 03 13:19:40 2017]
+&lt;M:\TestRail_client\result\prj3\run798\T1314148\AVID_C125026_SwissRoll_sap\_scratch&gt;
+Status: Pass.  Elapsed Time: 180.97 seconds
+
+
+*---------------------------------------------
+* Finished Lattice Batch-queuing System Test Flow
+* Stop Time: Fri Mar 03 13:22:44 2017
+*
+* Elapsed time: 196 seconds.
+*---------------------------------------------
+
+Launching C:/Python27/python.exe M:/TestRail_client/DEV/tools/check/check.py  --report-path=M:/TestRail_client/result/prj3/run798/T1314148  --top-dir=M:/TestRail_client/result/prj3/run798/T1314148  --conf-file=designpool_lse.conf  --tag=_scratch  --design=AVID_C125026_SwissRoll_sap  --map-check  --partrce-check  --report=check_flow.csv  --rerun-path=M:/TestRail_client/result/prj3/run798/T1314148
+- Begin check case: M:\TestRail_client\result\prj3\run798\T1314148\AVID_C125026_SwissRoll_sap
+- Fri Mar 03 13:22:44 2017
+- Come Into the check_flow
+- In check_flow: Pass
+- True
+- End check data:  Fri Mar 03 13:22:44 2017
+- Final check status: 0
+&lt;status&gt;Passed&lt;/status&gt;
+
+        </runLog>
+    </case>
+</root>
+
+queue dump
+=================================================
+<?xml version="1.0" encoding="UTF-8" ?>
+<root time="120117_123400">
+    <case name = "t1314148">
+    	<ID>
+    		<testId>1314149</testId>
+    		<suiteId>53</suiteId>
+    		<projectId>3</projectId>
+    	</ID>    
+    	<System>
+    		<os>windows</os>
+    		<os_arch>64b</os_arch>
+    	</System>
+    </case>
+
+    <case name = "t1314155">
+    	<ID>
+    		<testId>1314149</testId>
+    		<suiteId>53</suiteId>
+    		<projectId>3</projectId>
+    	</ID>    
+    	<System>
+    		<os>windows</os>
+    		<os_arch>64b</os_arch>
+    	</System>
+    </case>
+      
+    <case name = "t1314190">
+    	<ID>
+    		<testId>1314149</testId>
+    		<suiteId>53</suiteId>
+    		<projectId>3</projectId>
+    	</ID>    
+    	<System>
+    		<os>windows</os>
+    		<os_arch>64b</os_arch>
+    	</System>
+    </case>
+    
+    <case name = "t1314149">
+    	<ID>
+    		<testId>1314149</testId>
+    		<suiteId>53</suiteId>
+    		<projectId>3</projectId>
+    	</ID>    
+    	<System>
+    		<os>windows</os>
+    		<os_arch>64b</os_arch>
+    	</System>
+    </case>
+</root>
+
+
+

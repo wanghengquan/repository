@@ -37,6 +37,11 @@ public class time_info {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
 		return formatter.format(new Date());
 	}
+	
+	public static String get_date_time(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
+		return formatter.format(date);
+	}
 
 	public static Timestamp get_time_stamp() {
 		return new Timestamp(new Date().getTime());

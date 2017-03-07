@@ -31,7 +31,7 @@ import info_parser.xml_parser;
  */
 public class rmq_tube {
 	// public property
-	//{queue_name : {ID : {suite: suite_name}}}
+	// {queue_name : {ID : {suite: suite_name}}}
 	public static TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new Comparator<String>() {
 				public int compare(String queue_name1, String queue_name2) {
@@ -152,7 +152,8 @@ public class rmq_tube {
 	 * server. when the client get one message from the server, it should stop
 	 * the connect!
 	 */
-	public static Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name) throws Exception {
+	public static Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name)
+			throws Exception {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
 		factory.setUsername(rmq_user);
@@ -198,7 +199,7 @@ public class rmq_tube {
 			}
 		if (connection.isOpen())
 			connection.close();
-		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.parser_xml_string(task_msg);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(task_msg);
 		return msg_hash;
 	}
 
@@ -227,52 +228,54 @@ public class rmq_tube {
 		};
 		channel.basicConsume(queueName, true, consumer);
 	}
-	
-	private static Map<String, HashMap<String, HashMap<String, String>>> update_admin_queue(String message, String current_terminal){
+
+	private static Map<String, HashMap<String, HashMap<String, String>>> update_admin_queue(String message,
+			String current_terminal) {
 		Map<String, HashMap<String, HashMap<String, String>>> admin_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.parser_xml_string(message);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(message);
 		Set<String> msg_key_set = msg_hash.keySet();
-		if (msg_key_set.isEmpty()){
+		if (msg_key_set.isEmpty()) {
 			return admin_hash;
 		}
 		String msg_key = (String) msg_key_set.toArray()[0];
 		HashMap<String, HashMap<String, String>> msg_data = msg_hash.get(msg_key);
-		//admin queue priority check:0>1>2..>5(default)>...8>9
+		// admin queue priority check:0>1>2..>5(default)>...8>9
 		String priority = new String();
-		if (!msg_data.containsKey("CaseInfo")){
+		if (!msg_data.containsKey("CaseInfo")) {
 			priority = "5";
-		} else if (!msg_data.get("CaseInfo").containsKey("priority")){
+		} else if (!msg_data.get("CaseInfo").containsKey("priority")) {
 			priority = "5";
 		} else {
 			priority = msg_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
-			if (!m.find()){
+			if (!m.find()) {
 				priority = "5";
 			}
 		}
-		// task belong to this client(job_attribute): (0, assign task) > (1, match task)
+		// task belong to this client(job_attribute): (0, assign task) > (1,
+		// match task)
 		String attribute = new String();
 		String request_terminal = new String();
 		String available_terminal = current_terminal;
-		if (!msg_data.containsKey("Machine")){
+		if (!msg_data.containsKey("Machine")) {
 			attribute = "1";
-		} else if (!msg_data.get("Machine").containsKey("terminal")){
+		} else if (!msg_data.get("Machine").containsKey("terminal")) {
 			attribute = "1";
 		} else {
 			request_terminal = msg_data.get("Machine").get("terminal");
-			if (request_terminal.contains(available_terminal)){
-				attribute = "0"; // assign task 
+			if (request_terminal.contains(available_terminal)) {
+				attribute = "0"; // assign task
 			} else {
 				attribute = "1"; // match task
 			}
 		}
 		// receive time
-		//String time = time_info.get_date_time();
-		//pack data
-		// xxx@runxxx_time :     job_from: 1, from remote; 0, from local
-		// priority:match/assign task:job_from@run_number		
-		String new_title = priority +  attribute + "1" + "@" + msg_key;
+		// String time = time_info.get_date_time();
+		// pack data
+		// xxx@runxxx_time : job_from: 1, from remote; 0, from local
+		// priority:match/assign task:job_from@run_number
+		String new_title = priority + attribute + "1" + "@" + msg_key;
 		admin_hash.put(new_title, msg_data);
 		return admin_hash;
 	}

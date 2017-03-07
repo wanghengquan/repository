@@ -9,25 +9,27 @@
  */
 package info_parser;
 
-import java.io.StringReader;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
-import org.apache.commons.configuration2.builder.fluent.Parameters;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+
+import utility_funcs.time_info;
 
 /*
  * This class used to get the basic information of the client.
@@ -37,197 +39,88 @@ public class xml_parser {
 	// public property
 	// protected property
 	// private property
-	private static final Logger XML_LOGGER = LogManager.getLogger(xml_parser.class.getName());
-	private String xml_path = null;
+	private static final Logger XML_PARSER_LOGGER = LogManager.getLogger(xml_parser.class.getName());
+	// private String xml_path = null;
 
 	// public function
 	// protected function
 	// private function
-	public xml_parser(String file_path) {
-		this.xml_path = file_path;
+	public xml_parser() {
 	}
 
-	/*
-	 * build ini_builder
-	 * 
-	 * @input String file_path
-	 * 
-	 * @return XMLConfiguration
-	 */
-	private FileBasedConfigurationBuilder<XMLConfiguration> get_xml_builder() {
-		Parameters params = new Parameters();
-		FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<XMLConfiguration>(
-				XMLConfiguration.class).configure(params.xml().setFileName(xml_path));
-		return builder;
-	}
-
-	/*
-	 * get xml_config
-	 * 
-	 * @input String file_path
-	 * 
-	 * @return XMLConfiguration
-	 */
-	private XMLConfiguration get_xml_confg(FileBasedConfigurationBuilder<XMLConfiguration> builder)
-			throws ConfigurationException {
-		XMLConfiguration xml_config = builder.getConfiguration();
-		return xml_config;
-	}
-
-	/*
-	 * read properties
-	 * 
-	 * @input XMLConfiguration xml_config
-	 * 
-	 * @input String section
-	 * 
-	 * @return Set<String>
-	 */
-	@SuppressWarnings("unused")
-	private Properties read_xml_properties(XMLConfiguration xml_config, String section) {
-		Properties section_properties = xml_config.getProperties(section);
-		return section_properties;
-	}
-
-	/*
-	 * read key
-	 * 
-	 * @input XMLConfiguration xml_config
-	 * 
-	 * @input String key
-	 * 
-	 * @return Set<String>
-	 */
-	public String read_xml_property(XMLConfiguration xml_config, String section, String option) {
-		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
-		String value = (String) xml_config.getProperty(key);
-		return value;
-	}
-
-	/*
-	 * add key
-	 * 
-	 * @input XMLConfiguration xml_config
-	 * 
-	 * @input String section
-	 * 
-	 * @input String option
-	 * 
-	 * @input String value
-	 * 
-	 * @return Set<String>
-	 */
-	private int add_xml_property(XMLConfiguration xml_config, String section, String option, String value) {
-		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
-		if (xml_config.containsKey(key)) {
-			XML_LOGGER.warn("Config file " + key + " already exists, skipped.");
-			return 1;
+	public Document create_client_document(HashMap<String, String> xml_data) {
+		Document document = DocumentHelper.createDocument();
+		Element root_element = document.addElement("client");
+		Set<String> xml_data_set = xml_data.keySet();
+		Iterator<String> xml_data_it = xml_data_set.iterator();
+		while (xml_data_it.hasNext()) {
+			String key = xml_data_it.next();
+			String value = xml_data.get(key);
+			Element level2_element = root_element.addElement(key);
+			level2_element.setText(value);
 		}
-		xml_config.addProperty(key, value);
-		return 0;
+		String text = document.asXML();
+		System.out.println(text);
+		return document;
 	}
 
-	/*
-	 * delete key
-	 * 
-	 * @input XMLConfiguration xml_config
-	 * 
-	 * @input String section
-	 * 
-	 * @input String option
-	 * 
-	 * @input String value
-	 * 
-	 * @return Set<String>
-	 */
-	@SuppressWarnings("unused")
-	private int del_xml_property(XMLConfiguration xml_config, String section, String option) {
-		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
-		if (xml_config.containsKey(key)) {
-			xml_config.clearProperty(key);
-			;
-			return 0;
-		} else {
-			XML_LOGGER.warn("Config file " + key + " not exists, skipped.");
-			return 1;
-		}
-	}
-
-	/*
-	 * set key
-	 * 
-	 * @input XMLConfiguration xml_config
-	 * 
-	 * @input String section
-	 * 
-	 * @input String option
-	 * 
-	 * @input String value
-	 * 
-	 * @return Set<String>
-	 */
-	@SuppressWarnings("unused")
-	private int set_xml_property(XMLConfiguration xml_config, String section, String option, String value) {
-		String key = section.replaceAll("\\.", "..") + "." + option.replaceAll("\\.", "..");
-		if (xml_config.containsKey(key)) {
-			xml_config.setProperty(key, value);
-		} else {
-			XML_LOGGER.warn("Config file " + key + " not exists, skipped.");
-			return 1;
-		}
-		return 0;
-	}
-
-	public HashMap<String, String> read_xml_data() throws ConfigurationException {
-		HashMap<String, String> xml_data = new HashMap<String, String>();
-		FileBasedConfigurationBuilder<XMLConfiguration> builder = get_xml_builder();
-		XMLConfiguration configure = get_xml_confg(builder);
-		Iterator<String> key_it = configure.getKeys();
-		while (key_it.hasNext()) {
-			String key = key_it.next();
-			String value = (String) configure.getProperty(key).toString();
-			xml_data.put(key, value);
-		}
-		return xml_data;
-	}
-
-	public void write_xml_data(HashMap<String, HashMap<String, String>> write_data) throws ConfigurationException {
-		FileBasedConfigurationBuilder<XMLConfiguration> builder = get_xml_builder();
-		XMLConfiguration configure = get_xml_confg(builder);
-		// remove previous key sets
-		Iterator<String> key_it = configure.getKeys();
-		while (key_it.hasNext()) {
-			String key = key_it.next();
-			configure.clearProperty(key);
-		}
-		// add new key set form map data
-		Set<String> section_set = write_data.keySet();
-		TreeSet<String> tree_section = new TreeSet<String>();
-		tree_section.addAll(section_set);
-		Iterator<String> section_it = tree_section.iterator();
-		while (section_it.hasNext()) {
-			String section = section_it.next();
-			Set<String> option_set = write_data.get(section).keySet();
-			TreeSet<String> tree_option = new TreeSet<String>();
-			tree_option.addAll(option_set);
-			Iterator<String> option_it = tree_option.iterator();
-			while (option_it.hasNext()) {
-				String option = option_it.next();
-				String value = write_data.get(section).get(option);
-				add_xml_property(configure, section, option, value);
+	public Document create_result_document(HashMap<String, HashMap<String, String>> xml_data, String ip,
+			String machine) {
+		Document document = DocumentHelper.createDocument();
+		Element root_element = document.addElement("CaseResults");
+		root_element.addAttribute("ip", ip);
+		root_element.addAttribute("machine", machine);
+		Set<String> xml_data_set = xml_data.keySet();
+		Iterator<String> xml_data_it = xml_data_set.iterator();
+		while (xml_data_it.hasNext()) {
+			String level1_key = xml_data_it.next();
+			HashMap<String, String> level1_data = xml_data.get(level1_key);
+			Element level1_element = root_element.addElement("case");
+			Iterator<String> level1_data_it = xml_data.get(level1_key).keySet().iterator();
+			while (level1_data_it.hasNext()) {
+				String level2_key = level1_data_it.next();
+				String level2_value = level1_data.get(level2_key);
+				level1_element.addElement(level2_key).addText(level2_value);
 			}
 		}
-		// save configuration
-		builder.save();
+		return document;
 	}
 
-	public static Map<String, HashMap<String, HashMap<String, String>>> parser_xml_string(String xmlString) {
+	public Document create_detail_log_document(HashMap<String, HashMap<String, String>> xml_data) {
+		Document document = DocumentHelper.createDocument();
+		Element root_element = document.addElement("root");
+		Set<String> xml_data_set = xml_data.keySet();
+		Iterator<String> xml_data_it = xml_data_set.iterator();
+		while (xml_data_it.hasNext()) {
+			String level1_key = xml_data_it.next();
+			HashMap<String, String> level1_data = xml_data.get(level1_key);
+			Element level1_element = root_element.addElement("case");
+			Iterator<String> level1_data_it = xml_data.get(level1_key).keySet().iterator();
+			while (level1_data_it.hasNext()) {
+				String level2_key = level1_data_it.next();
+				String level2_value = level1_data.get(level2_key);
+				level1_element.addElement(level2_key).addText(level2_value);
+			}
+		}
+		return document;
+	}
+
+	public String document_to_string(Document document_obj) {
+		String text = document_obj.asXML();
+		return text;
+	}
+
+	public Document string_to_document(String xml_string) throws DocumentException {
+		Document document = DocumentHelper.parseText(xml_string);
+		return document;
+	}
+
+	public static Map<String, HashMap<String, HashMap<String, String>>> get_rmq_xml_data(String xmlString) {
 		xmlString = xmlString.replaceAll("\\s", " ");
-		// ArrayList <HashMap,String> adminMessage;
 		@SuppressWarnings("unused")
 		String admin_queue = "<AdminQ title=\"Queue_30_20_1\">" + "<ID>" + "<Sub name=\"project\" value=\"**\"></Sub>"
-				+ "<Sub name=\"run\" value=\"**\"></Sub>" + "</ID>" + " <System>"
-				+ "<Sub name=\"os\" value=\"**\"></Sub>" + "<Sub name=\"min_space\" value=\"**\"></Sub>"
+				+ "<Sub name=\"run\" value=\"123\"></Sub>" + "</ID>" + " <System>"
+				+ "<Sub name=\"os\" value=\"windows\"></Sub>" + "<Sub name=\"min_space\" value=\"**\"></Sub>"
 				+ "<Sub name=\"min_cpu\" value=\"**\"></Sub>" + "<Sub name=\"min_mem\" value=\"**\"></Sub>"
 				+ "</System>" + "</AdminQ>";
 		@SuppressWarnings("unused")
@@ -241,77 +134,125 @@ public class xml_parser {
 				+ "<LaunchCommand>" + "<Sub name=\"cmd\" value=\"python trunk/bin/run_lattice.py --till-map\"></Sub>"
 				+ "</LaunchCommand>" + "</Test>";
 		Map<String, HashMap<String, HashMap<String, String>>> level1_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		Document xml_doc = null;
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new InputSource(new StringReader(xmlString)));
-			Element root_node = doc.getDocumentElement();
-			if (!root_node.hasAttribute("title")) {
-				return level1_data;
-			}
-			String title_name = root_node.getAttribute("title");
-			NodeList level2_nodes = root_node.getChildNodes();
-			HashMap<String, HashMap<String, String>> level2_data = new HashMap<String, HashMap<String, String>>();
-			for (int i = 0; i < level2_nodes.getLength(); i++) {
-				Node level2_node = level2_nodes.item(i);
-				String level2_node_name = level2_node.getNodeName();
-				if (level2_node_name.equals("#text")) {
+			xml_doc = string_to_document(xmlString);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			XML_PARSER_LOGGER.warn("get rmq xml data failed.");
+		}
+		Element root_node = xml_doc.getRootElement();
+		if (root_node.attribute("title") == null) {
+			return level1_data;
+		}
+		String title_name = root_node.attribute("title").getValue();
+		HashMap<String, HashMap<String, String>> level2_data = new HashMap<String, HashMap<String, String>>();
+		for (Iterator<?> i = root_node.elementIterator(); i.hasNext();) {
+			Element level2_element = (Element) i.next();
+			String element_name = level2_element.getName();
+			HashMap<String, String> level3_data = new HashMap<String, String>();
+			for (Iterator<?> j = level2_element.elementIterator(); j.hasNext();) {
+				Element level3_element = (Element) j.next();
+				String name_attr = level3_element.attributeValue("name");
+				String value_attr = level3_element.attributeValue("value");
+				if (name_attr == null) {
 					continue;
 				}
-				HashMap<String, String> level3_data = new HashMap<String, String>();
-				NodeList level3_nodes = level2_node.getChildNodes();
-				for (int j = 0; j < level3_nodes.getLength(); j++) {
-					Node level3_node = level3_nodes.item(j);
-					NamedNodeMap level3_atts = level3_node.getAttributes();
-					if (level3_atts == null) {
-						continue;
-					}
-					String node_name = new String();
-					String node_value = new String();
-					for (int k = 0; k < level3_atts.getLength(); k++) {
-						String temp_key = level3_atts.item(k).getNodeName();
-						String temp_val = level3_atts.item(k).getNodeValue();
-						if (temp_key.equals("name")) {
-							node_name = temp_val;
-						}
-						if (temp_key.equals("value")) {
-							node_value = temp_val;
-						}
-					}
-					if (node_name != null && node_value != null) {
-						level3_data.put(node_name, node_value);
-					}
-				}
-				level2_data.put(level2_node_name, level3_data);
+				level3_data.put(name_attr, value_attr);
 			}
-			level1_data.put(title_name, level2_data);
-		} catch (Exception e) {
-			e.printStackTrace();
+			level2_data.put(element_name, level3_data);
 		}
+		level1_data.put(title_name, level2_data);
 		return level1_data;
 	}
 
+	// case
+	public void dump_finished_queue_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
+			String queue_name, String xml_path) throws IOException {
+		Document document = DocumentHelper.createDocument();
+		Element root_element = document.addElement("root");
+		root_element.addAttribute("time", time_info.get_date_time());
+		Set<String> task_queue_data_set = task_queue_data.keySet();
+		Iterator<String> task_queue_data_it = task_queue_data_set.iterator();
+		while (task_queue_data_it.hasNext()) {
+			String level2_key = task_queue_data_it.next();
+			HashMap<String, HashMap<String, String>> level2_data = task_queue_data.get(level2_key);
+			Element level2_element = root_element.addElement("case").addAttribute("name", level2_key);
+			Iterator<String> level2_data_it = level2_data.keySet().iterator();
+			while (level2_data_it.hasNext()) {
+				String level3_key = level2_data_it.next();
+				HashMap<String, String> level3_data = level2_data.get(level3_key);
+				Element level3_element = level2_element.addElement(level3_key);
+				Iterator<String> level3_data_it = level3_data.keySet().iterator();
+				while (level3_data_it.hasNext()) {
+					String level4_key = level3_data_it.next();
+					String level4_value = level3_data.get(level4_key);
+					level3_element.addElement(level4_key).addText(level4_value);
+				}
+			}
+		}
+		OutputFormat format = OutputFormat.createPrettyPrint();
+		XMLWriter writer = new XMLWriter(new FileWriter(xml_path), format);
+		writer.write(document);
+	}
+
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_xml_file_task_queue_data(String xml_path)
+			throws DocumentException {
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		File xml_fobj = new File(xml_path);
+		Long time = xml_fobj.lastModified();
+		String time_modified = time_info.get_date_time(new Date(time));
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(xml_fobj);
+		Element level1_element = document.getRootElement();
+		String time_create = level1_element.attributeValue("time");
+		if (!time_create.equalsIgnoreCase(time_modified)) {
+			XML_PARSER_LOGGER.warn("xml modified outside, ignore this xml data.");
+			return task_queue_data;
+		}
+		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
+			Element level2_element = (Element) i.next();
+			String case_name = level2_element.attributeValue("name");
+			HashMap<String, HashMap<String, String>> level2_data = new HashMap<String, HashMap<String, String>>();
+			for (Iterator<?> j = level2_element.elementIterator(); j.hasNext();) {
+				Element level3_element = (Element) j.next();
+				String level3_name = level3_element.getName();
+				HashMap<String, String> level3_data = new HashMap<String, String>();
+				for (Iterator<?> k = level3_element.elementIterator(); k.hasNext();) {
+					Element level4_element = (Element) k.next();
+					String key = level4_element.getName();
+					String value = level4_element.getText();
+					level3_data.put(key, value);
+				}
+				level2_data.put(level3_name, level3_data);
+			}
+			task_queue_data.put(case_name, level2_data);
+		}
+		return task_queue_data;
+	}
+
 	public static void main(String[] args) {
-		xml_parser xml_parser2 = new xml_parser("D:/java_dev/result.xml");
-		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-		HashMap<String, String> result_data = new HashMap<String, String>();
-		result_data.put("result", "pass");
-		result_data.put("id", "123456");
-		result_data.put("build", "12.05");
-		write_data.put("T123456", result_data);
+		xml_parser xml_parser2 = new xml_parser();
+		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> result_data1 = new HashMap<String, String>();
+		result_data1.put("testId", "T123456");
+		result_data1.put("runId", "111111");
+		result_data1.put("result", "pass");
+		HashMap<String, String> result_data2 = new HashMap<String, String>();
+		result_data2.put("testId", "T654321");
+		result_data2.put("runId", "222222");
+		result_data2.put("result", "fail");
+		result_data.put("T123456", result_data1);
+		result_data.put("T654321", result_data2);
+		// System.out.println(result_data.toString());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			xml_parser2.write_xml_data(write_data);
-		} catch (ConfigurationException e) {
+			task_queue_data = xml_parser2.get_xml_file_task_queue_data("D:/java_dev/test.xml");
+		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		HashMap<String, String> read_data = new HashMap<String, String>();
-		try {
-			read_data = xml_parser2.read_xml_data();
-		} catch (ConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println(read_data.toString());
+		System.out.println(task_queue_data.toString());
 	}
 }
