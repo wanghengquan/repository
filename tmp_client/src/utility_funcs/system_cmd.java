@@ -28,7 +28,7 @@ public class system_cmd {
 	// public property
 	// protected property
 	// private property
-	private static final Logger CMD_LOGGER = LogManager.getLogger(system_cmd.class.getName());
+	private static final Logger SYSTEM_CMD_LOGGER = LogManager.getLogger(system_cmd.class.getName());
 
 	public system_cmd() {
 
@@ -39,7 +39,7 @@ public class system_cmd {
 		/*
 		 * a command line will be execute.
 		 */
-		CMD_LOGGER.debug("Run CMD: " + cmd);
+		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
 		String[] cmd_list = cmd.split("\\s+");
 		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
 		proce_build.redirectErrorStream(true);
@@ -58,12 +58,12 @@ public class system_cmd {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			CMD_LOGGER.error("Run cmd Interrupted: " + cmd);
+			SYSTEM_CMD_LOGGER.error("Run cmd Interrupted: " + cmd);
 		} catch (Exception e2) {
-			CMD_LOGGER.error("Run cmd failed: " + e2.toString());
+			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e2.toString());
 		}
-		CMD_LOGGER.debug("Exit Code:" + process.exitValue());
-		CMD_LOGGER.debug("Exit Code:" + string_list);
+		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
+		SYSTEM_CMD_LOGGER.debug("Exit Code:" + string_list);
 		process.destroy();
 		return string_list;
 	}
@@ -144,7 +144,7 @@ public class system_cmd {
 				string_list.add("<status>TBD</status>");
 			}
 		} else {
-			System.out.println(">>>Info: Clean up, timeout task cleanup.");
+			SYSTEM_CMD_LOGGER.warn("Clean up, timeout task cleanup.");
 			string_list.add("<status>Timeout</status>");
 			string_list.add("<reason>Timeout</reason>");
 			p.destroyForcibly();
@@ -260,12 +260,12 @@ public class system_cmd {
 		// http://lshlabd0001/diamond/trunk/FE_17_POJO2/pojo2_flow/ao4410
 		// result/prj3/run368/T807387/ao4410 --username=guest --password=welcome
 		// --no-auth-cache --force";
-		//String[] cmds = { "python", "try_python.py" };
+		// String[] cmds = { "python", "try_python.py" };
 		HashMap<String, String> envs = new HashMap<String, String>();
 		envs.put("aa", "bb");
 		// envs.put("PYTHONUNBUFFERED", "1");
-		//String dir = new String("D:/project/lrf_prj/client_prj");
-		//int timeout = 5;
+		// String dir = new String("D:/project/lrf_prj/client_prj");
+		// int timeout = 5;
 		ArrayList<String> list = run(cmd);
 		// ArrayList<String> list = run(cmd);
 		System.out.println(list.toString());

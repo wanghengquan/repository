@@ -105,12 +105,12 @@ public class xml_parser {
 		return document;
 	}
 
-	public String document_to_string(Document document_obj) {
+	public static String document_to_string(Document document_obj) {
 		String text = document_obj.asXML();
 		return text;
 	}
 
-	public Document string_to_document(String xml_string) throws DocumentException {
+	public static Document string_to_document(String xml_string) throws DocumentException {
 		Document document = DocumentHelper.parseText(xml_string);
 		return document;
 	}

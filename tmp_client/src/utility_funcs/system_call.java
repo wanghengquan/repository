@@ -43,22 +43,6 @@ public class system_call implements Callable<Object> {
 			string_list = system_cmd.run(cmds, envs, case_dir, timeout);
 		else
 			string_list = system_cmd.run(cmds, envs);
-		if (case_dir == null) {
-			file_action.append_file("log/run.log", string_list.toString());
-		} else {
-			String local_rpt_path = case_dir + "/" + public_data.case_rpt;
-			Set<String> env_set = envs.keySet();
-			Iterator<String> env_it = env_set.iterator();
-			while (env_it.hasNext()) {
-				String env_key = env_it.next();
-				String env_value = envs.get(env_key);
-				file_action.append_file(local_rpt_path,
-						"Eev variable: " + env_key + " = " + env_value + " " + line_seprator);
-			}
-			file_action.append_file(local_rpt_path, ">>>Case run:" + line_seprator);
-			for (String line : string_list)
-				file_action.append_file(local_rpt_path, line + line_seprator);
-		}
 		return string_list;
 	}
 }

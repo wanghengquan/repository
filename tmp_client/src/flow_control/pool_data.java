@@ -93,6 +93,7 @@ public class pool_data{
 		sys_call_value.put("call_back", future_call_back);
 		sys_call_value.put("queue_name", queue_name);
 		sys_call_value.put("case_id", case_id);
+		sys_call_value.put("case_dir", case_work_dir);
 		long start_time = System.currentTimeMillis()/1000;
 		sys_call_value.put("start_time", start_time);
 		sys_call_value.put("time_out", time_out);
