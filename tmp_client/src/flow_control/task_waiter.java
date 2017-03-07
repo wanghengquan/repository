@@ -216,13 +216,18 @@ public class task_waiter extends Thread {
 		String run = "";
 		String suite = "";
 		String section = "";
+		String id = "";
 		id_hash.put("project", project);
 		id_hash.put("run", run);
 		id_hash.put("suite", suite);
 		id_hash.put("section", section);
+		id_hash.put("id", id);
 		if(case_hash.containsKey("ID")){
 		    id_hash.putAll(case_hash.get("ID"));
 		}
+		if(case_hash.containsKey("TestID")){
+		    id_hash.putAll(case_hash.get("TestID"));
+		}	
 		formated_data.put("ID", id_hash);
 		//CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();

@@ -90,8 +90,9 @@ public class rmq_tube {
 		return i;
 	}
 
-	public static int exchange_send(String exchange_name, String content) {
+	public static Boolean exchange_send(String exchange_name, String content) {
 		// String EXCHANGE_NAME = "logs";
+		Boolean send_status = new Boolean(true);
 		String EXCHANGE_NAME = exchange_name;
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
@@ -105,16 +106,16 @@ public class rmq_tube {
 			channel.basicPublish(EXCHANGE_NAME, "", null, content.getBytes());
 			channel.close();
 			connection.close();
-			return 0;
 		} catch (IOException e) {
 			e.printStackTrace();
 			RMQ_LOGGER.warn("exchange_send ioexception");
-			return 1;
+			send_status = false;
 		} catch (TimeoutException e) {
 			e.printStackTrace();
 			RMQ_LOGGER.warn("exchange_send timeout exception");
-			return 1;
+			send_status = false;
 		}
+		return send_status;
 	}
 
 	/*
@@ -122,7 +123,8 @@ public class rmq_tube {
 	 * name for case result is:Result The Queue name for the client info is:
 	 * Info if the content send smoothly, 0 will be return Or 1 will be return.
 	 */
-	public static int basic_send(String queue_name, String content) {
+	public static Boolean basic_send(String queue_name, String content) {
+		Boolean send_status = new Boolean(true);
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
 		factory.setUsername(rmq_user);
@@ -136,14 +138,14 @@ public class rmq_tube {
 			channel.basicPublish("", queue_name, null, message.getBytes("UTF-8"));
 			channel.close();
 			connection.close();
-			return 0;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return 1;
+			send_status = false;
 		} catch (TimeoutException e) {
 			e.printStackTrace();
-			return 1;
+			send_status = false;
 		}
+		return send_status;
 	}
 
 	/*

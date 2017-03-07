@@ -15,15 +15,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
+import info_parser.xml_parser;
 import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 
@@ -52,49 +59,180 @@ public class result_waiter extends Thread {
 
 	// since only this thread will remove the finished call, so not slipped
 	// condition will happen
-	private HashMap<String, HashMap<String, Object>> sys_call_monitor() {
-		// get call map report
-
+	private void sys_call_monitor() {
+		// get call map status
+		HashMap<String, HashMap<String, Object>> call_status = get_call_status_map();
+		// cancel timeout call
+		Boolean cancel_status = cancel_timeout_call(call_status);
+		// run case general report
+		HashMap<String, HashMap<String, String>> case_report_data = generate_call_report_data(call_status);
+		// send report data
+		Boolean report_status = send_case_report(case_report_data);
+		// send log data
+		
 	}
 	
+	private Boolean send_case_report(HashMap<String, HashMap<String, String>> case_report_data){
+		Boolean report_status = new Boolean(true);
+		xml_parser parser = new xml_parser();
+		String ip = client_info.get_client_data().get("Machine").get("ip");
+		String terminal = client_info.get_client_data().get("Machine").get("terminal");
+		//get remote date
+		HashMap<String, HashMap<String, String>> remote_data = new HashMap<String, HashMap<String, String>>();
+		//get local data
+		HashMap<String, HashMap<String, String>> local_data = new HashMap<String, HashMap<String, String>>();
+		Iterator<String> report_data_it = case_report_data.keySet().iterator();
+		while(report_data_it.hasNext()){
+			String call_index = report_data_it.next();
+			if(call_index.contains("0@")){ //0@ local queue
+				local_data.put(call_index, case_report_data.get(call_index));
+			} else {
+				remote_data.put(call_index, case_report_data.get(call_index));
+			}
+		}
+		// remote send
+		if (remote_data.size() > 0){
+			String rmq_result_str = parser.create_result_document_string(remote_data, ip, terminal);
+			report_status = rmq_tube.basic_send(public_data.RMQ_RESULT_NAME, rmq_result_str);
+		} else {
+			;
+		}
+		return report_status;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private HashMap<String, HashMap<String, String>> generate_call_report_data(HashMap<String, HashMap<String, Object>> call_status_map){
+		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while(call_map_it.hasNext()){
+			String call_index = call_map_it.next();
+			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			String call_status = (String) one_call_data.get("call_status");
+			HashMap<String, String> hash_data = new HashMap<String, String>();
+			String queue_name = call_index.split("@")[1];
+			String case_id = call_index.split("@")[0];
+			HashMap<String, HashMap<String, String>> task_data = task_info.get_case_from_processed_task_queues_data_map(queue_name, case_id);
+			hash_data.put("testId", task_data.get("ID").get("id"));
+			hash_data.put("suiteId", task_data.get("ID").get("suite"));
+			hash_data.put("runId", task_data.get("ID").get("run"));
+			hash_data.put("projectId", task_data.get("ID").get("project"));
+			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
+			String cmd_status = new String("");
+			String cmd_reason = new String("");
+			if(call_status.equals("done")){
+				cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("cmd_output"));
+				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("cmd_output"));
+			} else if(call_status.equals("timeout")){
+				cmd_status = "Timeout"; //match output
+				cmd_reason = "Timeout";
+			} else {
+				cmd_status = "Processing"; //match output
+			}
+			hash_data.put("status", cmd_status);
+			hash_data.put("reason", cmd_reason);
+			String host_name = client_info.get_client_data().get("Machine").get("terminal");
+			String work_path = (String) one_call_data.get("case_dir");
+			hash_data.put("location", host_name + ":" + work_path);
+			case_data.put(call_index, hash_data);
+		}
+		return case_data;
+	}
+	
+	private String get_cmd_status(ArrayList<String> cmd_output){
+		String status = new String();
+		for(String line:cmd_output){
+			if(!line.contains("<status>")){
+				continue;
+			}
+			//<status>Passed</status>
+			Pattern p = Pattern.compile("status>(\\.+?)</");
+			Matcher m = p.matcher(line);
+			if (m.find()) {
+				status = m.group(1);
+			}
+		}
+		return status;
+	}
+	
+	private String get_cmd_reason(ArrayList<String> cmd_output){
+		String reason = new String();
+		for(String line:cmd_output){
+			if(!line.contains("<reason>")){
+				continue;
+			}
+			//<status>Passed</status>
+			Pattern p = Pattern.compile("reason>(\\.+?)</");
+			Matcher m = p.matcher(line);
+			if (m.find()) {
+				reason = m.group(1);
+			}
+		}
+		return reason;
+	}
+	
+	private Boolean cancel_timeout_call(HashMap<String, HashMap<String, Object>> call_status_map){
+		Boolean cancel_status = new Boolean(true);
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while(call_map_it.hasNext()){
+			String call_index = call_map_it.next();
+			String call_status = (String) call_status_map.get(call_index).get("call_status");
+			if (!call_status.equals("timeout")){
+				continue;
+			}
+			Future<?> call_back = (Future<?>) call_status_map.get(call_index).get("call_back");
+			cancel_status = call_back.cancel(true);
+		}
+		return cancel_status;
+	}
+	
+	/*
+	 * call status map:
+	 * {case_id@queue_name:{"call_back":call_back,
+	 * 						"queue_name":queue_name,
+	 * 						"case_id":case_id,
+	 *						"case_dir":case_dir,
+	 *						"start_time":start_time,
+	 *						"time_out":time_out,
+	 *						"cmd_output":cmd_output,
+	 *						"call_status": call_status  //new added: done, timeout, processing
+	 *						}
+	 *}
+	 */
 	private HashMap<String, HashMap<String, Object>> get_call_status_map(){
 		HashMap<String, HashMap<String, Object>> return_call_map = new HashMap<String, HashMap<String, Object>>();
-		// scan calls update private_call_map with call_status, cmd_status, cmd_output
+		// scan calls update return_call_map with call_status, cmd_status, cmd_output
 		HashMap<String, HashMap<String, Object>> system_call_map = pool_info.get_sys_call();
 		Set<String> system_call_map_set = system_call_map.keySet();
 		Iterator<String> system_call_map_it = system_call_map_set.iterator();
 		while (system_call_map_it.hasNext()) {
 			String call_index = system_call_map_it.next();
-			HashMap<String, Object> return_call_data = new HashMap<String, Object>();
-			Iterator<String> system_call_map_data_it = system_call_map.get(call_index).keySet().iterator();
-			while(system_call_map_data_it.hasNext()){
-				String sys_call_map_level2_key = system_call_map_data_it.next();
-				Object sys_call_map_level2_value = system_call_map.get(call_index).get(sys_call_map_level2_key);
-				if(  sys_call_map_level2_key){
-					return_call_data.put(sys_call_map_level2_key, sys_call_map_level2_value);
-				} else if (sys_call_map_level2_key.equals("case_id")){
-					return_call_data.put(sys_call_map_level2_key, sys_call_map_level2_value);
-				}
-					
-			}
-			
-			
-			
-			Future<?> call_back = (Future<?>) private_call_map.get(call_index).get("call_back");
+			HashMap<String, Object> hash_data = new HashMap<String, Object>();
+			HashMap<String, Object> call_ori_data = system_call_map.get(call_index);
+			hash_data.putAll(call_ori_data);
+			//put call_status
+			Future<?> call_back = (Future<?>) system_call_map.get(call_index).get("call_back");
 			Boolean call_done = call_back.isDone();
-			String status = new String();
 			long current_time = System.currentTimeMillis() / 1000;
-			long start_time = (long) private_call_map.get(call_index).get("start_time");
-			int time_out = (int) private_call_map.get(call_index).get("time_out");
+			long start_time = (long) system_call_map.get(call_index).get("start_time");
+			int time_out = (int) system_call_map.get(call_index).get("time_out");
 			// run report action
 			if (call_done) {
-				run_case_done_action();
+				hash_data.put("call_status", "done");
+				try {
+					hash_data.put("cmd_output", call_back.get(time_out, TimeUnit.SECONDS));
+				} catch (InterruptedException | ExecutionException | TimeoutException e) {
+					//e.printStackTrace();
+					RESULT_WAITER_LOGGER.warn("Get call result exception.");
+					hash_data.put("cmd_output", "");
+				}
 			} else if (current_time - start_time > time_out + 5) {
-				run_case_timeout_action();
+				hash_data.put("call_status", "timeout");
 			} else {
-				run_case_processing_action();
+				hash_data.put("call_status", "processing");
 			}
-		}		
+			return_call_map.put(call_index, hash_data);
+		}
+		return return_call_map;
 	}
 	
 	private void run_case_done_action(){

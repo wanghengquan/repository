@@ -48,7 +48,7 @@ public class xml_parser {
 	public xml_parser() {
 	}
 
-	public Document create_client_document(HashMap<String, String> xml_data) {
+	public String create_client_document_string(HashMap<String, String> xml_data) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("client");
 		Set<String> xml_data_set = xml_data.keySet();
@@ -60,11 +60,10 @@ public class xml_parser {
 			level2_element.setText(value);
 		}
 		String text = document.asXML();
-		System.out.println(text);
-		return document;
+		return text;
 	}
 
-	public Document create_result_document(HashMap<String, HashMap<String, String>> xml_data, String ip,
+	public String create_result_document_string(HashMap<String, HashMap<String, String>> xml_data, String ip,
 			String machine) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("CaseResults");
@@ -83,10 +82,11 @@ public class xml_parser {
 				level1_element.addElement(level2_key).addText(level2_value);
 			}
 		}
-		return document;
+		String text = document.asXML();
+		return text;
 	}
 
-	public Document create_detail_log_document(HashMap<String, HashMap<String, String>> xml_data) {
+	public String create_detail_log_document(HashMap<String, HashMap<String, String>> xml_data) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		Set<String> xml_data_set = xml_data.keySet();
@@ -102,7 +102,8 @@ public class xml_parser {
 				level1_element.addElement(level2_key).addText(level2_value);
 			}
 		}
-		return document;
+		String text = document.asXML();
+		return text;
 	}
 
 	public static String document_to_string(Document document_obj) {

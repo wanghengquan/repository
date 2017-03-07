@@ -117,6 +117,21 @@ public class task_data {
 		return remove_result;
 	}
 	
+	public HashMap<String, HashMap<String, String>> get_case_from_processed_task_queues_data_map(String queue_name, String case_id) {
+		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+		rw_lock.writeLock().lock();
+		try {
+			if (processed_task_queues_data_map.containsKey(queue_name)){
+				if(processed_task_queues_data_map.get(queue_name).containsKey(case_id)){
+					case_data = processed_task_queues_data_map.get(queue_name).get(case_id);
+				}
+			} 
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return case_data;
+	}
+	
 	public ArrayList<String> get_rejected_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
