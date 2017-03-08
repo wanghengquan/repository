@@ -24,16 +24,21 @@ public class switch_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// client update
 	private int client_update = 0;
-
+	private int send_admin_request = 1;  //for client start up use
+	private int dump_config_request = 0;
+	// client max process number
+	private String pool_max_procs = public_data.DEF_MAX_PROCS;
+	
+	
+	
+	
 	// run tube variables
 	private int available_admin_queue_updating = 0;
 
 	// suite file updating
 	private String suite_file_string = new String();
 
-	// client task queue work mode serial, parallel
 
-	private String pool_max_procs = public_data.DEF_MAX_PROCS;
 
 	//
 	private String queue_work_mode = public_data.DEF_QUEUE_WORK_MODE;
@@ -47,28 +52,71 @@ public class switch_data {
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_update = 2;
+			this.send_admin_request = send_admin_request + 1;
+			this.dump_config_request = dump_config_request + 1;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	//every client update need two action
-	//1) save data to config file. 2) make a admin request
-	public Boolean get_client_updated(){
+	public Boolean get_send_admin_request(){
 		rw_lock.writeLock().lock();
 		Boolean action_need = new Boolean(false);
 		try {
-			if (client_update > 0){
+			if (send_admin_request > 0){
 				action_need = true;
 			}
-			this.client_update = client_update - 1;
+			this.send_admin_request = send_admin_request - 1;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 		return action_need;
 	}
 
+	public Boolean get_dump_config_request(){
+		rw_lock.writeLock().lock();
+		Boolean action_need = new Boolean(false);
+		try {
+			if (dump_config_request > 0){
+				action_need = true;
+			}
+			this.dump_config_request = dump_config_request - 1;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return action_need;
+	}
+	
+	public void set_pool_max_procs(String new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.pool_max_procs = new_data;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public String get_pool_max_procs() {
+		rw_lock.readLock().lock();
+		String value = new String();
+		try {
+			value = this.pool_max_procs;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return value;
+	}
+	
+	
+	
+	//check following
+	
+	
+	
+	
+	
+	
+	
 	public void set_available_admin_queue_updating(int new_data) {
 		rw_lock.writeLock().lock();
 		try {
@@ -123,26 +171,6 @@ public class switch_data {
 		String value = new String();
 		try {
 			value = this.client_work_mode;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
-
-	public void set_pool_max_procs(String new_data) {
-		rw_lock.writeLock().lock();
-		try {
-			this.pool_max_procs = new_data;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-
-	public String get_pool_max_procs() {
-		rw_lock.readLock().lock();
-		String value = new String();
-		try {
-			value = this.pool_max_procs;
 		} finally {
 			rw_lock.readLock().unlock();
 		}

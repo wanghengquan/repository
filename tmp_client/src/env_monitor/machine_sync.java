@@ -254,7 +254,6 @@ public class machine_sync extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update machine data
 			update_dynamic_data();
-			// System.out.println("Thread running...");
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {

@@ -10,12 +10,9 @@
 package utility_funcs;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
-import data_center.public_data;
 import utility_funcs.system_cmd;
 
 public class system_call implements Callable<Object> {
@@ -23,7 +20,7 @@ public class system_call implements Callable<Object> {
 	private String[] cmds;
 	private Map<String, String> envs;
 	private int timeout = 0;
-	private String line_seprator = System.getProperty("line.separator");
+	//private String line_seprator = System.getProperty("line.separator");
 
 	public system_call(String[] cmds, Map<String, String> envs) {
 		this.cmds = cmds;

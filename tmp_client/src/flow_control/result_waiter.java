@@ -511,6 +511,7 @@ public class result_waiter extends Thread {
 	}
 
 	private void monitor_run() {
+		// ============== All static job start from here ==============
 		result_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
@@ -525,28 +526,28 @@ public class result_waiter extends Thread {
 			} else {
 				RESULT_WAITER_LOGGER.debug("Client Thread running...");
 			}
-			// ============== All job start from here ==============
+			// ============== All dynamic job start from here ==============
 			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
-			// get call map status
+			// task 1 : get call map status
 			call_status = get_call_status_map();
-			// cancel timeout call
+			// task 2 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
-			// generate case general data
+			// task 3 : generate case general data
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
-			// send case report data
+			// task 4 : send case report data
 			Boolean send_case_status = send_case_report(case_report_data);
-			// generate case runtime log data
+			// task 5 : generate case runtime log data
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
 					call_status);
-			// send case runtime log data
+			// task 6 : send case runtime log data
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
-			// update processed task data info
+			// task 7 : update processed task data info
 			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
-			// release occupied pool thread
+			// task 8 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
-			// release occupied resource usage
+			// task 9 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
-			// post process
+			// task 10 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status) {

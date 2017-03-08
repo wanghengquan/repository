@@ -209,16 +209,45 @@ public class config_sync extends Thread {
 		}
 	}
 
-	private void dump_client_data(ini_parser ini_runner){
+	private Boolean dump_client_data(ini_parser ini_runner){
+		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> client_data = client_info.client_hash; 
-		write_data.putAll(config_hash);
+		write_data.putAll(client_data);
+		if(!write_data.containsKey("base")){
+			dump_status = false;
+			return dump_status;
+		}
+		if(!write_data.containsKey("Machine")){
+			dump_status = false;
+			return dump_status;
+		}
+		if(!write_data.containsKey("System")){
+			dump_status = false;
+			return dump_status;
+		}		
+		HashMap<String, String> tmp_base_data = new HashMap<String, String>();
+		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
+		tmp_base_data.put("save_path", write_data.get("base").get("save_path"));
+		tmp_base_data.put("work_path", write_data.get("base").get("work_path"));
+		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
+		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
+		tmp_machine_data.put("max_procs", write_data.get("Machine").get("max_procs"));
+		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
+		write_data.remove("base");
+		write_data.remove("Machine");
+		write_data.remove("System");
+		write_data.put("tmp_base", tmp_base_data);
+		write_data.put("tmp_machine", tmp_machine_data);
 		try {
 			ini_runner.write_ini_data(write_data);
 		} catch (ConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+			CONFIG_SYNC_LOGGER.warn("Dump config data failed.");
+			dump_status = false;
+		}
+		return dump_status;
 	}
 	
 	public void run() {
@@ -260,9 +289,9 @@ public class config_sync extends Thread {
 				CONFIG_SYNC_LOGGER.warn("config sync Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
-			//task 1 : dump config updating
-			Boolean client_updated = switch_info.get_client_updated();
-			if (client_updated){
+			//task 1 : dump configuration updating
+			Boolean dump_request = switch_info.get_dump_config_request();
+			if (dump_request){
 				dump_client_data(ini_runner);
 			}
 			//task 2 : update data in loop

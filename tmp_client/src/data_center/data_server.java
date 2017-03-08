@@ -17,9 +17,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.rmq_tube;
 import env_monitor.config_sync;
 import env_monitor.machine_sync;
+import flow_control.pool_data;
 import info_parser.cmd_parser;
+import info_parser.xml_parser;
 
 /*
  * This class used to get the basic information of the client.
@@ -59,14 +62,16 @@ public class data_server extends Thread {
 	private Thread client_thread;
 	private client_data client_info;
 	private switch_data switch_info;
+	private pool_data pool_info;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
 	// private function
 
-	public data_server(client_data client_info, switch_data switch_info) {
+	public data_server(client_data client_info, switch_data switch_info, pool_data pool_info) {
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.pool_info = pool_info;
 	}
 
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
@@ -74,11 +79,11 @@ public class data_server extends Thread {
 		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
 		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
 		// 0. ready check
-		if (machine_hash.size() < 2) {
-			return;
+		while (machine_hash.size() > 2) {
+			break;
 		}
-		if (config_hash.size() < 2) {
-			return;
+		while (config_hash.size() > 2) {
+			break;
 		}
 		// 1. merge Software data
 		Set<String> config_section = config_hash.keySet();
@@ -93,14 +98,14 @@ public class data_server extends Thread {
 		}
 		// 2. merge System data
 		client_data.put("System", machine_hash.get("System"));
-		// 3. merge Machine data config data > scan data > default data in
+		// 3. merge Machine data configuration data > scan data > default data in
 		// public_data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("max_procs", public_data.DEF_MAX_PROCS);
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
-		machine_data.putAll(config_hash.get("tmp_machine")); // Config data
+		machine_data.putAll(config_hash.get("tmp_machine")); // configuration data
 		client_data.put("Machine", machine_data);
 		// 4. merge base data (for software use) command data > config data >
 		// default data in public_data
@@ -114,25 +119,105 @@ public class data_server extends Thread {
 		DATA_SERVER_LOGGER.warn(client_data.toString());
 	}
 
+	//this function may get slipped condition
+	private void dynamic_merge_client_data() {
+		HashMap<String, HashMap<String, String>> client_data = client_info.get_client_data();
+		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
+		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
+		// 1. merge Software data except "scan_dir" and "max_insts" incase user modified in GUI
+		Set<String> config_section = config_hash.keySet();
+		Iterator<String> config_it = config_section.iterator();
+		while (config_it.hasNext()) {
+			String option = config_it.next();
+			HashMap<String, String> option_data = config_hash.get(option);
+			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
+				continue;
+			}
+			if(option_data.containsKey("scan_dir")){
+				option_data.remove("scan_dir");
+			}
+			if(option_data.containsKey("max_insts")){
+				option_data.remove("max_insts");
+			}			
+			client_data.get(option).putAll(option_data);
+		}
+		// 2. merge System data
+		client_data.put("System", machine_hash.get("System"));
+		client_info.set_client_data(client_data);
+		DATA_SERVER_LOGGER.warn(client_data.toString());
+	}
+	
 	private void update_max_sw_insts_limitation() {
 		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
-		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
-		Set<String> key_set = config_hash.keySet();
+		HashMap<String, HashMap<String, String>> client_hash = client_info.get_client_data();
+		Set<String> key_set = client_hash.keySet();
 		Iterator<String> key_it = key_set.iterator();
 		while(key_it.hasNext()){
 			String key = key_it.next();
-			if (key.equalsIgnoreCase("tmp_")){
+			if (key.equalsIgnoreCase("base")){
 				continue;
 			}
-			if (!config_hash.get(key).containsKey("max_insts")){
+			if (key.equalsIgnoreCase("machine")){
+				continue;
+			}			
+			if (!client_hash.get(key).containsKey("max_insts")){
 				continue;
 			}
-			Integer insts_value = Integer.valueOf(config_hash.get(key).get("max_insts"));
+			Integer insts_value = Integer.valueOf(client_hash.get(key).get("max_insts"));
 			max_soft_insts.put(key, insts_value);
 		}
 		client_info.set_max_soft_insts(max_soft_insts);
 	}
 
+	private Boolean send_client_info(String mode){
+		Boolean send_status = new Boolean(true);
+		HashMap<String, HashMap<String, String>> client_hash = client_info.get_client_data();
+		HashMap<String, String> simple_data = new HashMap<String, String>();
+		HashMap<String, String> complex_data = new HashMap<String, String>();
+		String host_name = client_hash.get("Machine").get("terminal");
+		String admin_request = "0";
+		if(switch_info.get_send_admin_request()){
+			admin_request = "1";
+		}
+		String status = client_hash.get("Machine").get("status");
+		int used_thread = pool_info.get_used_thread();
+		String max_thread = switch_info.get_pool_max_procs();
+		String processNum = String.valueOf(used_thread) + "/" + max_thread;
+		simple_data.put("host_name", host_name);
+		simple_data.put("admin_request", admin_request);
+		simple_data.put("status", status);
+		simple_data.put("processNum", processNum);
+		//complex data send
+		String host_ip = client_hash.get("Machine").get("ip");
+		String os = client_hash.get("System").get("os");
+		String group_name = client_hash.get("Machine").get("group");
+		String memory_left = client_hash.get("System").get("mem");
+		String disk_left = client_hash.get("System").get("space");
+		String cpu_used = client_hash.get("System").get("cpu");
+		String os_type = client_hash.get("System").get("os_type");
+		String high_priority = "NA";
+		String max_procs = switch_info.get_pool_max_procs();
+		complex_data.putAll(simple_data);
+		complex_data.put("host_ip", host_ip);
+		complex_data.put("os", os);
+		complex_data.put("group_name", group_name);
+		complex_data.put("memory_left", memory_left);
+		complex_data.put("disk_left", disk_left);
+		complex_data.put("cpu_used", cpu_used);
+		complex_data.put("os_type", os_type);
+		complex_data.put("high_priority", high_priority);
+		complex_data.put("max_procs", max_procs);
+		String send_msg = new String();
+		xml_parser parser = new xml_parser();
+		if (mode.equals("simple")){
+			send_msg = parser.create_client_document_string(simple_data);
+		} else {
+			send_msg = parser.create_client_document_string(complex_data);
+		}
+		send_status = rmq_tube.basic_send(public_data.RMQ_INFO_NAME, send_msg);
+		return send_status;
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -154,6 +239,9 @@ public class data_server extends Thread {
 		HashMap<String, String> cmd_hash = cmd_parser.cmd_hash;
 		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_hash);
+		// initial 4 : send client detail info
+		send_client_info("complex");
+		int send_count = 0;
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -169,11 +257,17 @@ public class data_server extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			//task 1: update client data hash
-			//merge_client_data(cmd_hash);
+			dynamic_merge_client_data();
 			//task 2: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
 			//task 3: send client info to Remote server
-			send_client_info();
+			if (send_count < 6){
+				send_count++;
+				send_client_info("simple");
+			} else {
+				send_count = 0;
+				send_client_info("complex");
+			}
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
