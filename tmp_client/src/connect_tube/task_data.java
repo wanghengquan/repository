@@ -49,7 +49,7 @@ public class task_data {
 
 	}
 
-	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_processed_task_queue_data_map(String queue_name) {
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_queue_from_processed_task_queues_data_map(String queue_name) {
 		rw_lock.readLock().lock();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
@@ -222,11 +222,22 @@ public class task_data {
 		return temp;
 	}
 
-	public void add_running_admin_queue_list(String queue_name) {
+	public void increase_running_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
 		try {
 			if(!running_admin_queue_list.contains(queue_name)){
 				running_admin_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void decrease_running_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if(running_admin_queue_list.contains(queue_name)){
+				running_admin_queue_list.remove(queue_name);
 			}
 		} finally {
 			rw_lock.writeLock().unlock();

@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
+import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 
@@ -45,10 +46,11 @@ public class config_sync extends Thread {
 	public static ConcurrentHashMap<String, HashMap<String, String>> config_hash = new ConcurrentHashMap<String, HashMap<String, String>>();
 	// protected property
 	// private property
-	private static final Logger CONFIG_LOGGER = LogManager.getLogger(config_sync.class.getName());
+	private static final Logger CONFIG_SYNC_LOGGER = LogManager.getLogger(config_sync.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread conf_thread;
+	private client_data client_info;
 	private switch_data switch_info;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
@@ -56,8 +58,9 @@ public class config_sync extends Thread {
 		this.interval = interval;
 	}
 
-	public config_sync(switch_data switch_info) {
+	public config_sync(switch_data switch_info, client_data client_info) {
 		this.switch_info = switch_info;
+		this.client_info = client_info;
 	}	
 	// protected function
 	// private function
@@ -81,7 +84,7 @@ public class config_sync extends Thread {
 			} catch (ConfigurationException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
-				CONFIG_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
+				CONFIG_SYNC_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
 				continue;
 			}
 			if (!build_data.containsKey("root")){
@@ -91,7 +94,7 @@ public class config_sync extends Thread {
 				continue;
 			}
 			String path = build_data.get("root").get("path");
-			CONFIG_LOGGER.debug("Catch SW path: path");
+			CONFIG_SYNC_LOGGER.debug("Catch SW path:" + path);
 			scan_dirs.put(build_name,path);
 		}
 		return scan_dirs;
@@ -106,11 +109,7 @@ public class config_sync extends Thread {
 		Iterator<String> scan_options_it = scan_options.iterator();
 		while(scan_options_it.hasNext()){
 			String scan_option = scan_options_it.next();
-			String scan_value = scan_data.get(scan_option);
 			if (!recording_data.containsKey(scan_option)){
-				return true;
-			}
-			if (!scan_value.equalsIgnoreCase(recording_data.get(scan_option))){
 				return true;
 			}
 		}
@@ -124,7 +123,8 @@ public class config_sync extends Thread {
 			String section = section_it.next();
 			HashMap<String, String> section_data = ini_data.get(section);
 			HashMap<String, String> update_data = new HashMap<String, String>();
-			if (section.equalsIgnoreCase("tmp_base") || section.equalsIgnoreCase("tmp_machine")) {
+			if (section.contains("tmp_")) {
+				// for section "tmp_base" , "tmp_machine" and something start with "tmp_"
 				config_hash.put(section, section_data);
 			} else {
 				// consider as software section
@@ -140,7 +140,7 @@ public class config_sync extends Thread {
 						if (sw_path.exists() && sw_path.isDirectory()){
 							update_data.put(option, value);
 						} else {
-							CONFIG_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
+							CONFIG_SYNC_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
 						}
 					}
 				}
@@ -149,7 +149,7 @@ public class config_sync extends Thread {
 					if (scan_dir.exists() && scan_dir.isDirectory()){
 						update_data.put("scan_dir", section_data.get("scan_dir"));
 					} else {
-						CONFIG_LOGGER.warn(section + ".scan_dir, not exist. skipped");
+						CONFIG_SYNC_LOGGER.warn(section + ".scan_dir, not exist. skipped");
 					}
 				}
 				if (section_data.containsKey("max_insts") && !section_data.get("max_insts").equals("")){
@@ -161,7 +161,10 @@ public class config_sync extends Thread {
 			}
 		}
 	}
-
+	
+	/*
+	 * scan update
+	 */
 	private Boolean update_dynamic_data() {
 		int config_updated = 0;
 		Set<String> config_sections = config_hash.keySet();
@@ -185,7 +188,6 @@ public class config_sync extends Thread {
 					if (new_update){
 						update_data.putAll(scan_data);
 						config_updated++; //internal config file save
-						switch_info.set_config_update_announce(1);
 					}
 				} else if (option.equals("max_insts")){
 					update_data.put(option, value);
@@ -194,7 +196,7 @@ public class config_sync extends Thread {
 					if (sw_path.exists()){
 						update_data.put(option, value);
 					} else {
-						CONFIG_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
+						CONFIG_SYNC_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
 					}
 				}
 			}
@@ -207,8 +209,9 @@ public class config_sync extends Thread {
 		}
 	}
 
-	private void save_config_data(ini_parser ini_runner){
+	private void dump_client_data(ini_parser ini_runner){
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> client_data = client_info.client_hash; 
 		write_data.putAll(config_hash);
 		try {
 			ini_runner.write_ini_data(write_data);
@@ -228,17 +231,20 @@ public class config_sync extends Thread {
 	}
 
 	private void monitor_run() {
-		//step 0:get config data
 		conf_thread = Thread.currentThread();
+		// ============== All static job start from here ==============
+		//initial 1 : get overall configuration data
 		ini_parser ini_runner = new ini_parser(public_data.CONF_DEFAULT_INI);
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			ini_data = ini_runner.read_ini_data();
 		} catch (ConfigurationException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			// e1.printStackTrace();
+			CONFIG_SYNC_LOGGER.warn("config sync get initial config data failed");
+			System.exit(1);
 		}
-		//step 1:update initial(static) data
+		// initial 2 : update initial(static) data
 		update_static_data(ini_data);
 		while (!stop_request) {
 			if (wait_request) {
@@ -251,19 +257,19 @@ public class config_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				CONFIG_LOGGER.warn("config sync Thread running...");
+				CONFIG_SYNC_LOGGER.warn("config sync Thread running...");
 			}
-			//step2:update data in loop
-			Boolean config_updated = update_dynamic_data();
+			// ============== All dynamic job start from here ==============
+			//task 1 : dump config updating
+			Boolean client_updated = switch_info.get_client_updated();
+			if (client_updated){
+				dump_client_data(ini_runner);
+			}
+			//task 2 : update data in loop
+			Boolean config_updated = update_dynamic_data();			
 			if (config_updated){
-				save_config_data(ini_runner);
+				switch_info.set_client_updated();
 			}
-			//step3:save request acknowledge
-			int save_request = switch_info.get_config_save_request();
-			if (save_request > 0){
-				save_config_data(ini_runner);
-			}
-			switch_info.set_config_save_request(0);
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
@@ -300,7 +306,8 @@ public class config_sync extends Thread {
 	 */
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();
-		config_sync ini_runner = new config_sync(switch_info);
+		client_data client_info = new client_data();
+		config_sync ini_runner = new config_sync(switch_info, client_info);
 		ini_runner.start();
 	}
 }

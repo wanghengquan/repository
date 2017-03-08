@@ -397,11 +397,13 @@ public class task_waiter extends Thread {
 			if (case_data.isEmpty() || case_data == null){
 				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + ":Change queue to finished status:" + queue_name);
 				task_info.update_finished_admin_queue_list(queue_name);
+				task_info.decrease_running_admin_queue_list(queue_name);
 				//release booking info
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
 				continue;
 			}
+			task_info.increase_running_admin_queue_list(queue_name);
 			Set<String> case_set = case_data.keySet();
 			Iterator<String> case_it = case_set.iterator();
 			//remote queue have a real case title while local queue case title == case id

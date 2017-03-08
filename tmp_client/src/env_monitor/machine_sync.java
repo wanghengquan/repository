@@ -42,7 +42,6 @@ public class machine_sync extends Thread {
 	// protected property
 	public static ConcurrentHashMap<String, HashMap<String, String>> machine_hash = new ConcurrentHashMap<String, HashMap<String, String>>();
 	// private property
-	public static Boolean data_updating = new Boolean(false);
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread machine_thread;
@@ -236,6 +235,8 @@ public class machine_sync extends Thread {
 
 	private void monitor_run() {
 		machine_thread = Thread.currentThread();
+		// ============== All static job start from here ==============
+		// initial 1 : update static machine data
 		update_static_data();
 		while (!stop_request) {
 			if (wait_request) {
@@ -250,10 +251,10 @@ public class machine_sync extends Thread {
 			} else {
 				INFO_LOGGER.warn("machine_sync Thread running...");
 			}
-			data_updating = true;
+			// ============== All dynamic job start from here ==============
+			// task 1 : update machine data
 			update_dynamic_data();
 			// System.out.println("Thread running...");
-			data_updating = false;
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {

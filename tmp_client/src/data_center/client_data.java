@@ -96,10 +96,10 @@ public class client_data {
 		try {
 			HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 			future_soft_insts.putAll(use_soft_insts);
-			Set<String> future_keys_set = future_soft_insts.keySet();
-			Iterator<String> future_keys_it = future_keys_set.iterator();
-			while (future_keys_it.hasNext()) {
-				String sw_name = future_keys_it.next();
+			Set<String> release_data_set = release_data.keySet();
+			Iterator<String> release_data_it = release_data_set.iterator();
+			while (release_data_it.hasNext()) {
+				String sw_name = release_data_it.next();
 				Integer sw_insts = future_soft_insts.get(sw_name);
 				sw_insts = sw_insts - 1;
 				if (sw_insts < 0) {
@@ -143,17 +143,17 @@ public class client_data {
 	}
 
 	//software name , build
-	//booking 1 usage for every software
+	//booking 1 usage for every used software
 	public Boolean booking_use_soft_insts(HashMap<String, String> booking_data) {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
 			HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 			future_soft_insts.putAll(use_soft_insts);
-			Set<String> future_keys_set = future_soft_insts.keySet();
-			Iterator<String> future_keys_it = future_keys_set.iterator();
-			while (future_keys_it.hasNext()) {
-				String sw_name = future_keys_it.next();
+			Set<String> booking_data_set = booking_data.keySet();
+			Iterator<String> booking_data_it = booking_data_set.iterator();
+			while (booking_data_it.hasNext()) {
+				String sw_name = booking_data_it.next();
 				Integer sw_insts = future_soft_insts.get(sw_name);
 				Integer sw_max_insts = max_soft_insts.get(sw_name);
 				sw_insts = sw_insts + 1; //booking 1 usage for every software

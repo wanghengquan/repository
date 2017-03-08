@@ -86,7 +86,7 @@ public class xml_parser {
 		return text;
 	}
 
-	public String create_detail_log_document(HashMap<String, HashMap<String, String>> xml_data) {
+	public String create_runtime_document_string(HashMap<String, HashMap<String, String>> xml_data) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		Set<String> xml_data_set = xml_data.keySet();
@@ -169,8 +169,9 @@ public class xml_parser {
 	}
 
 	// case
-	public void dump_finished_queue_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
+	public Boolean dump_finished_queue_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
 			String queue_name, String xml_path) throws IOException {
+		Boolean dump_status = new Boolean(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		root_element.addAttribute("time", time_info.get_date_time());
@@ -196,6 +197,7 @@ public class xml_parser {
 		OutputFormat format = OutputFormat.createPrettyPrint();
 		XMLWriter writer = new XMLWriter(new FileWriter(xml_path), format);
 		writer.write(document);
+		return dump_status;
 	}
 
 	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_xml_file_task_queue_data(String xml_path)

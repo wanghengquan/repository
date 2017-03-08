@@ -12,6 +12,12 @@ package data_center;
 import java.io.File;
 
 public class public_data {
+	//private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
+	//========================
+	//>>>>>>>>>>>>>>>>>>>>>>>>following data can be use directly
+	//>>>>>>>>>>>>>>>>>>>>>>>>
+	//========================
+	
 	//========================
 	// base
 	public final static String BASE_CURRENTVERSION = "2.05.01"; // External.Internal.DEV
@@ -32,6 +38,11 @@ public class public_data {
 	public final static String CONF_TRAY_PNG = SW_BIN_PATH + "/conf/ico.png";
 
 	//========================
+	// workspace folder configuration, real path = work_path + following folder name
+	public final static String WORKSPACE_RESULT_DIR = "results";
+	public final static String WORKSPACE_LOG_DIR = "logs";
+	
+	//========================
 	// external tools based on software bin path
 	public final static String TOOLS_SSHPASS = SW_BIN_PATH + "/tools/sshpass/sshpass";
 	public final static String TOOLS_KILL_PROCESS = SW_BIN_PATH + "/tools/kill_process.py";
@@ -49,9 +60,10 @@ public class public_data {
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "Result";
-	public final static String RMQ_INFO_NAME = "Info";
+	public final static String RMQ_INFO_NAME = "Info";  //client data
 	public final static String RMQ_TASK_NAME = "task_queue";
 	public final static String RMQ_ADMIN_NAME = "admin_queue";
+	public final static String RMQ_RUNTIME_NAME = "logs";
 	
 	//========================
 	// Encryption public key
@@ -69,8 +81,22 @@ public class public_data {
 	public final static String CORE_SCRIPT_ADDR = "http://lshlabd0001/platform/trunk/bqs_scripts/DEV";	
 	
 	//========================
-	// Software default data command line > config; GUI have higher priority
-	// Software
+	// task case default setting
+	public final static String TASK_DEF_TIMEOUT = "3600"; //in Seconds, 1 hour 
+	public final static String TASK_DEF_PRIORITY = "5"; //0 > 2 > 9
+	
+	//========================
+	// performance calibration
+	public final static int PERF_THREAD_RUN_INTERVAL = 5;
+	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
+	
+	//========================
+	//>>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
+	//>>>>>>>>>>>>>>>>>>>>>>>>Please use fresh data in task_data(task_info)
+	//========================
+	//========================
+	// Software default data command line > configuration; 
+	// Software GUI have higher priority
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	// Machine
 	public final static String DEF_MACHINE_PRIVATE = "1"; //1 private, 0 public
@@ -79,22 +105,16 @@ public class public_data {
 	// Base
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
+
+	//========================
+	//>>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
+	//>>>>>>>>>>>>>>>>>>>>>>>>Please use fresh data in switch_data(switch_info)
+	//========================
+	//========================
 	// work model
 	public final static String DEF_QUEUE_WORK_MODE = "auto"; //"serial", "parallel", "auto"
 	public final static String DEF_CLIENT_WORK_MODE = "auto"; //"manual", "auto"
-
-	//========================
-	// performance calibration
-	public final static int PERF_THREAD_RUN_INTERVAL = 5;
-	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
 	
-	//========================
-	// task case default setting
-	public final static String TASK_DEF_TIMEOUT = "3600"; //in Seconds, 1 hour 
-	public final static String TASK_DEF_PRIORITY = "5"; //0 > 2 > 9
-	
-	
-	//private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
 	
 	public public_data(){
 

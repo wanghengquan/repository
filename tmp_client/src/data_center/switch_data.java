@@ -22,11 +22,8 @@ public class switch_data {
 	@SuppressWarnings("unused")
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
-	// configuration static variables
-	// config_sync --> other
-	private int config_update_announce = 0;
-	// other --> config_sync
-	private int config_save_request = 0;
+	// client update
+	private int client_update = 0;
 
 	// run tube variables
 	private int available_admin_queue_updating = 0;
@@ -47,44 +44,29 @@ public class switch_data {
 
 	}
 
-	public void set_config_update_announce(int new_data) {
+	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
-			this.config_update_announce = new_data;
+			this.client_update = 2;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
-	public int get_config_update_announce() {
-		rw_lock.readLock().lock();
-		int value = 0;
-		try {
-			value = this.config_update_announce;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
-
-	public void set_config_save_request(int new_data) {
+	
+	//every client update need two action
+	//1) save data to config file. 2) make a admin request
+	public Boolean get_client_updated(){
 		rw_lock.writeLock().lock();
+		Boolean action_need = new Boolean(false);
 		try {
-			this.config_save_request = new_data;
+			if (client_update > 0){
+				action_need = true;
+			}
+			this.client_update = client_update - 1;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}
-
-	public int get_config_save_request() {
-		rw_lock.readLock().lock();
-		int value = 0;
-		try {
-			value = this.config_save_request;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
+		return action_need;
 	}
 
 	public void set_available_admin_queue_updating(int new_data) {

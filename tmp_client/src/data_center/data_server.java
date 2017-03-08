@@ -53,21 +53,23 @@ public class data_server extends Thread {
 	// public property
 	// protected property
 	// private property
-	private static final Logger DATA_LOGGER = LogManager.getLogger(data_server.class.getName());
+	private static final Logger DATA_SERVER_LOGGER = LogManager.getLogger(data_server.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
 	private client_data client_info;
+	private switch_data switch_info;
 	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
 	// public function
 	// protected function
 	// private function
 
-	public data_server(client_data client_info) {
+	public data_server(client_data client_info, switch_data switch_info) {
 		this.client_info = client_info;
+		this.switch_info = switch_info;
 	}
 
-	private void merge_client_data(HashMap<String, String> cmd_hash) {
+	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
 		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
@@ -109,7 +111,7 @@ public class data_server extends Thread {
 		base_data.putAll(cmd_hash);
 		client_data.put("base", base_data);
 		client_info.set_client_data(client_data);
-		DATA_LOGGER.warn(client_data.toString());
+		DATA_SERVER_LOGGER.warn(client_data.toString());
 	}
 
 	private void update_max_sw_insts_limitation() {
@@ -129,7 +131,6 @@ public class data_server extends Thread {
 			max_soft_insts.put(key, insts_value);
 		}
 		client_info.set_max_soft_insts(max_soft_insts);
-		DATA_LOGGER.warn(max_soft_insts.toString());
 	}
 
 	public void run() {
@@ -143,7 +144,16 @@ public class data_server extends Thread {
 
 	private void monitor_run() {
 		client_thread = Thread.currentThread();
+		// ============== All static job start from here ==============
+		// initial 1 : start client data worker: 1) config_sync 2) machine_sync
+		config_sync config_runner = new config_sync(switch_info, client_info);
+		machine_sync machine_runner = new machine_sync();
+		config_runner.start();
+		machine_runner.start();
+		// initial 2 : get command hash data
 		HashMap<String, String> cmd_hash = cmd_parser.cmd_hash;
+		// initial 3 : generate initial client data
+		initial_merge_client_data(cmd_hash);
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -155,11 +165,15 @@ public class data_server extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				DATA_LOGGER.warn("client_data Thread running...");
+				DATA_SERVER_LOGGER.warn("client_data Thread running...");
 			}
-			merge_client_data(cmd_hash);
+			// ============== All dynamic job start from here ==============
+			//task 1: update client data hash
+			//merge_client_data(cmd_hash);
+			//task 2: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
-			// System.out.println("Thread running...");
+			//task 3: send client info to Remote server
+			send_client_info();
 			try {
 				Thread.sleep(interval * 1000);
 			} catch (InterruptedException e) {
