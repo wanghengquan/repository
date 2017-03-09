@@ -263,7 +263,7 @@ public class tube_server extends Thread {
 			System.exit(1);
 		}
 		// initial 2 : send client detail info
-		send_client_info("simple");
+		send_client_info("complex");
 		// initial 3 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
 		int send_count = 0;
