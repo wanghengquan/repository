@@ -24,7 +24,7 @@ import data_center.public_data;
 import data_center.switch_data;
 
 /*
- * This class used to get the basic information of the client.
+ * This class used to get the basic information of the client, and dump data to configure file
  * return machine_hash:
  * 		radiant	:	dng_b1	=	xxx
  * 					ng1_0.954=	xxx
@@ -52,10 +52,10 @@ public class config_sync extends Thread {
 	private Thread conf_thread;
 	private client_data client_info;
 	private switch_data switch_info;
-	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
+	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
-	public config_sync(int interval) {
-		this.interval = interval;
+	public config_sync() {
+
 	}
 
 	public config_sync(switch_data switch_info, client_data client_info) {
@@ -286,7 +286,8 @@ public class config_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				CONFIG_SYNC_LOGGER.warn("config sync Thread running...");
+				CONFIG_SYNC_LOGGER.debug("config sync Thread running...");
+				CONFIG_SYNC_LOGGER.warn(config_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			//task 1 : dump configuration updating
@@ -300,7 +301,7 @@ public class config_sync extends Thread {
 				switch_info.set_client_updated();
 			}
 			try {
-				Thread.sleep(interval * 1000);
+				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

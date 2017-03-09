@@ -45,17 +45,16 @@ public class machine_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread machine_thread;
-	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
+	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 
 	// public function update data every interval seconds
-	public machine_sync(int interval) {
-		this.interval = interval;
+	public machine_sync(int base_interval) {
+		this.base_interval = base_interval;
 	}
 
 	// public function default update data every 5 seconds
 	public machine_sync() {
-		this.interval = 5;
 	}
 
 	// protected function
@@ -110,7 +109,7 @@ public class machine_sync extends Thread {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				INFO_LOGGER.warn("Cannot resolve Operation System name");
-				cpu_usage = "--";
+				cpu_usage = "00";
 			}
 			return cpu_usage;
 		} else {
@@ -131,7 +130,7 @@ public class machine_sync extends Thread {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				INFO_LOGGER.warn("Cannot resolve Operation System name");
-				mem_usage = "--";
+				mem_usage = "00";
 			}
 			return mem_usage;
 		} else {
@@ -249,13 +248,14 @@ public class machine_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				INFO_LOGGER.warn("machine_sync Thread running...");
+				INFO_LOGGER.debug("machine_sync Thread running...");
+				INFO_LOGGER.warn(machine_sync.machine_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : update machine data
 			update_dynamic_data();
 			try {
-				Thread.sleep(interval * 1000);
+				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -309,6 +309,7 @@ public class machine_sync extends Thread {
 		}
 		INFO_LOGGER.warn("thread wake...");
 		client_update.wake_request();
+		System.out.println(machine_sync.machine_hash.toString());
 		try {
 			Thread.sleep(10 * 1000);
 		} catch (InterruptedException e) {

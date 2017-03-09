@@ -49,7 +49,7 @@ public class result_waiter extends Thread {
 	private task_data task_info;
 	private switch_data switch_info;
 	private String line_seprator = System.getProperty("line.separator");
-	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;
+	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
 	// protected function
 	// private function
@@ -556,7 +556,7 @@ public class result_waiter extends Thread {
 				RESULT_WAITER_LOGGER.warn("Result waiter get some warning process. please check.");
 			}
 			try {
-				Thread.sleep(interval * 1000);
+				Thread.sleep(base_interval * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

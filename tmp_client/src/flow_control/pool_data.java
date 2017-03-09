@@ -19,7 +19,7 @@ import java.util.concurrent.Future;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import data_center.switch_data;
+import data_center.public_data;
 
 
 
@@ -34,26 +34,32 @@ public class pool_data{
 	// private function	
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<String, Object>> call_map = new HashMap<String, HashMap<String, Object>>();
-	private switch_data switch_info;
-	private int used_thread = 0;
+	private int pool_used_threads = 0;
+	private int pool_max_threads = Integer.parseInt(public_data.DEF_MAX_THREADS);
 	
-	public pool_data(int pool_size, switch_data switch_info){
+	public pool_data(int pool_size){
 		this.run_pool = Executors.newFixedThreadPool(pool_size);
-		this.switch_info = switch_info;
 	}
 	
-	public synchronized int get_used_thread(){
-		return used_thread;
+	public synchronized int get_pool_used_threads(){
+		return pool_used_threads;
 	}
 
-	public synchronized void set_used_thread(int new_int){
-		this.used_thread = new_int;
+	public synchronized void set_pool_used_threads(int new_int){
+		this.pool_used_threads = new_int;
 	}
 	
+	public synchronized int get_pool_max_threads(){
+		return this.pool_max_threads;
+	}
+
+	public synchronized void set_pool_max_threads(int new_int){
+		this.pool_max_threads = new_int;
+	}	
+	
 	public synchronized int get_available_thread(){
-		int maximum_thread = Integer.parseInt(switch_info.get_pool_max_procs());
-		if(maximum_thread > used_thread){
-			return maximum_thread - used_thread;
+		if(pool_max_threads > pool_used_threads){
+			return pool_max_threads - pool_used_threads;
 		} else {
 			return 0;
 		}
@@ -61,23 +67,23 @@ public class pool_data{
 	
 	public synchronized Boolean booking_used_thread(int booking_number){
 		Boolean booking_result = new Boolean(true);
-		int future_thread = this.used_thread + booking_number;
-		if (future_thread > Integer.parseInt(switch_info.get_pool_max_procs())){
+		int future_threads = this.pool_used_threads + booking_number;
+		if (future_threads > pool_max_threads){
 			booking_result = false;
 		} 
-		this.used_thread = future_thread;
+		this.pool_used_threads = future_threads;
 		return booking_result;
 	}
 	
 	public synchronized Boolean release_used_thread(int release_number){
 		Boolean release_result = new Boolean(true);
-		int future_thread = this.used_thread - release_number;
-		if (future_thread < 0){
-			future_thread = 0;
+		int future_threads = this.pool_used_threads - release_number;
+		if (future_threads < 0){
+			future_threads = 0;
 			release_result = false;
 			THREAD_POOL_LOGGER.warn("Thread in pool released with warnning");
 		} 
-		this.used_thread = future_thread;
+		this.pool_used_threads = future_threads;
 		return release_result;
 	}
 	

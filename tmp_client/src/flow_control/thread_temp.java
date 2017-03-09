@@ -24,7 +24,7 @@ public class thread_temp extends Thread  {
 	private boolean wait_request = false;
 	private Thread client_thread;
 	private String line_seprator = System.getProperty("line.separator");
-	private int interval = public_data.PERF_THREAD_RUN_INTERVAL;	
+	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
 	// public function
 	// protected function
 	// private function	
@@ -60,7 +60,7 @@ public class thread_temp extends Thread  {
 			merge_client_data();
 			// System.out.println("Thread running...");
 			try {
-				Thread.sleep(interval * 1000);
+				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

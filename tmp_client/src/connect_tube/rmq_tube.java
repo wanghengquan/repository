@@ -63,7 +63,7 @@ public class rmq_tube {
 			});
 	// protected property
 	// private property
-	private static final Logger RMQ_LOGGER = LogManager.getLogger(rmq_tube.class.getName());
+	private static final Logger RMQ_TUBE_LOGGER = LogManager.getLogger(rmq_tube.class.getName());
 	private static String rmq_host = public_data.RMQ_HOST;
 	private static String rmq_user = public_data.RMQ_USER;
 	private static String rmq_pwd = public_data.RMQ_PWD;
@@ -108,11 +108,11 @@ public class rmq_tube {
 			connection.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-			RMQ_LOGGER.warn("exchange_send ioexception");
+			RMQ_TUBE_LOGGER.warn("exchange_send ioexception");
 			send_status = false;
 		} catch (TimeoutException e) {
 			e.printStackTrace();
-			RMQ_LOGGER.warn("exchange_send timeout exception");
+			RMQ_TUBE_LOGGER.warn("exchange_send timeout exception");
 			send_status = false;
 		}
 		return send_status;

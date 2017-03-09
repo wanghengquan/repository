@@ -24,21 +24,20 @@ public class switch_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// client update
 	private int client_update = 0;
-	private int send_admin_request = 1;  //for client start up use
+	private int send_admin_request = 2;  //for client start up use why???
 	private int dump_config_request = 0;
-	// client max process number
-	private String pool_max_procs = public_data.DEF_MAX_PROCS;
+	// Thread start status
+	private Boolean data_server_power_up = new Boolean(false);
+	private Boolean tube_server_power_up = new Boolean(false);
+	
+	
+
 	
 	
 	
-	
-	// run tube variables
-	private int available_admin_queue_updating = 0;
 
 	// suite file updating
 	private String suite_file_string = new String();
-
-
 
 	//
 	private String queue_work_mode = public_data.DEF_QUEUE_WORK_MODE;
@@ -52,7 +51,7 @@ public class switch_data {
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
-			this.send_admin_request = send_admin_request + 1;
+			this.send_admin_request = send_admin_request + 2;
 			this.dump_config_request = dump_config_request + 1;
 		} finally {
 			rw_lock.writeLock().unlock();
@@ -87,28 +86,45 @@ public class switch_data {
 		return action_need;
 	}
 	
-	public void set_pool_max_procs(String new_data) {
+	public void set_data_server_power_up() {
 		rw_lock.writeLock().lock();
 		try {
-			this.pool_max_procs = new_data;
+			this.data_server_power_up = true;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}
-
-	public String get_pool_max_procs() {
+	}	
+	
+	public Boolean get_data_server_power_up() {
+		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
-		String value = new String();
 		try {
-			value = this.pool_max_procs;
+			status = this.data_server_power_up;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
-		return value;
+		return status;
+	}	
+	
+	public void set_tube_server_power_up() {
+		rw_lock.writeLock().lock();
+		try {
+			this.tube_server_power_up = true;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public Boolean get_tube_server_power_up() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.tube_server_power_up;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
 	}
-	
-	
-	
 	//check following
 	
 	
@@ -116,26 +132,7 @@ public class switch_data {
 	
 	
 	
-	
-	public void set_available_admin_queue_updating(int new_data) {
-		rw_lock.writeLock().lock();
-		try {
-			this.available_admin_queue_updating = new_data;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
 
-	public int get_available_admin_queue_updating() {
-		rw_lock.readLock().lock();
-		int value = 0;
-		try {
-			value = this.available_admin_queue_updating;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
 
 	public void set_suite_file_string(String new_data) {
 		rw_lock.writeLock().lock();

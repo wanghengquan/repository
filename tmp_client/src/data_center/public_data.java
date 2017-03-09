@@ -60,7 +60,7 @@ public class public_data {
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "Result";
-	public final static String RMQ_INFO_NAME = "Info";  //client data
+	public final static String RMQ_CLIENT_NAME = "monitor";  //client data
 	public final static String RMQ_TASK_NAME = "task_queue";
 	public final static String RMQ_ADMIN_NAME = "admin_queue";
 	public final static String RMQ_RUNTIME_NAME = "logs";
@@ -87,7 +87,7 @@ public class public_data {
 	
 	//========================
 	// performance calibration
-	public final static int PERF_THREAD_RUN_INTERVAL = 5;
+	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
 	
 	//========================
@@ -100,7 +100,7 @@ public class public_data {
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	// Machine
 	public final static String DEF_MACHINE_PRIVATE = "1"; //1 private, 0 public
-	public final static String DEF_MAX_PROCS = "5"; 
+	public final static String DEF_MAX_THREADS = "5"; 
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	// Base
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
