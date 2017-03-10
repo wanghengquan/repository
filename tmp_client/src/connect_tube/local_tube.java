@@ -692,17 +692,15 @@ public class local_tube {
 		while (local_it.hasNext()) {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
-			if (local_key.equals("cmd")) {
-				if (local_data.containsKey("override")) {
-					String local_override = local_data.get("override");
-					if (local_override.equals("local")) {
-						globle_data.put("cmd", local_value);
-					}
-				} else if (globle_data.containsKey("override")) {
-					String globle_override = globle_data.get("override");
-					if (globle_override.equals("local")) {
-						globle_data.put("cmd", local_value);
-					}
+			if (local_key.equals("cmd") && !local_value.equals("")) {
+				if (local_data.get("override").equals("local")){
+					globle_data.put("cmd", local_value);
+				} else if (local_data.get("override").equals("globle")){
+					continue;
+				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
+					globle_data.put("cmd", local_value);
+				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")){
+					continue;
 				} else {
 					String local_cmd = local_data.get("cmd");
 					String globle_cmd = globle_data.get("cmd");
@@ -710,7 +708,14 @@ public class local_tube {
 					globle_data.put("cmd", overall_cmd);
 				}
 			} else {
-				globle_data.put(local_key, local_value);
+				//non command key 1)globle have value, local must have value and overwrite
+				if (globle_data.containsKey(local_key)){
+					if (!local_value.equals("")){
+						globle_data.put(local_key, local_value);
+					}
+				} else {
+					globle_data.put(local_key, local_value);
+				}
 			}
 		}
 		return globle_data;

@@ -30,7 +30,8 @@ public class case_prepare {
 	// protected property
 	// private property
 	private static final Logger CASE_PREPARE_LOGGER = LogManager.getLogger(task_waiter.class.getName());
-	private String line_seprator = System.getProperty("line.separator");
+	//private String line_seprator = System.getProperty("line.separator");
+	private String file_seprator = System.getProperty("file.separator");
 
 	public case_prepare() {
 	}
@@ -43,11 +44,12 @@ public class case_prepare {
 			CASE_PREPARE_LOGGER.warn("Work space do not exists:" + work_dir);
 			return work_dir_ready;
 		}
+		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 		String prj_dir_name = "prj" + task_data.get("ID").get("project");
 		String run_dir_name = "run" + task_data.get("ID").get("run");
 		String case_dir_name = "T" + task_data.get("ID").get("id");
-		String[] path_array = new String[] { work_dir, "result", prj_dir_name, run_dir_name, case_dir_name };
-		String case_work_path = String.join(line_seprator, path_array);
+		String[] path_array = new String[] { work_dir, tmp_result_dir, prj_dir_name, run_dir_name, case_dir_name };
+		String case_work_path = String.join(file_seprator, path_array);
 		case_work_path.replaceAll("\\\\", "/");
 		File case_work_path_fobj = new File(case_work_path);
 		// delete previously run result.
@@ -70,19 +72,12 @@ public class case_prepare {
 		// generate source URL
 		String repository = task_data.get("CaseInfo").get("repository");
 		String suite_path = task_data.get("CaseInfo").get("suite_path");
-		String design_name = task_data.get("CaseInfo").get("design_name"); // this
-																			// design
-																			// name
-																			// may
-																			// be
-																			// a
-																			// path
-																			// like:xx/xx/xx
+		String design_name = task_data.get("CaseInfo").get("design_name");
 		String design_src_url = repository + "/" + suite_path + "/" + design_name;
 		// generate destination URL
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
-		String design_des_url = case_work_path + design_base_name;
+		String design_des_url = case_work_path + "/" +design_base_name;
 		// get access author key
 		String auth_key = task_data.get("CaseInfo").get("auth_key");
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_PUBLIC_KEY);
@@ -106,7 +101,7 @@ public class case_prepare {
 	protected ArrayList<String> get_script_export(HashMap<String, HashMap<String, String>> task_data,
 			String case_work_path) throws IOException, Exception {
 		ArrayList<String> export_msg = new ArrayList<String>();
-		// generate source URL
+		// generate source URL 
 		String script_addr = task_data.get("CaseInfo").get("script_address");
 		if (script_addr.equals("") || script_addr == null) {
 			CASE_PREPARE_LOGGER.warn("Internal script used, no export need.");

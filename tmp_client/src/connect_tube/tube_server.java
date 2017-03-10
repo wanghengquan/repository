@@ -9,6 +9,7 @@
  */
 package connect_tube;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,12 +38,14 @@ public class tube_server extends Thread {
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
+	private task_data task_info;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private String line_seprator = System.getProperty("line.separator");
 
 	// public function
-	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info) {
+	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
 		this.switch_info = switch_info;
+		this.task_info = task_info;
 		this.client_info = client_info;
 		this.pool_info = pool_info;
 	}
@@ -112,7 +115,6 @@ public class tube_server extends Thread {
 		if (!queue_data.containsKey("Software")) {
 			return software_match;
 		}
-		// check machine match
 		// check software match
 		HashMap<String, String> software_require_data = queue_data.get("Software");
 		Set<String> software_require_set = software_require_data.keySet();
@@ -132,13 +134,19 @@ public class tube_server extends Thread {
 		return software_match;
 	}	
 	
-	public Boolean admin_queue_match_check(HashMap<String, HashMap<String, String>> queue_data,
+	public ArrayList<String> admin_queue_mismatch_list_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean client_match = true;
-		client_match = admin_queue_system_key_check(queue_data, client_hash);
-		client_match = admin_queue_machine_key_check(queue_data, client_hash);
-		client_match = admin_queue_software_key_check(queue_data, client_hash);
-		return client_match;
+		ArrayList<String> mismatch_list = new ArrayList<String>();
+		if(!admin_queue_system_key_check(queue_data, client_hash)){
+			mismatch_list.add("System");
+		}
+		if(!admin_queue_machine_key_check(queue_data, client_hash)){
+			mismatch_list.add("Machine");
+		}
+		if(!admin_queue_software_key_check(queue_data, client_hash)){
+			mismatch_list.add("Software");
+		}		
+		return mismatch_list;
 	}
 
 	private void update_captured_admin_queues() {
@@ -150,20 +158,25 @@ public class tube_server extends Thread {
 		Set<String> queue_set = total_admin_queue.keySet();
 		Iterator<String> queue_it = queue_set.iterator();
 		while (queue_it.hasNext()) {
-			Boolean client_match = true;
+			ArrayList<String> mismatch_item = new ArrayList<String>();
 			String queue_name = queue_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = total_admin_queue.get(queue_name);
 			// check System match
-			client_match = admin_queue_match_check(queue_data, client_hash);
-			if (client_match) {
+			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_hash);
+			if (mismatch_item.isEmpty()) {
 				captured_admin_queues.put(queue_name, queue_data);
+			} else {
+				if (!task_info.get_rejected_admin_queue_list().contains(queue_name)){
+					TUBE_SERVER_LOGGER.warn("Rejected Queue:" + queue_name + ", Reason:" + mismatch_item.toString());
+				}
 			}
 		}
 	}
 
 	private Boolean send_client_info(String mode) {
 		Boolean send_status = new Boolean(true);
-		HashMap<String, HashMap<String, String>> client_hash = client_info.get_client_data();
+		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
+		client_hash.putAll(client_info.get_client_data());
 		HashMap<String, String> simple_data = new HashMap<String, String>();
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
@@ -234,7 +247,7 @@ public class tube_server extends Thread {
 		} else {
 			send_msg = parser.create_client_document_string(complex_data);
 		}
-		send_msg = send_msg.replaceAll("\"", "\\\"");
+		//send_msg = send_msg.replaceAll("\"", "\\\"");
 		send_status = rmq_tube.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
 		return send_status;
 	}
@@ -263,6 +276,8 @@ public class tube_server extends Thread {
 			System.exit(1);
 		}
 		// initial 2 : send client detail info
+		send_client_info("simple");
+		send_client_info("simple");
 		send_client_info("complex");
 		// initial 3 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
@@ -340,15 +355,15 @@ public class tube_server extends Thread {
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
+		task_data task_info = new task_data();
 		data_server data_runner = new data_server(switch_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
-				System.out.println(switch_info.get_data_server_power_up().toString());
 				break;
 			}
 		}
-		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info);
+		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 	}
 }

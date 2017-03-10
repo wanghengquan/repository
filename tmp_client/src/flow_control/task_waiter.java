@@ -49,8 +49,7 @@ public class task_waiter extends Thread {
 	// protected function
 	// private function
 
-	public task_waiter(int waiter_index, pool_data pool_info, task_data task_info, client_data client_info,
-			switch_data switch_info) {
+	public task_waiter(int waiter_index, switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
 		this.waiter_index = waiter_index;
 		this.pool_info = pool_info;
 		this.task_info = task_info;
@@ -75,7 +74,9 @@ public class task_waiter extends Thread {
 		// pending_queue_list = total processing_admin_queue -
 		// finished_admin_queue
 		ArrayList<String> pending_queue_list = task_info.get_pending_admin_queue_list();
+		System.out.println(pending_queue_list.toString());
 		ArrayList<String> runable_queue_list = get_runable_queue_list(pending_queue_list);
+		System.out.println(runable_queue_list.toString());
 		int queue_list_size = runable_queue_list.size();
 		int select_queue_index = 0;
 		if (queue_list_size == 0) {
@@ -98,7 +99,7 @@ public class task_waiter extends Thread {
 			if (select_queue_index == 0) {
 				select_queue_index = sub_queue_list_size;
 			}
-			queue_name = higher_priority_queue_list.get(select_queue_index);
+			queue_name = higher_priority_queue_list.get(select_queue_index - 1);
 		}
 		return queue_name;
 	}
@@ -234,10 +235,10 @@ public class task_waiter extends Thread {
 		formated_data.put("ID", id_hash);
 		// CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
-		String repository = "";
-		String suite_path = "";
-		String design_name = "";
-		String script_address = "";
+		String repository = new String("");
+		String suite_path = new String("");
+		String design_name = new String("");
+		String script_address = new String("");
 		String auth_key = public_data.ENCRY_PRIVATE_KEY;
 		String priority = public_data.TASK_DEF_PRIORITY;
 		String timeout = public_data.TASK_DEF_TIMEOUT;
@@ -260,8 +261,8 @@ public class task_waiter extends Thread {
 		formated_data.put("Environment", envinfo_hash);
 		// LaunchCommand format
 		HashMap<String, String> command_hash = new HashMap<String, String>();
-		String cmd = null;
-		String override = null;
+		String cmd = new String("");
+		String override = new String("");
 		command_hash.put("cmd", cmd);
 		command_hash.put("override", override);
 		if (case_hash.containsKey("LaunchCommand")) {
@@ -270,8 +271,8 @@ public class task_waiter extends Thread {
 		formated_data.put("LaunchCommand", command_hash);
 		// Machine format
 		HashMap<String, String> machine_hash = new HashMap<String, String>();
-		String terminal = null;
-		String group = null;
+		String terminal = new String("");
+		String group = new String("");
 		machine_hash.put("terminal", terminal);
 		machine_hash.put("group", group);
 		if (case_hash.containsKey("Machine")) {
@@ -280,10 +281,10 @@ public class task_waiter extends Thread {
 		formated_data.put("Machine", machine_hash);
 		// System format
 		HashMap<String, String> system_hash = new HashMap<String, String>();
-		String os = null;
-		String os_type = null;
-		String os_arch = null;
-		String min_space = null;
+		String os = new String("");
+		String os_type = new String("");
+		String os_arch = new String("");
+		String min_space = new String("");
 		system_hash.put("os", os);
 		system_hash.put("os_type", os_type);
 		system_hash.put("os_arch", os_arch);
@@ -364,7 +365,7 @@ public class task_waiter extends Thread {
 				}
 			} else {
 				this.waiter_status = "work";
-				TASK_WAITER_LOGGER.debug("Waiter_" + String.valueOf(waiter_index) + " running...");
+				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " running...");
 			}
 			try {
 				Thread.sleep(base_interval * 1000);
@@ -378,12 +379,16 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			if (tube_server.captured_admin_queues.size() == 0) {
+				TASK_WAITER_LOGGER.warn("No matched queue found in captured queue list.");
 				continue;
 			}
 			// task 2 : get working queue
 			String queue_name = get_right_task_queue();
-			if (queue_name == null) {
+			if (queue_name.equals("") || queue_name == null) {
+				TASK_WAITER_LOGGER.warn("No matched queue found.");
 				continue;
+			} else {
+				TASK_WAITER_LOGGER.warn("Task queue will be launched:" + queue_name);
 			}
 			// task 3 : resource booking (thread, software usage)
 			// Please release if case not launched !!!
@@ -434,13 +439,15 @@ public class task_waiter extends Thread {
 			String case_work_path = new String();
 			try {
 				case_work_path = prepare_obj.get_working_dir(task_data,
-						client_info.client_hash.get("base").get("work_path"));
+						client_info.get_client_data().get("base").get("work_path"));
 				case_prepare_list = prepare_obj.get_case_ready(task_data,
-						client_info.client_hash.get("base").get("work_path"));
+						client_info.get_client_data().get("base").get("work_path"));
 			} catch (Exception e) {
+				e.printStackTrace();
 				TASK_WAITER_LOGGER.warn("Case prepare failed, skip this case.");
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
+				continue;
 			}
 			// task 7 : launch cmd
 			String[] run_cmd = prepare_obj.get_run_command(task_data,
@@ -448,11 +455,12 @@ public class task_waiter extends Thread {
 			// task 8 : launch env
 			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.client_hash);
 			// task 9 : launch (add case info to task data)
-			int case_time_out = get_time_out(task_data.get("CaseInfo").get("time_out"));
+			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
+			String case_id = task_data.get("ID").get("id");
 			system_call sys_call = new system_call(run_cmd, run_env, case_work_path, case_time_out);
-			pool_info.add_sys_call(sys_call, queue_name, case_title, case_work_path, case_time_out);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out);
 			// task 10 : register launched case in task_data
-			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_title, task_data);
+			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_id, task_data);
 		}
 	}
 
@@ -492,7 +500,7 @@ public class task_waiter extends Thread {
 		task_waiter waiter = new task_waiter(0, null, null, null, null);
 		waiter.start();
 		try {
-			Thread.sleep(5 * 1000);
+			Thread.sleep(20 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

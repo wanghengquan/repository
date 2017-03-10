@@ -71,7 +71,7 @@ public class client_data {
 	public void set_max_soft_insts(HashMap<String, Integer> update_data) {
 		rw_lock.writeLock().lock();
 		try {
-			max_soft_insts.clear();
+			//max_soft_insts.clear();
 			max_soft_insts.putAll(update_data);
 		} finally {
 			rw_lock.writeLock().unlock();
@@ -82,7 +82,7 @@ public class client_data {
 		rw_lock.readLock().lock();
 		HashMap<String, Integer> temp = new HashMap<String, Integer>();
 		try {
-			temp = use_soft_insts;
+			temp.putAll(use_soft_insts);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -154,7 +154,10 @@ public class client_data {
 			Iterator<String> booking_data_it = booking_data_set.iterator();
 			while (booking_data_it.hasNext()) {
 				String sw_name = booking_data_it.next();
-				Integer sw_insts = future_soft_insts.get(sw_name);
+				Integer sw_insts = new Integer(0);
+				if (future_soft_insts.containsKey(sw_name)){
+					sw_insts = future_soft_insts.get(sw_name);
+				}
 				Integer sw_max_insts = max_soft_insts.get(sw_name);
 				sw_insts = sw_insts + 1; //booking 1 usage for every software
 				if (sw_insts > sw_max_insts) {

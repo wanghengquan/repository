@@ -56,7 +56,7 @@ public class public_data {
 
 	//========================
 	// link to RabbitMQ configuration data only shown here
-	public final static String RMQ_HOST = "linux-D50553";
+	public final static String RMQ_HOST = "linux-D50553"; //"linux-D50553" "lsh-reg01"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "Result";
@@ -87,7 +87,7 @@ public class public_data {
 	
 	//========================
 	// performance calibration
-	public final static int PERF_THREAD_BASE_INTERVAL = 5;
+	public final static int PERF_THREAD_BASE_INTERVAL = 6;
 	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
 	
 	//========================
@@ -142,5 +142,9 @@ public class public_data {
 		System.out.println(System.getProperty("os.name")); 
 		System.out.println(System.getProperty("os.arch")); 
 		System.out.println(System.getProperty("os.version"));
+		String path = System.getProperty("user.dir"); 
+		System.out.println(path);
+		String haha = path.replace("\\\\", "/"); 
+		System.out.println(haha); 
 	}	
 }

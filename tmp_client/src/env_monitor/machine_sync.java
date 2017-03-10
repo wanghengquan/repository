@@ -249,7 +249,7 @@ public class machine_sync extends Thread {
 				}
 			} else {
 				INFO_LOGGER.debug("machine_sync Thread running...");
-				INFO_LOGGER.warn(machine_sync.machine_hash.toString());
+				INFO_LOGGER.debug(machine_sync.machine_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : update machine data

@@ -61,7 +61,7 @@ public class data_server extends Thread {
 	private client_data client_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
-	//private String line_seprator = System.getProperty("line.separator");
+	// private String line_seprator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
 	config_sync config_runner;
@@ -70,7 +70,7 @@ public class data_server extends Thread {
 	// protected function
 	// private function
 
-	public data_server(switch_data switch_info, client_data client_info,  pool_data pool_info) {
+	public data_server(switch_data switch_info, client_data client_info, pool_data pool_info) {
 		this.client_info = client_info;
 		this.switch_info = switch_info;
 		this.pool_info = pool_info;
@@ -115,7 +115,7 @@ public class data_server extends Thread {
 		base_data.putAll(cmd_hash);
 		client_data.put("base", base_data);
 		client_info.set_client_data(client_data);
-		DATA_SERVER_LOGGER.warn(client_data.toString());
+		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
 	// this function may get slipped condition
@@ -130,7 +130,8 @@ public class data_server extends Thread {
 		Iterator<String> config_it = config_section.iterator();
 		while (config_it.hasNext()) {
 			String option = config_it.next();
-			HashMap<String, String> option_data = config_hash.get(option);
+			HashMap<String, String> option_data = new HashMap<String, String>();
+			option_data.putAll(config_hash.get(option));
 			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
 				continue;
 			}
@@ -145,7 +146,7 @@ public class data_server extends Thread {
 		// 2. merge System data
 		client_data.put("System", machine_hash.get("System"));
 		client_info.set_client_data(client_data);
-		DATA_SERVER_LOGGER.warn(client_data.toString());
+		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
 	private void update_max_sw_insts_limitation() {
@@ -169,7 +170,6 @@ public class data_server extends Thread {
 		}
 		client_info.set_max_soft_insts(max_soft_insts);
 	}
-
 
 	public void run() {
 		try {
@@ -219,8 +219,11 @@ public class data_server extends Thread {
 			dynamic_merge_client_data();
 			// task 2: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
+			// HashMap<String, Integer> soft_ware =
+			DATA_SERVER_LOGGER.warn(client_info.get_max_soft_insts());
+			DATA_SERVER_LOGGER.warn(client_info.get_use_soft_insts());
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 3 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -236,7 +239,7 @@ public class data_server extends Thread {
 
 	public void hard_stop() {
 		config_runner.soft_stop();
-		machine_runner.soft_stop();		
+		machine_runner.soft_stop();
 		stop_request = true;
 		if (client_thread != null) {
 			client_thread.interrupt();
@@ -266,11 +269,11 @@ public class data_server extends Thread {
 		data_server server_runner = new data_server(switch_info, client_info, pool_info);
 		server_runner.start();
 		try {
-			Thread.sleep(10*1000);
+			Thread.sleep(10 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		server_runner.soft_stop();
+		// server_runner.soft_stop();
 	}
 }

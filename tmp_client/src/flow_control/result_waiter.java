@@ -54,7 +54,7 @@ public class result_waiter extends Thread {
 	// protected function
 	// private function
 
-	public result_waiter(pool_data pool_info, task_data task_info, client_data client_info, switch_data switch_info) {
+	public result_waiter(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
 		this.pool_info = pool_info;
 		this.task_info = task_info;
 		this.client_info = client_info;
@@ -223,11 +223,11 @@ public class result_waiter extends Thread {
 			// remote send
 			String rmq_runtime_str = parser.create_runtime_document_string(remote_data);
 			report_status = rmq_tube.exchange_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
-		} else {
+		} 
+		if (local_data.size() > 0){
 			// local send
 			;
 		}
-
 		return report_status;
 	}
 
@@ -247,8 +247,8 @@ public class result_waiter extends Thread {
 			}
 			HashMap<String, String> hash_data = new HashMap<String, String>();
 			// call_index format case_id@queue_name
-			String queue_name = call_index.split("@")[1];
-			String case_id = call_index.split("@")[0];
+			String queue_name = call_index.split("#")[1];
+			String case_id = call_index.split("#")[0];
 			HashMap<String, HashMap<String, String>> task_data = task_info
 					.get_case_from_processed_task_queues_data_map(queue_name, case_id);
 			hash_data.put("testId", task_data.get("ID").get("id"));
@@ -300,7 +300,8 @@ public class result_waiter extends Thread {
 			// remote send
 			String rmq_result_str = parser.create_result_document_string(remote_data, ip, terminal);
 			report_status = rmq_tube.basic_send(public_data.RMQ_RESULT_NAME, rmq_result_str);
-		} else {
+		} 
+		if (local_data.size() > 0) {
 			// local send
 			;
 		}
@@ -317,8 +318,8 @@ public class result_waiter extends Thread {
 			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
 			String call_status = (String) one_call_data.get("call_status");
 			HashMap<String, String> hash_data = new HashMap<String, String>();
-			String queue_name = call_index.split("@")[1];
-			String case_id = call_index.split("@")[0];
+			String queue_name = call_index.split("#")[1];
+			String case_id = call_index.split("#")[0];
 			HashMap<String, HashMap<String, String>> task_data = task_info
 					.get_case_from_processed_task_queues_data_map(queue_name, case_id);
 			hash_data.put("testId", task_data.get("ID").get("id"));
@@ -354,7 +355,7 @@ public class result_waiter extends Thread {
 				continue;
 			}
 			// <status>Passed</status>
-			Pattern p = Pattern.compile("status>(\\.+?)</");
+			Pattern p = Pattern.compile("status>(.+?)</");
 			Matcher m = p.matcher(line);
 			if (m.find()) {
 				status = m.group(1);
@@ -526,10 +527,19 @@ public class result_waiter extends Thread {
 			} else {
 				RESULT_WAITER_LOGGER.debug("Client Thread running...");
 			}
+			try {
+				Thread.sleep(base_interval * 1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
 			// ============== All dynamic job start from here ==============
 			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
 			// task 1 : get call map status
 			call_status = get_call_status_map();
+			if (call_status.size() < 1) {
+				continue;
+			}
 			// task 2 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
 			// task 3 : generate case general data

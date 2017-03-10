@@ -94,7 +94,7 @@ public class pool_data{
 			String case_work_dir,
 			int time_out){
 		Future<?> future_call_back = run_pool.submit(sys_call);
-		String sys_call_key = case_id + "@" + queue_name;
+		String sys_call_key = case_id + "#" + queue_name;
 		HashMap<String, Object> sys_call_value= new HashMap<String, Object>();
 		sys_call_value.put("call_back", future_call_back);
 		sys_call_value.put("queue_name", queue_name);
