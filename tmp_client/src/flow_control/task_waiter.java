@@ -352,6 +352,7 @@ public class task_waiter extends Thread {
 	private void monitor_run() {
 		// ============== All static job start from here ==============
 		waiter_thread = Thread.currentThread();
+		String waiter_name = "Waiter_" + String.valueOf(waiter_index);
 		while (!stop_request) {
 			if (wait_request) {
 				TASK_WAITER_LOGGER.debug("Waiter_" + String.valueOf(waiter_index) + " waiting...");
@@ -365,8 +366,9 @@ public class task_waiter extends Thread {
 				}
 			} else {
 				this.waiter_status = "work";
-				TASK_WAITER_LOGGER.warn("Waiter_" + String.valueOf(waiter_index) + " running...");
+				TASK_WAITER_LOGGER.warn(waiter_name + " running...");
 			}
+			// take a rest
 			try {
 				Thread.sleep(base_interval * 1000);
 			} catch (InterruptedException e) {
@@ -374,12 +376,12 @@ public class task_waiter extends Thread {
 				e.printStackTrace();
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1 : check available thread and task queue
-			if (pool_info.get_available_thread() == 0) {
-				continue;
-			}
+			// task 1 : check available task queue and thread
 			if (tube_server.captured_admin_queues.size() == 0) {
 				TASK_WAITER_LOGGER.warn("No matched queue found in captured queue list.");
+				continue;
+			}
+			if (pool_info.get_available_thread() == 0) {
 				continue;
 			}
 			// task 2 : get working queue
@@ -388,7 +390,7 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.warn("No matched queue found.");
 				continue;
 			} else {
-				TASK_WAITER_LOGGER.warn("Task queue will be launched:" + queue_name);
+				TASK_WAITER_LOGGER.warn(waiter_name + "working on:" + queue_name);
 			}
 			// task 3 : resource booking (thread, software usage)
 			// Please release if case not launched !!!
@@ -397,7 +399,7 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			// now we have booking thread, if software booking failed we need to
-			// release it also.
+			// release thread booking also.
 			HashMap<String, String> software_cost = tube_server.captured_admin_queues.get(queue_name).get("Software");
 			Boolean software_booking = client_info.booking_use_soft_insts(software_cost);
 			if (!software_booking) {

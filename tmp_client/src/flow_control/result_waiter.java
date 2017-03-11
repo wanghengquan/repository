@@ -329,15 +329,18 @@ public class result_waiter extends Thread {
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
 			String cmd_status = new String("");
 			String cmd_reason = new String("");
+			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals("done")) {
 				cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("cmd_output"));
 				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("cmd_output"));
+				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("cmd_output")));
 			} else if (call_status.equals("timeout")) {
-				cmd_status = "Timeout"; // match output
+				cmd_status = "Timeout";
 				cmd_reason = "Timeout";
 			} else {
-				cmd_status = "Processing"; // match output
+				cmd_status = "Processing";
 			}
+			hash_data.putAll(detail_report);
 			hash_data.put("status", cmd_status);
 			hash_data.put("reason", cmd_reason);
 			String host_name = client_info.get_client_data().get("Machine").get("terminal");
@@ -348,6 +351,19 @@ public class result_waiter extends Thread {
 		return case_data;
 	}
 
+	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output){
+		HashMap<String, String> report_data = new HashMap<String, String>();
+		for (String line : cmd_output) {
+			// <status>Passed</status>
+			Pattern p = Pattern.compile("<(.+?)>(.+?)</");
+			Matcher m = p.matcher(line);
+			if (m.find()) {
+				report_data.put(m.group(1), m.group(2));
+			}
+		}
+		return report_data;
+	}
+	
 	private String get_cmd_status(ArrayList<String> cmd_output) {
 		String status = new String();
 		for (String line : cmd_output) {
@@ -371,7 +387,7 @@ public class result_waiter extends Thread {
 				continue;
 			}
 			// <status>Passed</status>
-			Pattern p = Pattern.compile("reason>(\\.+?)</");
+			Pattern p = Pattern.compile("reason>(.+?)</");
 			Matcher m = p.matcher(line);
 			if (m.find()) {
 				reason = m.group(1);
@@ -527,6 +543,7 @@ public class result_waiter extends Thread {
 			} else {
 				RESULT_WAITER_LOGGER.debug("Client Thread running...");
 			}
+			// take a rest
 			try {
 				Thread.sleep(base_interval * 1000);
 			} catch (InterruptedException e) {
@@ -564,12 +581,6 @@ public class result_waiter extends Thread {
 				RESULT_WAITER_LOGGER.debug("Result waiter work fine.");
 			} else {
 				RESULT_WAITER_LOGGER.warn("Result waiter get some warning process. please check.");
-			}
-			try {
-				Thread.sleep(base_interval * 1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 	}
