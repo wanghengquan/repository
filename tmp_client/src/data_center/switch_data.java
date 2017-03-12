@@ -30,15 +30,13 @@ public class switch_data {
 	private Boolean data_server_power_up = new Boolean(false);
 	private Boolean tube_server_power_up = new Boolean(false);
 	
-	
-
-	
-	
-	
-
 	// suite file updating
-	private String suite_file_string = new String();
+	private String suite_file = new String();
 
+	
+	
+	
+	
 	//
 	private String queue_work_mode = public_data.DEF_QUEUE_WORK_MODE;
 	private String client_work_mode = public_data.DEF_CLIENT_WORK_MODE;
@@ -125,6 +123,26 @@ public class switch_data {
 		}
 		return status;
 	}
+	
+	public void set_suite_file(String new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.suite_file = new_data;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public String get_suite_file() {
+		rw_lock.readLock().lock();
+		String value = new String();
+		try {
+			value = this.suite_file;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return value;
+	}	
 	//check following
 	
 	
@@ -134,25 +152,7 @@ public class switch_data {
 	
 
 
-	public void set_suite_file_string(String new_data) {
-		rw_lock.writeLock().lock();
-		try {
-			this.suite_file_string = new_data;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
 
-	public String get_suite_file_string() {
-		rw_lock.readLock().lock();
-		String value = new String();
-		try {
-			value = this.suite_file_string;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
 
 	public void set_client_work_mode(String new_data) {
 		rw_lock.writeLock().lock();
