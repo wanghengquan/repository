@@ -20,7 +20,6 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Comparator;
 
 import data_center.public_data;
 import info_parser.xml_parser;
@@ -32,35 +31,7 @@ import info_parser.xml_parser;
 public class rmq_tube {
 	// public property
 	// {queue_name : {ID : {suite: suite_name}}}
-	public static TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
-			new Comparator<String>() {
-				public int compare(String queue_name1, String queue_name2) {
-					// priority:match/assign task:job_from@run_number
-					int int_pri1 = 0, int_pri2 = 0;
-					int int_id1 = 0, int_id2 = 0;
-					try {
-						int_pri1 = get_srting_int(queue_name1, "^(\\d+)@");
-						int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
-						int_id1 = get_srting_int(queue_name1, "run_(\\d+)_");
-						int_id2 = get_srting_int(queue_name2, "run_(\\d+)_");
-					} catch (Exception e) {
-						return queue_name1.compareTo(queue_name2);
-					}
-					if (int_pri1 > int_pri2) {
-						return 1;
-					} else if (int_pri1 < int_pri2) {
-						return -1;
-					} else {
-						if (int_id1 > int_id2) {
-							return 1;
-						} else if (int_id1 < int_id2) {
-							return -1;
-						} else {
-							return queue_name1.compareTo(queue_name2);
-						}
-					}
-				}
-			});
+
 	// protected property
 	// private property
 	private static final Logger RMQ_TUBE_LOGGER = LogManager.getLogger(rmq_tube.class.getName());
@@ -68,27 +39,15 @@ public class rmq_tube {
 	private static String rmq_user = public_data.RMQ_USER;
 	private static String rmq_pwd = public_data.RMQ_PWD;
 	private static String task_msg = new String();
+	private static task_data task_info;
 
 	// public function
-	public rmq_tube() {
-
+	public rmq_tube(task_data info) {
+		task_info = info;
 	}
 
 	// protected function
 	// private function
-	private static int get_srting_int(String str, String patt) {
-		int i = 0;
-		try {
-			Pattern p = Pattern.compile(patt);
-			Matcher m = p.matcher(str);
-			if (m.find()) {
-				i = Integer.valueOf(m.group(1));
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		}
-		return i;
-	}
 
 	public static Boolean exchange_send(String exchange_name, String content) {
 		// String EXCHANGE_NAME = "logs";
@@ -225,19 +184,21 @@ public class rmq_tube {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				remote_admin_queue_receive_treemap.putAll(update_admin_queue(message, current_terminal));
+				//remote_admin_queue_receive_treemap.putAll(update_admin_queue(message, current_terminal));
+				update_admin_queue(message, current_terminal);
 			}
 		};
 		channel.basicConsume(queueName, true, consumer);
 	}
 
-	private static Map<String, HashMap<String, HashMap<String, String>>> update_admin_queue(String message,
+	private static Boolean update_admin_queue(String message,
 			String current_terminal) {
-		Map<String, HashMap<String, HashMap<String, String>>> admin_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		Boolean update_status = new Boolean(false);
+		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(message);
 		Set<String> msg_key_set = msg_hash.keySet();
 		if (msg_key_set.isEmpty()) {
-			return admin_hash;
+			return update_status;
 		}
 		String msg_key = (String) msg_key_set.toArray()[0];
 		HashMap<String, HashMap<String, String>> msg_data = msg_hash.get(msg_key);
@@ -279,6 +240,8 @@ public class rmq_tube {
 		// priority:match/assign task:job_from@run_number
 		String new_title = priority + attribute + "1" + "@" + msg_key;
 		admin_hash.put(new_title, msg_data);
-		return admin_hash;
+		task_info.update_remote_admin_queue_receive_treemap(admin_hash);
+		update_status = true;
+		return update_status;
 	}
 }

@@ -15,6 +15,11 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 
 public class performance extends JDialog{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public performance(main_frame main_view){
 		super(main_view, "Software Setting", true);
 		Container container = this.getContentPane();

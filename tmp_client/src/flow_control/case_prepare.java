@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.des_decode;
 import utility_funcs.system_cmd;
 
 public class case_prepare {
@@ -50,7 +51,7 @@ public class case_prepare {
 		String case_dir_name = "T" + task_data.get("ID").get("id");
 		String[] path_array = new String[] { work_dir, tmp_result_dir, prj_dir_name, run_dir_name, case_dir_name };
 		String case_work_path = String.join(file_seprator, path_array);
-		case_work_path.replaceAll("\\\\", "/");
+		case_work_path = case_work_path.replaceAll("\\\\", "/");
 		File case_work_path_fobj = new File(case_work_path);
 		// delete previously run result.
 		if (case_work_path_fobj.exists() && case_work_path_fobj.isDirectory()) {
@@ -80,7 +81,7 @@ public class case_prepare {
 		String design_des_url = case_work_path + "/" +design_base_name;
 		// get access author key
 		String auth_key = task_data.get("CaseInfo").get("auth_key");
-		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_PUBLIC_KEY);
+		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
 		// get export command
@@ -112,7 +113,7 @@ public class case_prepare {
 		// = case_work_path
 		// get access author key
 		String auth_key = task_data.get("CaseInfo").get("auth_key");
-		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_PUBLIC_KEY);
+		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
 		// get export command
@@ -254,9 +255,8 @@ public class case_prepare {
 
 	protected ArrayList<String> get_case_ready(
 			HashMap<String, HashMap<String, String>> task_data, 
-			String work_dir
+			String working_dir
 			) throws Exception{
-		String working_dir = this.get_working_dir(task_data, work_dir);
 		ArrayList<String> export_list = new ArrayList<String>();
 		ArrayList<String> export_design = this.get_design_export(task_data, working_dir);
 		ArrayList<String> export_script = this.get_script_export(task_data, working_dir);

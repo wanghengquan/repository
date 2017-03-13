@@ -1,4 +1,4 @@
-package flow_control;
+package utility_funcs;
  
 import java.io.IOException;
 import java.security.SecureRandom;

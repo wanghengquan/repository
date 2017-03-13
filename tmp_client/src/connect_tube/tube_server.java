@@ -153,8 +153,8 @@ public class tube_server extends Thread {
 		Map<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		client_hash.putAll(client_info.client_hash);
-		total_admin_queue.putAll(rmq_tube.remote_admin_queue_receive_treemap);
-		total_admin_queue.putAll(local_tube.local_admin_queue_receive_treemap);
+		total_admin_queue.putAll(task_info.get_remote_admin_queue_receive_treemap());
+		total_admin_queue.putAll(task_info.get_local_admin_queue_receive_treemap());	
 		Set<String> queue_set = total_admin_queue.keySet();
 		Iterator<String> queue_it = queue_set.iterator();
 		while (queue_it.hasNext()) {
@@ -297,15 +297,15 @@ public class tube_server extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: update local tube
-			String suite_files = switch_info.get_suite_file_string();
+			String suite_files = switch_info.get_suite_file();
 			if (suite_files != null && !suite_files.equals("")) {
-				local_tube local_tube_parser = new local_tube();
+				local_tube local_tube_parser = new local_tube(task_info);
 				String[] file_list = suite_files.split(";");
 				for (String file : file_list) {
 					local_tube_parser.generate_local_queue_hash(file,
 							client_info.get_client_data().get("Machine").get("terminal"));
 				}
-				switch_info.set_suite_file_string("");
+				switch_info.set_suite_file("");
 			}
 			// task 2: update available admin queue
 			update_captured_admin_queues();

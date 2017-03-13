@@ -47,8 +47,10 @@ public class result_waiter extends Thread {
 	private pool_data pool_info;
 	private client_data client_info;
 	private task_data task_info;
+	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private String line_seprator = System.getProperty("line.separator");
+	private String file_seprator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
 	// protected function
@@ -69,6 +71,7 @@ public class result_waiter extends Thread {
 	 * "start_time":start_time, "time_out":time_out, "cmd_output":cmd_output,
 	 * "call_status": call_status //new added: done, timeout, processing } }
 	 */
+	@SuppressWarnings("unchecked")
 	private Boolean run_post_process(HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, String>> case_report_map) {
 		Boolean run_status = new Boolean(true);
@@ -77,44 +80,74 @@ public class result_waiter extends Thread {
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
 			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			ArrayList<String> cmd_output_list = new ArrayList<String>();
 			String call_status = (String) one_call_data.get("call_status");
 			// only done call will be release. timeout call will be get in
 			// the next cycle(at that time status will be done)
+			String queue_name = (String) call_status_map.get(call_index).get("queue_name");			
+			running_queue_in_pool.add(queue_name);
 			if (!call_status.equals("done")) {
 				continue;
 			}
-			String queue_name = (String) call_status_map.get(call_index).get("queue_name");
-			String work_dir = (String) call_status_map.get(call_index).get("case_dir");
+			String case_work_path = (String) one_call_data.get("case_dir");
+			cmd_output_list   = (ArrayList<String>) one_call_data.get("cmd_output");
 			String cmd_status = case_report_map.get(call_index).get("status");
-			running_queue_in_pool.add(queue_name);
+			String prj_dir_name = "prj" + case_report_map.get(call_index).get("projectId");
+			String run_dir_name = "run" + case_report_map.get(call_index).get("runId");
+			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+			String save_path = client_info.get_client_data().get("base").get("save_path");
+			String[] path_array = new String[] { save_path, tmp_result_dir, prj_dir_name, run_dir_name};
+			String case_save_path = String.join(file_seprator, path_array);
+			case_save_path = case_save_path.replaceAll("\\\\", "/");
+			//public data for every case end
+			// task 0 : case local report generate
+			String local_case_report = case_work_path + "/" +public_data.WORKSPACE_CASE_REPORT_NAME;
+			file_action.append_file(local_case_report, line_seprator);
+			file_action.append_file(local_case_report, "[Run]" + line_seprator);
+			file_action.append_file(local_case_report, String.join(line_seprator, cmd_output_list));
 			// task 1 : final running process clean up
-			run_status = final_cleanup(work_dir);
+			run_status = final_cleanup(case_work_path);
 			// task 2 : zip case to save path
 			if (cmd_status.equalsIgnoreCase("failed")) {
-				run_status = copy_case_to_save_path(work_dir, "source");
+				run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
 			} else {
-				run_status = copy_case_to_save_path(work_dir, "archive");
+				run_status = copy_case_to_save_path(case_work_path, case_save_path, "archive");
 			}
 		}
 		// task 3 : dump finished task queue data to xml file, save memory
-		ArrayList<String> finished_queue_list = task_info.get_finished_admin_queue_list();
-		String[] dumped_queue_list = get_dumped_admin_queue_list();
-		for (String finished_queue : finished_queue_list) {
-			if (running_queue_in_pool.contains(finished_queue)) {
+		ArrayList<String> dump_request_queue_list = switch_info.impl_test_queue_data_dump_request_list();
+		for (String dump_queue : dump_request_queue_list) {
+			if (running_queue_in_pool.contains(dump_queue)) {
 				continue;// queue not finished
 			}
 			if (dumped_queue_list.toString().contains(finished_queue)) {
 				continue;// queue dumped already
+				123445
 			}
 			String work_path = client_info.get_client_data().get("base").get("work_path");
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
+			String dump_path = work_path + "/" +log_folder;
+			File dump_dobj = new File(dump_path);
+			if (dump_dobj.exists() && dump_dobj.isDirectory()) {
+				RESULT_WAITER_LOGGER.warn("dump folder exists.");
+			} else {
+				// create new case path if not have
+				try {
+					FileUtils.forceMkdir(dump_dobj);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					RESULT_WAITER_LOGGER.warn("Make log folder failed.");
+					e.printStackTrace();
+					run_status = false;
+				}
+			}
 			String file_name = finished_queue + ".xml";
-			String dump_path = work_path + log_folder + file_name;
+			String dump_file = dump_path + "/" + file_name;
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = task_info
 					.get_queue_from_processed_task_queues_data_map(finished_queue);
 			xml_parser parser = new xml_parser();
 			try {
-				run_status = parser.dump_finished_queue_data(task_queue_data, finished_queue, dump_path);
+				run_status = parser.dump_finished_queue_data(task_queue_data, finished_queue, dump_file);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -128,7 +161,7 @@ public class result_waiter extends Thread {
 	private String[] get_dumped_admin_queue_list() {
 		String work_path = client_info.get_client_data().get("base").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + log_folder);
+		File log_path = new File(work_path + "/" + log_folder);
 		String[] queue_file_list = log_path.list();
 		return queue_file_list;
 	}
@@ -177,7 +210,7 @@ public class result_waiter extends Thread {
 
 	private Boolean update_processed_task_data(HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, String>> case_report_map) {
-		Boolean release_status = new Boolean(true);
+		Boolean update_status = new Boolean(true);
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
@@ -199,7 +232,7 @@ public class result_waiter extends Thread {
 			case_data.put("Status", case_status);
 			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_id, case_data);
 		}
-		return release_status;
+		return update_status;
 	}
 
 	private Boolean send_runtime_report(HashMap<String, HashMap<String, String>> runtime_log_data) {
@@ -256,12 +289,16 @@ public class result_waiter extends Thread {
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
 			StringBuilder runlog = new StringBuilder();
+			runlog.append(":" + line_seprator);
 			runlog.append("####################" + line_seprator);
 			String host_name = client_info.get_client_data().get("Machine").get("terminal");
 			String work_path = (String) one_call_data.get("case_dir");
 			runlog.append("Result Location ==> " + host_name + ":" + work_path + line_seprator);
+			runlog.append(line_seprator);
+			runlog.append(line_seprator);
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("cmd_output");
-			runlog.append(runtime_output_list.toString());
+			runlog.append(String.join(line_seprator, runtime_output_list));
+			runlog.append(line_seprator);
 			String runlog_str = runlog.toString();
 			hash_data.put("runLog", remove_xml_modifier(runlog_str));
 			runtime_data.put(call_index, hash_data);
@@ -327,8 +364,8 @@ public class result_waiter extends Thread {
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
-			String cmd_status = new String("");
-			String cmd_reason = new String("");
+			String cmd_status = new String("NA");
+			String cmd_reason = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals("done")) {
 				cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("cmd_output"));
@@ -343,9 +380,9 @@ public class result_waiter extends Thread {
 			hash_data.putAll(detail_report);
 			hash_data.put("status", cmd_status);
 			hash_data.put("reason", cmd_reason);
-			String host_name = client_info.get_client_data().get("Machine").get("terminal");
+			//String host_name = client_info.get_client_data().get("Machine").get("terminal");
 			String work_path = (String) one_call_data.get("case_dir");
-			hash_data.put("location", host_name + ":" + work_path);
+			hash_data.put("location", work_path);
 			case_data.put(call_index, hash_data);
 		}
 		return case_data;
@@ -381,7 +418,7 @@ public class result_waiter extends Thread {
 	}
 
 	private String get_cmd_reason(ArrayList<String> cmd_output) {
-		String reason = new String();
+		String reason = new String("NA");
 		for (String line : cmd_output) {
 			if (!line.contains("<reason>")) {
 				continue;
@@ -479,28 +516,37 @@ public class result_waiter extends Thread {
 		}
 	}
 
-	public Boolean copy_case_to_save_path(String case_dir, String copy_type) {
+	public Boolean copy_case_to_save_path(String case_dir, String save_path, String copy_type) {
 		Boolean copy_status = new Boolean(true);
-		String save_path = client_info.client_hash.get("base").get("save_path");
 		File save_path_fobj = new File(save_path);
-		if (!save_path_fobj.exists()) {
-			RESULT_WAITER_LOGGER.warn("Client save path not exists, Skip post run process");
+		if (!save_path_fobj.exists()){
+			try {
+				FileUtils.forceMkdir(save_path_fobj);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				RESULT_WAITER_LOGGER.warn("Case remote save path create failed, Skip post run process");
+				copy_status = false;
+				return copy_status;				
+			}
+		}
+		if (!save_path_fobj.canWrite()) {
+			RESULT_WAITER_LOGGER.warn("Case remote save path not writeable, Skip post run process");
 			copy_status = false;
 			return copy_status;
 		}
 		File case_path_obj = new File(case_dir);
 		String case_folder_name = case_path_obj.getName();
-		String case_parent_path = case_path_obj.getParent();
-		File save_parent_dir = new File(save_path, case_parent_path);
-		File save_dest_path = new File(save_parent_dir.toString(), case_folder_name);
-		File save_dest_file = new File(save_parent_dir.toString(), case_folder_name + ".zip");
-		if (!save_parent_dir.exists()) {
-			save_parent_dir.mkdirs();
-			save_parent_dir.setWritable(true, false);
+		//String case_parent_path = case_path_obj.getParent().replaceAll("\\\\", "/");
+		File save_dest_folder = new File(save_path, case_folder_name);
+		File save_dest_file = new File(save_path, case_folder_name + ".zip");
+		if (!save_path_fobj.exists()) {
+			save_path_fobj.mkdirs();
+			save_path_fobj.setWritable(true, false);
 		}
 		if (copy_type.equals("source")) {
 			try {
-				FileUtils.copyDirectory(case_path_obj, save_dest_path);
+				FileUtils.copyDirectory(case_path_obj, save_dest_folder);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -541,7 +587,7 @@ public class result_waiter extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				RESULT_WAITER_LOGGER.debug("Client Thread running...");
+				RESULT_WAITER_LOGGER.debug("Result waiter Thread running...");
 			}
 			// take a rest
 			try {
@@ -551,6 +597,7 @@ public class result_waiter extends Thread {
 				e.printStackTrace();
 			}			
 			// ============== All dynamic job start from here ==============
+			// use call_status and case_report_data for all tasks
 			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
 			// task 1 : get call map status
 			call_status = get_call_status_map();

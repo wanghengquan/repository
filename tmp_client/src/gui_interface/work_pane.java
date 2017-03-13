@@ -50,6 +50,11 @@ public class work_pane extends JSplitPane{
 	private Component panel_right_component(){
 		JPanel work_panel= new JPanel(new BorderLayout());
 		DefaultTableModel work_table_model = new DefaultTableModel(){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}

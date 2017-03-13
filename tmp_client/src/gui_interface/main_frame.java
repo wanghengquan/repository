@@ -33,6 +33,10 @@ import data_center.public_data;
 import data_center.switch_data;
 
 public class main_frame extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	// public property
 	// protected property
 	// private property
@@ -50,7 +54,7 @@ public class main_frame extends JFrame {
 	}
 
 	private void initial_components() {
-		this.setLocation(600, 300);
+		this.setLocation(400, 100);
 		this.setSize(1200, 1000);
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
 		this.setIconImage(icon_image);

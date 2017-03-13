@@ -41,6 +41,7 @@ public class public_data {
 	// workspace folder configuration, real path = work_path + following folder name
 	public final static String WORKSPACE_RESULT_DIR = "results";
 	public final static String WORKSPACE_LOG_DIR = "logs";
+	public final static String WORKSPACE_CASE_REPORT_NAME = "case_report.txt";
 	
 	//========================
 	// external tools based on software bin path
@@ -59,7 +60,7 @@ public class public_data {
 	public final static String RMQ_HOST = "linux-D50553"; //"linux-D50553" "lsh-reg01"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
-	public final static String RMQ_RESULT_NAME = "Result";
+	public final static String RMQ_RESULT_NAME = "result";
 	public final static String RMQ_CLIENT_NAME = "monitor";  //client data
 	public final static String RMQ_TASK_NAME = "task_queue";
 	public final static String RMQ_ADMIN_NAME = "admin_queue";
@@ -67,8 +68,8 @@ public class public_data {
 	
 	//========================
 	// Encryption public key
-	public final static String ENCRY_PUBLIC_KEY = "@Lattice";
-	public final static String ENCRY_PRIVATE_KEY = "Yjt7LEio8/f0c3/eaa3otw=="; //SVN read only, guest_+_welcome
+	public final static String ENCRY_KEY = "@Lattice";
+	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/f0c3/eaa3otw=="; //SVN encryption string for: guest_+_welcome
 	
 	//========================
 	// link to SVN configuration data only shown here
@@ -104,7 +105,8 @@ public class public_data {
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	// Base
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
-	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	//no default save path to make the run result save in the workspace
+	//public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
 
 	//========================
 	//>>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
@@ -144,7 +146,15 @@ public class public_data {
 		System.out.println(System.getProperty("os.version"));
 		String path = System.getProperty("user.dir"); 
 		System.out.println(path);
-		String haha = path.replace("\\\\", "/"); 
-		System.out.println(haha); 
+		String haha = path.replaceAll("\\\\", "/"); 
+		System.out.println(haha);
+		File path_dobj = new File(path);
+		File[] file_list = path_dobj.listFiles();
+		for(File file: file_list){
+			if(file.isDirectory()){
+				continue;
+			}
+			System.out.println(file.getName());
+		}
 	}	
 }

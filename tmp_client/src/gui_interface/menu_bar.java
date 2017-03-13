@@ -33,7 +33,7 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	private main_frame main_view;
 	private switch_data switch_info;
 	
-	JMenuItem imports, exit;
+	JMenuItem imports, exports, exit;
 	JMenuItem play, pause, stop;
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_timeout;
 	JMenuItem upload, key_gen;
@@ -56,9 +56,12 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	
 	public JMenu construct_file_menu(){
 		JMenu file = new JMenu("File");
-		imports = new JMenuItem("Imports");
+		imports = new JMenuItem("Import...");
 		imports.addActionListener(this);
 		file.add(imports);
+		exports = new JMenuItem("Export...");
+		exports.addActionListener(this);
+		file.add(exports);		
 		file.addSeparator();	
 		exit = new JMenuItem("Exit");
 		exit.addActionListener(this);
@@ -77,7 +80,7 @@ public class menu_bar extends JMenuBar implements ActionListener{
 		run.add(play);
 		run.add(pause);	
 		run.add(stop);
-		JMenu retest = new JMenu("Rtest");
+		JMenu retest = new JMenu("Rtest...");
 		retest_all = new JMenuItem("All");
 		retest_all.addActionListener(this);
 		retest_selected = new JMenuItem("Selected");
@@ -99,9 +102,9 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	
 	public JMenu construct_tool_menu(){
 		JMenu tools = new JMenu("Tools");
-		upload = new JMenuItem("Up Load");
+		upload = new JMenuItem("Upload...");
 		upload.addActionListener(this);
-		key_gen = new JMenuItem("Key Gen");
+		key_gen = new JMenuItem("Keygen...");
 		key_gen.addActionListener(this);
 		tools.add(upload);
 		tools.add(key_gen);
@@ -110,11 +113,11 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	
 	public JMenu construct_setting_menu(){
 		JMenu setting = new JMenu("Setting");
-		client = new JMenuItem("Client");
+		client = new JMenuItem("Client...");
 		client.addActionListener(this);
-		software = new JMenuItem("Software");
+		software = new JMenuItem("Software...");
 		software.addActionListener(this);
-		performance = new JMenuItem("Performance");
+		performance = new JMenuItem("Performance...");
 		performance.addActionListener(this);
 		setting.add(client);
 		setting.add(software);
@@ -124,10 +127,9 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	
 	public JMenu construct_help_menu(){
 		JMenu help = new JMenu("Help");
-		help.add("Usage");
-		usage = new JMenuItem("Usage");
+		usage = new JMenuItem("Usage...");
 		usage.addActionListener(this);
-		about = new JMenuItem("About");
+		about = new JMenuItem("About...");
 		about.addActionListener(this);
 		help.add(usage);
 		help.addSeparator();
@@ -180,7 +182,7 @@ public class menu_bar extends JMenuBar implements ActionListener{
 			
 		}
 		if(e.getSource().equals(key_gen)){
-			
+			new encode_dialog(main_view).setVisible(true);
 		}
 		if(e.getSource().equals(client)){
 			new client_dialog(main_view).setVisible(true);

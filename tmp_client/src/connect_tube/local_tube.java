@@ -29,59 +29,14 @@ public class local_tube {
 	// protected property
 	// private property
 	private final Logger LOCAL_LOGGER = LogManager.getLogger(local_tube.class.getName());
-	public static Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queue_tube_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
-	// {queue_name : {ID : {suite: suite_name}}}
-	public static TreeMap<String, HashMap<String, HashMap<String, String>>> local_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
-			new Comparator<String>() {
-				public int compare(String queue_name1, String queue_name2) {
-					// priority:match/assign task:job_from@runxxx_suite_time :
-					int int_pri1 = 0, int_pri2 = 0;
-					int int_id1 = 0, int_id2 = 0;
-					try {
-						int_pri1 = get_srting_int(queue_name1, "^(\\d+)@");
-						int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
-						int_id1 = get_srting_int(queue_name1, "run_(\\d+)_");
-						int_id2 = get_srting_int(queue_name2, "run_(\\d+)_");
-					} catch (Exception e) {
-						return queue_name1.compareTo(queue_name2);
-					}
-					if (int_pri1 > int_pri2) {
-						return 1;
-					} else if (int_pri1 < int_pri2) {
-						return -1;
-					} else {
-						if (int_id1 > int_id2) {
-							return 1;
-						} else if (int_id1 < int_id2) {
-							return -1;
-						} else {
-							return queue_name1.compareTo(queue_name2);
-						}
-					}
-				}
-			});
-
+	private task_data task_info;
 	// public function
-	public local_tube() {
-
+	public local_tube(task_data task_info) {
+		this.task_info = task_info;
 	}
 
 	// protected function
 	// private function
-	private static int get_srting_int(String str, String patt) {
-		int i = 0;
-		try {
-			Pattern p = Pattern.compile(patt);
-			Matcher m = p.matcher(str);
-			if (m.find()) {
-				i = Integer.valueOf(m.group(1));
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		}
-		return i;
-	}
-
 	private Map<String, List<List<String>>> get_excel_data(String excel_file) {
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		xls_parser excel_obj = new xls_parser();
@@ -793,12 +748,12 @@ public class local_tube {
 	/*
 	 * {queue_name: {ID : {prj : name,suite: name}, System: {os : name}}}
 	 */
-	private Map<String, HashMap<String, HashMap<String, String>>> get_one_queue_hash(
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_one_queue_hash(
 			String admin_queue_base,
 			String queue_pre_fix, 
 			String current_terminal,
 			HashMap<String, HashMap<String, String>> design_data) {
-		Map<String, HashMap<String, HashMap<String, String>>> one_queue_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> one_queue_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		// generate queue name
 		String queue_name = new String();
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
@@ -823,6 +778,8 @@ public class local_tube {
 		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);
 		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_data,
 				case_data);
+		TreeMap<String, HashMap<String, HashMap<String, String>>> current_local_admin_queue_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		current_local_admin_queue_treemap.putAll(this.task_info.get_local_admin_queue_receive_treemap());
 		String admin_queue_base = new String();
 		if (suite_data.containsKey("suite_name")) {
 			admin_queue_base = suite_data.get("suite_name");
@@ -834,15 +791,15 @@ public class local_tube {
 		Iterator<String> case_it = case_ids.iterator();
 		while (case_it.hasNext()) {
 			String case_name = case_it.next();
-			Boolean local_admin_queue_exists = false;
+			Boolean local_admin_queue_exists = new Boolean(false);
 			HashMap<String, HashMap<String, String>> design_data = merge_data.get(case_name);
 			// check current admin queue cover this requirements
-			Set<String> local_admin_queue_keys = local_admin_queue_receive_treemap.keySet();
+			Set<String> local_admin_queue_keys = current_local_admin_queue_treemap.keySet();
 			String local_match_admin_queue_name = new String();
 			Iterator<String> local_admin_queue_it = local_admin_queue_keys.iterator();
 			while (local_admin_queue_it.hasNext()) {
 				local_match_admin_queue_name = local_admin_queue_it.next();
-				HashMap<String, HashMap<String, String>> local_admin_queue_data = local_admin_queue_receive_treemap
+				HashMap<String, HashMap<String, String>> local_admin_queue_data = current_local_admin_queue_treemap
 						.get(local_match_admin_queue_name);
 				if (is_request_match(local_admin_queue_data, design_data)) {
 					local_admin_queue_exists = true;
@@ -854,25 +811,27 @@ public class local_tube {
 			if (!local_admin_queue_exists) {
 				String queue_pre_fix = String.valueOf(local_admin_queue_keys.size() + 1);
 				local_match_admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
-				Map<String, HashMap<String, HashMap<String, String>>> one_hash_data = get_one_queue_hash(
+				TreeMap<String, HashMap<String, HashMap<String, String>>> one_hash_data = get_one_queue_hash(
 						admin_queue_base, queue_pre_fix, current_terminal, design_data);
-				local_admin_queue_receive_treemap.putAll(one_hash_data);
+				task_info.update_local_admin_queue_receive_treemap(one_hash_data);
 			}
 			// insert design into this queue : local_task_queue_designs
+			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queues_tube_data_map = task_info.get_local_task_queues_tube_data_map();
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			if (local_task_queue_tube_map.containsKey(local_match_admin_queue_name)) {
-				task_queue_data = local_task_queue_tube_map.get(local_match_admin_queue_name);
+			if (local_task_queues_tube_data_map.containsKey(local_match_admin_queue_name)) {
+				task_queue_data = local_task_queues_tube_data_map.get(local_match_admin_queue_name);
 			}
 			task_queue_data.put(case_name, design_data);
-			local_task_queue_tube_map.put(local_match_admin_queue_name, task_queue_data);
+			task_info.update_local_task_queues_tube_data_map(local_match_admin_queue_name, task_queue_data);
 		}
 	}
 
 	public static void main(String[] argv) {
-		local_tube sheet_parser = new local_tube();
+		task_data task_info = new task_data();
+		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
 		sheet_parser.generate_local_queue_hash("D:/java_dev/diamond_regression.xlsx", current_terminal);
-		System.out.println(local_task_queue_tube_map.toString());
-		System.out.println(local_admin_queue_receive_treemap.toString());
+		System.out.println(task_info.get_local_task_queues_tube_data_map().toString());
+		System.out.println(task_info.get_local_admin_queue_receive_treemap().toString());
 	}
 }

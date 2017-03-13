@@ -17,8 +17,6 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import connect_tube.local_tube;
-import connect_tube.rmq_tube;
 import connect_tube.tube_server;
 import connect_tube.task_data;
 import data_center.client_data;
@@ -96,9 +94,9 @@ public class hall_manager extends Thread {
 	}
 
 	private void update_reject_queue_list() {
-		Set<String> remote_admin_queue_set = rmq_tube.remote_admin_queue_receive_treemap.keySet();
+		Set<String> remote_admin_queue_set = task_info.get_remote_admin_queue_receive_treemap().keySet();
 		Iterator<String> remote_it = remote_admin_queue_set.iterator();
-		Set<String> local_admin_queue_set = local_tube.local_admin_queue_receive_treemap.keySet();
+		Set<String> local_admin_queue_set = task_info.get_local_admin_queue_receive_treemap().keySet();
 		Iterator<String> local_it = local_admin_queue_set.iterator();
 		Set<String> captured_admin_queue_set = tube_server.captured_admin_queues.keySet();
 		ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();

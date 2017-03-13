@@ -15,6 +15,11 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 
 public class client_dialog extends JDialog{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public client_dialog(main_frame main_view){
 		super(main_view, "Client Setting", true);
 		Container container = this.getContentPane();

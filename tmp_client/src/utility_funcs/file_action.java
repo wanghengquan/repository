@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
  * Functions for files
  */
 public class file_action {
-	private static final Logger FILE_LOGGER = LogManager.getLogger(file_action.class.getName());
+	private static final Logger FILE_ACTION_LOGGER = LogManager.getLogger(file_action.class.getName());
 
 	public file_action() {
 
@@ -46,7 +46,7 @@ public class file_action {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			FILE_LOGGER.warn("Write file exception");
+			FILE_ACTION_LOGGER.warn("Write file exception");
 			return 2;
 		}
 	}
@@ -58,7 +58,7 @@ public class file_action {
 			FileUtils.copyFile(src, dest);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			FILE_LOGGER.warn("Copy file exception");
+			FILE_ACTION_LOGGER.warn("Copy file exception");
 		}
 	}
 
@@ -94,7 +94,7 @@ public class file_action {
 			out.close();
 			return 0;
 		} catch (Exception e) {
-			FILE_LOGGER.warn("Append file error");
+			FILE_ACTION_LOGGER.warn("Append file error");
 			return 1;
 		}
 	}
@@ -147,11 +147,11 @@ public class file_action {
 			}
 			in.close();
 		} catch (FileNotFoundException e) {
-			FILE_LOGGER.error("Cannot find file");
+			FILE_ACTION_LOGGER.error("Cannot find file");
 		} catch (ArchiveException e) {
-			FILE_LOGGER.error("Format not support, support zip format");
+			FILE_ACTION_LOGGER.error("Format not support, support zip format");
 		} catch (IOException e) {
-			FILE_LOGGER.error("IO exception in file generation");
+			FILE_ACTION_LOGGER.error("IO exception in file generation");
 		}
 	}
 
@@ -178,17 +178,17 @@ public class file_action {
 			out.finish();
 			out.close();
 		} catch (IOException e) {
-			FILE_LOGGER.error("Failed generate the file");
+			FILE_ACTION_LOGGER.error("Failed generate the file:" + outFile.toString());
 		} catch (ArchiveException e) {
-			FILE_LOGGER.error("Archive format not support");
+			FILE_ACTION_LOGGER.error("Archive format not support");
 		}
 	}
 
 	public static void main(String[] args) {
-		zipFolder("D:/project/lrf_prj/client_prj/zip_test", "D:/project/lrf_prj/client_prj/zip_java.zip");
+		zipFolder("D:/tmp_work_space/results/prj3/run826/T1444702", "D:/tmp_work_space/results/prj3/run826/T1444702.zip");
 	}
 
-	public static void mainC(String[] args) {
+	public static void main2(String[] args) {
 		String work_dir = System.getProperty("user.dir");
 		System.out.println(work_dir);
 		String init_content = "AAAA" + System.lineSeparator() + "BBBB" + System.lineSeparator();

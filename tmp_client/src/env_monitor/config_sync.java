@@ -212,7 +212,7 @@ public class config_sync extends Thread {
 	private Boolean dump_client_data(ini_parser ini_runner){
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-		HashMap<String, HashMap<String, String>> client_data = client_info.client_hash; 
+		HashMap<String, HashMap<String, String>> client_data = client_info.get_client_data(); 
 		write_data.putAll(client_data);
 		if(!write_data.containsKey("base")){
 			dump_status = false;

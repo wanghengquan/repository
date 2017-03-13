@@ -109,7 +109,7 @@ public class data_server extends Thread {
 		// 4. merge base data (for software use) command data > config data >
 		// default data in public_data
 		HashMap<String, String> base_data = new HashMap<String, String>();
-		base_data.put("save_path", public_data.DEF_SAVE_PATH);
+		// base_data.put("save_path", public_data.DEF_SAVE_PATH);
 		base_data.put("work_path", public_data.DEF_WORK_PATH);
 		base_data.putAll(config_hash.get("tmp_base"));
 		base_data.putAll(cmd_hash);
