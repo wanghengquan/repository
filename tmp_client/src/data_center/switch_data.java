@@ -35,8 +35,6 @@ public class switch_data {
 	private String suite_file = new String();
 
 	// xml data dump request
-	private ArrayList<String> test_queue_data_dump_request_list = new ArrayList<String>();
-	
 	
 	
 	
@@ -147,38 +145,7 @@ public class switch_data {
 		return value;
 	}	
 	
-	public ArrayList<String> get_test_queue_data_dump_request_list() {
-		rw_lock.readLock().lock();
-		ArrayList<String> temp = new ArrayList<String>();
-		try {
-			temp.addAll(test_queue_data_dump_request_list);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
 
-	public void add_test_queue_data_dump_request_list(String queue_name) {
-		rw_lock.writeLock().lock();
-		try {
-			test_queue_data_dump_request_list.add(queue_name);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}	
-	
-	public ArrayList<String> impl_test_queue_data_dump_request_list() {
-		rw_lock.writeLock().lock();
-		ArrayList<String> temp = new ArrayList<String>();
-		try {
-			temp.addAll(test_queue_data_dump_request_list);
-			test_queue_data_dump_request_list.clear();
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-		return temp;
-	}
-	
 	//check following
 	
 	

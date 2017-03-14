@@ -66,11 +66,11 @@ public class rmq_tube {
 			channel.close();
 			connection.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			RMQ_TUBE_LOGGER.warn("exchange_send ioexception");
 			send_status = false;
 		} catch (TimeoutException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			RMQ_TUBE_LOGGER.warn("exchange_send timeout exception");
 			send_status = false;
 		}
@@ -98,10 +98,12 @@ public class rmq_tube {
 			channel.close();
 			connection.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			RMQ_TUBE_LOGGER.warn("basic_send ioexception");
 			send_status = false;
 		} catch (TimeoutException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			RMQ_TUBE_LOGGER.warn("basic_send timeoutexception");
 			send_status = false;
 		}
 		return send_status;

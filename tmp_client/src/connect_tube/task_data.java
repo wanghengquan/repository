@@ -181,7 +181,16 @@ public class task_data {
 		return remove_status;
 	}	
 
-	
+	public Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_processed_task_queues_data_map() {
+		rw_lock.readLock().lock();
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> queues_data = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		try {
+			queues_data.putAll(processed_task_queues_data_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queues_data;
+	}	
 	
 	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_queue_from_processed_task_queues_data_map(String queue_name) {
 		rw_lock.readLock().lock();

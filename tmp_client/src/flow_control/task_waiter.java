@@ -75,7 +75,7 @@ public class task_waiter extends Thread {
 		return waiter_thread;
 	}
 
-	private Boolean import_history_task_list_into_memory(){
+	private synchronized Boolean import_history_task_list_into_memory(){
 		Boolean import_status = new Boolean(false);
 		String work_path = client_info.get_client_data().get("base").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
@@ -489,7 +489,6 @@ public class task_waiter extends Thread {
 						"Waiter_" + String.valueOf(waiter_index) + ":Change queue to finished status:" + queue_name);
 				task_info.update_finished_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
-				switch_info.add_test_queue_data_dump_request_list(queue_name);
 				remove_finished_admin_queue_from_tube(queue_name);
 				// release booking info
 				client_info.release_use_soft_insts(software_cost);

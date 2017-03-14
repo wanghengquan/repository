@@ -271,9 +271,10 @@ public class tube_server extends Thread {
 			// client_info.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed");
-			System.exit(1);
+			//e1.printStackTrace();
+			TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
+			TUBE_SERVER_LOGGER.error("Client will run in local model.");
+			//System.exit(1);
 		}
 		// initial 2 : send client detail info
 		send_client_info("simple");

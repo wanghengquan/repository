@@ -115,21 +115,28 @@ public class result_waiter extends Thread {
 			}
 		}
 		// task 3 : dump finished task queue data to xml file, save memory
-		ArrayList<String> dump_request_queue_list = switch_info.impl_test_queue_data_dump_request_list();
-		for (String dump_queue : dump_request_queue_list) {
+		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
+		for (String dump_queue : finished_admin_queue_list) {
 			if (running_queue_in_pool.contains(dump_queue)) {
 				continue;// queue not finished
 			}
-			if (dumped_queue_list.toString().contains(finished_queue)) {
-				continue;// queue dumped already
-				123445
+			if (task_info.get_watching_admin_queue_list().contains(dump_queue)) {
+				continue;// queue in GUI watch
 			}
+			if (!task_info.get_processed_task_queues_data_map().containsKey(dump_queue)){
+				continue;// no queue data to dump
+			}
+			if (task_info.get_processed_task_queues_data_map().get(dump_queue).size() < 20){
+				continue;// no need to dump to increase the performance > don't forget dump when shutdown client
+			}
+			//dumping task queue
+			TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = task_info.get_queue_from_processed_task_queues_data_map(dump_queue);
 			String work_path = client_info.get_client_data().get("base").get("work_path");
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
 			String dump_path = work_path + "/" +log_folder;
 			File dump_dobj = new File(dump_path);
 			if (dump_dobj.exists() && dump_dobj.isDirectory()) {
-				RESULT_WAITER_LOGGER.warn("dump folder exists.");
+				RESULT_WAITER_LOGGER.debug("dump folder exists.");
 			} else {
 				// create new case path if not have
 				try {
@@ -141,29 +148,19 @@ public class result_waiter extends Thread {
 					run_status = false;
 				}
 			}
-			String file_name = finished_queue + ".xml";
+			String file_name = dump_queue + ".xml";
 			String dump_file = dump_path + "/" + file_name;
-			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = task_info
-					.get_queue_from_processed_task_queues_data_map(finished_queue);
 			xml_parser parser = new xml_parser();
 			try {
-				run_status = parser.dump_finished_queue_data(task_queue_data, finished_queue, dump_file);
+				run_status = parser.dump_finished_queue_data(task_data, dump_queue, dump_file);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				RESULT_WAITER_LOGGER.warn("dump finished queue failed:" + finished_queue);
+				RESULT_WAITER_LOGGER.warn("dump finished queue failed:" + dump_queue);
 				run_status = false;
 			}
 		}
 		return run_status;
-	}
-
-	private String[] get_dumped_admin_queue_list() {
-		String work_path = client_info.get_client_data().get("base").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder);
-		String[] queue_file_list = log_path.list();
-		return queue_file_list;
 	}
 
 	private Boolean release_resource_usage(HashMap<String, HashMap<String, Object>> call_status_map) {
