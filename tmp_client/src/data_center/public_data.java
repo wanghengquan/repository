@@ -156,5 +156,7 @@ public class public_data {
 			}
 			System.out.println(file.getName());
 		}
+		Thread client_thread = Thread.currentThread();
+		System.out.println(client_thread.getName());
 	}	
 }

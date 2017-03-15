@@ -35,6 +35,7 @@ import data_center.switch_data;
 import info_parser.xml_parser;
 import utility_funcs.file_action;
 import utility_funcs.system_cmd;
+import utility_funcs.time_info;
 
 public class result_waiter extends Thread {
 	// public property
@@ -228,6 +229,7 @@ public class result_waiter extends Thread {
 			case_status.put("cmd_status", case_report_map.get(call_index).get("status"));
 			case_status.put("cmd_reason", case_report_map.get(call_index).get("reason"));
 			case_status.put("location", case_report_map.get(call_index).get("location"));
+			case_status.put("run_time", time_info.get_date_time());
 			case_data.put("Status", case_status);
 			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_id, case_data);
 		}

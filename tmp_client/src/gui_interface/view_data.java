@@ -9,7 +9,6 @@
  */
 package gui_interface;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -29,12 +28,13 @@ public class view_data {
 	private panel_table work_table;
 	private panel_table reject_table;
 	private panel_table capture_table;
-	private Vector<Vector<String>> work_data = new Vector<Vector<String>>();
-	private Vector<Vector<String>> reject_data = new Vector<Vector<String>>();
-	private Vector<Vector<String>> capture_data = new Vector<Vector<String>>();
+	private Vector<Vector<String>> work_data = new Vector<Vector<String>>(); //show on table
+	private Vector<Vector<String>> reject_data = new Vector<Vector<String>>(); //show on table
+	private Vector<Vector<String>> capture_data = new Vector<Vector<String>>(); //show on table
 	private Vector<String> work_column = new Vector<String>();
 	private Vector<String> reject_column = new Vector<String>();
 	private Vector<String> capture_column = new Vector<String>();
+	private String watching_request = new String();
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_comparator());
 	TreeMap<String, String> watching_capture_treemap = new TreeMap<String, String>(new queue_comparator());
@@ -258,12 +258,10 @@ public class view_data {
 		}
 	}
 	
-	public void remove_queue_data_to_watching_task_queues_data_map(String queue_name, TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data) {
+	public void clear_watching_task_queues_data_map() {
 		rw_lock.writeLock().lock();
 		try {
-			if (watching_task_queues_data_map.containsKey(queue_name)){
-				watching_task_queues_data_map.remove(queue_name);
-			}
+			watching_task_queues_data_map.clear();
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -299,6 +297,26 @@ public class view_data {
 		}
 		return case_data;
 	}
+	
+	public String get_watching_request() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = watching_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_watching_request(String update_queue) {
+		rw_lock.writeLock().lock();
+		try {
+			this.watching_request = update_queue;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
 	
 	public TreeMap<String, String> get_watching_reject_treemap(){
 		rw_lock.readLock().lock();
