@@ -23,30 +23,31 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
+//import javax.swing.table.DefaultTableModel;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-public class work_pane extends JSplitPane {
+public class work_panel extends JSplitPane {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static final Logger WORK_PANE_LOGGER = LogManager.getLogger(work_pane.class.getName());
+	private static final Logger WORK_PANE_LOGGER = LogManager.getLogger(work_panel.class.getName());
 	private view_data view_info;
 	private JTable work_table;
 
-	public work_pane(view_data view_info) {
+	public work_panel(view_data view_info) {
 		super();
 		this.view_info = view_info;
 		this.setDividerLocation(300);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
-		this.setLeftComponent(new queue_pane());
+		this.setLeftComponent(new queue_panel(view_info));
 		this.setRightComponent(panel_right_component());
 	}
 
@@ -56,38 +57,7 @@ public class work_pane extends JSplitPane {
 
 	private Component panel_right_component() {
 		JPanel work_panel = new JPanel(new BorderLayout());
-		Vector<String> table_name = new Vector<String>();
-		table_name.add("ID");
-		table_name.add("Suite");
-		table_name.add("Design");
-		table_name.add("Status");
-		table_name.add("Results");
-		DefaultTableModel work_tm = new DefaultTableModel() {
-			private static final long serialVersionUID = 1L;
-
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-
-			public int getColumnCount() {
-				return table_name.size();
-			}
-
-			public int getRowCount() {
-				return view_info.get_work_data().size();
-			}
-
-			public Object getValueAt(int row, int column) {
-				if (!view_info.get_work_data().isEmpty()) {
-					return ((Vector<String>) view_info.get_work_data().elementAt(row)).elementAt(column);
-				} else {
-					return null;
-				}
-			}
-
-		};
-		work_tm.setColumnIdentifiers(table_name);
-		work_table = new JTable(work_tm);
+		work_table = view_info.get_work_table();
 		table_pop_memu table_menu = new table_pop_memu(work_table);
 		work_table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
@@ -147,3 +117,42 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	}
 
 }
+
+//Unused
+class work_table_model extends AbstractTableModel{
+
+	/**
+	 * 
+	 */	
+	private static final long serialVersionUID = 1L;
+	private view_data view_info;
+	
+	public work_table_model(view_data view_info){
+		this.view_info = view_info;
+	}
+	
+	@Override
+	public int getColumnCount() {
+		// TODO Auto-generated method stub
+		return view_info.get_work_column().size();
+	}
+
+	@Override
+	public int getRowCount() {
+		// TODO Auto-generated method stub
+		return view_info.get_work_data().size();
+	}
+
+	@Override
+	public Object getValueAt(int row, int column) {
+		// TODO Auto-generated method stub
+		if (!view_info.get_work_data().isEmpty()) {
+			return ((Vector<String>) view_info.get_work_data().elementAt(row)).elementAt(column);
+		} else {
+			return null;
+		}
+	}
+}
+
+
+

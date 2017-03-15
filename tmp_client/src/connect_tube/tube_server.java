@@ -39,6 +39,7 @@ public class tube_server extends Thread {
 	private client_data client_info;
 	private pool_data pool_info;
 	private task_data task_info;
+	private rmq_tube rmq_runner;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private String line_seprator = System.getProperty("line.separator");
 
@@ -48,6 +49,7 @@ public class tube_server extends Thread {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.pool_info = pool_info;
+		this.rmq_runner = new rmq_tube(task_info);   //should be changed later
 	}
 
 	// protected function
@@ -248,7 +250,7 @@ public class tube_server extends Thread {
 			send_msg = parser.create_client_document_string(complex_data);
 		}
 		//send_msg = send_msg.replaceAll("\"", "\\\"");
-		send_status = rmq_tube.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
+		send_status = rmq_runner.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
 		return send_status;
 	}
 
@@ -264,9 +266,9 @@ public class tube_server extends Thread {
 	private void monitor_run() {
 		tube_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		// initial 1 : start rmq tube (admin queque)
+		// initial 1 : start rmq tube (admin queque)   //should be remove later
 		try {
-			rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME, "D27639");
+			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME, "D27639");
 			// rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME,
 			// client_info.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {

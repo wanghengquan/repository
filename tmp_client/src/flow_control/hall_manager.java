@@ -22,6 +22,8 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.data_server;
 import data_center.switch_data;
+import gui_interface.view_data;
+import gui_interface.view_server;
 import data_center.public_data;
 
 public class hall_manager extends Thread {
@@ -251,6 +253,7 @@ public class hall_manager extends Thread {
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
+		view_data view_info = new view_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_THREAD);
 		data_server data_runner = new data_server(switch_info, client_info, pool_info);
 		data_runner.start();
@@ -270,6 +273,8 @@ public class hall_manager extends Thread {
 		}		
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info);
 		jason.start();
+		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
+		view_runner.start();
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {

@@ -39,17 +39,17 @@ public class rmq_tube {
 	private static String rmq_user = public_data.RMQ_USER;
 	private static String rmq_pwd = public_data.RMQ_PWD;
 	private static String task_msg = new String();
-	private static task_data task_info;
+	private task_data task_info;
 
 	// public function
-	public rmq_tube(task_data info) {
-		task_info = info;
+	public rmq_tube(task_data task_info) {
+		this.task_info = task_info;
 	}
 
 	// protected function
 	// private function
 
-	public static Boolean exchange_send(String exchange_name, String content) {
+	public Boolean exchange_send(String exchange_name, String content) {
 		// String EXCHANGE_NAME = "logs";
 		Boolean send_status = new Boolean(true);
 		String EXCHANGE_NAME = exchange_name;
@@ -82,7 +82,7 @@ public class rmq_tube {
 	 * name for case result is:Result The Queue name for the client info is:
 	 * Info if the content send smoothly, 0 will be return Or 1 will be return.
 	 */
-	public static Boolean basic_send(String queue_name, String content) {
+	public Boolean basic_send(String queue_name, String content) {
 		Boolean send_status = new Boolean(true);
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
@@ -115,7 +115,7 @@ public class rmq_tube {
 	 * server. when the client get one message from the server, it should stop
 	 * the connect!
 	 */
-	public static Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name)
+	public synchronized Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name)
 			throws Exception {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
@@ -166,7 +166,7 @@ public class rmq_tube {
 		return msg_hash;
 	}
 
-	public static void read_admin_server(String queue_name, String current_terminal) throws Exception {
+	public void read_admin_server(String queue_name, String current_terminal) throws Exception {
 		/*
 		 * This function used to read the admin queue and return the strings at
 		 * here we use Publish/Subscribe in rabbitmq
@@ -193,7 +193,7 @@ public class rmq_tube {
 		channel.basicConsume(queueName, true, consumer);
 	}
 
-	private static Boolean update_admin_queue(String message,
+	private Boolean update_admin_queue(String message,
 			String current_terminal) {
 		Boolean update_status = new Boolean(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();

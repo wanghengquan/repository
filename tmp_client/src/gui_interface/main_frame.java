@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.util.Enumeration;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 
@@ -31,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
+import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 
@@ -45,8 +47,7 @@ public class main_frame extends JFrame {
 	private static final Logger MAIN_FRAME_LOGGER = LogManager.getLogger(main_frame.class.getName());
 	private switch_data switch_info;
 	private view_data view_info;
-	private work_pane work_component;
-	private JTable work_table;
+	
 	// public function
 	// protected function
 	// private function
@@ -63,17 +64,17 @@ public class main_frame extends JFrame {
 		this.setLocation(400, 100);
 		this.setSize(1200, 1000);
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
-		work_component = new work_pane(view_info); 
+		//JPanel work_component = new work_panel(view_info); 
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
 		this.setJMenuBar(new menu_bar(this, switch_info));
-		this.getContentPane().add(work_component, BorderLayout.CENTER);
+		this.getContentPane().add(new work_panel(view_info), BorderLayout.CENTER);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-	public JTable get_work_table(){
-		return work_component.get_work_table();
-	}
+	//public JTable get_work_table(){
+	//	return work_component.get_work_table();
+	//}
 
 	private void launch_system_tray() {
 		if (!SystemTray.isSupported()) {
@@ -137,11 +138,12 @@ public class main_frame extends JFrame {
 		switch_data switch_info = new switch_data();
 		view_data view_info = new view_data();
 		task_data task_info = new task_data();
-		view_server data_server = new view_server(task_info, view_info);
+		client_data client_info = new client_data();
+		view_server data_server = new view_server(switch_info, client_info, task_info, view_info);
 		data_server.start();
 		main_frame top_view = new main_frame(switch_info, view_info);
 		while(true){
-			top_view.get_work_table().updateUI();
+			view_info.get_work_table().updateUI();
 		//System.out.println(top_view.get_work_table().toString());
 			try {
 				Thread.sleep(2000);

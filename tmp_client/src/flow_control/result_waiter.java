@@ -47,6 +47,7 @@ public class result_waiter extends Thread {
 	private pool_data pool_info;
 	private client_data client_info;
 	private task_data task_info;
+	private rmq_tube rmq_runner;
 	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private String line_seprator = System.getProperty("line.separator");
@@ -61,6 +62,7 @@ public class result_waiter extends Thread {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.rmq_runner = new rmq_tube(task_info);   //should be remove later
 	}
 
 	// since only this thread will remove the finished call, so not slipped
@@ -248,11 +250,10 @@ public class result_waiter extends Thread {
 				remote_data.put(call_index, runtime_log_data.get(call_index));
 			}
 		}
-
 		if (remote_data.size() > 0) {
 			// remote send
 			String rmq_runtime_str = parser.create_runtime_document_string(remote_data);
-			report_status = rmq_tube.exchange_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
+			report_status = rmq_runner.exchange_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
 		} 
 		if (local_data.size() > 0){
 			// local send
@@ -333,7 +334,7 @@ public class result_waiter extends Thread {
 		if (remote_data.size() > 0) {
 			// remote send
 			String rmq_result_str = parser.create_result_document_string(remote_data, ip, terminal);
-			report_status = rmq_tube.basic_send(public_data.RMQ_RESULT_NAME, rmq_result_str);
+			report_status = rmq_runner.basic_send(public_data.RMQ_RESULT_NAME, rmq_result_str);
 		} 
 		if (local_data.size() > 0) {
 			// local send
