@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Vector;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -29,7 +30,7 @@ import javax.swing.ListSelectionModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class queue_panel extends JSplitPane{
+public class queue_panel extends JSplitPane implements Runnable {
 	/**
 	 * 
 	 */
@@ -39,7 +40,7 @@ public class queue_panel extends JSplitPane{
 	private JTable reject_table;
 	private JTable capture_table;
 
-	public queue_panel(view_data view_info){
+	public queue_panel(view_data view_info) {
 		super(JSplitPane.VERTICAL_SPLIT);
 		this.view_info = view_info;
 		this.setDividerLocation(400);
@@ -49,9 +50,9 @@ public class queue_panel extends JSplitPane{
 		this.setTopComponent(panel_top_component());
 		this.setBottomComponent(panel_bottom_component());
 	}
-	
-	private Component panel_top_component(){
-		JPanel work_panel= new JPanel(new BorderLayout());
+
+	private Component panel_top_component() {
+		JPanel work_panel = new JPanel(new BorderLayout());
 		reject_table = view_info.get_reject_table();
 		reject_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		reject_pop_memu reject_menu = new reject_pop_memu(reject_table);
@@ -65,14 +66,14 @@ public class queue_panel extends JSplitPane{
 					QUEUE_PANEL_LOGGER.warn("No line selected");
 				}
 			}
-		});		
-		JScrollPane scroll_panel= new JScrollPane(reject_table);
+		});
+		JScrollPane scroll_panel = new JScrollPane(reject_table);
 		work_panel.add(scroll_panel);
 		return work_panel;
 	}
-	
-	private Component panel_bottom_component(){
-		JPanel work_panel= new JPanel(new BorderLayout());
+
+	private Component panel_bottom_component() {
+		JPanel work_panel = new JPanel(new BorderLayout());
 		capture_table = view_info.get_capture_table();
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, view_info);
@@ -86,11 +87,37 @@ public class queue_panel extends JSplitPane{
 					QUEUE_PANEL_LOGGER.warn("No line selected");
 				}
 			}
-		});			
-		JScrollPane scroll_panel= new JScrollPane(capture_table);
+		});
+		JScrollPane scroll_panel = new JScrollPane(capture_table);
 		work_panel.add(scroll_panel);
 		return work_panel;
-	}	
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+
+		Vector<String> show_line2 = new Vector<String>();
+		show_line2.add("001@run123_" + String.valueOf(0));
+		show_line2.add("processing");
+		view_info.add_capture_data(show_line2);		
+		while (true) {
+			Vector<String> show_line1 = new Vector<String>();
+			show_line1.add("001@run123_" + String.valueOf(0));
+			show_line1.add("machine");
+			view_info.add_reject_data(show_line1);
+			view_info.get_reject_table().validate();
+			view_info.get_reject_table().updateUI();
+			view_info.get_capture_table().validate();
+			view_info.get_capture_table().updateUI();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
+	}
 }
 
 class reject_pop_memu extends JPopupMenu implements ActionListener {
@@ -148,6 +175,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(show)) {
 			System.out.println("show details clicked");
+			System.out.println(table.getSelectedRow());
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			System.out.println("Show queue name:" + select_queue);
 			view_info.set_watching_request(select_queue);
@@ -155,5 +183,3 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	}
 
 }
-
-

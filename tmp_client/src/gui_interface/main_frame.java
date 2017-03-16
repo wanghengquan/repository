@@ -25,6 +25,7 @@ import java.util.Enumeration;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 
@@ -68,7 +69,9 @@ public class main_frame extends JFrame {
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
 		this.setJMenuBar(new menu_bar(this, switch_info));
-		this.getContentPane().add(new work_panel(view_info), BorderLayout.CENTER);
+		work_panel workpanel =  new work_panel(view_info);
+		this.getContentPane().add(workpanel, BorderLayout.CENTER);
+		new Thread(workpanel).start();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
@@ -140,17 +143,6 @@ public class main_frame extends JFrame {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		view_server data_server = new view_server(switch_info, client_info, task_info, view_info);
-		data_server.start();
 		main_frame top_view = new main_frame(switch_info, view_info);
-		while(true){
-			view_info.get_work_table().updateUI();
-		//System.out.println(top_view.get_work_table().toString());
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 	}
 }

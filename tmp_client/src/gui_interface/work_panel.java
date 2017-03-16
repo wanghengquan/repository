@@ -30,8 +30,9 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import utility_funcs.time_info;
 
-public class work_panel extends JSplitPane {
+public class work_panel extends JSplitPane implements Runnable {
 	/**
 	 * 
 	 */
@@ -47,8 +48,10 @@ public class work_panel extends JSplitPane {
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
-		this.setLeftComponent(new queue_panel(view_info));
+		queue_panel queuepannel = new queue_panel(view_info);
+		this.setLeftComponent(queuepannel);
 		this.setRightComponent(panel_right_component());
+		new Thread(queuepannel).start();
 	}
 
 	public JTable get_work_table() {
@@ -73,6 +76,29 @@ public class work_panel extends JSplitPane {
 		JScrollPane scroll_panel = new JScrollPane(work_table);
 		work_panel.add(scroll_panel);
 		return work_panel;
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		while (true) {
+			Vector<String> show_line = new Vector<String>();
+			show_line.add(String.valueOf(0));
+			show_line.add("suite");
+			show_line.add("design");
+			show_line.add("status");
+			show_line.add("reason");
+			show_line.add(time_info.get_date_time());
+			view_info.add_work_data(show_line);
+			view_info.get_work_table().validate();
+			view_info.get_work_table().updateUI();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
 
@@ -118,19 +144,19 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 
 }
 
-//Unused
-class work_table_model extends AbstractTableModel{
+// Unused
+class work_table_model extends AbstractTableModel {
 
 	/**
 	 * 
-	 */	
+	 */
 	private static final long serialVersionUID = 1L;
 	private view_data view_info;
-	
-	public work_table_model(view_data view_info){
+
+	public work_table_model(view_data view_info) {
 		this.view_info = view_info;
 	}
-	
+
 	@Override
 	public int getColumnCount() {
 		// TODO Auto-generated method stub
@@ -153,6 +179,3 @@ class work_table_model extends AbstractTableModel{
 		}
 	}
 }
-
-
-

@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.SwingUtilities;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
@@ -29,7 +31,8 @@ import data_center.switch_data;
 import info_parser.xml_parser;
 import utility_funcs.time_info;
 
-public class view_server extends Thread {
+//public class view_server extends Thread {
+public class view_server implements Runnable {
 	// public property
 	// protected property
 	// private property
@@ -111,8 +114,8 @@ public class view_server extends Thread {
 		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
 		captured_list.addAll(finished_admin_queue_list);// source data
-		for(String queue_name:captured_admin_queue_list){
-			if (captured_list.contains(queue_name)){
+		for (String queue_name : captured_admin_queue_list) {
+			if (captured_list.contains(queue_name)) {
 				continue;
 			}
 			captured_list.add(queue_name);
@@ -183,92 +186,72 @@ public class view_server extends Thread {
 		return show_update;
 	}
 
-
 	/*
-	private Boolean update_watching_data(String queue_name,
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map) {
-		Boolean update_status = new Boolean(false);
-		if (!processed_task_queues_data_map.containsKey(queue_name)) {
-			return update_status;
-		}
-		if (processed_task_queues_data_map.get(queue_name).size() < 1) {
-			return update_status;
-		}
-		TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_queue_data_map = processed_task_queues_data_map
-				.get(queue_name);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> watching_task_queue_data_map = watching_task_queues_data_map
-				.get(queue_name);
-		Iterator<String> processed_task_queue_case_it = processed_task_queue_data_map.keySet().iterator();
-		while (processed_task_queue_case_it.hasNext()) {
-			String case_id = processed_task_queue_case_it.next();
-			HashMap<String, HashMap<String, String>> design_data = processed_task_queue_data_map.get(case_id);
-			if (watching_task_queue_data_map.containsKey(case_id)) {
-				// update line
-				HashMap<String, HashMap<String, String>> show_data = watching_task_queue_data_map.get(case_id);
-				String watch_time = show_data.get("Status").get("run_time");
-				String new_time = design_data.get("Status").get("run_time");
-				if (new_time.equals(watch_time)) {
-					continue; // no update
-				} else {
-					Vector<String> update_line = get_one_report_line(design_data);
-					view_info.update_work_data(update_line);
-					view_info.update_case_to_watching_task_queues_data_map(queue_name, case_id, design_data);
-					update_status = true;
-				}
-			} else {
-				// and new line
-				Vector<String> add_line = get_one_report_line(design_data);
-				view_info.add_work_data(add_line);
-				view_info.update_case_to_watching_task_queues_data_map(queue_name, case_id, design_data);
-				update_status = true;
-			}
-		}
-		return update_status;
-	}
-	
-
-	private Boolean update_watching_data(String queue_name,
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map,
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map) {
-		Boolean update_status = new Boolean(false);
-		if (!processed_task_queues_data_map.containsKey(queue_name)) {
-			return update_status;
-		}
-		if (processed_task_queues_data_map.get(queue_name).size() < 1) {
-			return update_status;
-		}
-		TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_queue_data_map = processed_task_queues_data_map
-				.get(queue_name);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> watching_task_queue_data_map = watching_task_queues_data_map
-				.get(queue_name);
-		Iterator<String> processed_task_queue_case_it = processed_task_queue_data_map.keySet().iterator();
-		while (processed_task_queue_case_it.hasNext()) {
-			String case_id = processed_task_queue_case_it.next();
-			HashMap<String, HashMap<String, String>> design_data = processed_task_queue_data_map.get(case_id);
-			if (watching_task_queue_data_map.containsKey(case_id)) {
-				// update line
-				HashMap<String, HashMap<String, String>> show_data = watching_task_queue_data_map.get(case_id);
-				String watch_time = show_data.get("Status").get("run_time");
-				String new_time = design_data.get("Status").get("run_time");
-				if (new_time.equals(watch_time)) {
-					continue; // no update
-				} else {
-					Vector<String> update_line = get_one_report_line(design_data);
-					view_info.update_work_data(update_line);
-					view_info.update_case_to_watching_task_queues_data_map(queue_name, case_id, design_data);
-					update_status = true;
-				}
-			} else {
-				// and new line
-				Vector<String> add_line = get_one_report_line(design_data);
-				view_info.add_work_data(add_line);
-				view_info.update_case_to_watching_task_queues_data_map(queue_name, case_id, design_data);
-				update_status = true;
-			}
-		}
-		return update_status;
-	}
-*/
+	 * private Boolean update_watching_data(String queue_name, Map<String,
+	 * TreeMap<String, HashMap<String, HashMap<String, String>>>>
+	 * processed_task_queues_data_map) { Boolean update_status = new
+	 * Boolean(false); if
+	 * (!processed_task_queues_data_map.containsKey(queue_name)) { return
+	 * update_status; } if
+	 * (processed_task_queues_data_map.get(queue_name).size() < 1) { return
+	 * update_status; } TreeMap<String, HashMap<String, HashMap<String,
+	 * String>>> processed_task_queue_data_map = processed_task_queues_data_map
+	 * .get(queue_name); TreeMap<String, HashMap<String, HashMap<String,
+	 * String>>> watching_task_queue_data_map = watching_task_queues_data_map
+	 * .get(queue_name); Iterator<String> processed_task_queue_case_it =
+	 * processed_task_queue_data_map.keySet().iterator(); while
+	 * (processed_task_queue_case_it.hasNext()) { String case_id =
+	 * processed_task_queue_case_it.next(); HashMap<String, HashMap<String,
+	 * String>> design_data = processed_task_queue_data_map.get(case_id); if
+	 * (watching_task_queue_data_map.containsKey(case_id)) { // update line
+	 * HashMap<String, HashMap<String, String>> show_data =
+	 * watching_task_queue_data_map.get(case_id); String watch_time =
+	 * show_data.get("Status").get("run_time"); String new_time =
+	 * design_data.get("Status").get("run_time"); if
+	 * (new_time.equals(watch_time)) { continue; // no update } else {
+	 * Vector<String> update_line = get_one_report_line(design_data);
+	 * view_info.update_work_data(update_line);
+	 * view_info.update_case_to_watching_task_queues_data_map(queue_name,
+	 * case_id, design_data); update_status = true; } } else { // and new line
+	 * Vector<String> add_line = get_one_report_line(design_data);
+	 * view_info.add_work_data(add_line);
+	 * view_info.update_case_to_watching_task_queues_data_map(queue_name,
+	 * case_id, design_data); update_status = true; } } return update_status; }
+	 * 
+	 * 
+	 * private Boolean update_watching_data(String queue_name, Map<String,
+	 * TreeMap<String, HashMap<String, HashMap<String, String>>>>
+	 * watching_task_queues_data_map, Map<String, TreeMap<String,
+	 * HashMap<String, HashMap<String, String>>>>
+	 * processed_task_queues_data_map) { Boolean update_status = new
+	 * Boolean(false); if
+	 * (!processed_task_queues_data_map.containsKey(queue_name)) { return
+	 * update_status; } if
+	 * (processed_task_queues_data_map.get(queue_name).size() < 1) { return
+	 * update_status; } TreeMap<String, HashMap<String, HashMap<String,
+	 * String>>> processed_task_queue_data_map = processed_task_queues_data_map
+	 * .get(queue_name); TreeMap<String, HashMap<String, HashMap<String,
+	 * String>>> watching_task_queue_data_map = watching_task_queues_data_map
+	 * .get(queue_name); Iterator<String> processed_task_queue_case_it =
+	 * processed_task_queue_data_map.keySet().iterator(); while
+	 * (processed_task_queue_case_it.hasNext()) { String case_id =
+	 * processed_task_queue_case_it.next(); HashMap<String, HashMap<String,
+	 * String>> design_data = processed_task_queue_data_map.get(case_id); if
+	 * (watching_task_queue_data_map.containsKey(case_id)) { // update line
+	 * HashMap<String, HashMap<String, String>> show_data =
+	 * watching_task_queue_data_map.get(case_id); String watch_time =
+	 * show_data.get("Status").get("run_time"); String new_time =
+	 * design_data.get("Status").get("run_time"); if
+	 * (new_time.equals(watch_time)) { continue; // no update } else {
+	 * Vector<String> update_line = get_one_report_line(design_data);
+	 * view_info.update_work_data(update_line);
+	 * view_info.update_case_to_watching_task_queues_data_map(queue_name,
+	 * case_id, design_data); update_status = true; } } else { // and new line
+	 * Vector<String> add_line = get_one_report_line(design_data);
+	 * view_info.add_work_data(add_line);
+	 * view_info.update_case_to_watching_task_queues_data_map(queue_name,
+	 * case_id, design_data); update_status = true; } } return update_status; }
+	 */
 	private Boolean import_queue_data_to_processed_data(String import_queue) {
 		Boolean import_status = new Boolean(false);
 		String work_path = new String();
@@ -301,40 +284,33 @@ public class view_server extends Thread {
 	}
 
 	/*
-	@SuppressWarnings("unused")
-	private Boolean update_working_queue_table123() {
-		Boolean show_update = new Boolean(false);
-		String watching_request = view_info.get_watching_request();
-		if (watching_request.equals("")) {
-			return show_update; // no watching queue selected
-		}
-		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = view_info
-				.get_watching_task_queues_data_map();
-		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map = task_info
-				.get_processed_task_queues_data_map();
-		if (watching_task_queues_data_map.containsKey(watching_request)) {
-			// check update add new data for both watching task queues and show
-			// table_data
-			show_update = update_watching_data(watching_request, watching_task_queues_data_map,
-					processed_task_queues_data_map);
-		} else {
-			// new queue request
-			// clean first add data to watching queue data map
-			view_info.clear_work_data();
-			view_info.clear_watching_task_queues_data_map();
-			// try import non exists queue data
-			if (!processed_task_queues_data_map.containsKey(watching_request)) {
-				import_queue_data_to_processed_data(watching_request);
-			}
-			TreeMap<String, HashMap<String, HashMap<String, String>>> new_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			view_info.update_queue_data_to_watching_task_queues_data_map(watching_request, new_queue_data);
-			// new data watching data will be update in next cycle.
-			show_update = true;
-		}
-		return show_update;
-	}
-*/
-	
+	 * @SuppressWarnings("unused") private Boolean
+	 * update_working_queue_table123() { Boolean show_update = new
+	 * Boolean(false); String watching_request =
+	 * view_info.get_watching_request(); if (watching_request.equals("")) {
+	 * return show_update; // no watching queue selected } Map<String,
+	 * TreeMap<String, HashMap<String, HashMap<String, String>>>>
+	 * watching_task_queues_data_map = view_info
+	 * .get_watching_task_queues_data_map(); Map<String, TreeMap<String,
+	 * HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map
+	 * = task_info .get_processed_task_queues_data_map(); if
+	 * (watching_task_queues_data_map.containsKey(watching_request)) { // check
+	 * update add new data for both watching task queues and show // table_data
+	 * show_update = update_watching_data(watching_request,
+	 * watching_task_queues_data_map, processed_task_queues_data_map); } else {
+	 * // new queue request // clean first add data to watching queue data map
+	 * view_info.clear_work_data();
+	 * view_info.clear_watching_task_queues_data_map(); // try import non exists
+	 * queue data if
+	 * (!processed_task_queues_data_map.containsKey(watching_request)) {
+	 * import_queue_data_to_processed_data(watching_request); } TreeMap<String,
+	 * HashMap<String, HashMap<String, String>>> new_queue_data = new
+	 * TreeMap<String, HashMap<String, HashMap<String, String>>>();
+	 * view_info.update_queue_data_to_watching_task_queues_data_map(
+	 * watching_request, new_queue_data); // new data watching data will be
+	 * update in next cycle. show_update = true; } return show_update; }
+	 */
+
 	private Vector<String> get_one_report_line(HashMap<String, HashMap<String, String>> design_data) {
 		Vector<String> add_line = new Vector<String>();
 		if (design_data.get("ID").containsKey("id")) {
@@ -369,8 +345,7 @@ public class view_server extends Thread {
 		}
 		return add_line;
 	}
-	
-	
+
 	private Boolean update_working_queue_table() {
 		Boolean show_update = new Boolean(false);
 		String watching_request = view_info.get_watching_request();
@@ -385,7 +360,7 @@ public class view_server extends Thread {
 		if (!processed_task_queues_data_map.containsKey(watching_request)) {
 			import_queue_data_to_processed_data(watching_request);
 		}
-		if(!processed_task_queues_data_map.containsKey(watching_request)) {
+		if (!processed_task_queues_data_map.containsKey(watching_request)) {
 			Vector<String> add_line = new Vector<String>();
 			add_line.add("No data found.");
 			add_line.add("..");
@@ -395,10 +370,10 @@ public class view_server extends Thread {
 			add_line.add("..");
 			view_info.add_work_data(add_line);
 			return show_update;
-		} 
+		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		queue_data.putAll(processed_task_queues_data_map.get(watching_request));
-		if (queue_data.size() < 1){
+		if (queue_data.size() < 1) {
 			Vector<String> add_line = new Vector<String>();
 			add_line.add("No data found.");
 			add_line.add("..");
@@ -407,11 +382,11 @@ public class view_server extends Thread {
 			add_line.add("..");
 			add_line.add("..");
 			view_info.add_work_data(add_line);
-			return show_update;			
+			return show_update;
 		}
 		Set<String> case_set = queue_data.keySet();
 		Iterator<String> case_it = case_set.iterator();
-		while(case_it.hasNext()){
+		while (case_it.hasNext()) {
 			String case_id = case_it.next();
 			HashMap<String, HashMap<String, String>> design_data = queue_data.get(case_id);
 			Vector<String> add_line = get_one_report_line(design_data);
@@ -433,7 +408,6 @@ public class view_server extends Thread {
 		client_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : start GUI
-		main_frame top_view = new main_frame(switch_info, view_info);
 		// loop start
 		while (!stop_request) {
 			if (wait_request) {
@@ -446,11 +420,11 @@ public class view_server extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				VIEW_SERVER_LOGGER.debug("view_server Thread running...");
+				VIEW_SERVER_LOGGER.warn("view_server Thread running...");
 			}
 			// ============== DEBUG ========================================
 			// task debug: manually inser data for GUI test
-			Boolean debug = new Boolean(false);
+			Boolean debug = new Boolean(true);
 			if (debug) {
 				for (int i = 0; i < 1; i++) {
 					Vector<String> show_line = new Vector<String>();
@@ -490,20 +464,21 @@ public class view_server extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1: update rejected queue table
 			if (update_rejected_queue_table()) {
+				view_info.get_reject_table().validate();
 				view_info.get_reject_table().updateUI();
 			}
 			// task 2: update captured queue table
 			if (update_captured_queue_table()) {
+				view_info.get_reject_table().validate();
 				view_info.get_capture_table().updateUI();
 			}
 			// task 3: update work table
 			if (update_working_queue_table()) {
-				VIEW_SERVER_LOGGER.warn(view_info.get_work_data().toString());
-				VIEW_SERVER_LOGGER.warn(view_info.get_watching_request());
+				view_info.get_reject_table().validate();
 				view_info.get_work_table().updateUI();
 			}
 			try {
-				Thread.sleep(base_interval * 1 * 1000);
+				Thread.sleep(1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -542,13 +517,15 @@ public class view_server extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		view_server data_server = new view_server(switch_info, client_info, task_info, view_info);
-		data_server.start();
-		try {
-			Thread.sleep(10 * 1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		main_frame top_view = new main_frame(switch_info, view_info);
+		while (true) {
+			if (SwingUtilities.isEventDispatchThread()) {
+				new Thread(data_server).start();
+			} else {
+				SwingUtilities.invokeLater(data_server);
+			}
 		}
+		// data_server.start();
 		// server_runner.soft_stop();
 	}
 }

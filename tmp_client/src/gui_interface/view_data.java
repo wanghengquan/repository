@@ -35,6 +35,7 @@ public class view_data {
 	private Vector<String> reject_column = new Vector<String>();
 	private Vector<String> capture_column = new Vector<String>();
 	private String watching_request = new String();
+	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_comparator());
 	TreeMap<String, String> watching_capture_treemap = new TreeMap<String, String>(new queue_comparator());
@@ -446,9 +447,9 @@ class queue_comparator implements Comparator<String>{
 		} else if (int_pri1 < int_pri2) {
 			return -1;
 		} else {
-			if (int_id1 > int_id2) {
+			if (int_id1 < int_id2) {
 				return 1;
-			} else if (int_id1 < int_id2) {
+			} else if (int_id1 > int_id2) {
 				return -1;
 			} else {
 				return queue_name1.compareTo(queue_name2);
