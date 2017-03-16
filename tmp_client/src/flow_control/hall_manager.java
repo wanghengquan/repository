@@ -38,6 +38,7 @@ public class hall_manager extends Thread {
 	private task_data task_info;
 	private client_data client_info;
 	private pool_data pool_info;
+	private view_data view_info;
 	// private String line_seprator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
@@ -47,11 +48,12 @@ public class hall_manager extends Thread {
 	// protected function
 	// private function
 
-	private hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
+	private hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info, view_data view_info) {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
 		this.pool_info = pool_info;
+		this.view_info = view_info;
 	}
 
 	private HashMap<String, task_waiter> get_waiter_ready(pool_data pool_info) {
@@ -90,11 +92,12 @@ public class hall_manager extends Thread {
 	}
 
 	private result_waiter start_right_result_waiter(pool_data pool_info) {
-		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info);
+		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info);
 		waiter.start();
 		return waiter;
 	}
 
+	@SuppressWarnings("unused")
 	private void update_reject_queue_list() {
 		Set<String> remote_admin_queue_set = task_info.get_remote_admin_queue_receive_treemap().keySet();
 		Iterator<String> remote_it = remote_admin_queue_set.iterator();
@@ -159,6 +162,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.warn(">>>==================================");
 		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn("");		
+		HALL_MANAGER_LOGGER.warn(">>>>>>>>>>>>>:" + task_info.get_processed_task_queues_data_map().toString());
 	}
 	
 	private void stop_sub_threads(){
@@ -203,16 +207,14 @@ public class hall_manager extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_max_threads());
-			// task 2 : update reject queue list
-			update_reject_queue_list();
-			// task 3 : update captured queue list
+			// task 2 : update captured queue list
 			update_captured_queue_list();
-			// task 4 : update processing queue list
+			// task 3 : update processing queue list
 			update_processing_queue_list();
-			// task 5 : automatic run
-			// task 6 : make general report
+			// task 4 : automatic run
+			// task 5 : make general report
 			generate_console_report(pool_info);
-			// task 7 : stop waiters
+			// task 6 : stop waiters
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
@@ -271,7 +273,7 @@ public class hall_manager extends Thread {
 				break;
 			}
 		}		
-		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info);
+		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
 		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
 		view_runner.start();

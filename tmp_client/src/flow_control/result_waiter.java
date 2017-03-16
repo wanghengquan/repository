@@ -32,6 +32,7 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import gui_interface.view_data;
 import info_parser.xml_parser;
 import utility_funcs.file_action;
 import utility_funcs.system_cmd;
@@ -48,6 +49,7 @@ public class result_waiter extends Thread {
 	private pool_data pool_info;
 	private client_data client_info;
 	private task_data task_info;
+	private view_data view_info;
 	private rmq_tube rmq_runner;
 	@SuppressWarnings("unused")
 	private switch_data switch_info;
@@ -58,11 +60,12 @@ public class result_waiter extends Thread {
 	// protected function
 	// private function
 
-	public result_waiter(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
+	public result_waiter(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info, view_data view_info) {
 		this.pool_info = pool_info;
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.view_info = view_info;
 		this.rmq_runner = new rmq_tube(task_info);   //should be remove later
 	}
 
@@ -123,8 +126,8 @@ public class result_waiter extends Thread {
 			if (running_queue_in_pool.contains(dump_queue)) {
 				continue;// queue not finished
 			}
-			if (task_info.get_watching_admin_queue_list().contains(dump_queue)) {
-				continue;// queue in GUI watch
+			if (view_info.get_watching_request().equalsIgnoreCase(dump_queue)){
+				continue;// queue in GUI watching
 			}
 			if (!task_info.get_processed_task_queues_data_map().containsKey(dump_queue)){
 				continue;// no queue data to dump
@@ -214,13 +217,6 @@ public class result_waiter extends Thread {
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
-			String call_status = (String) one_call_data.get("call_status");
-			// only done call will be release. timeout call will be get in
-			// the next cycle(at that time status will be done)
-			if (call_status.equals("processing")) {
-				continue;
-			}
 			String queue_name = (String) call_status_map.get(call_index).get("queue_name");
 			String case_id = (String) call_status_map.get(call_index).get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
@@ -576,6 +572,7 @@ public class result_waiter extends Thread {
 	private void monitor_run() {
 		// ============== All static job start from here ==============
 		result_thread = Thread.currentThread();
+		String waiter_name = "RW_0";
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -587,11 +584,11 @@ public class result_waiter extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				RESULT_WAITER_LOGGER.debug("Result waiter Thread running...");
+				RESULT_WAITER_LOGGER.debug(waiter_name + ":Thread running...");
 			}
 			// take a rest
 			try {
-				Thread.sleep(base_interval * 1000);
+				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -606,28 +603,26 @@ public class result_waiter extends Thread {
 			}
 			// task 2 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
-			// task 3 : generate case general data
+			// task 3 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
-			// task 4 : send case report data
 			Boolean send_case_status = send_case_report(case_report_data);
-			// task 5 : generate case runtime log data
+			// task 4 : detail case runtime log report
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
 					call_status);
-			// task 6 : send case runtime log data
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
-			// task 7 : update processed task data info
-			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
-			// task 8 : release occupied pool thread
+			// task 5 : update processed task data info
+			//Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
+			// task 6 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
-			// task 9 : release occupied resource usage
+			// task 7 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
-			// task 10 : post process
+			// task 8 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
-			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
+			if (cancel_status && send_case_status && send_runtime_status 
 					&& release_pool_thread_status && release_resource_status && post_status) {
-				RESULT_WAITER_LOGGER.debug("Result waiter work fine.");
+				RESULT_WAITER_LOGGER.debug(waiter_name + ": work fine.");
 			} else {
-				RESULT_WAITER_LOGGER.warn("Result waiter get some warning process. please check.");
+				RESULT_WAITER_LOGGER.warn(waiter_name + ": Get some warning process. please check.");
 			}
 		}
 	}

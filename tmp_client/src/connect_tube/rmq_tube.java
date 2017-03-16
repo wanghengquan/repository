@@ -115,7 +115,7 @@ public class rmq_tube {
 	 * server. when the client get one message from the server, it should stop
 	 * the connect!
 	 */
-	public synchronized Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name)
+	public static synchronized Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name)
 			throws Exception {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);

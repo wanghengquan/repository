@@ -56,10 +56,10 @@ public class queue_panel extends JSplitPane{
 		reject_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		reject_pop_memu reject_menu = new reject_pop_memu(reject_table);
 		reject_table.addMouseListener(new MouseAdapter() {
-			public void mouseReleased(MouseEvent e) {
+			public void mouseReleased(MouseEvent e1) {
 				if (reject_table.getSelectedRows().length > 0) {
-					if (e.isPopupTrigger()) {
-						reject_menu.show(e.getComponent(), e.getX(), e.getY());
+					if (e1.isPopupTrigger()) {
+						reject_menu.show(e1.getComponent(), e1.getX(), e1.getY());
 					}
 				} else {
 					QUEUE_PANEL_LOGGER.warn("No line selected");
@@ -75,8 +75,8 @@ public class queue_panel extends JSplitPane{
 		JPanel work_panel= new JPanel(new BorderLayout());
 		capture_table = view_info.get_capture_table();
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		capture_pop_memu capture_menu = new capture_pop_memu(view_info, capture_table);
-		reject_table.addMouseListener(new MouseAdapter() {
+		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, view_info);
+		capture_table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
@@ -131,7 +131,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JMenuItem show;
 	private view_data view_info;
 
-	public capture_pop_memu(view_data view_info, JTable table) {
+	public capture_pop_memu(JTable table, view_data view_info) {
 		this.table = table;
 		this.view_info = view_info;
 		show = new JMenuItem("Show");

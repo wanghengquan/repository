@@ -38,9 +38,10 @@ public class task_data {
 	// public function
 	// protected function
 	// private function
-	// =====updated by hall manager=====
-	// rejected: do not match with current client
+	// =====updated by tube server====== queue name and reason
+	private TreeMap<String, String> rejected_admin_queue_treemap = new TreeMap<String, String>(new queue_comparator());
 	private ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();
+	// =====updated by hall manager=====
 	// captured: match with current client, including status in: stop pause
 	private ArrayList<String> captured_admin_queue_list = new ArrayList<String>();//also update by result waiter remove finished one
 	// processing: all captured queue with status in processing(value form TMP platform)
@@ -282,6 +283,51 @@ public class task_data {
 		return case_data;
 	}
 	
+	public TreeMap<String, String> get_rejected_admin_queue_treemap() {
+		rw_lock.readLock().lock();
+		TreeMap<String, String> temp = new TreeMap<String, String>(new queue_comparator());
+		try {
+			temp.putAll(this.rejected_admin_queue_treemap);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_rejected_admin_queue_treemap(TreeMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.rejected_admin_queue_treemap.clear();
+			this.rejected_admin_queue_treemap.putAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public void add_rejected_admin_queue_treemap(String queue_name, String reason) {
+		rw_lock.writeLock().lock();
+		try {
+			this.rejected_admin_queue_treemap.put(queue_name, reason);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean remove_rejected_admin_queue_treemap(String queue_name) {
+		Boolean remove_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			if (rejected_admin_queue_treemap.containsKey(queue_name)){
+				this.rejected_admin_queue_treemap.remove(queue_name);
+			} else {
+				remove_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_status;
+	}
+	
 	public ArrayList<String> get_rejected_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -303,6 +349,30 @@ public class task_data {
 		}
 	}
 
+	public void add_rejected_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			this.rejected_admin_queue_list.add(queue_name);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean remove_rejected_admin_queue_list(String queue_name) {
+		Boolean remove_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			if (rejected_admin_queue_list.contains(queue_name)){
+				this.rejected_admin_queue_list.remove(queue_name);
+			} else {
+				remove_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_status;
+	}	
+	
 	public ArrayList<String> get_captured_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -510,9 +580,9 @@ class queue_comparator implements Comparator<String>{
 		} else if (int_pri1 < int_pri2) {
 			return -1;
 		} else {
-			if (int_id1 > int_id2) {
+			if (int_id1 < int_id2) {
 				return 1;
-			} else if (int_id1 < int_id2) {
+			} else if (int_id1 > int_id2) {
 				return -1;
 			} else {
 				return queue_name1.compareTo(queue_name2);

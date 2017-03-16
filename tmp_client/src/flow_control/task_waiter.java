@@ -48,7 +48,6 @@ public class task_waiter extends Thread {
 	private task_data task_info;
 	private client_data client_info;
 	private switch_data switch_info;
-	private rmq_tube rmq_runner;
 	private String line_seprator = System.getProperty("line.separator");
 	//private String file_seprator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
@@ -62,7 +61,6 @@ public class task_waiter extends Thread {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
-		this.rmq_runner = new rmq_tube(task_info);   //should be changed later
 	}
 
 	protected int get_waiter_index() {
@@ -77,7 +75,7 @@ public class task_waiter extends Thread {
 		return waiter_thread;
 	}
 
-	private synchronized Boolean import_history_task_list_into_memory(){
+	private Boolean import_history_task_list_into_memory(){
 		Boolean import_status = new Boolean(false);
 		String work_path = client_info.get_client_data().get("base").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
@@ -226,7 +224,7 @@ public class task_waiter extends Thread {
 		return i;
 	}
 
-	private synchronized Map<String, HashMap<String, HashMap<String, String>>> get_task_case_data(String queue_name) {
+	private Map<String, HashMap<String, HashMap<String, String>>> get_task_case_data(String queue_name) {
 		Map<String, HashMap<String, HashMap<String, String>>> case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Boolean local_queue = new Boolean(false);
 		if (queue_name.contains("0@")) {
@@ -236,7 +234,7 @@ public class task_waiter extends Thread {
 			case_data = task_info.get_one_local_case_data(queue_name);
 		} else {
 			try {
-				case_data = rmq_runner.read_task_server(queue_name);
+				case_data = rmq_tube.read_task_server(queue_name);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -244,7 +242,6 @@ public class task_waiter extends Thread {
 						"Waiter_" + String.valueOf(waiter_index) + ": Found empty/invalid Task Queue:" + queue_name);
 			}
 		}
-		System.out.println(">>>>>>>>>>>>>>" + case_data.toString());
 		return case_data;
 	}
 
@@ -429,7 +426,7 @@ public class task_waiter extends Thread {
 		import_history_task_list_into_memory();
 		// intial end
 		waiter_thread = Thread.currentThread();
-		String waiter_name = "Waiter_" + String.valueOf(waiter_index);
+		String waiter_name = "TW_" + String.valueOf(waiter_index);
 		while (!stop_request) {
 			if (wait_request) {
 				TASK_WAITER_LOGGER.debug("Waiter_" + String.valueOf(waiter_index) + " waiting...");
@@ -443,7 +440,7 @@ public class task_waiter extends Thread {
 				}
 			} else {
 				this.waiter_status = "work";
-				TASK_WAITER_LOGGER.warn(waiter_name + " running...");
+				TASK_WAITER_LOGGER.debug(waiter_name + ": running...");
 			}
 			// take a rest
 			try {
@@ -467,7 +464,7 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.warn("No matched queue found.");
 				continue;
 			} else {
-				TASK_WAITER_LOGGER.warn(waiter_name + "working on: " + queue_name);
+				TASK_WAITER_LOGGER.warn(waiter_name + ": Focus on " + queue_name);
 			}
 			// task 3 : resource booking (thread, software usage)
 			// Please release if case not launched !!!
@@ -485,7 +482,7 @@ public class task_waiter extends Thread {
 			}
 			// task 4 : get one task case data
 			Map<String, HashMap<String, HashMap<String, String>>> case_data = get_task_case_data(queue_name);
-			TASK_WAITER_LOGGER.warn(waiter_name + "working on: " + case_data.toString());
+			TASK_WAITER_LOGGER.debug(waiter_name + ":  Get case" + case_data.toString());
 			if (case_data.isEmpty() || case_data == null) {
 				TASK_WAITER_LOGGER.warn(
 						"Waiter_" + String.valueOf(waiter_index) + ":Change queue to finished status:" + queue_name);
@@ -518,7 +515,6 @@ public class task_waiter extends Thread {
 				task_data = formated_case_hash;
 			}
 			// task 6 : get test case ready
-			TASK_WAITER_LOGGER.warn(waiter_name + "working on: " + task_data.toString());
 			case_prepare prepare_obj = new case_prepare();
 			ArrayList<String> case_prepare_list = new ArrayList<String>();
 			String case_work_path = new String();
@@ -548,9 +544,9 @@ public class task_waiter extends Thread {
 			String case_id = task_data.get("ID").get("id");
 			system_call sys_call = new system_call(run_cmd, run_env, case_work_path, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out);
-			// task 10 : register launched case in task_data and local 
+			// task 10 : register launched case in task_data and local
+			TASK_WAITER_LOGGER.warn(waiter_name + "Launched : " + queue_name + "," + case_id);
 			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_id, task_data);
-			break;
 		}
 	}
 

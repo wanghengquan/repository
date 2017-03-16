@@ -44,7 +44,7 @@ public class view_data {
 		work_column.add("Suite");
 		work_column.add("Design");
 		work_column.add("Status");
-		work_column.add("Results");
+		work_column.add("Reason");
 		work_column.add("Time");
 		reject_column.add("Rejected Queue");
 		reject_column.add("Reason");
@@ -142,10 +142,39 @@ public class view_data {
 		}
 	}
 	
+	public void update_work_data(Vector<String> update_line) {
+		rw_lock.writeLock().lock();
+		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		try {
+			String update_id = update_line.get(0);
+			for (Vector<String> line : work_data){
+				String search_id = line.get(0);
+				if (search_id.equals(update_id)){
+					new_data.add(update_line);
+				} else {
+					new_data.add(line);
+				}	
+			}
+			work_data.clear();
+			work_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public void add_work_data(Vector<String> add_list) {
 		rw_lock.writeLock().lock();
 		try {
 			work_data.add(add_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void clear_work_data() {
+		rw_lock.writeLock().lock();
+		try {
+			work_data.clear();;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -181,6 +210,15 @@ public class view_data {
 		}
 	}
 	
+	public void clear_reject_data() {
+		rw_lock.writeLock().lock();
+		try {
+			reject_data.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public Vector<Vector<String>> get_capture_data() {
 		rw_lock.readLock().lock();
 		Vector<Vector<String>> temp = new Vector<Vector<String>>();
@@ -206,6 +244,15 @@ public class view_data {
 		rw_lock.writeLock().lock();
 		try {
 			capture_data.add(add_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void clear_capture_data() {
+		rw_lock.writeLock().lock();
+		try {
+			capture_data.clear();;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

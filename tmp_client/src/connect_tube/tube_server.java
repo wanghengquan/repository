@@ -24,6 +24,7 @@ import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import gui_interface.view_data;
 import info_parser.xml_parser;
 
 public class tube_server extends Thread {
@@ -167,9 +168,16 @@ public class tube_server extends Thread {
 			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_hash);
 			if (mismatch_item.isEmpty()) {
 				captured_admin_queues.put(queue_name, queue_data);
+				task_info.remove_rejected_admin_queue_list(queue_name);
+				task_info.remove_rejected_admin_queue_treemap(queue_name);
 			} else {
 				if (!task_info.get_rejected_admin_queue_list().contains(queue_name)){
+					//console show
 					TUBE_SERVER_LOGGER.warn("Rejected Queue:" + queue_name + ", Reason:" + mismatch_item.toString());
+					//reject list update
+					task_info.add_rejected_admin_queue_list(queue_name);
+					//reason record
+					task_info.add_rejected_admin_queue_treemap(queue_name, String.join(",", mismatch_item));
 				}
 			}
 		}
@@ -368,5 +376,14 @@ public class tube_server extends Thread {
 		}
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
+		while (true) {
+			System.out.println(task_info.get_rejected_admin_queue_treemap());
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
