@@ -154,8 +154,7 @@ public class tube_server extends Thread {
 		Map<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		client_hash.putAll(client_info.get_client_data());
-		total_admin_queue.putAll(task_info.get_remote_admin_queue_receive_treemap());
-		total_admin_queue.putAll(task_info.get_local_admin_queue_receive_treemap());	
+		total_admin_queue.putAll(task_info.get_received_admin_queues_treemap());	
 		Set<String> queue_set = total_admin_queue.keySet();
 		Iterator<String> queue_it = queue_set.iterator();
 		while (queue_it.hasNext()) {
@@ -275,9 +274,8 @@ public class tube_server extends Thread {
 		// ============== All static job start from here ==============
 		// initial 1 : start rmq tube (admin queque)   //should be remove later
 		try {
-			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME, "D27639");
-			// rmq_tube.read_admin_server(public_data.RMQ_ADMIN_NAME,
-			// client_info.get_client_data().get("Machine").get("terminal"));
+			//rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME, "D27639");
+			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME, client_info.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			//e1.printStackTrace();

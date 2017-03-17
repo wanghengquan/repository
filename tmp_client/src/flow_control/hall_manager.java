@@ -97,6 +97,7 @@ public class hall_manager extends Thread {
 		return waiter;
 	}
 
+	/*
 	@SuppressWarnings("unused")
 	private void update_reject_queue_list() {
 		Set<String> remote_admin_queue_set = task_info.get_remote_admin_queue_receive_treemap().keySet();
@@ -119,7 +120,7 @@ public class hall_manager extends Thread {
 		}
 		task_info.set_rejected_admin_queue_list(rejected_admin_queue_list);
 	}
-
+*/
 	private void update_captured_queue_list() {
 		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
@@ -137,7 +138,7 @@ public class hall_manager extends Thread {
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
-			String queue_status = task_info.get_datat_from_captured_admin_queues_treemap(queue_name).get("Status").get("admin_status");
+			String queue_status = task_info.get_data_from_captured_admin_queues_treemap(queue_name).get("Status").get("admin_status");
 			if (queue_status.equals("processing")) {
 				processing_admin_queue_list.add(queue_name);
 			}
@@ -163,7 +164,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn("");		
 		HALL_MANAGER_LOGGER.warn("");
-		HALL_MANAGER_LOGGER.warn(">>>>>>>>>>>>>:" + task_info.get_processed_task_queues_data_map().toString());
+		HALL_MANAGER_LOGGER.warn(">>>>>>>>>>>>>:" + task_info.get_processed_task_queues_map().toString());
 	}
 	
 	private void stop_sub_threads(){

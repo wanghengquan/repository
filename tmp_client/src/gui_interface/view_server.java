@@ -278,7 +278,7 @@ public class view_server implements Runnable {
 			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_data_to_processed_task_queues_data_map(import_queue, import_queue_data);
+		task_info.update_queue_to_processed_task_queues_map(import_queue, import_queue_data);
 		import_status = true;
 		return import_status;
 	}
@@ -355,7 +355,7 @@ public class view_server implements Runnable {
 		show_update = true;
 		view_info.clear_work_data();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
-		processed_task_queues_data_map.putAll(task_info.get_processed_task_queues_data_map());
+		processed_task_queues_data_map.putAll(task_info.get_processed_task_queues_map());
 		// try import non exists queue data
 		if (!processed_task_queues_data_map.containsKey(watching_request)) {
 			import_queue_data_to_processed_data(watching_request);

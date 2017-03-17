@@ -779,8 +779,8 @@ public class local_tube {
 		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);
 		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_data,
 				case_data);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> current_local_admin_queue_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		current_local_admin_queue_treemap.putAll(this.task_info.get_local_admin_queue_receive_treemap());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> current_admin_queue_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		current_admin_queue_treemap.putAll(task_info.get_received_admin_queues_treemap());
 		String admin_queue_base = new String();
 		if (suite_data.containsKey("suite_name")) {
 			admin_queue_base = suite_data.get("suite_name");
@@ -797,11 +797,11 @@ public class local_tube {
 			design_data.putAll(merge_data.get(case_name));
 			// check current admin queue cover this requirements
 			String local_match_admin_queue_name = new String();
-			Set<String> local_admin_queue_keys = current_local_admin_queue_treemap.keySet();
+			Set<String> local_admin_queue_keys = current_admin_queue_treemap.keySet();
 			Iterator<String> local_admin_queue_it = local_admin_queue_keys.iterator();
 			while (local_admin_queue_it.hasNext()) {
 				local_match_admin_queue_name = local_admin_queue_it.next();
-				HashMap<String, HashMap<String, String>> local_admin_queue_data = current_local_admin_queue_treemap
+				HashMap<String, HashMap<String, String>> local_admin_queue_data = current_admin_queue_treemap
 						.get(local_match_admin_queue_name);
 				if (is_request_match(local_admin_queue_data, design_data)) {
 					local_admin_queue_exists = true;
@@ -815,16 +815,16 @@ public class local_tube {
 				local_match_admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
 				TreeMap<String, HashMap<String, HashMap<String, String>>> one_hash_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 				one_hash_data.putAll(get_one_queue_hash(admin_queue_base, queue_pre_fix, current_terminal, design_data));
-				task_info.update_local_admin_queue_receive_treemap(one_hash_data);
+				task_info.update_received_admin_queues_treemap(one_hash_data);
 			}
 			// insert design into this queue : local_task_queue_designs
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queues_tube_data_map = task_info.get_local_task_queues_tube_data_map();
+			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queues_tube_data_map = task_info.get_received_task_queues_map();
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			if (local_task_queues_tube_data_map.containsKey(local_match_admin_queue_name)) {
 				task_queue_data.putAll(local_task_queues_tube_data_map.get(local_match_admin_queue_name));
 			}
 			task_queue_data.put(case_name, design_data);
-			task_info.update_local_task_queues_tube_data_map(local_match_admin_queue_name, task_queue_data);
+			task_info.update_received_task_queues_map(local_match_admin_queue_name, task_queue_data);
 		}
 	}
 
@@ -833,7 +833,7 @@ public class local_tube {
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
 		sheet_parser.generate_local_queue_hash("D:/java_dev/diamond_regression.xlsx", current_terminal);
-		System.out.println(task_info.get_local_task_queues_tube_data_map().toString());
-		System.out.println(task_info.get_local_admin_queue_receive_treemap().toString());
+		System.out.println(task_info.get_received_task_queues_map().toString());
+		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 	}
 }

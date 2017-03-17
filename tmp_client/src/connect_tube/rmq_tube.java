@@ -242,7 +242,7 @@ public class rmq_tube {
 		// priority:match/assign task:job_from@run_number
 		String new_title = priority + attribute + "1" + "@" + msg_key;
 		admin_hash.put(new_title, msg_data);
-		task_info.update_remote_admin_queue_receive_treemap(admin_hash);
+		task_info.update_received_admin_queues_treemap(admin_hash);
 		update_status = true;
 		return update_status;
 	}

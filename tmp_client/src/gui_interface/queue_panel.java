@@ -97,10 +97,10 @@ public class queue_panel extends JSplitPane implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 
-		Vector<String> show_line2 = new Vector<String>();
-		show_line2.add("001@run123_" + String.valueOf(0));
-		show_line2.add("processing");
-		view_info.add_capture_data(show_line2);		
+		//Vector<String> show_line2 = new Vector<String>();
+		//show_line2.add("001@run123_" + String.valueOf(0));
+		//show_line2.add("processing");
+		//view_info.add_capture_data(show_line2);		
 		while (true) {
 			Vector<String> show_line1 = new Vector<String>();
 			show_line1.add("001@run123_" + String.valueOf(0));

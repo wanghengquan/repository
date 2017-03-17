@@ -129,14 +129,14 @@ public class result_waiter extends Thread {
 			if (view_info.get_watching_request().equalsIgnoreCase(dump_queue)){
 				continue;// queue in GUI watching
 			}
-			if (!task_info.get_processed_task_queues_data_map().containsKey(dump_queue)){
+			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)){
 				continue;// no queue data to dump
 			}
-			if (task_info.get_processed_task_queues_data_map().get(dump_queue).size() < 1){
+			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 1){
 				continue;// no need to dump to increase the performance > don't forget dump when shutdown client
 			}
 			//dumping task queue
-			TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = task_info.get_queue_from_processed_task_queues_data_map(dump_queue);
+			TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = task_info.get_queue_from_processed_task_queues_map(dump_queue);
 			String work_path = client_info.get_client_data().get("base").get("work_path");
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
 			String dump_path = work_path + "/" +log_folder;
@@ -184,7 +184,7 @@ public class result_waiter extends Thread {
 			String queue_name = (String) call_status_map.get(call_index).get("queue_name");
 			String case_id = (String) call_status_map.get(call_index).get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
-					.get_case_from_processed_task_queues_data_map(queue_name, case_id);
+					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			HashMap<String, String> software_cost = case_data.get("Software");
 			release_status = client_info.release_use_soft_insts(software_cost);
 		}
@@ -220,14 +220,14 @@ public class result_waiter extends Thread {
 			String queue_name = (String) call_status_map.get(call_index).get("queue_name");
 			String case_id = (String) call_status_map.get(call_index).get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
-					.get_case_from_processed_task_queues_data_map(queue_name, case_id);
+					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			HashMap<String, String> case_status = case_data.get("Status");
 			case_status.put("cmd_status", case_report_map.get(call_index).get("status"));
 			case_status.put("cmd_reason", case_report_map.get(call_index).get("reason"));
 			case_status.put("location", case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", time_info.get_date_time());
 			case_data.put("Status", case_status);
-			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_id, case_data);
+			task_info.update_case_to_processed_task_queues_map(queue_name, case_id, case_data);
 		}
 		return update_status;
 	}
@@ -279,7 +279,7 @@ public class result_waiter extends Thread {
 			String queue_name = call_index.split("#")[1];
 			String case_id = call_index.split("#")[0];
 			HashMap<String, HashMap<String, String>> task_data = task_info
-					.get_case_from_processed_task_queues_data_map(queue_name, case_id);
+					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			hash_data.put("testId", task_data.get("ID").get("id"));
 			hash_data.put("suiteId", task_data.get("ID").get("suite"));
 			hash_data.put("runId", task_data.get("ID").get("run"));
@@ -354,7 +354,7 @@ public class result_waiter extends Thread {
 			String queue_name = call_index.split("#")[1];
 			String case_id = call_index.split("#")[0];
 			HashMap<String, HashMap<String, String>> task_data = task_info
-					.get_case_from_processed_task_queues_data_map(queue_name, case_id);
+					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			hash_data.put("testId", task_data.get("ID").get("id"));
 			hash_data.put("suiteId", task_data.get("ID").get("suite"));
 			hash_data.put("runId", task_data.get("ID").get("run"));
