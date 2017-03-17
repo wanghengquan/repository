@@ -132,7 +132,7 @@ public class result_waiter extends Thread {
 			if (!task_info.get_processed_task_queues_data_map().containsKey(dump_queue)){
 				continue;// no queue data to dump
 			}
-			if (task_info.get_processed_task_queues_data_map().get(dump_queue).size() < 20){
+			if (task_info.get_processed_task_queues_data_map().get(dump_queue).size() < 1){
 				continue;// no need to dump to increase the performance > don't forget dump when shutdown client
 			}
 			//dumping task queue
@@ -552,7 +552,7 @@ public class result_waiter extends Thread {
 		} else if (copy_type.equals("archive")) {
 			file_action.zipFolder(case_path_obj.getAbsolutePath().toString().replaceAll("\\\\", "/"),
 					save_dest_file.toString());
-			copy_status = false;
+			copy_status = true;
 		} else {
 			RESULT_WAITER_LOGGER.warn("Wrong copy type given, skip");
 			copy_status = false;
@@ -611,14 +611,14 @@ public class result_waiter extends Thread {
 					call_status);
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
 			// task 5 : update processed task data info
-			//Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
+			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
 			// task 6 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
 			// task 7 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
 			// task 8 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
-			if (cancel_status && send_case_status && send_runtime_status 
+			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": work fine.");
 			} else {

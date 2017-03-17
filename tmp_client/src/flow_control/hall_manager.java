@@ -103,7 +103,7 @@ public class hall_manager extends Thread {
 		Iterator<String> remote_it = remote_admin_queue_set.iterator();
 		Set<String> local_admin_queue_set = task_info.get_local_admin_queue_receive_treemap().keySet();
 		Iterator<String> local_it = local_admin_queue_set.iterator();
-		Set<String> captured_admin_queue_set = tube_server.captured_admin_queues.keySet();
+		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
 		ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();
 		while (remote_it.hasNext()) {
 			String queue_name = remote_it.next();
@@ -121,7 +121,7 @@ public class hall_manager extends Thread {
 	}
 
 	private void update_captured_queue_list() {
-		Set<String> captured_admin_queue_set = tube_server.captured_admin_queues.keySet();
+		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
 		ArrayList<String> captured_admin_queue_list = new ArrayList<String>();
 		while (captured_it.hasNext()) {
@@ -132,12 +132,12 @@ public class hall_manager extends Thread {
 	}
 
 	private void update_processing_queue_list() {
-		Set<String> captured_admin_queue_set = tube_server.captured_admin_queues.keySet();
+		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
-			String queue_status = tube_server.captured_admin_queues.get(queue_name).get("Status").get("admin_status");
+			String queue_status = task_info.get_datat_from_captured_admin_queues_treemap(queue_name).get("Status").get("admin_status");
 			if (queue_status.equals("processing")) {
 				processing_admin_queue_list.add(queue_name);
 			}
@@ -162,6 +162,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.warn(">>>==================================");
 		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn("");		
+		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn(">>>>>>>>>>>>>:" + task_info.get_processed_task_queues_data_map().toString());
 	}
 	
@@ -217,6 +218,7 @@ public class hall_manager extends Thread {
 			// task 6 : stop waiters
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
+				//Thread.sleep(2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -275,8 +277,8 @@ public class hall_manager extends Thread {
 		}		
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
-		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
-		new Thread(view_runner).start();
+		//view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
+		//new Thread(view_runner).start();
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {

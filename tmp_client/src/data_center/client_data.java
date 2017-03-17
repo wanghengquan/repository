@@ -25,9 +25,9 @@ public class client_data {
 	// private property
 	private static final Logger CLIENT_DATA_LOGGER = LogManager.getLogger(client_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
-	public HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
-	public HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
-	public HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
+	private HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
+	private HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
+	private HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
 	// public function
 	// protected function
 	// private function
@@ -40,7 +40,7 @@ public class client_data {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
 		try {
-			temp = client_hash;
+			temp.putAll(client_hash);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -61,7 +61,7 @@ public class client_data {
 		rw_lock.readLock().lock();
 		HashMap<String, Integer> temp = new HashMap<String, Integer>();
 		try {
-			temp = max_soft_insts;
+			temp.putAll(max_soft_insts);
 		} finally {
 			rw_lock.readLock().unlock();
 		}

@@ -773,7 +773,8 @@ public class local_tube {
 
 	// generate different admin and task queue hash
 	public void generate_local_queue_hash(String local_file, String current_terminal) {
-		Map<String, List<List<String>>> ExcelData = get_excel_data(local_file);
+		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
+		ExcelData.putAll(get_excel_data(local_file));
 		Map<String, String> suite_data = get_suite_data(ExcelData);
 		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);
 		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_data,
@@ -791,11 +792,12 @@ public class local_tube {
 		Iterator<String> case_it = case_ids.iterator();
 		while (case_it.hasNext()) {
 			String case_name = case_it.next();
+			HashMap<String, HashMap<String, String>> design_data = new HashMap<String, HashMap<String, String>>();
 			Boolean local_admin_queue_exists = new Boolean(false);
-			HashMap<String, HashMap<String, String>> design_data = merge_data.get(case_name);
+			design_data.putAll(merge_data.get(case_name));
 			// check current admin queue cover this requirements
-			Set<String> local_admin_queue_keys = current_local_admin_queue_treemap.keySet();
 			String local_match_admin_queue_name = new String();
+			Set<String> local_admin_queue_keys = current_local_admin_queue_treemap.keySet();
 			Iterator<String> local_admin_queue_it = local_admin_queue_keys.iterator();
 			while (local_admin_queue_it.hasNext()) {
 				local_match_admin_queue_name = local_admin_queue_it.next();
@@ -811,15 +813,15 @@ public class local_tube {
 			if (!local_admin_queue_exists) {
 				String queue_pre_fix = String.valueOf(local_admin_queue_keys.size() + 1);
 				local_match_admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
-				TreeMap<String, HashMap<String, HashMap<String, String>>> one_hash_data = get_one_queue_hash(
-						admin_queue_base, queue_pre_fix, current_terminal, design_data);
+				TreeMap<String, HashMap<String, HashMap<String, String>>> one_hash_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+				one_hash_data.putAll(get_one_queue_hash(admin_queue_base, queue_pre_fix, current_terminal, design_data));
 				task_info.update_local_admin_queue_receive_treemap(one_hash_data);
 			}
 			// insert design into this queue : local_task_queue_designs
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queues_tube_data_map = task_info.get_local_task_queues_tube_data_map();
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			if (local_task_queues_tube_data_map.containsKey(local_match_admin_queue_name)) {
-				task_queue_data = local_task_queues_tube_data_map.get(local_match_admin_queue_name);
+				task_queue_data.putAll(local_task_queues_tube_data_map.get(local_match_admin_queue_name));
 			}
 			task_queue_data.put(case_name, design_data);
 			task_info.update_local_task_queues_tube_data_map(local_match_admin_queue_name, task_queue_data);

@@ -31,6 +31,7 @@ public class task_data {
 	// private property
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> remote_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new queue_comparator());
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> local_admin_queue_receive_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new queue_comparator());
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new queue_comparator());
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> local_task_queues_tube_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	private static final Logger TASK_DATA_LOGGER = LogManager.getLogger(task_data.class.getName());
@@ -134,6 +135,56 @@ public class task_data {
 		return remove_status;
 	}	
 	
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_captured_admin_queues_treemap() {
+		rw_lock.readLock().lock();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queues_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		try {
+			queues_data.putAll(this.captured_admin_queues_treemap);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queues_data;
+	}	
+	
+	public HashMap<String, HashMap<String, String>> get_data_from_captured_admin_queues_treemap(String queue_name) {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			if (captured_admin_queues_treemap.containsKey(queue_name)){
+				queue_data.putAll(this.captured_admin_queues_treemap.get(queue_name));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queue_data;
+	}
+	
+	public Boolean update_captured_admin_queues_treemap(String queue_name, HashMap<String, HashMap<String, String>> queue_data) {
+		Boolean update_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			this.captured_admin_queues_treemap.put(queue_name, queue_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}	
+	
+	public Boolean remove_queue_from_captured_admin_queues_treemap(String queue_name) {
+		Boolean remove_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			if (captured_admin_queues_treemap.containsKey(queue_name)){
+				captured_admin_queues_treemap.remove(queue_name);
+			} else {
+				remove_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_status;
+	}
+	
 	public Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_local_task_queues_tube_data_map() {
 		rw_lock.readLock().lock();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> queue_data = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
@@ -198,7 +249,7 @@ public class task_data {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (processed_task_queues_data_map.containsKey(queue_name)){
-				queue_data = this.processed_task_queues_data_map.get(queue_name);
+				queue_data.putAll(this.processed_task_queues_data_map.get(queue_name));
 			}
 		} finally {
 			rw_lock.readLock().unlock();
@@ -210,8 +261,10 @@ public class task_data {
 		rw_lock.readLock().lock();
 		Map<String, HashMap<String, HashMap<String, String>>> case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			TreeMap<String, HashMap<String, HashMap<String, String>>> local_task_data = local_task_queues_tube_data_map.get(queue_name);
-			TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_data = processed_task_queues_data_map.get(queue_name);
+			TreeMap<String, HashMap<String, HashMap<String, String>>> local_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			local_task_data.putAll(local_task_queues_tube_data_map.get(queue_name));
+			processed_task_data.putAll(processed_task_queues_data_map.get(queue_name));
 			Set<String> local_task_data_set = local_task_data.keySet();
 			Iterator<String> local_task_data_it = local_task_data_set.iterator();
 			while(local_task_data_it.hasNext()){
@@ -234,7 +287,7 @@ public class task_data {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (processed_task_queues_data_map.containsKey(queue_name)){
-				queue_data = processed_task_queues_data_map.get(queue_name);
+				queue_data.putAll(processed_task_queues_data_map.get(queue_name));
 			}
 			queue_data.put(case_id, case_data);
 			processed_task_queues_data_map.put(queue_name, queue_data);
@@ -274,7 +327,7 @@ public class task_data {
 		try {
 			if (processed_task_queues_data_map.containsKey(queue_name)){
 				if(processed_task_queues_data_map.get(queue_name).containsKey(case_id)){
-					case_data = processed_task_queues_data_map.get(queue_name).get(case_id);
+					case_data.putAll(processed_task_queues_data_map.get(queue_name).get(case_id));
 				}
 			} 
 		} finally {

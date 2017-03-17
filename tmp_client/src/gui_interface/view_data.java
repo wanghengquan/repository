@@ -60,7 +60,7 @@ public class view_data {
 		rw_lock.readLock().lock();
 		Vector<String> temp = new Vector<String>();
 		try {
-			temp = work_column;
+			temp.addAll(work_column);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -71,7 +71,7 @@ public class view_data {
 		rw_lock.readLock().lock();
 		Vector<String> temp = new Vector<String>();
 		try {
-			temp = reject_column;
+			temp.addAll(reject_column);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -82,7 +82,7 @@ public class view_data {
 		rw_lock.readLock().lock();
 		Vector<String> temp = new Vector<String>();
 		try {
-			temp = capture_column;
+			temp.addAll(capture_column);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -275,7 +275,7 @@ public class view_data {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (watching_task_queues_data_map.containsKey(queue_name)){
-				queue_data = this.watching_task_queues_data_map.get(queue_name);
+				queue_data.putAll(this.watching_task_queues_data_map.get(queue_name));
 			}
 		} finally {
 			rw_lock.readLock().unlock();
@@ -288,7 +288,7 @@ public class view_data {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (watching_task_queues_data_map.containsKey(queue_name)){
-				queue_data = watching_task_queues_data_map.get(queue_name);
+				queue_data.putAll(watching_task_queues_data_map.get(queue_name));
 			}
 			queue_data.put(case_id, case_data);
 			watching_task_queues_data_map.put(queue_name, queue_data);
@@ -337,7 +337,7 @@ public class view_data {
 		try {
 			if (watching_task_queues_data_map.containsKey(queue_name)){
 				if(watching_task_queues_data_map.get(queue_name).containsKey(case_id)){
-					case_data = watching_task_queues_data_map.get(queue_name).get(case_id);
+					case_data.putAll(watching_task_queues_data_map.get(queue_name).get(case_id));
 				}
 			} 
 		} finally {

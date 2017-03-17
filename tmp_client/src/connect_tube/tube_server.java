@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,12 +23,11 @@ import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
-import gui_interface.view_data;
 import info_parser.xml_parser;
 
 public class tube_server extends Thread {
 	// public property
-	public static ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queues = new ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>>();
+	// public static ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queues = new ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>>();
 	// protected property
 	// private property
 	private static final Logger TUBE_SERVER_LOGGER = LogManager.getLogger(tube_server.class.getName());
@@ -155,7 +153,7 @@ public class tube_server extends Thread {
 	private void update_captured_admin_queues() {
 		Map<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		client_hash.putAll(client_info.client_hash);
+		client_hash.putAll(client_info.get_client_data());
 		total_admin_queue.putAll(task_info.get_remote_admin_queue_receive_treemap());
 		total_admin_queue.putAll(task_info.get_local_admin_queue_receive_treemap());	
 		Set<String> queue_set = total_admin_queue.keySet();
@@ -163,17 +161,18 @@ public class tube_server extends Thread {
 		while (queue_it.hasNext()) {
 			ArrayList<String> mismatch_item = new ArrayList<String>();
 			String queue_name = queue_it.next();
-			HashMap<String, HashMap<String, String>> queue_data = total_admin_queue.get(queue_name);
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data.putAll(total_admin_queue.get(queue_name));
 			// check System match
 			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_hash);
 			if (mismatch_item.isEmpty()) {
-				captured_admin_queues.put(queue_name, queue_data);
+				task_info.update_captured_admin_queues_treemap(queue_name, queue_data);
 				task_info.remove_rejected_admin_queue_list(queue_name);
 				task_info.remove_rejected_admin_queue_treemap(queue_name);
 			} else {
 				if (!task_info.get_rejected_admin_queue_list().contains(queue_name)){
 					//console show
-					TUBE_SERVER_LOGGER.warn("Rejected Queue:" + queue_name + ", Reason:" + mismatch_item.toString());
+					TUBE_SERVER_LOGGER.warn("Rejected:" + queue_name + ", Reason:" + mismatch_item.toString());
 					//reject list update
 					task_info.add_rejected_admin_queue_list(queue_name);
 					//reason record

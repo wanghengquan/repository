@@ -25,7 +25,6 @@ import org.dom4j.DocumentException;
 
 import connect_tube.local_tube;
 import connect_tube.rmq_tube;
-import connect_tube.tube_server;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
@@ -42,6 +41,7 @@ public class task_waiter extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private int waiter_index;
+	private String waiter_name;
 	private String waiter_status;
 	private Thread waiter_thread;
 	private pool_data pool_info;
@@ -61,6 +61,7 @@ public class task_waiter extends Thread {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.waiter_name = "TW_" + String.valueOf(waiter_index);
 	}
 
 	protected int get_waiter_index() {
@@ -145,7 +146,12 @@ public class task_waiter extends Thread {
 		ArrayList<String> runable_queue_list = new ArrayList<String>();
 		HashMap<String, Integer> available_software_insts = client_info.get_available_software_insts();
 		for (String queue_name : full_list) {
-			HashMap<String, HashMap<String, String>> request_data = tube_server.captured_admin_queues.get(queue_name);
+			HashMap<String, HashMap<String, String>> request_data = new HashMap<String, HashMap<String, String>>();
+			request_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
+			if (request_data.isEmpty()){
+				//in case other thread deleted this queue already
+				continue;
+			}
 			if (!request_data.containsKey("Software")) {
 				runable_queue_list.add(queue_name);
 				continue;
@@ -231,15 +237,14 @@ public class task_waiter extends Thread {
 			local_queue = true;
 		}
 		if (local_queue) {
-			case_data = task_info.get_one_local_case_data(queue_name);
+			case_data.putAll(task_info.get_one_local_case_data(queue_name));
 		} else {
 			try {
-				case_data = rmq_tube.read_task_server(queue_name);
+				case_data.putAll(rmq_tube.read_task_server(queue_name));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				TASK_WAITER_LOGGER.warn(
-						"Waiter_" + String.valueOf(waiter_index) + ": Found empty/invalid Task Queue:" + queue_name);
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Found empty/invalid Task Queue:" + queue_name);
 			}
 		}
 		return case_data;
@@ -259,11 +264,11 @@ public class task_waiter extends Thread {
 		xml_parser parser = new xml_parser();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			queue_data = parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/"));
+			queue_data.putAll(parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			TASK_WAITER_LOGGER.warn("Import history task data failed:" + queue_name);
+			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + queue_name);
 			return import_status;
 		}
 		task_info.update_queue_data_to_processed_task_queues_data_map(queue_name, queue_data);
@@ -271,15 +276,24 @@ public class task_waiter extends Thread {
 	}
 	
 	private Boolean remove_finished_admin_queue_from_tube(String queue_name){
-		Boolean remove_status = new Boolean(true);
-		if (queue_name.contains("0@")) { 
-			// 0@ local queue
-			remove_status = task_info.remove_queue_from_local_admin_queue_receive_treemap(queue_name);
+		Boolean remove_src_status = new Boolean(true);
+		Boolean remove_buf_status = new Boolean(true);
+		// both resouce end local and reomte admin queue     and     captured admin queue
+		if (task_info.get_remote_admin_queue_receive_treemap().containsKey(queue_name)){
+			remove_src_status = task_info.remove_queue_from_remote_admin_queue_receive_treemap(queue_name);
+		} else if (task_info.get_local_admin_queue_receive_treemap().containsKey(queue_name)){
+			remove_src_status = task_info.remove_queue_from_local_admin_queue_receive_treemap(queue_name);
 		} else {
-			// 1@ remote queue
-			remove_status = task_info.remove_queue_from_remote_admin_queue_receive_treemap(queue_name);
-		}		
-		return remove_status;
+			TASK_WAITER_LOGGER.warn(waiter_name + ":Remove task queue failed:" + queue_name);
+			remove_src_status = false;
+		}
+		remove_buf_status = task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
+		if (remove_buf_status && remove_src_status){
+			return true;
+		} else {
+			return false;
+		}
+		
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_formated_case_hash(
@@ -380,20 +394,23 @@ public class task_waiter extends Thread {
 	}
 
 	private HashMap<String, HashMap<String, String>> get_merged_remote_task_info(
-			HashMap<String, HashMap<String, String>> admin_hash, HashMap<String, HashMap<String, String>> case_hash) {
+			HashMap<String, HashMap<String, String>> admin_hash, 
+			HashMap<String, HashMap<String, String>> case_hash) {
 		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
 		// case_hash is formated
 		Set<String> case_hash_set = case_hash.keySet();
 		Iterator<String> case_hash_it = case_hash_set.iterator();
 		while (case_hash_it.hasNext()) {
 			String key_name = case_hash_it.next();
-			HashMap<String, String> case_info = case_hash.get(key_name);
+			HashMap<String, String> case_info = new HashMap<String, String>();
+			case_info.putAll(case_hash.get(key_name));
 			HashMap<String, String> merge_info = new HashMap<String, String>();
 			if (admin_hash.containsKey(key_name)) {
-				HashMap<String, String> admin_info = admin_hash.get(key_name);
-				merge_info = local_tube.comm_admin_task_merge(admin_info, case_info);
+				HashMap<String, String> admin_info = new HashMap<String, String>();
+				admin_info.putAll(admin_hash.get(key_name));
+				merge_info.putAll(local_tube.comm_admin_task_merge(admin_info, case_info));
 			} else {
-				merge_info = case_info;
+				merge_info.putAll(case_info);
 			}
 			merged_data.put(key_name, merge_info);
 		}
@@ -424,12 +441,11 @@ public class task_waiter extends Thread {
 		// ============== All static job start from here ==============
 		// initial 1 : start task waiters
 		import_history_task_list_into_memory();
-		// intial end
+		// initial end
 		waiter_thread = Thread.currentThread();
-		String waiter_name = "TW_" + String.valueOf(waiter_index);
 		while (!stop_request) {
 			if (wait_request) {
-				TASK_WAITER_LOGGER.debug("Waiter_" + String.valueOf(waiter_index) + " waiting...");
+				TASK_WAITER_LOGGER.debug(waiter_name + ":Waiting...");
 				try {
 					synchronized (this) {
 						this.wait();
@@ -440,7 +456,7 @@ public class task_waiter extends Thread {
 				}
 			} else {
 				this.waiter_status = "work";
-				TASK_WAITER_LOGGER.debug(waiter_name + ": running...");
+				TASK_WAITER_LOGGER.debug(waiter_name + ":Running...");
 			}
 			// take a rest
 			try {
@@ -451,8 +467,8 @@ public class task_waiter extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : check available task queue and thread
-			if (tube_server.captured_admin_queues.size() == 0) {
-				TASK_WAITER_LOGGER.warn("No matched queue found in captured queue list.");
+			if (task_info.get_captured_admin_queues_treemap().size() == 0) {
+				TASK_WAITER_LOGGER.warn(waiter_name + ":No matched queue found in captured queue list.");
 				continue;
 			}
 			if (pool_info.get_available_thread() == 0) {
@@ -464,7 +480,7 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.warn("No matched queue found.");
 				continue;
 			} else {
-				TASK_WAITER_LOGGER.warn(waiter_name + ": Focus on " + queue_name);
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Focus on " + queue_name);
 			}
 			// task 3 : resource booking (thread, software usage)
 			// Please release if case not launched !!!
@@ -474,18 +490,19 @@ public class task_waiter extends Thread {
 			}
 			// now we have booking thread, if software booking failed we need to
 			// release thread booking also.
-			HashMap<String, String> software_cost = tube_server.captured_admin_queues.get(queue_name).get("Software");
+			HashMap<String, String> software_cost = new HashMap<String, String>();
+			software_cost.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name).get("Software"));
 			Boolean software_booking = client_info.booking_use_soft_insts(software_cost);
 			if (!software_booking) {
 				pool_info.release_used_thread(1);
 				continue;
 			}
 			// task 4 : get one task case data
-			Map<String, HashMap<String, HashMap<String, String>>> case_data = get_task_case_data(queue_name);
-			TASK_WAITER_LOGGER.debug(waiter_name + ":  Get case" + case_data.toString());
+			Map<String, HashMap<String, HashMap<String, String>>> case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+			case_data.putAll(get_task_case_data(queue_name));
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Get case" + case_data.toString());
 			if (case_data.isEmpty() || case_data == null) {
-				TASK_WAITER_LOGGER.warn(
-						"Waiter_" + String.valueOf(waiter_index) + ":Change queue to finished status:" + queue_name);
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Change queue to finished status:" + queue_name);
 				task_info.update_finished_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
 				remove_finished_admin_queue_from_tube(queue_name);
@@ -508,11 +525,13 @@ public class task_waiter extends Thread {
 			// task 5 : merge case data admin queue and local queue (remote
 			// need, local is ready)
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+			HashMap<String, HashMap<String, String>> admin_hash = new HashMap<String, HashMap<String, String>>();
 			if (queue_name.contains("1@")) { // 1@: remote task, 0@: local task
-				HashMap<String, HashMap<String, String>> admin_hash = tube_server.captured_admin_queues.get(queue_name);
-				task_data = get_merged_remote_task_info(admin_hash, formated_case_hash);
+				System.out.println(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
+				admin_hash.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));				
+				task_data.putAll(get_merged_remote_task_info(admin_hash, formated_case_hash));
 			} else {
-				task_data = formated_case_hash;
+				task_data.putAll(formated_case_hash);
 			}
 			// task 6 : get test case ready
 			case_prepare prepare_obj = new case_prepare();
@@ -525,7 +544,7 @@ public class task_waiter extends Thread {
 						case_work_path);
 			} catch (Exception e) {
 				e.printStackTrace();
-				TASK_WAITER_LOGGER.warn("Case prepare failed, skip this case.");
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Case prepare failed, skip this case.");
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
 				continue;
@@ -545,7 +564,7 @@ public class task_waiter extends Thread {
 			system_call sys_call = new system_call(run_cmd, run_env, case_work_path, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out);
 			// task 10 : register launched case in task_data and local
-			TASK_WAITER_LOGGER.warn(waiter_name + "Launched : " + queue_name + "," + case_id);
+			TASK_WAITER_LOGGER.warn(waiter_name + ":Launched " + queue_name + "," + case_id);
 			task_info.update_case_to_processed_task_queues_data_map(queue_name, case_id, task_data);
 		}
 	}
