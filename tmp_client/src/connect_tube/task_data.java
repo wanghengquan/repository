@@ -42,11 +42,11 @@ public class task_data {
 	// protected function
 	// private function
 	// =====updated by tube server====== queue name and reason
-	private TreeMap<String, String> rejected_admin_queue_treemap = new TreeMap<String, String>(new queue_comparator());
-	private ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();
+	private TreeMap<String, String> rejected_admin_reason_treemap = new TreeMap<String, String>(new queue_comparator());
+	//private ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();
 	// =====updated by hall manager=====
 	// captured: match with current client, including status in: stop pause
-	private ArrayList<String> captured_admin_queue_list = new ArrayList<String>();//also update by result waiter remove finished one
+	//private ArrayList<String> captured_admin_queue_list = new ArrayList<String>();//also update by result waiter remove finished one
 	// processing: all captured queue with status in processing(value form TMP platform)
 	private ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 	// ====updated by waiters====
@@ -275,6 +275,18 @@ public class task_data {
 		return remove_status;
 	}
 	
+	public Boolean set_captured_admin_queues_treemap(TreeMap<String, HashMap<String, HashMap<String, String>>> queues_data) {
+		Boolean set_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			captured_admin_queues_treemap.clear();
+			captured_admin_queues_treemap.putAll(queues_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return set_status;
+	}
+	
 	public Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_received_task_queues_map() {
 		rw_lock.readLock().lock();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> queue_data = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
@@ -347,9 +359,9 @@ public class task_data {
 		return queue_data;
 	}
 	
-	public Map<String, HashMap<String, HashMap<String, String>>> get_one_case_data(String queue_name) {
+	public Map<String, HashMap<String, HashMap<String, String>>> get_one_indexed_case_data(String queue_name) {
 		rw_lock.readLock().lock();
-		Map<String, HashMap<String, HashMap<String, String>>> case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		Map<String, HashMap<String, HashMap<String, String>>> id_case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			TreeMap<String, HashMap<String, HashMap<String, String>>> received_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
@@ -362,14 +374,14 @@ public class task_data {
 				if (processed_task_data.containsKey(case_id)){
 					continue;
 				} else {
-					case_data.put(case_id,received_task_data.get(case_id));
+					id_case_data.put(case_id,received_task_data.get(case_id));
 					break;
 				}
 			}
 		} finally {
 			rw_lock.readLock().unlock();
 		}
-		return case_data;
+		return id_case_data;
 	}	
 
 	public void update_case_to_processed_task_queues_map(String queue_name, String case_id, HashMap<String, HashMap<String, String>> case_data) {
@@ -426,42 +438,42 @@ public class task_data {
 		return case_data;
 	}
 	
-	public TreeMap<String, String> get_rejected_admin_queue_treemap() {
+	public TreeMap<String, String> get_rejected_admin_reason_treemap() {
 		rw_lock.readLock().lock();
 		TreeMap<String, String> temp = new TreeMap<String, String>(new queue_comparator());
 		try {
-			temp.putAll(this.rejected_admin_queue_treemap);
+			temp.putAll(this.rejected_admin_reason_treemap);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 
-	public void set_rejected_admin_queue_treemap(TreeMap<String, String> update_data) {
+	public void set_rejected_admin_reason_treemap(TreeMap<String, String> update_data) {
 		rw_lock.writeLock().lock();
 		try {
-			this.rejected_admin_queue_treemap.clear();
-			this.rejected_admin_queue_treemap.putAll(update_data);
+			this.rejected_admin_reason_treemap.clear();
+			this.rejected_admin_reason_treemap.putAll(update_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}	
 	
-	public void add_rejected_admin_queue_treemap(String queue_name, String reason) {
+	public void add_rejected_admin_reason_treemap(String queue_name, String reason) {
 		rw_lock.writeLock().lock();
 		try {
-			this.rejected_admin_queue_treemap.put(queue_name, reason);
+			this.rejected_admin_reason_treemap.put(queue_name, reason);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public Boolean remove_rejected_admin_queue_treemap(String queue_name) {
+	public Boolean remove_rejected_admin_reason_treemap(String queue_name) {
 		Boolean remove_status = new Boolean(true);
 		rw_lock.writeLock().lock();
 		try {
-			if (rejected_admin_queue_treemap.containsKey(queue_name)){
-				this.rejected_admin_queue_treemap.remove(queue_name);
+			if (rejected_admin_reason_treemap.containsKey(queue_name)){
+				this.rejected_admin_reason_treemap.remove(queue_name);
 			} else {
 				remove_status = false;
 			}
@@ -470,7 +482,7 @@ public class task_data {
 		}
 		return remove_status;
 	}
-	
+	/*
 	public ArrayList<String> get_rejected_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -515,7 +527,8 @@ public class task_data {
 		}
 		return remove_status;
 	}	
-	
+	*/
+	/*
 	public ArrayList<String> get_captured_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -536,7 +549,7 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	*/
 	public ArrayList<String> get_processing_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -652,6 +665,21 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 	}	
+	
+	public Boolean remove_finished_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		Boolean remove_status = new Boolean(true);
+		try {
+			if(finished_admin_queue_list.contains(queue_name)){
+				finished_admin_queue_list.remove(queue_name);
+			} else {
+				remove_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_status;
+	}
 	
 	public void set_finished_admin_queue_list(ArrayList<String> update_data) {
 		rw_lock.writeLock().lock();

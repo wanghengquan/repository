@@ -169,7 +169,7 @@ public class xml_parser {
 	}
 
 	// case
-	public Boolean dump_finished_queue_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
+	public Boolean dump_finished_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
 			String queue_name, String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
 		Document document = DocumentHelper.createDocument();

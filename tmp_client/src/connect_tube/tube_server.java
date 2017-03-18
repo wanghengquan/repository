@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -149,21 +150,56 @@ public class tube_server extends Thread {
 		}		
 		return mismatch_list;
 	}
-
-	private void update_captured_admin_queues() {
-		Map<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
+	
+	/*
+	 * task 2: flash tube output: captured and rejected treemap
+	 */
+	private void flash_tube_output(){
+		Map<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		client_hash.putAll(client_info.get_client_data());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queue = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		TreeMap<String, String> new_rejected_reason_queue = new TreeMap<String, String>();
+		TreeMap<String, String> old_rejected_reason_queue = new TreeMap<String, String>();
+		client_data.putAll(client_info.get_client_data());
+		total_admin_queue.putAll(task_info.get_received_admin_queues_treemap());
+		old_rejected_reason_queue.putAll(task_info.get_rejected_admin_reason_treemap());
+		Set<String> queue_set = total_admin_queue.keySet();
+		Iterator<String> queue_it = queue_set.iterator();
+		while (queue_it.hasNext()) {
+			String queue_name = queue_it.next();
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data.putAll(total_admin_queue.get(queue_name));
+			// check mismatch list
+			ArrayList<String> mismatch_item = new ArrayList<String>();
+			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_data);
+			if (mismatch_item.isEmpty()) {
+				captured_admin_queue.put(queue_name, queue_data);
+			} else {
+				new_rejected_reason_queue.put(queue_name, String.join(",", mismatch_item));
+				if(!old_rejected_reason_queue.containsKey(queue_name)){
+					TUBE_SERVER_LOGGER.warn("Rejected:" + queue_name + ", Reason:" + mismatch_item.toString());
+				}
+			}
+		}
+		task_info.set_captured_admin_queues_treemap(captured_admin_queue);
+		task_info.set_rejected_admin_reason_treemap(new_rejected_reason_queue);
+	}
+	
+	/*
+	private void update_captured_admin_queues() {
+		Map<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		client_data.putAll(client_info.get_client_data());
 		total_admin_queue.putAll(task_info.get_received_admin_queues_treemap());	
 		Set<String> queue_set = total_admin_queue.keySet();
 		Iterator<String> queue_it = queue_set.iterator();
 		while (queue_it.hasNext()) {
-			ArrayList<String> mismatch_item = new ArrayList<String>();
 			String queue_name = queue_it.next();
+			ArrayList<String> mismatch_item = new ArrayList<String>();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			queue_data.putAll(total_admin_queue.get(queue_name));
-			// check System match
-			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_hash);
+			// check mismatch list
+			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_data);
 			if (mismatch_item.isEmpty()) {
 				task_info.update_captured_admin_queues_treemap(queue_name, queue_data);
 				task_info.remove_rejected_admin_queue_list(queue_name);
@@ -180,6 +216,7 @@ public class tube_server extends Thread {
 			}
 		}
 	}
+	 */
 
 	private Boolean send_client_info(String mode) {
 		Boolean send_status = new Boolean(true);
@@ -304,7 +341,7 @@ public class tube_server extends Thread {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update local tube
+			// task 1: update received tube(local file,  remote will update by rmq_tube)
 			String suite_files = switch_info.get_suite_file();
 			if (suite_files != null && !suite_files.equals("")) {
 				local_tube local_tube_parser = new local_tube(task_info);
@@ -315,8 +352,8 @@ public class tube_server extends Thread {
 				}
 				switch_info.set_suite_file("");
 			}
-			// task 2: update available admin queue
-			update_captured_admin_queues();
+			// task 2: flash tube output: captured and rejected treemap
+			flash_tube_output();
 			// task 3: send client info to Remote server
 			if (send_count < 6) {
 				send_count++;
@@ -374,7 +411,7 @@ public class tube_server extends Thread {
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
-			System.out.println(task_info.get_rejected_admin_queue_treemap());
+			System.out.println(task_info.get_rejected_admin_reason_treemap());
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {

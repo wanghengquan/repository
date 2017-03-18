@@ -9,7 +9,6 @@
  */
 package flow_control;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -121,35 +120,10 @@ public class hall_manager extends Thread {
 		task_info.set_rejected_admin_queue_list(rejected_admin_queue_list);
 	}
 */
-	private void update_captured_queue_list() {
-		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
-		Iterator<String> captured_it = captured_admin_queue_set.iterator();
-		ArrayList<String> captured_admin_queue_list = new ArrayList<String>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			captured_admin_queue_list.add(queue_name);
-		}
-		task_info.set_captured_admin_queue_list(captured_admin_queue_list);
-	}
-
-	private void update_processing_queue_list() {
-		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
-		Iterator<String> captured_it = captured_admin_queue_set.iterator();
-		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			String queue_status = task_info.get_data_from_captured_admin_queues_treemap(queue_name).get("Status").get("admin_status");
-			if (queue_status.equals("processing")) {
-				processing_admin_queue_list.add(queue_name);
-			}
-		}
-		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
-	}
-
 	private void generate_console_report(pool_data pool_info) {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.warn(">>>==========Console Report==========");
-		HALL_MANAGER_LOGGER.warn(">>>Captured queue:" + task_info.get_captured_admin_queue_list().toString());
+		HALL_MANAGER_LOGGER.warn(">>>Captured queue:" + task_info.get_captured_admin_queues_treemap().keySet().toString());
 		// report processing queue list
 		HALL_MANAGER_LOGGER.warn(">>>Processing queue:" + task_info.get_processing_admin_queue_list().toString());
 		// report running queue list
@@ -209,10 +183,6 @@ public class hall_manager extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_max_threads());
-			// task 2 : update captured queue list
-			update_captured_queue_list();
-			// task 3 : update processing queue list
-			update_processing_queue_list();
 			// task 4 : automatic run
 			// task 5 : make general report
 			generate_console_report(pool_info);

@@ -59,7 +59,7 @@ public class view_server implements Runnable {
 
 	private Boolean update_rejected_queue_table() {
 		Boolean show_update = new Boolean(false);
-		TreeMap<String, String> reject_treemap = task_info.get_rejected_admin_queue_treemap();// source
+		TreeMap<String, String> reject_treemap = task_info.get_rejected_admin_reason_treemap();// source
 																								// data
 		// TreeMap<String, String> watching_treemap =
 		// view_info.get_watching_reject_treemap(); //record data
@@ -81,7 +81,7 @@ public class view_server implements Runnable {
 	@SuppressWarnings("unused")
 	private Boolean update_rejected_queue_table123() {
 		Boolean show_update = new Boolean(false);
-		TreeMap<String, String> reject_treemap = task_info.get_rejected_admin_queue_treemap();// source
+		TreeMap<String, String> reject_treemap = task_info.get_rejected_admin_reason_treemap();// source
 																								// data
 		TreeMap<String, String> watching_treemap = view_info.get_watching_reject_treemap(); // record
 																							// data

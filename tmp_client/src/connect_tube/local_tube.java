@@ -663,7 +663,7 @@ public class local_tube {
 					globle_data.put("cmd", overall_cmd);
 				}
 			} else {
-				//non command key 1)globle have value, local must have value and overwrite
+				//non command key 1)globle have value, local must have value then overwrite
 				if (globle_data.containsKey(local_key)){
 					if (!local_value.equals("")){
 						globle_data.put(local_key, local_value);
