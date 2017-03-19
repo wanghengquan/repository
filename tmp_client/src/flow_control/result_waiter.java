@@ -136,13 +136,13 @@ public class result_waiter extends Thread {
 			if (running_queue_in_pool.contains(dump_queue)) {
 				continue;// queue not finished
 			}
-			if (view_info.get_watching_request().equalsIgnoreCase(dump_queue)) {
+			if (view_info.get_watching_queue().equalsIgnoreCase(dump_queue)) {
 				continue;// queue in GUI watching
 			}
 			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
 				continue;// no queue data to dump (already dumped)
 			}
-			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 20) {
+			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 10) {
 				continue;// no need to dump to increase the performance > don't
 							// forget dump when shutdown client
 			}
@@ -182,7 +182,7 @@ public class result_waiter extends Thread {
 		String dump_file = dump_path + "/" + file_name;
 		xml_parser parser = new xml_parser();
 		try {
-			dump_status = parser.dump_finished_task_data(admin_data, queue_name, dump_file.replaceAll("\\\\", "/"));
+			dump_status = parser.dump_finished_admin_data(admin_data, queue_name, dump_file.replaceAll("\\\\", "/"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();

@@ -16,6 +16,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
@@ -26,23 +31,39 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 //import javax.swing.table.DefaultTableModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class queue_panel extends JSplitPane implements Runnable {
+import connect_tube.task_data;
+import utility_funcs.time_info;
+
+public class queue_panel extends JSplitPane implements Runnable{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2L;
 	private static final Logger QUEUE_PANEL_LOGGER = LogManager.getLogger(queue_panel.class.getName());
 	private view_data view_info;
-	private JTable reject_table;
-	private JTable capture_table;
+	private task_data task_info;
+	private panel_table reject_table;
+	private panel_table capture_table;
+	private Vector<String> reject_column = new Vector<String>();
+	private Vector<String> capture_column = new Vector<String>();
+	private Vector<Vector<String>> reject_data = new Vector<Vector<String>>(); //show on table
+	private Vector<Vector<String>> capture_data = new Vector<Vector<String>>(); //show on table	
 
-	public queue_panel(view_data view_info) {
+	public queue_panel(view_data view_info, task_data task_info) {
 		super(JSplitPane.VERTICAL_SPLIT);
 		this.view_info = view_info;
+		this.task_info = task_info;
+		reject_column.add("Rejected Queue");
+		reject_column.add("Reason");
+		capture_column.add("Captured Queue");
+		capture_column.add("Status");
+		reject_table = new panel_table(reject_data, reject_column);
+		capture_table = new panel_table(capture_data, capture_column);
 		this.setDividerLocation(400);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
@@ -52,8 +73,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	}
 
 	private Component panel_top_component() {
-		JPanel work_panel = new JPanel(new BorderLayout());
-		reject_table = view_info.get_reject_table();
+		JPanel reject_panel = new JPanel(new BorderLayout());
 		reject_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		reject_pop_memu reject_menu = new reject_pop_memu(reject_table);
 		reject_table.addMouseListener(new MouseAdapter() {
@@ -68,13 +88,12 @@ public class queue_panel extends JSplitPane implements Runnable {
 			}
 		});
 		JScrollPane scroll_panel = new JScrollPane(reject_table);
-		work_panel.add(scroll_panel);
-		return work_panel;
+		reject_panel.add(scroll_panel);
+		return reject_panel;
 	}
 
 	private Component panel_bottom_component() {
-		JPanel work_panel = new JPanel(new BorderLayout());
-		capture_table = view_info.get_capture_table();
+		JPanel capture_panel = new JPanel(new BorderLayout());
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, view_info);
 		capture_table.addMouseListener(new MouseAdapter() {
@@ -89,27 +108,110 @@ public class queue_panel extends JSplitPane implements Runnable {
 			}
 		});
 		JScrollPane scroll_panel = new JScrollPane(capture_table);
-		work_panel.add(scroll_panel);
-		return work_panel;
+		capture_panel.add(scroll_panel);
+		return capture_panel;
 	}
 
+	private Boolean update_rejected_queue_data() {
+		Boolean show_update = new Boolean(false);
+		TreeMap<String, String> reject_treemap = task_info.get_rejected_admin_reason_treemap();//source
+		Iterator<String> reject_treemap_it = reject_treemap.keySet().iterator();
+		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		while (reject_treemap_it.hasNext()) {
+			String queue_name = reject_treemap_it.next();
+			String reject_reason = reject_treemap.get(queue_name);
+			// add watching vector
+			Vector<String> show_line = new Vector<String>();
+			show_line.add(queue_name);
+			show_line.add(reject_reason);
+			new_data.add(show_line);
+			show_update = true;
+		}
+		reject_data.clear();
+		reject_data.addAll(new_data);
+		return show_update;
+	}
+	
+	private Boolean update_captured_queue_data() {
+		Boolean show_update = new Boolean(false);
+		Set<String> captured_set = new TreeSet<String>(new queue_comparator());
+		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());		
+		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
+		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
+		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
+		captured_set.addAll(finished_admin_queue_list);// source data
+		// //show data
+		Iterator<String> captured_it = captured_set.iterator();
+		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		while (captured_it.hasNext()) {
+			String queue_name = captured_it.next();
+			String status = new String("");
+			if (finished_admin_queue_list.contains(queue_name)) {
+				status = "Finished";
+			} else if (running_admin_queue_list.contains(queue_name)) {
+				status = "Running";
+			} else if (processing_admin_queue_list.contains(queue_name)) {
+				status = "Processing";
+			} else {
+				status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status").get("admin_status");
+			}
+			// add watching vector
+			Vector<String> show_line = new Vector<String>();
+			show_line.add(queue_name);
+			show_line.add(status);
+			new_data.add(show_line);
+			show_update = true;
+		}
+		capture_data.clear();
+		capture_data.addAll(new_data);
+		return show_update;
+	}
+	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
-		//Vector<String> show_line2 = new Vector<String>();
-		//show_line2.add("001@run123_" + String.valueOf(0));
-		//show_line2.add("processing");
-		//view_info.add_capture_data(show_line2);		
+		// TODO Auto-generated method stub		
 		while (true) {
-			Vector<String> show_line1 = new Vector<String>();
-			show_line1.add("001@run123_" + String.valueOf(0));
-			show_line1.add("machine");
-			view_info.add_reject_data(show_line1);
-			view_info.get_reject_table().validate();
-			view_info.get_reject_table().updateUI();
-			view_info.get_capture_table().validate();
-			view_info.get_capture_table().updateUI();
+			Boolean debug = new Boolean(true);
+			if (debug){
+				Vector<Vector<String>> reject_new = new Vector<Vector<String>>();
+				for (int i = 0; i < 5; i++) {
+					Vector<String> reject_line = new Vector<String>();
+					reject_line.add("001@run123_" + String.valueOf(i));
+					reject_line.add(time_info.get_date_time());
+					reject_new.add(reject_line);
+				}
+				reject_data.clear();
+				reject_data.addAll(reject_new);
+				Vector<Vector<String>> capture_new = new Vector<Vector<String>>();
+				for (int i = 0; i < 5; i++) {
+					Vector<String> capture_line = new Vector<String>();
+					capture_line.add("001@run123_" + String.valueOf(i));
+					capture_line.add(time_info.get_date_time());
+					capture_new.add(capture_line);
+				}
+				capture_data.clear();
+				capture_data.addAll(capture_new);
+			} else {
+				update_rejected_queue_data();
+				update_captured_queue_data();
+			}
+			if (SwingUtilities.isEventDispatchThread()) {
+				reject_table.validate();
+				reject_table.updateUI();
+				capture_table.validate();
+				capture_table.updateUI();
+			} else {
+				SwingUtilities.invokeLater(new Runnable(){
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						reject_table.validate();
+						reject_table.updateUI();
+						capture_table.validate();
+						capture_table.updateUI();
+					}
+				});
+			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -146,7 +248,6 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("reject details clicked");
 		}
 	}
-
 }
 
 class capture_pop_memu extends JPopupMenu implements ActionListener {
@@ -178,7 +279,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println(table.getSelectedRow());
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			System.out.println("Show queue name:" + select_queue);
-			view_info.set_watching_request(select_queue);
+			view_info.set_watching_queue(select_queue);
 		}
 	}
 

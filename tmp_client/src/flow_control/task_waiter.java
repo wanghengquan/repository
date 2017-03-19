@@ -321,7 +321,7 @@ public class task_waiter extends Thread {
 		// more received admin queue data to processed queue data
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		queue_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
-		task_info.update_processed_admin_queues_treemap(queue_name, queue_data);
+		task_info.update_queue_to_processed_admin_queues_treemap(queue_name, queue_data);
 		//delete all buffered info
 		task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
 		task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);

@@ -199,7 +199,7 @@ public class task_data {
 		return queue_data;
 	}	
 	
-	public Boolean update_processed_admin_queues_treemap(String queue_name, HashMap<String, HashMap<String, String>> queue_data) {
+	public Boolean update_queue_to_processed_admin_queues_treemap(String queue_name, HashMap<String, HashMap<String, String>> queue_data) {
 		Boolean update_status = new Boolean(true);
 		rw_lock.writeLock().lock();
 		try {

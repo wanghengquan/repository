@@ -15,53 +15,74 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.SwingUtilities;
+//import javax.swing.table.AbstractTableModel;
 //import javax.swing.table.DefaultTableModel;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dom4j.DocumentException;
 
+import connect_tube.task_data;
+import data_center.client_data;
+import data_center.public_data;
+import info_parser.xml_parser;
 import utility_funcs.time_info;
 
-public class work_panel extends JSplitPane implements Runnable {
+public class work_panel extends JSplitPane implements Runnable{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static final Logger WORK_PANE_LOGGER = LogManager.getLogger(work_panel.class.getName());
+	private static final Logger WORK_PANEl_LOGGER = LogManager.getLogger(work_panel.class.getName());
 	private view_data view_info;
-	private JTable work_table;
+	private task_data task_info;
+	private client_data client_info;
+	private panel_table work_table;
+	private Vector<String> work_column = new Vector<String>();
+	private Vector<Vector<String>> work_data = new Vector<Vector<String>>(); //show on table
 
-	public work_panel(view_data view_info) {
-		super();
-		this.view_info = view_info;
+	public work_panel(view_data viewinfo, client_data client_info, task_data task_info) {
+		super();//default constructor
+		this.view_info = viewinfo;
+		this.client_info = client_info;
+		this.task_info = task_info;
+		work_column.add("ID");
+		work_column.add("Suite");
+		work_column.add("Design");
+		work_column.add("Status");
+		work_column.add("Reason");
+		work_column.add("Time");
+		work_table = new panel_table(work_data, work_column);		
 		this.setDividerLocation(300);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
-		queue_panel queuepannel = new queue_panel(view_info);
-		this.setLeftComponent(queuepannel);
+		queue_panel admin_insts = new queue_panel(view_info, task_info);
+		this.setLeftComponent(admin_insts);
 		this.setRightComponent(panel_right_component());
-		new Thread(queuepannel).start();
-	}
-
-	public JTable get_work_table() {
-		return this.work_table;
+		new Thread(admin_insts).start();
 	}
 
 	private Component panel_right_component() {
 		JPanel work_panel = new JPanel(new BorderLayout());
-		work_table = view_info.get_work_table();
-		table_pop_memu table_menu = new table_pop_memu(work_table);
+		table_pop_memu table_menu = new table_pop_memu(work_table, view_info);
+		work_table.setShowVerticalLines(true);
+		work_table.setShowHorizontalLines(true);
 		work_table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				if (work_table.getSelectedRows().length > 0) {
@@ -69,7 +90,7 @@ public class work_panel extends JSplitPane implements Runnable {
 						table_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
-					WORK_PANE_LOGGER.warn("No line selected");
+					WORK_PANEl_LOGGER.warn("No line selected");
 				}
 			}
 		});
@@ -77,21 +98,230 @@ public class work_panel extends JSplitPane implements Runnable {
 		work_panel.add(scroll_panel);
 		return work_panel;
 	}
+	
 
+	private Vector<String> get_one_report_line(HashMap<String, HashMap<String, String>> design_data, String watching_queue_area) {
+		Vector<String> add_line = new Vector<String>();
+		if(!watching_queue_area.equalsIgnoreCase("all")){
+			if(!design_data.get("Status").containsKey("cmd_status")){
+				return add_line;//empty line which will be ignore
+			}
+		}
+		if(watching_queue_area.equalsIgnoreCase("passed")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("passed")){
+				return add_line;//empty line which will be ignore
+			}
+		}
+		if(watching_queue_area.equalsIgnoreCase("failed")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("failed")){
+				return add_line;//empty line which will be ignore
+			}
+		}
+		if(watching_queue_area.equalsIgnoreCase("tbd")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("tbd")){
+				return add_line;//empty line which will be ignore
+			}
+		}		
+		if(watching_queue_area.equalsIgnoreCase("timeout")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("tbd")){
+				return add_line;//empty line which will be ignore
+			}
+		}
+		if(watching_queue_area.equalsIgnoreCase("processing")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("processing")){
+				return add_line;//empty line which will be ignore
+			}
+		}
+		if(watching_queue_area.equalsIgnoreCase("waiting")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("waiting")){
+				return add_line;//empty line which will be ignore
+			}
+		}		
+		if (design_data.get("ID").containsKey("id")) {
+			add_line.add(design_data.get("ID").get("id"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("ID").containsKey("suite")) {
+			add_line.add(design_data.get("ID").get("suite"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("CaseInfo").containsKey("design_name")) {
+			add_line.add(design_data.get("CaseInfo").get("design_name"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("Status").containsKey("cmd_status")) {
+			add_line.add(design_data.get("Status").get("cmd_status"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("Status").containsKey("reason")) {
+			add_line.add(design_data.get("Status").get("reason"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("Status").containsKey("run_time")) {
+			add_line.add(design_data.get("Status").get("run_time"));
+		} else {
+			add_line.add("NA");
+		}
+		return add_line;
+	}
+
+	private Boolean update_working_queue_data() {
+		Boolean show_update = new Boolean(false);
+		String watching_queue = view_info.get_watching_queue();
+		String watching_queue_area = view_info.get_watching_queue_area();
+		if (watching_queue.equals("")) {
+			return show_update; // no watching queue selected
+		}
+		if (watching_queue_area.equals("")){
+			watching_queue_area = "all";
+		}
+		show_update = true;
+		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
+		// try import non exists queue data
+		if (!processed_task_queues_map.containsKey(watching_queue)) {
+			//both admin and task
+			import_admin_data_to_processed_data(watching_queue);
+			import_task_data_to_processed_data(watching_queue);
+		}
+		if (!processed_task_queues_map.containsKey(watching_queue)) {
+			Vector<String> add_line = new Vector<String>();
+			add_line.add("No data found.");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			new_data.add(add_line);
+			work_data.addAll(new_data);
+			return show_update;
+		}
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		queue_data.putAll(processed_task_queues_map.get(watching_queue));
+		if (queue_data.size() < 1) {
+			Vector<String> add_line = new Vector<String>();
+			add_line.add("No data found.");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			new_data.add(add_line);
+			work_data.addAll(new_data);
+			return show_update;
+		}
+		Iterator<String> case_it = queue_data.keySet().iterator();
+		while (case_it.hasNext()) {
+			String case_id = case_it.next();
+			HashMap<String, HashMap<String, String>> design_data = queue_data.get(case_id);
+			Vector<String> add_line = get_one_report_line(design_data, watching_queue_area);
+			if(add_line.isEmpty()){
+				continue;
+			}
+			new_data.add(add_line);
+		}
+		work_data.addAll(new_data);
+		return show_update;
+	}	
+	
+	private Boolean import_admin_data_to_processed_data(String import_queue) {
+		Boolean import_status = new Boolean(false);
+		String work_path = new String();
+		if (client_info.get_client_data().containsKey("base")) {
+			work_path = client_info.get_client_data().get("base").get("work_path");
+		} else {
+			work_path = public_data.DEF_WORK_PATH;
+		}
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/finished/admin/" + import_queue + ".xml");
+		if (!log_path.exists()) {
+			return import_status;
+		}
+		xml_parser file_parser = new xml_parser();
+		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			import_admin_data.putAll(file_parser.get_xml_file_admin_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			WORK_PANEl_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
+			return import_status;
+		}
+		task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+		import_status = true;
+		return import_status;
+	}
+	
+	private Boolean import_task_data_to_processed_data(String import_queue) {
+		Boolean import_status = new Boolean(false);
+		String work_path = new String();
+		if (client_info.get_client_data().containsKey("base")) {
+			work_path = client_info.get_client_data().get("base").get("work_path");
+		} else {
+			work_path = public_data.DEF_WORK_PATH;
+		}
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + import_queue + ".xml");
+		if (!log_path.exists()) {
+			return import_status;
+		}
+		xml_parser file_parser = new xml_parser();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		try {
+			import_task_data = file_parser
+					.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/"));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			WORK_PANEl_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
+			return import_status;
+		}
+		task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+		import_status = true;
+		return import_status;
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		while (true) {
-			Vector<String> show_line = new Vector<String>();
-			show_line.add(String.valueOf(0));
-			show_line.add("suite");
-			show_line.add("design");
-			show_line.add("status");
-			show_line.add("reason");
-			show_line.add(time_info.get_date_time());
-			view_info.add_work_data(show_line);
-			view_info.get_work_table().validate();
-			view_info.get_work_table().updateUI();
+			Boolean debug = new Boolean(true);
+			if (debug){
+				Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+				for (int i = 0; i < 5; i++) {
+					Vector<String> work_line = new Vector<String>();
+					work_line.add(String.valueOf(i));
+					work_line.add("suite");
+					work_line.add("design");
+					work_line.add("status");
+					work_line.add("reason");
+					work_line.add(time_info.get_date_time());
+					new_data.add(work_line);
+				}
+				work_data.clear();
+				work_data.addAll(new_data);
+			} else {
+				update_working_queue_data();
+			}
+			if (SwingUtilities.isEventDispatchThread()) {
+				work_table.validate();
+				work_table.updateUI();
+			} else {
+				SwingUtilities.invokeLater(new Runnable(){
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						work_table.validate();
+						work_table.updateUI();
+					}
+				});
+			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -108,17 +338,45 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JTable table;
-	private JMenuItem retest, details, results;
+	private JMenuItem retest;
+	private view_data view_info;
+	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
+	private JMenuItem details, results;
 
-	public table_pop_memu(JTable table) {
+	public table_pop_memu(JTable table, view_data view_info) {
 		this.table = table;
+		this.view_info = view_info;
 		retest = new JMenuItem("Retest");
 		retest.addActionListener(this);
+		JMenu view = new JMenu("View...");
+		view_all = new JMenuItem("All");
+		view_all.addActionListener(this);
+		view_waiting = new JMenuItem("Waiting");
+		view_waiting.addActionListener(this);
+		view_processing = new JMenuItem("Processing");
+		view_processing.addActionListener(this);		
+		view_failed = new JMenuItem("Failed");
+		view_failed.addActionListener(this);
+		view_passed = new JMenuItem("Passed");
+		view_passed.addActionListener(this);
+		view_tbd = new JMenuItem("TBD");
+		view_tbd.addActionListener(this);		
+		view_timeout = new JMenuItem("Timeout");
+		view_timeout.addActionListener(this);
+		view.add(view_all);
+		view.add(view_waiting);
+		view.add(view_processing);
+		view.add(view_failed);
+		view.add(view_passed);
+		view.add(view_tbd);
+		view.add(view_timeout);
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
 		results = new JMenuItem("Results");
 		results.addActionListener(this);
 		this.add(retest);
+		this.addSeparator();
+		this.add(view);
 		this.addSeparator();
 		this.add(details);
 		this.add(results);
@@ -133,6 +391,35 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(retest)) {
 			System.out.println("retest clicked");
+			view_info.set_retest_queue_area("selected");
+		}
+		if (arg0.getSource().equals(view_all)) {
+			System.out.println("view all");
+			view_info.set_watching_queue_area("all");
+		}
+		if (arg0.getSource().equals(view_processing)) {
+			System.out.println("view failed");
+			view_info.set_watching_queue_area("processing");
+		}
+		if (arg0.getSource().equals(view_waiting)) {
+			System.out.println("view waiting");
+			view_info.set_watching_queue_area("waiting");
+		}			
+		if (arg0.getSource().equals(view_failed)) {
+			System.out.println("view failed");
+			view_info.set_watching_queue_area("failed");
+		}
+		if (arg0.getSource().equals(view_passed)) {
+			System.out.println("view passed");
+			view_info.set_watching_queue_area("passed");
+		}
+		if (arg0.getSource().equals(view_tbd)) {
+			System.out.println("view tbd");
+			view_info.set_watching_queue_area("tbd");
+		}
+		if (arg0.getSource().equals(view_timeout)) {
+			System.out.println("view timeout");
+			view_info.set_watching_queue_area("timeout");
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("details clicked");
@@ -144,12 +431,10 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 
 }
 
-// Unused
+// Unused!!!
+/*
 class work_table_model extends AbstractTableModel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private view_data view_info;
 
@@ -160,7 +445,8 @@ class work_table_model extends AbstractTableModel {
 	@Override
 	public int getColumnCount() {
 		// TODO Auto-generated method stub
-		return view_info.get_work_column().size();
+		//return view_info.get_work_column().size();
+		return 6;
 	}
 
 	@Override
@@ -179,3 +465,4 @@ class work_table_model extends AbstractTableModel {
 		}
 	}
 }
+*/

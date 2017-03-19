@@ -168,6 +168,32 @@ public class xml_parser {
 		return level1_data;
 	}
 
+	// admin queue
+	public Boolean dump_finished_admin_data(HashMap<String, HashMap<String, String>> admin_queue_data,
+			String queue_name, String xml_path) throws IOException {
+		Boolean dump_status = new Boolean(true);
+		Document document = DocumentHelper.createDocument();
+		Element root_element = document.addElement("root");
+		root_element.addAttribute("time", time_info.get_date_time());
+		Set<String> admin_queue_data_set = admin_queue_data.keySet();
+		Iterator<String> admin_queue_data_it = admin_queue_data_set.iterator();
+		while (admin_queue_data_it.hasNext()) {
+			String level2_key = admin_queue_data_it.next();
+			HashMap<String, String> level2_data = admin_queue_data.get(level2_key);
+			Element level2_element = root_element.addElement(level2_key);
+			Iterator<String> level2_data_it = level2_data.keySet().iterator();
+			while (level2_data_it.hasNext()) {
+				String level3_key = level2_data_it.next();
+				String level3_value = level2_data.get(level3_key);
+				level2_element.addElement(level3_key).addText(level3_value);
+			}
+		}
+		OutputFormat format = OutputFormat.createPrettyPrint();
+		XMLWriter writer = new XMLWriter(new FileWriter(xml_path), format);
+		writer.write(document);
+		return dump_status;
+	}
+
 	// case
 	public Boolean dump_finished_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
 			String queue_name, String xml_path) throws IOException {
@@ -200,6 +226,35 @@ public class xml_parser {
 		return dump_status;
 	}
 
+	public HashMap<String, HashMap<String, String>> get_xml_file_admin_queue_data(String xml_path)
+			throws DocumentException {
+		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
+		File xml_fobj = new File(xml_path);
+		Long time = xml_fobj.lastModified();
+		String time_modified = time_info.get_date_time(new Date(time));
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(xml_fobj);
+		Element level1_element = document.getRootElement();
+		String time_create = level1_element.attributeValue("time");
+		if (!time_create.equalsIgnoreCase(time_modified)) {
+			XML_PARSER_LOGGER.warn("xml modified outside, ignore this xml data.");
+			return admin_queue_data;
+		}
+		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
+			Element level2_element = (Element) i.next();
+			String level2_name = level2_element.getName();
+			HashMap<String, String> level2_data = new HashMap<String, String>();
+			for (Iterator<?> j = level2_element.elementIterator(); j.hasNext();) {
+				Element level3_element = (Element) j.next();
+				String level3_name = level3_element.getName();
+				String level3_value = level3_element.getText();
+				level2_data.put(level3_name, level3_value);
+			}
+			admin_queue_data.put(level2_name, level2_data);
+		}
+		return admin_queue_data;
+	}
+	
 	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_xml_file_task_queue_data(String xml_path)
 			throws DocumentException {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();

@@ -24,9 +24,7 @@ import java.awt.event.ActionListener;
 import java.util.Enumeration;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.apache.logging.log4j.LogManager;
@@ -47,37 +45,51 @@ public class main_frame extends JFrame {
 	// private property
 	private static final Logger MAIN_FRAME_LOGGER = LogManager.getLogger(main_frame.class.getName());
 	private switch_data switch_info;
+	private client_data client_info;
 	private view_data view_info;
+	private task_data task_info;
 	
 	// public function
 	// protected function
 	// private function
-	public main_frame(switch_data switch_info, view_data view_info) {
+	public main_frame(switch_data switch_info, client_data client_info, view_data view_info, task_data task_info) {
 		this.switch_info = switch_info;
+		this.client_info = client_info;
 		this.view_info = view_info;
+		this.task_info = task_info;
+	}
+
+	public void gui_constructor(){
 		default_font_set();
 		initial_components();
 		launch_system_tray();
-		this.setVisible(true);
 	}
-
+	
+	public void default_font_set() {
+		//UIManager.put("Menu.font", new Font("Serif", Font.PLAIN, 20));
+		Font font = new Font("Serif", Font.PLAIN, 20);
+		Enumeration<Object> keys = UIManager.getDefaults().keys();
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			Object value = UIManager.get(key);
+			if (value instanceof javax.swing.plaf.FontUIResource) {
+				UIManager.put(key, font);
+			}
+		}
+	}
+	
 	private void initial_components() {
 		this.setLocation(400, 100);
 		this.setSize(1200, 1000);
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
-		//JPanel work_component = new work_panel(view_info); 
+		work_panel task_insts = new work_panel(view_info, client_info, task_info);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
-		this.setJMenuBar(new menu_bar(this, switch_info));
-		work_panel workpanel =  new work_panel(view_info);
-		this.getContentPane().add(workpanel, BorderLayout.CENTER);
-		new Thread(workpanel).start();
+		this.setJMenuBar(new menu_bar(this, switch_info, view_info));
+		this.getContentPane().add(task_insts, BorderLayout.CENTER);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		new Thread(task_insts).start();
 	}
-
-	//public JTable get_work_table(){
-	//	return work_component.get_work_table();
-	//}
 
 	private void launch_system_tray() {
 		if (!SystemTray.isSupported()) {
@@ -101,8 +113,8 @@ public class main_frame extends JFrame {
 
 	private PopupMenu pop_menu() {
 		PopupMenu menu = new PopupMenu();
-		MenuItem exit = new MenuItem("Close");
-		exit.addActionListener(new ActionListener() {
+		MenuItem close = new MenuItem("Close");
+		close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
 				System.exit(0);
 			}
@@ -120,21 +132,8 @@ public class main_frame extends JFrame {
 		});
 		menu.add(open);
 		menu.addSeparator();
-		menu.add(exit);
+		menu.add(close);
 		return menu;
-	}
-
-	public void default_font_set() {
-		//UIManager.put("Menu.font", new Font("Serif", Font.PLAIN, 20));
-		Font font = new Font("Serif", Font.PLAIN, 20);
-		Enumeration<Object> keys = UIManager.getDefaults().keys();
-		while (keys.hasMoreElements()) {
-			Object key = keys.nextElement();
-			Object value = UIManager.get(key);
-			if (value instanceof javax.swing.plaf.FontUIResource) {
-				UIManager.put(key, font);
-			}
-		}
 	}
 
 	public static void main(String[] args) {
@@ -142,7 +141,20 @@ public class main_frame extends JFrame {
 		view_data view_info = new view_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
-		view_server data_server = new view_server(switch_info, client_info, task_info, view_info);
-		main_frame top_view = new main_frame(switch_info, view_info);
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info);
+		MAIN_FRAME_LOGGER.warn("GUI start");
+		if (SwingUtilities.isEventDispatchThread()) {
+			top_view.gui_constructor();
+			top_view.setVisible(true);
+		} else {
+			SwingUtilities.invokeLater(new Runnable(){
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					top_view.gui_constructor();
+					top_view.setVisible(true);
+				}
+			});
+		}
 	}
 }

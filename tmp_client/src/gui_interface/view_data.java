@@ -11,7 +11,6 @@ package gui_interface;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -25,37 +24,91 @@ import javax.swing.table.JTableHeader;
 
 public class view_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
-	private panel_table work_table;
-	private panel_table reject_table;
-	private panel_table capture_table;
-	private Vector<Vector<String>> work_data = new Vector<Vector<String>>(); //show on table
-	private Vector<Vector<String>> reject_data = new Vector<Vector<String>>(); //show on table
-	private Vector<Vector<String>> capture_data = new Vector<Vector<String>>(); //show on table
-	private Vector<String> work_column = new Vector<String>();
-	private Vector<String> reject_column = new Vector<String>();
-	private Vector<String> capture_column = new Vector<String>();
-	private String watching_request = new String();
+	private String watching_queue = new String();
+	private String watching_queue_area = new String();//all, processing, passed, failed, TBD, timeout,
+	private String retest_queue_area = new String();//all, selected, passed, failed, TBD, timeout,
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_comparator());
 	TreeMap<String, String> watching_capture_treemap = new TreeMap<String, String>(new queue_comparator());
 	
 	public view_data() {
-		work_column.add("ID");
-		work_column.add("Suite");
-		work_column.add("Design");
-		work_column.add("Status");
-		work_column.add("Reason");
-		work_column.add("Time");
-		reject_column.add("Rejected Queue");
-		reject_column.add("Reason");
-		capture_column.add("Captured Queue");
-		capture_column.add("Status");
-		work_table = new panel_table(work_data, work_column);
-		reject_table = new panel_table(reject_data, reject_column);
-		capture_table = new panel_table(capture_data, capture_column);
+
 	}
 	
+	
+	public String get_watching_queue() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = watching_queue;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_watching_queue(String update_queue) {
+		rw_lock.writeLock().lock();
+		try {
+			this.watching_queue = update_queue;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_watching_queue_area() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = watching_queue_area;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_watching_queue_area(String queue_area) {
+		rw_lock.writeLock().lock();
+		try {
+			this.watching_queue_area = queue_area;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public String get_retest_queue_area() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = retest_queue_area;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_retest_queue_area(String queue_area) {
+		rw_lock.writeLock().lock();
+		try {
+			this.retest_queue_area = queue_area;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public String impl_retest_queue_area() {
+		rw_lock.writeLock().lock();
+		String impl_area = new String();
+		try {
+			impl_area = retest_queue_area;
+			this.retest_queue_area = "";
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return impl_area;
+	}	
+	/*
 	public Vector<String> get_work_column() {
 		rw_lock.readLock().lock();
 		Vector<String> temp = new Vector<String>();
@@ -65,7 +118,8 @@ public class view_data {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
-	}	
+	}
+	
 	
 	public Vector<String> get_reject_column() {
 		rw_lock.readLock().lock();
@@ -88,6 +142,7 @@ public class view_data {
 		}
 		return temp;
 	}
+
 	
 	public JTable get_work_table() {
 		rw_lock.readLock().lock();
@@ -99,7 +154,7 @@ public class view_data {
 		}
 		return temp;
 	}	
-	
+
 	public JTable get_reject_table() {
 		rw_lock.readLock().lock();
 		JTable temp = new JTable();
@@ -121,10 +176,11 @@ public class view_data {
 		}
 		return temp;
 	}
-	
-	public Vector<List<String>> get_work_data() {
+		*/
+	/*
+	public Vector<Vector<String>> get_work_data() {
 		rw_lock.readLock().lock();
-		Vector<List<String>> temp = new Vector<List<String>>();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
 		try {
 			temp.addAll(work_data);
 		} finally {
@@ -185,7 +241,7 @@ public class view_data {
 		rw_lock.readLock().lock();
 		Vector<Vector<String>> temp = new Vector<Vector<String>>();
 		try {
-			temp.addAll(reject_data);
+			temp = reject_data;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -224,7 +280,7 @@ public class view_data {
 		rw_lock.readLock().lock();
 		Vector<Vector<String>> temp = new Vector<Vector<String>>();
 		try {
-			temp.addAll(capture_data);
+			temp = capture_data;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -253,11 +309,12 @@ public class view_data {
 	public void clear_capture_data() {
 		rw_lock.writeLock().lock();
 		try {
-			capture_data.clear();;
+			capture_data.clear();
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	*/
 	
 	public Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_watching_task_queues_data_map() {
 		rw_lock.readLock().lock();
@@ -344,26 +401,6 @@ public class view_data {
 			rw_lock.writeLock().unlock();
 		}
 		return case_data;
-	}
-	
-	public String get_watching_request() {
-		rw_lock.readLock().lock();
-		String temp = new String();
-		try {
-			temp = watching_request;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-
-	public void set_watching_request(String update_queue) {
-		rw_lock.writeLock().lock();
-		try {
-			this.watching_request = update_queue;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
 	}	
 	
 	public TreeMap<String, String> get_watching_reject_treemap(){
