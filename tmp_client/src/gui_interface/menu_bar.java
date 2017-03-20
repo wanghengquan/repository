@@ -22,6 +22,7 @@ import javax.swing.JMenuItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.client_data;
 import data_center.switch_data;
 
 public class menu_bar extends JMenuBar implements ActionListener{
@@ -32,6 +33,7 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	private static final Logger MENU_BAR_LOGGER = LogManager.getLogger(menu_bar.class.getName());
 	private main_frame main_view;
 	private switch_data switch_info;
+	private client_data client_info;
 	private view_data view_info;
 	
 	JMenuItem imports, exports, exit;
@@ -42,9 +44,10 @@ public class menu_bar extends JMenuBar implements ActionListener{
 	JMenuItem client, software, performance;
 	JMenuItem usage, about;
 	
-	public menu_bar(main_frame main_view, switch_data switch_info, view_data view_info){
+	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info){
 		this.main_view = main_view;
 		this.switch_info = switch_info;
+		this.client_info = client_info;
 		this.view_info = view_info;
 		this.add(construct_file_menu());
 		this.add(construct_view_menu());
@@ -257,7 +260,7 @@ public class menu_bar extends JMenuBar implements ActionListener{
 		}
 		if(e.getSource().equals(upload)){
 			MENU_BAR_LOGGER.warn("upload clicked");
-			new upload_dialog().setVisible(true);
+			new upload_dialog(client_info).setVisible(true);
 		}
 		if(e.getSource().equals(key_gen)){
 			new encode_dialog(main_view).setVisible(true);

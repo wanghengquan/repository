@@ -82,10 +82,10 @@ public class main_frame extends JFrame {
 		this.setLocation(400, 100);
 		this.setSize(1200, 1000);
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
-		work_panel task_insts = new work_panel(view_info, client_info, task_info);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
-		this.setJMenuBar(new menu_bar(this, switch_info, view_info));
+		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info));
+		work_panel task_insts = new work_panel(view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		new Thread(task_insts).start();

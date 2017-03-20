@@ -26,20 +26,24 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.client_data;
 import data_center.public_data;
 
 
-public class upload_dialog extends JDialog{
+public class upload_dialog extends JFrame{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private client_data client_info;
 	private JLabel label_username = new JLabel("User Name:");
 	private JLabel label_password = new JLabel("Pass Word:");
 	private JLabel label_suitefile = new JLabel("Suite File:");
+	//private JLabel label_output = new JLabel("Upload console Outputs:");
 	private JTextField field_username = new JTextField("", 20);
 	private JPasswordField field_password = new JPasswordField("", 20);
 	private JTextField field_file = new JTextField("", 20);
@@ -47,14 +51,17 @@ public class upload_dialog extends JDialog{
 	private JButton cancel_button = new JButton("Cancel");
 	private JButton upload_button = new JButton("Upload");
 	private String line_seprator = System.getProperty("line.separator");
-	private JTextArea output_area = new JTextArea("Upload Command Outputs:" + line_seprator);
+	private JTextArea output_area = new JTextArea("Upload console Outputs:" + line_seprator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
 	
-	public upload_dialog(){
+	public upload_dialog(client_data client_info){
 		//super(main_view, "Suite Upload", true);
 		super();
+		this.client_info = client_info;
 		this.setTitle("Suite Upload");
+		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
+		this.setIconImage(icon_image);
 		Container my_container = this.getContentPane();
 		my_container.setLayout(new GridLayout(2,1,10,10));
 		JPanel p1 = new JPanel(new GridLayout(4,2,10,10));
@@ -100,6 +107,7 @@ public class upload_dialog extends JDialog{
 	class cancel_action implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			run_processer.destroyForcibly();
+			upload_button.setEnabled(true);
 		}
 	}
 
@@ -107,9 +115,11 @@ public class upload_dialog extends JDialog{
 		public void actionPerformed(ActionEvent e){
 			String user = field_username.getText();
 			String pswd = field_password.getPassword().toString();
-			String file = field_file.getText();
-			String work_path = "D:/tmp_work_space";// + "/" +  public_data.WORKSPACE_UPLOAD_DIR;
+			String file = field_file.getText().replaceAll("\\\\", "/");
+			String work_path = "D:/tmp_work_space" + "/" +  public_data.WORKSPACE_UPLOAD_DIR;
+			//String work_path = client_info.get_client_data().get("base").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;
 			new Thread(new run_cmd(user, pswd, file, work_path)).start();
+			upload_button.setEnabled(false);
 		}
 	}
 	
@@ -129,13 +139,30 @@ public class upload_dialog extends JDialog{
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			String[] cmds = new String[]{"python","D:/tmp_work_space/test.py"};
-			ProcessBuilder pb = new ProcessBuilder(cmds);
+			ArrayList<String> cmd_args = new ArrayList<String>();
+			cmd_args.add("python");
+			cmd_args.add(public_data.TOOLS_UPLOAD);
+			cmd_args.add("-f " + file);
+			cmd_args.add("-u " + user);
+			cmd_args.add("-p " + pswd);
+			//cmd_args.add("D:/tmp_work_space/test.py");
+			ProcessBuilder pb = new ProcessBuilder(cmd_args);
 			pb.redirectErrorStream(true);
+			File work_dobj = new File(work_path);
+			if (!work_dobj.exists() || !work_dobj.isDirectory()){
+				try {
+					FileUtils.forceMkdir(work_dobj);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					UPLOAD_DIALOG_LOGGER.warn("Error:Can not create directory:" + work_path);
+					return;
+				}
+			}
 			try {
-				pb.directory(new File(work_path));
+				pb.directory(work_dobj);
 			} catch (Exception e) {
-				UPLOAD_DIALOG_LOGGER.warn("Error:Can not find directory:" + work_path + "\n");
+				UPLOAD_DIALOG_LOGGER.warn("Error:Can not find directory:" + work_path);
+				return;
 			}
 			Map<String, String> env = pb.environment();
 			env.put("PYTHONUNBUFFERED", "1");

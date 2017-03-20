@@ -55,6 +55,7 @@ public class public_data {
 	public final static String TOOLS_PSCP = SW_BIN_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_BIN_PATH + "/tools/cp.exe";
 	public final static String TOOLS_PUTTY = SW_BIN_PATH + "/tools/putty.exe";
+	public final static String TOOLS_UPLOAD = SW_BIN_PATH + "/tools/upload/excel2testrail.py";
 
 	//========================
 	// link to RabbitMQ configuration data only shown here

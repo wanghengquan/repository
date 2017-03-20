@@ -18,7 +18,7 @@ import javax.swing.*;
 import data_center.public_data;
 import utility_funcs.des_encode;
 
-public class encode_dialog extends JDialog{
+public class encode_dialog extends JFrame{
 	/**
 	 * 
 	 */
@@ -34,7 +34,11 @@ public class encode_dialog extends JDialog{
 	private JTextField key_value = new JTextField(40);
 	
 	public encode_dialog(main_frame main_view){
-		super(main_view, "Encryption", true);
+		//super(main_view, "Encryption", true);
+		super();
+		this.setTitle("Encryption");
+		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
+		this.setIconImage(icon_image);		
 		Container my_container = this.getContentPane();
 		my_container.setLayout(new GridLayout(2,1,10,10));
 		JPanel p1 = new JPanel(new GridLayout(4,2,10,10));

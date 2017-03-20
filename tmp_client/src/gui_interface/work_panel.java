@@ -11,11 +11,15 @@ package gui_interface;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +30,7 @@ import java.util.Vector;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -362,6 +367,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	private view_data view_info;
 	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
 	private JMenuItem details, results;
+	private String line_seprator = System.getProperty("line.separator");
 
 	public table_pop_memu(JTable table, view_data view_info) {
 		this.table = table;
@@ -446,6 +452,25 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}
 		if (arg0.getSource().equals(results)) {
 			System.out.println("results clicked");
+			String title = "Open Folder Failed:";
+			String work_path = "c:/lscc/diamond";
+			String message = "Can not open path with system register browser" + line_seprator + work_path;
+			if(Desktop.isDesktopSupported()){
+				Desktop desktop = Desktop.getDesktop();
+				try {
+					desktop.open(new File(public_data.DEF_WORK_PATH));
+						desktop.mail(new URI("mailto:Jason.Wang@latticesemi.com"));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			}
 		}
 	}
 
