@@ -16,8 +16,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -155,7 +157,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		if (design_data.get("Status").containsKey("cmd_status")) {
 			add_line.add(design_data.get("Status").get("cmd_status"));
 		} else {
-			add_line.add("NA");
+			add_line.add("Waiting");
 		}
 		if (design_data.get("Status").containsKey("reason")) {
 			add_line.add(design_data.get("Status").get("reason"));
@@ -199,6 +201,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			add_line.add("..");
 			add_line.add("..");
 			new_data.add(add_line);
+			work_data.clear();
 			work_data.addAll(new_data);
 			return show_update;
 		}
@@ -213,6 +216,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			add_line.add("..");
 			add_line.add("..");
 			new_data.add(add_line);
+			work_data.clear();
 			work_data.addAll(new_data);
 			return show_update;
 		}
@@ -226,6 +230,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			}
 			new_data.add(add_line);
 		}
+		work_data.clear();
 		work_data.addAll(new_data);
 		return show_update;
 	}	
@@ -287,12 +292,25 @@ public class work_panel extends JSplitPane implements Runnable{
 		return import_status;
 	}
 	
+	private Boolean update_selected_task_case(){
+		Boolean update_status = new Boolean(false);
+		int [] select_index = work_table.getSelectedRows();
+		List<String> select_case = new ArrayList<String>();
+		for (int index : select_index){
+			if(work_table.getRowCount() > index){
+				String case_id = (String) work_table.getValueAt(index, 0);
+				select_case.add(case_id);
+			}
+		}
+		view_info.set_select_task_case(select_case);
+		return update_status;
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		while (true) {
-			Boolean debug = new Boolean(true);
-			if (debug){
+			if (view_info.get_view_debug()){
 				Vector<Vector<String>> new_data = new Vector<Vector<String>>();
 				for (int i = 0; i < 5; i++) {
 					Vector<String> work_line = new Vector<String>();
@@ -307,9 +325,11 @@ public class work_panel extends JSplitPane implements Runnable{
 				work_data.clear();
 				work_data.addAll(new_data);
 			} else {
+				update_selected_task_case();
 				update_working_queue_data();
 			}
 			if (SwingUtilities.isEventDispatchThread()) {
+				update_selected_task_case();
 				work_table.validate();
 				work_table.updateUI();
 			} else {

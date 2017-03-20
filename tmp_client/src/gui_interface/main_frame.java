@@ -142,6 +142,7 @@ public class main_frame extends JFrame {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info);
+		view_info.set_view_debug(true);
 		MAIN_FRAME_LOGGER.warn("GUI start");
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();

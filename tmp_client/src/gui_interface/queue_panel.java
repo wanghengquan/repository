@@ -18,11 +18,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -167,12 +169,37 @@ public class queue_panel extends JSplitPane implements Runnable{
 		return show_update;
 	}
 	
+	private Boolean update_select_rejected_queue(){
+		Boolean update_status = new Boolean(true);
+		String selected_queue = new String();
+		int select_index = reject_table.getSelectedRow();
+		if(select_index >= 0){
+			selected_queue = (String) reject_table.getValueAt(select_index, 0);
+		} else {
+			update_status = false;
+		}
+		view_info.set_select_rejected_queue(selected_queue);
+		return update_status;
+	}
+	
+	private Boolean update_select_captured_queue(){
+		Boolean update_status = new Boolean(true);
+		String selected_queue = new String();
+		int select_index = capture_table.getSelectedRow();
+		if(select_index >= 0){
+			selected_queue = (String) capture_table.getValueAt(select_index, 0);
+		} else {
+			update_status = false;
+		}
+		view_info.set_select_captured_queue(selected_queue);
+		return update_status;
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub		
 		while (true) {
-			Boolean debug = new Boolean(true);
-			if (debug){
+			if (view_info.get_view_debug()){
 				Vector<Vector<String>> reject_new = new Vector<Vector<String>>();
 				for (int i = 0; i < 5; i++) {
 					Vector<String> reject_line = new Vector<String>();
@@ -192,6 +219,8 @@ public class queue_panel extends JSplitPane implements Runnable{
 				capture_data.clear();
 				capture_data.addAll(capture_new);
 			} else {
+				update_select_rejected_queue();
+				update_select_captured_queue();
 				update_rejected_queue_data();
 				update_captured_queue_data();
 			}
@@ -257,6 +286,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JMenuItem show;
+	private JMenuItem run_play, run_pause, run_stop;
 	private view_data view_info;
 
 	public capture_pop_memu(JTable table, view_data view_info) {
@@ -265,6 +295,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		show = new JMenuItem("Show");
 		show.addActionListener(this);
 		this.add(show);
+		this.addSeparator();
+		JMenu run = new JMenu("Run...");
+		run_play = new JMenuItem("Play");
+		run_play.addActionListener(this);
+		run_pause = new JMenuItem("Pause");
+		run_pause.addActionListener(this);
+		run_stop = new JMenuItem("Stop");
+		run_stop.addActionListener(this);
+		run.add(run_play);
+		run.add(run_pause);
+		run.add(run_stop);
+		this.add(run);
 	}
 
 	public capture_pop_memu get_capture_pop_menu() {
@@ -281,6 +323,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("Show queue name:" + select_queue);
 			view_info.set_watching_queue(select_queue);
 		}
+		if (arg0.getSource().equals(run_play)) {
+			System.out.println("run_play clicked");
+			view_info.set_run_action_request("processing");
+		}		
+		if (arg0.getSource().equals(run_pause)) {
+			System.out.println("run_pause clicked");
+			view_info.set_run_action_request("pause");
+		}
+		if (arg0.getSource().equals(run_stop)) {
+			System.out.println("run_stop clicked");
+			view_info.set_run_action_request("stop");
+		}		
 	}
 
 }

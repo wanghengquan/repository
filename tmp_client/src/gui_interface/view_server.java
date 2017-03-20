@@ -9,6 +9,14 @@
  */
 package gui_interface;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
+
+import javax.swing.SwingUtilities;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +26,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 
-public class view_server {
+public class view_server extends Thread{
 	// public property
 	// protected property
 	// private property
@@ -43,6 +51,66 @@ public class view_server {
 		this.client_info = client_info;
 	}
 
+	private List<String> get_retest_case_list(String retest_queue){
+		List<String> case_list = new ArrayList<String>();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		queue_data.putAll(task_info.get_queue_from_processed_task_queues_map(retest_queue));
+		String retest_area = view_info.impl_retest_queue_area();
+		if (retest_area.equals("")){
+			return case_list;
+		}
+		if (retest_area.equals("all")){
+			case_list.addAll(queue_data.keySet());
+		} else if (retest_area.equals("selected")){
+			case_list.addAll(view_info.get_select_task_case());
+		} else {
+			Iterator<String> queue_data_it = queue_data.keySet().iterator();
+			while(queue_data_it.hasNext()){
+				String case_id = queue_data_it.next();
+				if(!queue_data.get(case_id).get("Status").containsKey("cmd_status")){
+					continue;
+				}
+				String cmd_status = queue_data.get(case_id).get("Status").get("cmd_status");
+				if(cmd_status.equalsIgnoreCase(retest_area)){
+					case_list.add(case_id);
+				}
+			}
+		}
+		return case_list;
+	}
+	
+	private Boolean implements_retest_task_cases(){
+		Boolean retest_status = new Boolean(true);
+		//get retest queue name
+		String queue_name = view_info.get_watching_queue();
+		//get retest case list
+		ArrayList<String> case_list = new ArrayList<String>();
+		case_list.addAll(get_retest_case_list(queue_name));
+		if(case_list.isEmpty()){
+			return retest_status;
+		}
+		//mark case status changed in processed case
+		task_info.mark_waiting_case_to_processed_task_queues_map(queue_name, case_list);
+		//dump task queue into receive side
+		task_info.copy_task_from_processed_to_received_task_queues_map(queue_name, case_list);
+		//mark admin_status to processing
+		task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+		return retest_status;
+	}
+	
+	private Boolean implements_run_action_request(){
+		Boolean action_status = new Boolean(true);
+		//get retest queue
+		String queue_name = view_info.get_select_captured_queue();
+		String run_action = view_info.impl_run_action_request();
+		if (run_action.equals("")){
+			return action_status;
+		}
+		task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+		task_info.mark_queue_in_received_admin_queues_treemap(queue_name, run_action);
+		return action_status;
+	}	
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -51,9 +119,25 @@ public class view_server {
 			System.exit(1);
 		}
 	}
-
+	
 	private void monitor_run() {
 		// ============== All static job start from here ==============
+		// initial 1 : start GUI
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info);
+		if (SwingUtilities.isEventDispatchThread()) {
+			top_view.gui_constructor();
+			top_view.setVisible(true);
+		} else {
+			SwingUtilities.invokeLater(new Runnable(){
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					top_view.gui_constructor();
+					top_view.setVisible(true);
+				}
+			});
+		}
+		// initial 2 : xxxx
 		current_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
@@ -69,10 +153,12 @@ public class view_server {
 				VIEW_SERVER_LOGGER.debug("Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1 : run retest cases
+			// task 1 : run "retest" cases
 			Boolean retest_status = implements_retest_task_cases();
+			// task 2 : run "run" action implements
+			Boolean action_status = implements_run_action_request();
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

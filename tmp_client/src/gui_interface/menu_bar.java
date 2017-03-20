@@ -221,12 +221,15 @@ public class menu_bar extends JMenuBar implements ActionListener{
 		}		
 		if(e.getSource().equals(play)){
 			MENU_BAR_LOGGER.warn("play clicked");
+			view_info.set_run_action_request("processing");
 		}
 		if(e.getSource().equals(pause)){
 			MENU_BAR_LOGGER.warn("pause clicked");
+			view_info.set_run_action_request("pause");
 		}
 		if(e.getSource().equals(stop)){
 			MENU_BAR_LOGGER.warn("stop clicked");
+			view_info.set_run_action_request("stop");
 		}
 		if(e.getSource().equals(retest_all)){
 			MENU_BAR_LOGGER.warn("retest_all clicked");
@@ -254,6 +257,7 @@ public class menu_bar extends JMenuBar implements ActionListener{
 		}
 		if(e.getSource().equals(upload)){
 			MENU_BAR_LOGGER.warn("upload clicked");
+			new upload_dialog().setVisible(true);
 		}
 		if(e.getSource().equals(key_gen)){
 			new encode_dialog(main_view).setVisible(true);

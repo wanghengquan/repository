@@ -9,8 +9,10 @@
  */
 package gui_interface;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -24,9 +26,14 @@ import javax.swing.table.JTableHeader;
 
 public class view_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
+	private Boolean view_debug = new Boolean(false);
 	private String watching_queue = new String();
 	private String watching_queue_area = new String();//all, processing, passed, failed, TBD, timeout,
 	private String retest_queue_area = new String();//all, selected, passed, failed, TBD, timeout,
+	private String select_rejected_queue = new String();
+	private String select_captured_queue = new String();
+	private List<String> select_task_case = new ArrayList<String>();
+	private String run_action_request = new String();//play, pause, stop
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_comparator());
@@ -36,6 +43,25 @@ public class view_data {
 
 	}
 	
+	public Boolean get_view_debug() {
+		rw_lock.readLock().lock();
+		Boolean temp = new Boolean(false);
+		try {
+			temp = view_debug;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_view_debug(Boolean debug_value) {
+		rw_lock.writeLock().lock();
+		try {
+			this.view_debug = debug_value;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 	
 	public String get_watching_queue() {
 		rw_lock.readLock().lock();
@@ -47,7 +73,7 @@ public class view_data {
 		}
 		return temp;
 	}
-
+	
 	public void set_watching_queue(String update_queue) {
 		rw_lock.writeLock().lock();
 		try {
@@ -108,6 +134,89 @@ public class view_data {
 		}
 		return impl_area;
 	}	
+	
+	public String get_select_rejected_queue() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = select_rejected_queue;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_select_rejected_queue(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			this.select_rejected_queue = queue_name;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public String get_select_captured_queue() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = select_captured_queue;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_select_captured_queue(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			this.select_captured_queue = queue_name;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public List<String> get_select_task_case() {
+		rw_lock.readLock().lock();
+		List<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.select_task_case);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_select_task_case(List<String> case_list) {
+		rw_lock.writeLock().lock();
+		try {
+			this.select_task_case.clear();
+			this.select_task_case.addAll(case_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void set_run_action_request(String queue_area) {
+		rw_lock.writeLock().lock();
+		try {
+			this.run_action_request = queue_area;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public String impl_run_action_request() {
+		rw_lock.writeLock().lock();
+		String impl_action = new String();
+		try {
+			impl_action = run_action_request;
+			this.run_action_request = "";
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return impl_action;
+	}
+	
 	/*
 	public Vector<String> get_work_column() {
 		rw_lock.readLock().lock();

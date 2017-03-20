@@ -36,9 +36,8 @@ public class encode_dialog extends JDialog{
 	public encode_dialog(main_frame main_view){
 		super(main_view, "Encryption", true);
 		Container my_container = this.getContentPane();
-		my_container.setLayout(new GridLayout(3,1,10,10));
-		JPanel p1 = new JPanel(new GridLayout(3,2,10,10));
-		JPanel p2 = new JPanel(new GridLayout(1,2,5,5));
+		my_container.setLayout(new GridLayout(2,1,10,10));
+		JPanel p1 = new JPanel(new GridLayout(4,2,10,10));
 		JPanel p3 = new JPanel(new GridLayout(1,1,5,5));
 		p1.add(label_username);
 		p1.add(field_username);
@@ -46,11 +45,10 @@ public class encode_dialog extends JDialog{
 		p1.add(field_passwd01);
 		p1.add(label_passwd02);
 		p1.add(field_passwd02);
-		p2.add(rst_button);
-		p2.add(gen_button);
+		p1.add(rst_button);
+		p1.add(gen_button);
 		p3.add(key_value);
 		my_container.add(p1);
-		my_container.add(p2);
 		my_container.add(p3);			
 		rst_button.addActionListener(new resetAction());
 		gen_button.addActionListener(new genAction());

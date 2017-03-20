@@ -134,6 +134,20 @@ public class task_waiter extends Thread {
 		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
 	}	
 	
+	private void update_running_queue_list(){
+		ArrayList<String> running_admin_queue_list = new ArrayList<String>();
+		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
+		running_admin_queue_list.addAll(task_info.get_running_admin_queue_list());
+		processing_admin_queue_list.addAll(task_info.get_processing_admin_queue_list());
+		for(String queue_name:running_admin_queue_list){
+			if (!processing_admin_queue_list.contains(queue_name)){
+				//running queue finished or removed out side
+				task_info.update_finished_admin_queue_list(queue_name);
+				task_info.decrease_running_admin_queue_list(queue_name);
+			}
+		}
+	}
+	
 	private void reload_finished_queue_data(){
 		ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> finished_queue_list = task_info.get_finished_admin_queue_list();
@@ -505,6 +519,7 @@ public class task_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 0 : initial preparing, update processing queues and load task data for re-processing queues
 			update_processing_queue_list();
+			update_running_queue_list();
 			//reload finished task data if queue changed to processing from finished
 			reload_finished_queue_data();
 			// task 1 : check available task queue and thread

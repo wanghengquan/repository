@@ -40,6 +40,7 @@ public class public_data {
 	//========================
 	// workspace folder configuration, real path = work_path + following folder name
 	public final static String WORKSPACE_RESULT_DIR = "results";
+	public final static String WORKSPACE_UPLOAD_DIR = "uploads";
 	public final static String WORKSPACE_LOG_DIR = "logs";
 	public final static String WORKSPACE_CASE_REPORT_NAME = "case_report.txt";
 	
@@ -88,7 +89,7 @@ public class public_data {
 	
 	//========================
 	// performance calibration
-	public final static int PERF_THREAD_BASE_INTERVAL = 6;
+	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
 	
 	//========================
