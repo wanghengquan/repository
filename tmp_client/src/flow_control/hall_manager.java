@@ -96,30 +96,6 @@ public class hall_manager extends Thread {
 		return waiter;
 	}
 
-	/*
-	@SuppressWarnings("unused")
-	private void update_reject_queue_list() {
-		Set<String> remote_admin_queue_set = task_info.get_remote_admin_queue_receive_treemap().keySet();
-		Iterator<String> remote_it = remote_admin_queue_set.iterator();
-		Set<String> local_admin_queue_set = task_info.get_local_admin_queue_receive_treemap().keySet();
-		Iterator<String> local_it = local_admin_queue_set.iterator();
-		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
-		ArrayList<String> rejected_admin_queue_list = new ArrayList<String>();
-		while (remote_it.hasNext()) {
-			String queue_name = remote_it.next();
-			if (!captured_admin_queue_set.contains(queue_name)) {
-				rejected_admin_queue_list.add(queue_name);
-			}
-		}
-		while (local_it.hasNext()) {
-			String queue_name = local_it.next();
-			if (!captured_admin_queue_set.contains(queue_name)) {
-				rejected_admin_queue_list.add(queue_name);
-			}
-		}
-		task_info.set_rejected_admin_queue_list(rejected_admin_queue_list);
-	}
-*/
 	private void generate_console_report(pool_data pool_info) {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.warn(">>>==========Console Report==========");
@@ -138,8 +114,8 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn("");		
 		HALL_MANAGER_LOGGER.warn("");
-		HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
-		HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
+		//HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
+		//HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
 	}
 	
 	private void stop_sub_threads(){

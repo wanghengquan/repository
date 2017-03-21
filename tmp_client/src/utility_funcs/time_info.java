@@ -38,6 +38,11 @@ public class time_info {
 		return formatter.format(new Date());
 	}
 	
+	public static String get_man_date_time() {
+		SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss MM/dd");
+		return formatter.format(new Date());
+	}
+	
 	public static String get_date_time(Date date) {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
 		return formatter.format(date);

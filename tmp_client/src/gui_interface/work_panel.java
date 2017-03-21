@@ -87,7 +87,7 @@ public class work_panel extends JSplitPane implements Runnable{
 
 	private Component panel_right_component() {
 		JPanel work_panel = new JPanel(new BorderLayout());
-		table_pop_memu table_menu = new table_pop_memu(work_table, view_info);
+		table_pop_memu table_menu = new table_pop_memu(work_table, task_info, view_info);
 		work_table.setShowVerticalLines(true);
 		work_table.setShowHorizontalLines(true);
 		work_table.addMouseListener(new MouseAdapter() {
@@ -324,7 +324,7 @@ public class work_panel extends JSplitPane implements Runnable{
 					work_line.add("design");
 					work_line.add("status");
 					work_line.add("reason");
-					work_line.add(time_info.get_date_time());
+					work_line.add(time_info.get_man_date_time());
 					new_data.add(work_line);
 				}
 				work_data.clear();
@@ -334,7 +334,6 @@ public class work_panel extends JSplitPane implements Runnable{
 				update_working_queue_data();
 			}
 			if (SwingUtilities.isEventDispatchThread()) {
-				update_selected_task_case();
 				work_table.validate();
 				work_table.updateUI();
 			} else {
@@ -365,12 +364,14 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private JMenuItem retest;
 	private view_data view_info;
+	private task_data task_info;
 	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
 	private JMenuItem details, results;
 	private String line_seprator = System.getProperty("line.separator");
 
-	public table_pop_memu(JTable table, view_data view_info) {
+	public table_pop_memu(JTable table, task_data task_info, view_data view_info) {
 		this.table = table;
+		this.task_info = task_info;
 		this.view_info = view_info;
 		retest = new JMenuItem("Retest");
 		retest.addActionListener(this);
@@ -404,7 +405,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		this.addSeparator();
 		this.add(view);
 		this.addSeparator();
-		this.add(details);
+		//this.add(details);
 		this.add(results);
 	}
 
@@ -453,20 +454,32 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(results)) {
 			System.out.println("results clicked");
 			String title = "Open Folder Failed:";
-			String work_path = "c:/lscc/diamond";
-			String message = "Can not open path with system register browser" + line_seprator + work_path;
+			String message = "Cannot open case result DIR, unknow error." + line_seprator;			
+			String watching_queue = view_info.get_watching_queue();
+			List<String> case_list = view_info.get_select_task_case();
+			if(case_list.size() < 1){
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			String case_id = case_list.get(0);
+			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+			String work_path = new String();
+			try{
+				case_data.putAll(task_info.get_case_from_processed_task_queues_map(watching_queue, case_id));
+				work_path = case_data.get("Status").get("location");
+			} catch (Exception e){
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			message = "Can not open path with system register browser" + line_seprator + work_path;
 			if(Desktop.isDesktopSupported()){
 				Desktop desktop = Desktop.getDesktop();
 				try {
-					desktop.open(new File(public_data.DEF_WORK_PATH));
-						desktop.mail(new URI("mailto:Jason.Wang@latticesemi.com"));
+					desktop.open(new File(work_path));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			} else {
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);

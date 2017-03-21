@@ -123,7 +123,6 @@ public class pool_data{
 	public void shutdown_pool(){
 		run_pool.shutdown();
 	}
-	
 
 	/*
 	 * main entry for test

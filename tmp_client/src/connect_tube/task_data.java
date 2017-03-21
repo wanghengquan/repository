@@ -440,10 +440,8 @@ public class task_data {
 	public void mark_waiting_case_to_processed_task_queues_map(String queue_name, ArrayList<String> case_list) {
 		rw_lock.writeLock().lock();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = processed_task_queues_map.get(queue_name);
-		Iterator<String> case_it = queue_data.keySet().iterator();
 		try {
-			while(case_it.hasNext()){
-				String case_id = case_it.next();
+			for(String case_id : case_list){
 				HashMap<String, String> status_data = queue_data.get(case_id).get("Status");
 				status_data.put("cmd_status", "waiting");
 			}

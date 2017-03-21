@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
@@ -40,12 +37,12 @@ public class upload_dialog extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
-	private JLabel label_username = new JLabel("User Name:");
-	private JLabel label_password = new JLabel("Pass Word:");
-	private JLabel label_suitefile = new JLabel("Suite File:");
+	private JLabel label_username = new JLabel("TMP User Name:");
+	private JLabel label_password = new JLabel("TMP Pass Word:");
+	private JLabel label_suitefile = new JLabel("Upload Suite File:");
 	//private JLabel label_output = new JLabel("Upload console Outputs:");
-	private JTextField field_username = new JTextField("", 20);
-	private JPasswordField field_password = new JPasswordField("", 20);
+	private JTextField field_username = new JTextField("public@latticesemi.com", 20);
+	private JPasswordField field_password = new JPasswordField("lattice", 20);
 	private JTextField field_file = new JTextField("", 20);
 	private JButton open_button = new JButton("Select");
 	private JButton cancel_button = new JButton("Cancel");
@@ -54,6 +51,7 @@ public class upload_dialog extends JFrame{
 	private JTextArea output_area = new JTextArea("Upload console Outputs:" + line_seprator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
+	String work_path = new String();
 	
 	public upload_dialog(client_data client_info){
 		//super(main_view, "Suite Upload", true);
@@ -88,18 +86,23 @@ public class upload_dialog extends JFrame{
 		my_container.setBackground(Color.white);
 		this.setSize(500, 400);
 		this.setLocation(600,600);
+		if(client_info.get_client_data().containsKey("base")){
+			work_path = client_info.get_client_data().get("base").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
+		} else {
+			work_path = public_data.DEF_WORK_PATH;
+		}		
 	}
 	
 	class open_action implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			JFileChooser import_file =  new JFileChooser(System.getProperty("user.dir")); 
+			JFileChooser import_file =  new JFileChooser(work_path); 
 			import_file.setDialogTitle("Select Upload Suite file");
 			int return_value = import_file.showOpenDialog(null);
 			if (return_value == JFileChooser.APPROVE_OPTION){
 				File open_suite_file = import_file.getSelectedFile();
 				String path = open_suite_file.getAbsolutePath().replaceAll("\\\\", "/");
 				field_file.setText(path);
-				UPLOAD_DIALOG_LOGGER.warn("Upload suite file:" + path);
+				UPLOAD_DIALOG_LOGGER.debug("Upload suite file:" + path);
 			}
 		}
 	}
@@ -115,9 +118,15 @@ public class upload_dialog extends JFrame{
 		public void actionPerformed(ActionEvent e){
 			String user = field_username.getText();
 			String pswd = field_password.getPassword().toString();
-			String file = field_file.getText().replaceAll("\\\\", "/");
-			String work_path = "D:/tmp_work_space" + "/" +  public_data.WORKSPACE_UPLOAD_DIR;
-			//String work_path = client_info.get_client_data().get("base").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;
+			String file = field_file.getText();
+			
+			String message = new String("No file selected");
+			String title = new String("Upload File Error:");
+			if (file.isEmpty()){
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+
 			new Thread(new run_cmd(user, pswd, file, work_path)).start();
 			upload_button.setEnabled(false);
 		}
@@ -142,10 +151,12 @@ public class upload_dialog extends JFrame{
 			ArrayList<String> cmd_args = new ArrayList<String>();
 			cmd_args.add("python");
 			cmd_args.add(public_data.TOOLS_UPLOAD);
-			cmd_args.add("-f " + file);
-			cmd_args.add("-u " + user);
-			cmd_args.add("-p " + pswd);
-			//cmd_args.add("D:/tmp_work_space/test.py");
+			cmd_args.add("-f");
+			cmd_args.add(file);
+			cmd_args.add("-u");
+			cmd_args.add(user);
+			cmd_args.add("-p");
+			cmd_args.add(pswd);
 			ProcessBuilder pb = new ProcessBuilder(cmd_args);
 			pb.redirectErrorStream(true);
 			File work_dobj = new File(work_path);
@@ -201,6 +212,12 @@ public class upload_dialog extends JFrame{
 			}
 		}
 	}
+	
+	public static void main(String[] args) {
+		client_data client_info = new client_data();
+		upload_dialog upload = new upload_dialog(client_info);
+		upload.setVisible(true);
+	}	
 }
 
  

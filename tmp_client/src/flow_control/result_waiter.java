@@ -287,7 +287,7 @@ public class result_waiter extends Thread {
 			case_status.put("cmd_status", case_report_map.get(call_index).get("status"));
 			case_status.put("cmd_reason", case_report_map.get(call_index).get("reason"));
 			case_status.put("location", case_report_map.get(call_index).get("location"));
-			case_status.put("run_time", time_info.get_date_time());
+			case_status.put("run_time", time_info.get_man_date_time());
 			case_data.put("Status", case_status);
 			task_info.update_case_to_processed_task_queues_map(queue_name, case_id, case_data);
 		}
@@ -526,16 +526,16 @@ public class result_waiter extends Thread {
 			HashMap<String, Object> call_ori_data = system_call_map.get(call_index);
 			hash_data.putAll(call_ori_data);
 			// put call_status
-			Future<?> call_back = (Future<?>) system_call_map.get(call_index).get("call_back");
+			Future<?> call_back = (Future<?>) call_ori_data.get("call_back");
 			Boolean call_done = call_back.isDone();
 			long current_time = System.currentTimeMillis() / 1000;
-			long start_time = (long) system_call_map.get(call_index).get("start_time");
-			int time_out = (int) system_call_map.get(call_index).get("time_out");
+			long start_time = (long) call_ori_data.get("start_time");
+			int time_out = (int) call_ori_data.get("time_out");
 			// run report action
 			if (call_done) {
 				hash_data.put("call_status", "done");
 				try {
-					hash_data.put("cmd_output", call_back.get(time_out, TimeUnit.SECONDS));
+					hash_data.put("cmd_output", call_back.get(10, TimeUnit.SECONDS));
 				} catch (InterruptedException | ExecutionException | TimeoutException e) {
 					// e.printStackTrace();
 					RESULT_WAITER_LOGGER.warn("Get call result exception.");

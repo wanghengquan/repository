@@ -21,8 +21,9 @@ public class public_data {
 	//========================
 	// base
 	public final static String BASE_CURRENTVERSION = "2.05.01"; // External.Internal.DEV
-	public final static String BASE_BUILDDATE = "2017/2/22";
+	public final static String BASE_BUILDDATE = "2017/3/22";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
+	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
 	public final static float BASE_PYTHONBASEVERSION = 2.7f;
 	public final static float BASE_SVNBASEVERSION = 1.4f;
@@ -57,6 +58,10 @@ public class public_data {
 	public final static String TOOLS_PUTTY = SW_BIN_PATH + "/tools/putty.exe";
 	public final static String TOOLS_UPLOAD = SW_BIN_PATH + "/tools/upload/excel2testrail.py";
 
+	//========================
+	// external documents based on software bin path
+	public final static String DOC_USAGE = SW_BIN_PATH + "/doc/usage.pdf";
+	
 	//========================
 	// link to RabbitMQ configuration data only shown here
 	public final static String RMQ_HOST = "linux-D50553"; //"linux-D50553" "lsh-reg01"
