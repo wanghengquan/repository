@@ -13,6 +13,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -62,11 +63,11 @@ public class client_dialog extends JDialog implements ActionListener{
 		group.add("Group:");
 		max_threads.add("Maximum Run Threads:");
 		client_private.add("Private Client:");
-		if(client_info.get_client_data().containsKey("base")){
-			terminal.add(client_info.get_client_data().get("base").get("terminal"));
-			group.add(client_info.get_client_data().get("base").get("group"));
-			max_threads.add(client_info.get_client_data().get("base").get("max_threads"));
-			client_private.add(client_info.get_client_data().get("base").get("private"));
+		if(client_info.get_client_data().containsKey("Machine")){
+			terminal.add(client_info.get_client_data().get("Machine").get("terminal"));
+			group.add(client_info.get_client_data().get("Machine").get("group"));
+			max_threads.add(client_info.get_client_data().get("Machine").get("max_threads"));
+			client_private.add(client_info.get_client_data().get("Machine").get("private"));
 		} else {
 			terminal.add("Test");
 			group.add("Test");
@@ -93,7 +94,19 @@ public class client_dialog extends JDialog implements ActionListener{
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(apply)){
-			
+			HashMap<String, HashMap<String, String>> update_data = client_info.get_client_data();
+			if (!update_data.containsKey("Machine")){
+				return;
+			}
+			HashMap<String, String> machine_data = update_data.get("Machine");
+			machine_data.put("terminal", (String) client_table.getValueAt(0, 1));
+			machine_data.put("group", (String) client_table.getValueAt(1, 1));
+			machine_data.put("max_threads", (String) client_table.getValueAt(2, 1));
+			machine_data.put("private", (String) client_table.getValueAt(3, 1));
+			System.out.println(">>>>>>>>>>>>>>>>>>:");
+			System.out.println(machine_data.toString());
+			client_info.set_client_data(update_data);
+			switch_info.set_client_updated();
 		}
 	}
 	

@@ -11,6 +11,7 @@ package gui_interface;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.MenuItem;
@@ -87,6 +88,7 @@ public class main_frame extends JFrame {
 		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info));
 		work_panel task_insts = new work_panel(view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
+		this.getContentPane().setBackground(Color.white);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		new Thread(task_insts).start();
 	}

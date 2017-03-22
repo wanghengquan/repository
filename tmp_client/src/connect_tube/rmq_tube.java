@@ -162,7 +162,8 @@ public class rmq_tube {
 			}
 		if (connection.isOpen())
 			connection.close();
-		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(task_msg);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash = xml_parser.get_rmq_xml_data(task_msg);
 		return msg_hash;
 	}
 

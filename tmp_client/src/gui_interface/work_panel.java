@@ -10,6 +10,7 @@
 package gui_interface;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;

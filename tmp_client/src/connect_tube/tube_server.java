@@ -347,7 +347,7 @@ public class tube_server extends Thread {
 				local_tube local_tube_parser = new local_tube(task_info);
 				String[] file_list = suite_files.split(";");
 				for (String file : file_list) {
-					local_tube_parser.generate_local_queue_hash(file,
+					local_tube_parser.generate_local_admin_task_queues(file,
 							client_info.get_client_data().get("Machine").get("terminal"));
 				}
 				switch_info.set_suite_file("");

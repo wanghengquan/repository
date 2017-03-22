@@ -10,6 +10,7 @@
 package gui_interface;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 //import java.util.Vector;
 import java.awt.event.ActionEvent;
@@ -321,6 +322,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			System.out.println("Show queue name:" + select_queue);
 			view_info.set_watching_queue(select_queue);
+			view_info.set_watching_queue_area("all");
 		}
 		if (arg0.getSource().equals(run_play)) {
 			System.out.println("run_play clicked");

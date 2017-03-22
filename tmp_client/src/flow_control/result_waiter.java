@@ -163,7 +163,7 @@ public class result_waiter extends Thread {
 		}
 		String work_path = client_info.get_client_data().get("base").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "finished/admin";
+		String dump_path = work_path + "/" + log_folder + "/finished/admin";
 		File dump_dobj = new File(dump_path);
 		if (dump_dobj.exists() && dump_dobj.isDirectory()) {
 			RESULT_WAITER_LOGGER.debug("dump folder exists.");
@@ -202,7 +202,7 @@ public class result_waiter extends Thread {
 		}
 		String work_path = client_info.get_client_data().get("base").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "finished/task";
+		String dump_path = work_path + "/" + log_folder + "/finished/task";
 		File dump_dobj = new File(dump_path);
 		if (dump_dobj.exists() && dump_dobj.isDirectory()) {
 			RESULT_WAITER_LOGGER.debug("dump folder exists.");
@@ -663,10 +663,13 @@ public class result_waiter extends Thread {
 			// task 1 : get call map status
 			call_status = get_call_status_map();
 			if (call_status.size() < 1) {
+				RESULT_WAITER_LOGGER.warn(waiter_name + ":Thread Pool Empty...");
 				continue;
 			}
 			// task 2 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
+			System.out.println(">>>>>>>>>>>>>>>>testing result waiter line670");
+			System.out.println(call_status.toString());
 			// task 3 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
 			Boolean send_case_status = send_case_report(case_report_data);
