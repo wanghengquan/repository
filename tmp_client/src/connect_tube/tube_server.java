@@ -226,7 +226,7 @@ public class tube_server extends Thread {
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
 		String admin_request = "0";
-		if (switch_info.get_send_admin_request()) {
+		if (switch_info.impl_send_admin_request()) {
 			admin_request = "1";
 		}
 		// admin_request = "1";

@@ -9,6 +9,7 @@
  */
 package gui_interface;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,12 +20,13 @@ import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.dom4j.DocumentException;
 
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import info_parser.xml_parser;
 
 public class view_server extends Thread{
 	// public property
@@ -89,12 +91,11 @@ public class view_server extends Thread{
 		if(case_list.isEmpty()){
 			return retest_status;
 		}
-		//mark case status changed in processed case
-		task_info.mark_waiting_case_to_processed_task_queues_map(queue_name, case_list);
-		//dump task queue into receive side
-		task_info.copy_task_from_processed_to_received_task_queues_map(queue_name, case_list);
+		//move case from processed to received and mark case with waiting
+		task_info.move_task_list_from_processed_to_received_task_queues_map(queue_name, case_list);
 		//mark admin_status to processing
-		task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+		task_info.move_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+		task_info.active_waiting_received_admin_queues_treemap(queue_name);
 		return retest_status;
 	}
 	
@@ -106,9 +107,75 @@ public class view_server extends Thread{
 		if (run_action.equals("")){
 			return action_status;
 		}
-		task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+		if(task_info.get_finished_admin_queue_list().contains(queue_name)){
+			if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
+				import_admin_data_to_processed_data(queue_name);
+				import_task_data_to_processed_data(queue_name);
+			}
+			task_info.move_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+			task_info.move_task_from_processed_to_received_task_queues_map(queue_name);
+		}
 		task_info.mark_queue_in_received_admin_queues_treemap(queue_name, run_action);
 		return action_status;
+	}	
+	
+	//dup function in work panel
+	private Boolean import_admin_data_to_processed_data(String import_queue) {
+		Boolean import_status = new Boolean(false);
+		String work_path = new String();
+		if (client_info.get_client_data().containsKey("base")) {
+			work_path = client_info.get_client_data().get("base").get("work_path");
+		} else {
+			work_path = public_data.DEF_WORK_PATH;
+		}
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/finished/admin/" + import_queue + ".xml");
+		if (!log_path.exists()) {
+			return import_status;
+		}
+		xml_parser file_parser = new xml_parser();
+		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			import_admin_data.putAll(file_parser.get_xml_file_admin_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
+			return import_status;
+		}
+		task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+		import_status = true;
+		return import_status;
+	}
+	
+	//dup function in work panel
+	private Boolean import_task_data_to_processed_data(String import_queue) {
+		Boolean import_status = new Boolean(false);
+		String work_path = new String();
+		if (client_info.get_client_data().containsKey("base")) {
+			work_path = client_info.get_client_data().get("base").get("work_path");
+		} else {
+			work_path = public_data.DEF_WORK_PATH;
+		}
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + import_queue + ".xml");
+		if (!log_path.exists()) {
+			return import_status;
+		}
+		xml_parser file_parser = new xml_parser();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		try {
+			import_task_data = file_parser
+					.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/"));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
+			return import_status;
+		}
+		task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+		import_status = true;
+		return import_status;
 	}	
 	
 	public void run() {

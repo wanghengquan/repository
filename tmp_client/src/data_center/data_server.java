@@ -83,8 +83,7 @@ public class data_server extends Thread {
 		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
 		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
 		// 1. merge Software data
-		Set<String> config_section = config_hash.keySet();
-		Iterator<String> config_it = config_section.iterator();
+		Iterator<String> config_it = config_hash.keySet().iterator();
 		while (config_it.hasNext()) {
 			String option = config_it.next();
 			HashMap<String, String> option_data = config_hash.get(option);
@@ -103,8 +102,7 @@ public class data_server extends Thread {
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
-		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
-																// data
+		machine_data.putAll(config_hash.get("tmp_machine")); // configuration data
 		client_data.put("Machine", machine_data);
 		// 4. merge base data (for software use) command data > config data >
 		// default data in public_data
@@ -126,8 +124,7 @@ public class data_server extends Thread {
 		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
 		// 1. merge Software data except "scan_dir" and "max_insts" incase user
 		// modified in GUI
-		Set<String> config_section = config_hash.keySet();
-		Iterator<String> config_it = config_section.iterator();
+		Iterator<String> config_it = config_hash.keySet().iterator();
 		while (config_it.hasNext()) {
 			String option = config_it.next();
 			HashMap<String, String> option_data = new HashMap<String, String>();

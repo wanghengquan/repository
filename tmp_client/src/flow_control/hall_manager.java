@@ -113,7 +113,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.warn(">>>==================================");
 		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn("");		
-		HALL_MANAGER_LOGGER.warn("");
+		HALL_MANAGER_LOGGER.warn(client_info.get_client_data().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
 	}

@@ -52,28 +52,28 @@ public class switch_data {
 		}
 	}
 	
-	public Boolean get_send_admin_request(){
+	public Boolean impl_send_admin_request(){
 		rw_lock.writeLock().lock();
 		Boolean action_need = new Boolean(false);
 		try {
 			if (send_admin_request > 0){
 				action_need = true;
+				this.send_admin_request = send_admin_request - 1;
 			}
-			this.send_admin_request = send_admin_request - 1;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 		return action_need;
 	}
 
-	public Boolean get_dump_config_request(){
+	public Boolean impl_dump_config_request(){
 		rw_lock.writeLock().lock();
 		Boolean action_need = new Boolean(false);
 		try {
 			if (dump_config_request > 0){
 				action_need = true;
+				dump_config_request = dump_config_request - 1;
 			}
-			this.dump_config_request = dump_config_request - 1;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

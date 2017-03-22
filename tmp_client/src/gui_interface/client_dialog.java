@@ -103,8 +103,6 @@ public class client_dialog extends JDialog implements ActionListener{
 			machine_data.put("group", (String) client_table.getValueAt(1, 1));
 			machine_data.put("max_threads", (String) client_table.getValueAt(2, 1));
 			machine_data.put("private", (String) client_table.getValueAt(3, 1));
-			System.out.println(">>>>>>>>>>>>>>>>>>:");
-			System.out.println(machine_data.toString());
 			client_info.set_client_data(update_data);
 			switch_info.set_client_updated();
 		}

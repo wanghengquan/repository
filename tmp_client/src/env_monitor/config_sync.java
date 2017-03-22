@@ -212,8 +212,9 @@ public class config_sync extends Thread {
 	private Boolean dump_client_data(ini_parser ini_runner){
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-		HashMap<String, HashMap<String, String>> client_data = client_info.get_client_data(); 
-		write_data.putAll(client_data);
+		System.out.println(">>>>>>>>>");
+		write_data.putAll(client_info.get_client_data());
+		System.out.println(write_data.toString());
 		if(!write_data.containsKey("base")){
 			dump_status = false;
 			return dump_status;
@@ -239,6 +240,7 @@ public class config_sync extends Thread {
 		write_data.remove("System");
 		write_data.put("tmp_base", tmp_base_data);
 		write_data.put("tmp_machine", tmp_machine_data);
+		System.out.println(write_data.toString());
 		try {
 			ini_runner.write_ini_data(write_data);
 		} catch (ConfigurationException e) {
@@ -287,11 +289,11 @@ public class config_sync extends Thread {
 				}
 			} else {
 				CONFIG_SYNC_LOGGER.debug("config sync Thread running...");
-				CONFIG_SYNC_LOGGER.debug(config_hash.toString());
+				CONFIG_SYNC_LOGGER.warn(config_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			//task 1 : dump configuration updating
-			Boolean dump_request = switch_info.get_dump_config_request();
+			Boolean dump_request = switch_info.impl_dump_config_request();
 			if (dump_request){
 				dump_client_data(ini_runner);
 			}
