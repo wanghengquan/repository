@@ -37,7 +37,7 @@ public class encode_dialog extends JFrame{
 		//super(main_view, "Encryption", true);
 		super();
 		this.setTitle("Encryption");
-		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
+		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);		
 		Container my_container = this.getContentPane();
 		my_container.setLayout(new GridLayout(2,1,10,10));

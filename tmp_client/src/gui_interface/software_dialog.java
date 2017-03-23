@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -28,32 +29,68 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import data_center.client_data;
+import data_center.public_data;
+import data_center.switch_data;
 
-public class software_dialog extends JDialog implements ActionListener{
+public class software_dialog extends JDialog implements ChangeListener{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
+	private switch_data switch_info;
 	private JTabbedPane tabbed_pane;
 
-	public software_dialog(main_frame main_view, client_data client_info){
+	public software_dialog(main_frame main_view, switch_data switch_info, client_data client_info){
 		super(main_view, "Software Setting", true);
 		this.client_info = client_info;
+		this.switch_info = switch_info;
 		Container container = this.getContentPane();
-		tabbed_pane = new JTabbedPane(JTabbedPane.LEFT, JTabbedPane.SCROLL_TAB_LAYOUT);
-		tabbed_pane.addTab(" ", new value_pane(tabbed_pane, client_info));
-		container.add(new JLabel("test"));
+		container.add(construct_tab_pane(), BorderLayout.CENTER);
 		this.setLocation(800, 500);
-		this.setSize(500, 500);
+		this.setSize(700, 500);
 	}
 
+	private JTabbedPane construct_tab_pane(){
+		tabbed_pane = new JTabbedPane(JTabbedPane.LEFT, JTabbedPane.SCROLL_TAB_LAYOUT);
+		tabbed_pane.addChangeListener(this);
+		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
+		client_hash.putAll(client_info.get_client_data());
+		Iterator<String> client_hash_it = client_hash.keySet().iterator();
+		while(client_hash_it.hasNext()){
+			String section_name = client_hash_it.next();
+			if (section_name.equalsIgnoreCase("base")){
+				continue;
+			}
+			if (section_name.equalsIgnoreCase("system")){
+				continue;
+			}
+			if (section_name.equalsIgnoreCase("machine")){
+				continue;
+			}
+			//Icon icon_image = (Icon) Toolkit.getDefaultToolkit().getImage(public_data.ICON_TAB_ICO);
+			ImageIcon icon_image = new ImageIcon(public_data.ICON_TAB_PNG);
+			tabbed_pane.addTab(section_name, icon_image, new value_pane(section_name, switch_info, client_info), "Click and show");
+		}
+		return tabbed_pane;
+	}
+	
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void stateChanged(ChangeEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		int select_index = tabbed_pane.getSelectedIndex();
+		tabbed_pane.setSelectedIndex(select_index);
+	}
+	
+	public static void main(String[] args) {
+		switch_data switch_info = new switch_data();
+		client_data client_info = new client_data();		
+		software_dialog sw_view = new software_dialog(null, switch_info, client_info);
+		sw_view.setVisible(true);
 	}
 	 
 }
@@ -64,15 +101,18 @@ class value_pane extends JPanel implements ActionListener{
 	 */
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
+	private switch_data switch_info;
 	private String tab_name;
 	private JTable build_table;
+	private JTextField jt_max_insts, jt_scan_dir;
 	private Vector<String> table_column = new Vector<String>();
 	private Vector<Vector<String>> table_data = new Vector<Vector<String>>();	
 	private JButton discard, apply;
 	
-	public value_pane(String tab_name, client_data client_info){
+	public value_pane(String tab_name, switch_data switch_info, client_data client_info){
 		this.tab_name = tab_name;
 		this.client_info = client_info;
+		this.switch_info = switch_info;
 		this.setLayout(new BorderLayout());
 		this.add(construct_top_panel(), BorderLayout.NORTH);
 		this.add(construct_center_panel(), BorderLayout.CENTER);
@@ -82,9 +122,9 @@ class value_pane extends JPanel implements ActionListener{
 	private JPanel construct_top_panel(){
 		JPanel top_panel = new JPanel(new GridLayout(2,2,5,5));
 		JLabel jl_max_insts = new JLabel("Max Instances Num:");
-		JTextField jt_max_insts = new JTextField("");
+		jt_max_insts = new JTextField("");
 		JLabel jl_scan_dir = new JLabel("Auto Scan Directory:");
-		JTextField jt_scan_dir = new JTextField("");
+		jt_scan_dir = new JTextField("");
 		if (client_info.get_client_data().containsKey(tab_name)){
 			jt_max_insts.setText(client_info.get_client_data().get(tab_name).get("max_insts"));
 			jt_scan_dir.setText(client_info.get_client_data().get(tab_name).get("scan_dir"));
@@ -100,7 +140,7 @@ class value_pane extends JPanel implements ActionListener{
 	}
 		
 	private JPanel construct_center_panel(){
-		JPanel center_panel = new JPanel();
+		JPanel center_panel = new JPanel(new BorderLayout());
 		table_column.add("Build");
 		table_column.add("Path");
 		for (int i = 0; i < 10; i++){
@@ -119,13 +159,16 @@ class value_pane extends JPanel implements ActionListener{
 			}
 			String build_name = software_info_it.next();
 			String build_path = software_info.get(build_name);
+			if(build_name.equals("scan_dir") || build_name.equals("max_insts")){
+				continue;
+			}
 			table_data.get(j).set(0, build_name);
 			table_data.get(j).set(1, build_path);
 			j++;
 		}
 		build_table = new JTable(table_data, table_column);
 		JScrollPane scro_panel = new JScrollPane(build_table);
-		center_panel.add(scro_panel);
+		center_panel.add(scro_panel, BorderLayout.CENTER);
 		return center_panel;
 	}
 	
@@ -161,13 +204,19 @@ class value_pane extends JPanel implements ActionListener{
 				}
 				String build_name = software_info_it.next();
 				String build_path = software_info.get(build_name);
+				if(build_name.equals("scan_dir") || build_name.equals("max_insts")){
+					continue;
+				}				
 				table_data.get(j).set(0, build_name);
 				table_data.get(j).set(1, build_path);
 				j++;
 			}
 			build_table.updateUI();
+			jt_max_insts.setText(client_info.get_client_data().get(tab_name).get("max_insts"));
+			jt_scan_dir.setText(client_info.get_client_data().get(tab_name).get("scan_dir"));			
 		}
 		if(arg0.getSource().equals(apply)){
+			HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 			HashMap<String, String> new_data = new HashMap<String, String>();
 			for (int i = 0; i < 10; i++){
 				String build = (String) build_table.getValueAt(i, 0);
@@ -179,15 +228,17 @@ class value_pane extends JPanel implements ActionListener{
 					continue;
 				}
 				if(!path_dobj.exists()){
-					JOptionPane.showMessageDialog(null, path, "File Path Error:", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Row"+ String.valueOf(i) + ":" + path + ".", "File Path Error:", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				new_data.put(build, path);
 			}
-			
-			client_info.set_client_data(update_data);
+			client_hash.putAll(client_info.get_client_data());
+			client_hash.get(tab_name).putAll(new_data);
+			client_hash.get(tab_name).put("scan_dir", jt_scan_dir.getText());
+			client_hash.get(tab_name).put("max_insts", jt_max_insts.getText());
+			client_info.set_client_data(client_hash);
+			switch_info.set_client_updated();
 		}
 	}
 }
-
-

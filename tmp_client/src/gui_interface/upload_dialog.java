@@ -58,7 +58,7 @@ public class upload_dialog extends JFrame{
 		super();
 		this.client_info = client_info;
 		this.setTitle("Suite Upload");
-		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
+		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		Container my_container = this.getContentPane();
 		my_container.setLayout(new GridLayout(2,1,10,10));

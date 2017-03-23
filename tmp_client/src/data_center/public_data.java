@@ -10,6 +10,8 @@
 package data_center;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class public_data {
 	//private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
@@ -35,9 +37,13 @@ public class public_data {
 	//========================
 	// external configure based on software bin path
 	public final static String CONF_DEFAULT_INI = SW_BIN_PATH + "/conf/default.conf";
-	public final static String CONF_FRAME_PNG = SW_BIN_PATH + "/conf/frame.png";
-	public final static String CONF_TRAY_PNG = SW_BIN_PATH + "/conf/ico.png";
 
+	//========================
+	// external configure based on software bin path
+	public final static String ICON_FRAME_PNG = SW_BIN_PATH + "/image/frame.png";
+	public final static String ICON_TRAY_PNG = SW_BIN_PATH + "/image/ico.png";
+	public final static String ICON_TAB_PNG = SW_BIN_PATH + "/image/tab.png";
+	
 	//========================
 	// workspace folder configuration, real path = work_path + following folder name
 	public final static String WORKSPACE_RESULT_DIR = "results";
@@ -126,7 +132,6 @@ public class public_data {
 	
 	
 	public public_data(){
-
 	}
 	
 	private static String get_bin_path(){

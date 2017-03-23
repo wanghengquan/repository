@@ -82,7 +82,7 @@ public class main_frame extends JFrame {
 	private void initial_components() {
 		this.setLocation(400, 100);
 		this.setSize(1200, 1000);
-		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_FRAME_PNG);
+		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
 		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info));
@@ -99,7 +99,7 @@ public class main_frame extends JFrame {
 		}
 		String title = "TestRail Client";
 		String company = "LATTICE";
-		Image tray_image = Toolkit.getDefaultToolkit().getImage(public_data.CONF_TRAY_PNG);
+		Image tray_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_TRAY_PNG);
 		TrayIcon trayicon = new TrayIcon(tray_image, title + "@" + company, pop_menu());
 		trayicon.setImageAutoSize(true);
 		// trayicon.addActionListener(this);

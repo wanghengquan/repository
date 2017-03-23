@@ -227,8 +227,8 @@ public class hall_manager extends Thread {
 		}
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
-		//view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
-		//view_runner.start();
+		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
+		view_runner.start();
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {
