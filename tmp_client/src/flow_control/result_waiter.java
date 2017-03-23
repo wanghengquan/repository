@@ -518,19 +518,17 @@ public class result_waiter extends Thread {
 		// scan calls update return_call_map with call_status, cmd_status,
 		// cmd_output
 		HashMap<String, HashMap<String, Object>> system_call_map = pool_info.get_sys_call();
-		Set<String> system_call_map_set = system_call_map.keySet();
-		Iterator<String> system_call_map_it = system_call_map_set.iterator();
+		Iterator<String> system_call_map_it = system_call_map.keySet().iterator();
 		while (system_call_map_it.hasNext()) {
 			String call_index = system_call_map_it.next();
 			HashMap<String, Object> hash_data = new HashMap<String, Object>();
-			HashMap<String, Object> call_ori_data = system_call_map.get(call_index);
-			hash_data.putAll(call_ori_data);
+			hash_data.putAll(system_call_map.get(call_index));
 			// put call_status
-			Future<?> call_back = (Future<?>) call_ori_data.get("call_back");
+			Future<?> call_back = (Future<?>) hash_data.get("call_back");
 			Boolean call_done = call_back.isDone();
 			long current_time = System.currentTimeMillis() / 1000;
-			long start_time = (long) call_ori_data.get("start_time");
-			int time_out = (int) call_ori_data.get("time_out");
+			long start_time = (long) hash_data.get("start_time");
+			int time_out = (int) hash_data.get("time_out");
 			// run report action
 			if (call_done) {
 				hash_data.put("call_status", "done");

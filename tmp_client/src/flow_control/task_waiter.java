@@ -181,7 +181,7 @@ public class task_waiter extends Thread {
 			queue_data.putAll(parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + queue_name);
 			return import_status;
 		}

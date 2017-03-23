@@ -25,6 +25,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import info_parser.xml_parser;
+import utility_funcs.deep_clone;
 
 public class tube_server extends Thread {
 	// public property
@@ -221,7 +222,8 @@ public class tube_server extends Thread {
 	private Boolean send_client_info(String mode) {
 		Boolean send_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
-		client_hash.putAll(client_info.get_client_data());
+		client_hash = deep_clone.clone(client_info.get_client_data());
+		//client_hash.putAll(client_info.get_client_data());
 		HashMap<String, String> simple_data = new HashMap<String, String>();
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
@@ -265,7 +267,7 @@ public class tube_server extends Thread {
 		complex_data.put("high_priority", high_priority);
 		complex_data.put("max_threads", max_threads);
 		Set<String> client_hash_set = client_hash.keySet();
-		Iterator<String> client_hash_it = client_hash_set.iterator();
+		Iterator<String> client_hash_it = client_hash_set.iterator();		
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
 			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("base")) {
@@ -283,7 +285,7 @@ public class tube_server extends Thread {
 				key_value = "NA";
 			}
 			complex_data.put(key_name, key_value);
-		}
+		}		
 		// generate xml message
 		String send_msg = new String();
 		xml_parser parser = new xml_parser();
@@ -297,6 +299,19 @@ public class tube_server extends Thread {
 		return send_status;
 	}
 
+	private void run_import_suite_file(){
+		String suite_files = switch_info.impl_suite_file();
+		if (suite_files.equals("")){
+			return;
+		}
+		local_tube local_tube_parser = new local_tube(task_info);
+		String[] file_list = suite_files.split(";");
+		for (String file : file_list) {
+			local_tube_parser.generate_local_admin_task_queues(file,
+					client_info.get_client_data().get("Machine").get("terminal"));
+		}	
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -342,16 +357,7 @@ public class tube_server extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: update received tube(local file,  remote will update by rmq_tube)
-			String suite_files = switch_info.get_suite_file();
-			if (suite_files != null && !suite_files.equals("")) {
-				local_tube local_tube_parser = new local_tube(task_info);
-				String[] file_list = suite_files.split(";");
-				for (String file : file_list) {
-					local_tube_parser.generate_local_admin_task_queues(file,
-							client_info.get_client_data().get("Machine").get("terminal"));
-				}
-				switch_info.set_suite_file("");
-			}
+			run_import_suite_file();
 			// task 2: flash tube output: captured and rejected treemap
 			flash_tube_output();
 			// task 3: send client info to Remote server

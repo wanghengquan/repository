@@ -140,7 +140,17 @@ public class switch_data {
 		return value;
 	}	
 	
-
+	public String impl_suite_file() {
+		rw_lock.writeLock().lock();
+		String value = new String();
+		try {
+			value = this.suite_file;
+			suite_file = "";
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return value;
+	}
 	//check following
 	
 	

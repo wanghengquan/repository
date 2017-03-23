@@ -112,7 +112,9 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + String.valueOf(used_thread) + "/" + String.valueOf(max_thread));
 		HALL_MANAGER_LOGGER.warn(">>>==================================");
 		HALL_MANAGER_LOGGER.warn("");
-		HALL_MANAGER_LOGGER.warn("");		
+		HALL_MANAGER_LOGGER.warn(client_info.get_use_soft_insts());
+		HALL_MANAGER_LOGGER.warn(client_info.get_max_soft_insts());
+		HALL_MANAGER_LOGGER.warn(client_info.get_available_software_insts());		
 		HALL_MANAGER_LOGGER.warn(client_info.get_client_data().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
@@ -222,11 +224,11 @@ public class hall_manager extends Thread {
 				System.out.println(">>>tube server power up");
 				break;
 			}
-		}		
+		}
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
-		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
-		view_runner.start();
+		//view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
+		//view_runner.start();
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {

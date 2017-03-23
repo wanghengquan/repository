@@ -121,7 +121,8 @@ public class config_sync extends Thread {
 		Iterator<String> section_it = config_sections.iterator();
 		while (section_it.hasNext()) {
 			String section = section_it.next();
-			HashMap<String, String> section_data = ini_data.get(section);
+			HashMap<String, String> section_data = new HashMap<String, String>();
+			section_data.putAll(ini_data.get(section));
 			HashMap<String, String> update_data = new HashMap<String, String>();
 			if (section.contains("tmp_")) {
 				// for section "tmp_base" , "tmp_machine" and something start with "tmp_"
@@ -212,9 +213,8 @@ public class config_sync extends Thread {
 	private Boolean dump_client_data(ini_parser ini_runner){
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-		System.out.println(">>>>>>>>>");
 		write_data.putAll(client_info.get_client_data());
-		System.out.println(write_data.toString());
+		CONFIG_SYNC_LOGGER.warn("Dumping ini data:" + write_data.toString());
 		if(!write_data.containsKey("base")){
 			dump_status = false;
 			return dump_status;
@@ -268,7 +268,7 @@ public class config_sync extends Thread {
 		ini_parser ini_runner = new ini_parser(public_data.CONF_DEFAULT_INI);
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
-			ini_data = ini_runner.read_ini_data();
+			ini_data.putAll(ini_runner.read_ini_data());
 		} catch (ConfigurationException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
@@ -289,7 +289,7 @@ public class config_sync extends Thread {
 				}
 			} else {
 				CONFIG_SYNC_LOGGER.debug("config sync Thread running...");
-				CONFIG_SYNC_LOGGER.warn(config_hash.toString());
+				CONFIG_SYNC_LOGGER.debug(config_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			//task 1 : dump configuration updating

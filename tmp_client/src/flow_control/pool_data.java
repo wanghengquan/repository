@@ -70,8 +70,9 @@ public class pool_data{
 		int future_threads = this.pool_used_threads + booking_number;
 		if (future_threads > pool_max_threads){
 			booking_result = false;
-		} 
-		this.pool_used_threads = future_threads;
+		} else {
+			this.pool_used_threads = future_threads;
+		}
 		return booking_result;
 	}
 	

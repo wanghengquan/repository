@@ -71,7 +71,7 @@ public class client_data {
 	public void set_max_soft_insts(HashMap<String, Integer> update_data) {
 		rw_lock.writeLock().lock();
 		try {
-			//max_soft_insts.clear();
+			max_soft_insts.clear();
 			max_soft_insts.putAll(update_data);
 		} finally {
 			rw_lock.writeLock().unlock();
@@ -206,7 +206,7 @@ public class client_data {
 	}
 
 	public HashMap<String, Integer> get_available_software_insts() {
-		rw_lock.readLock().lock();
+		rw_lock.writeLock().lock();
 		HashMap<String, Integer> available_software_insts = new HashMap<String, Integer>();
 		try {
 			Set<String> soft_keys_set = max_soft_insts.keySet();
@@ -223,7 +223,7 @@ public class client_data {
 				available_software_insts.put(sw_name, sw_free_insts);
 			}
 		} finally {
-			rw_lock.readLock().unlock();
+			rw_lock.writeLock().unlock();
 		}
 		return available_software_insts;
 	}

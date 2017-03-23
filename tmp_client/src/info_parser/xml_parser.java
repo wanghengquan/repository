@@ -293,6 +293,17 @@ public class xml_parser {
 	public static void main(String[] args) {
 		xml_parser xml_parser2 = new xml_parser();
 		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			System.out.println(xml_parser2.get_xml_file_task_queue_data("D:/tmp_work_space/logs/finished/task/501@run_826_032217_191000.xml").toString());
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void main2(String[] args) {
+		xml_parser xml_parser2 = new xml_parser();
+		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> result_data1 = new HashMap<String, String>();
 		result_data1.put("testId", "T123456");
 		result_data1.put("runId", "111111");

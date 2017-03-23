@@ -80,8 +80,10 @@ public class data_server extends Thread {
 
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
-		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
+		HashMap<String, HashMap<String, String>> machine_hash = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> config_hash = new HashMap<String, HashMap<String, String>>();
+		machine_hash.putAll(machine_sync.machine_hash);
+		config_hash.putAll(config_sync.config_hash);		
 		// 1. merge Software data
 		Iterator<String> config_it = config_hash.keySet().iterator();
 		while (config_it.hasNext()) {
@@ -120,10 +122,11 @@ public class data_server extends Thread {
 	private void dynamic_merge_client_data() {
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		client_data.putAll(client_info.get_client_data());
-		ConcurrentHashMap<String, HashMap<String, String>> machine_hash = machine_sync.machine_hash;
-		ConcurrentHashMap<String, HashMap<String, String>> config_hash = config_sync.config_hash;
-		// 1. merge Software data except "scan_dir" and "max_insts" incase user
-		// modified in GUI
+		HashMap<String, HashMap<String, String>> machine_hash = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> config_hash = new HashMap<String, HashMap<String, String>>();
+		machine_hash.putAll(machine_sync.machine_hash);
+		config_hash.putAll(config_sync.config_hash);
+		// 1. merge Software data modified in GUI
 		Iterator<String> config_it = config_hash.keySet().iterator();
 		while (config_it.hasNext()) {
 			String option = config_it.next();
@@ -132,12 +135,14 @@ public class data_server extends Thread {
 			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
 				continue;
 			}
+			/*
 			if (option_data.containsKey("scan_dir")) {
 				option_data.remove("scan_dir");
 			}
 			if (option_data.containsKey("max_insts")) {
 				option_data.remove("max_insts");
 			}
+			*/
 			client_data.get(option).putAll(option_data);
 		}
 		// 2. merge System data
@@ -148,7 +153,8 @@ public class data_server extends Thread {
 
 	private void update_max_sw_insts_limitation() {
 		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
-		HashMap<String, HashMap<String, String>> client_hash = client_info.get_client_data();
+		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>> ();
+		client_hash.putAll(client_info.get_client_data());
 		Set<String> key_set = client_hash.keySet();
 		Iterator<String> key_it = key_set.iterator();
 		while (key_it.hasNext()) {
@@ -217,10 +223,11 @@ public class data_server extends Thread {
 			// task 2: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
 			// HashMap<String, Integer> soft_ware =
-			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
-			DATA_SERVER_LOGGER.debug(client_info.get_use_soft_insts());
+			DATA_SERVER_LOGGER.warn(client_info.get_max_soft_insts());
+			DATA_SERVER_LOGGER.warn(client_info.get_use_soft_insts());
+			DATA_SERVER_LOGGER.warn(client_info.get_client_data());
 			try {
-				Thread.sleep(base_interval * 3 * 1000);
+				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

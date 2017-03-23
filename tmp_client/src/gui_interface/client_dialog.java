@@ -94,7 +94,8 @@ public class client_dialog extends JDialog implements ActionListener{
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(apply)){
-			HashMap<String, HashMap<String, String>> update_data = client_info.get_client_data();
+			HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>(); 
+			update_data.putAll(client_info.get_client_data());
 			if (!update_data.containsKey("Machine")){
 				return;
 			}

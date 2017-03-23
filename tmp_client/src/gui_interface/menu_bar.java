@@ -285,7 +285,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			new client_dialog(main_view, switch_info, client_info).setVisible(true);
 		}
 		if (e.getSource().equals(software)) {
-			new software_dialog(main_view).setVisible(true);
+			new software_dialog(main_view, client_info).setVisible(true);
 		}
 		if (e.getSource().equals(performance)) {
 			new performance(main_view).setVisible(true);
