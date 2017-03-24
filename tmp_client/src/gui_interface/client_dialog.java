@@ -11,6 +11,7 @@ package gui_interface;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -98,13 +99,13 @@ public class client_dialog extends JDialog implements ActionListener{
 	}
 	
 	public JPanel construct_action_panel(){
-		JPanel action = new JPanel();
+		JPanel action = new JPanel(new GridLayout(1,2,5,10));
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
 		apply.addActionListener(this);
-		action.add(discard, BorderLayout.WEST);
-		action.add(apply, BorderLayout.EAST);
+		action.add(discard);
+		action.add(apply);
 		return action;
 	}
 

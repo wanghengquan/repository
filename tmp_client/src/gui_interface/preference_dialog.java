@@ -10,6 +10,7 @@
 package gui_interface;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -51,7 +52,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		Container container = this.getContentPane();
 		container.add(construct_preference_panel());
 		this.setLocation(800, 500);
-		this.setSize(500, 200);
+		this.setSize(500, 250);
 	}
 	
 	private JPanel construct_preference_panel(){
@@ -59,6 +60,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//step 0 : Title line
 		JPanel jp_title = new JPanel(new GridLayout(1,1,10,10));
 		jp_title.add(new JLabel("Preference items:"));
+		jp_title.setBackground(Color.LIGHT_GRAY);
 		//step 1 : center line
 		JPanel jp_center = new JPanel(new GridLayout(4,4,5,5));
 		//first line
@@ -102,6 +104,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jp_center.add(new JLabel());		
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,2,5,10));
+		
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");

@@ -14,7 +14,7 @@ import java.awt.Container;
 import java.awt.Image;
 import java.awt.Toolkit;
 
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -31,7 +31,7 @@ interface status_value {
 	static final int hall_server_ok	= 99;	
 }
 
-public class start_progress extends JFrame implements Runnable, status_value{
+public class start_progress extends JDialog implements Runnable, status_value{
 	/**
 	 * 
 	 */

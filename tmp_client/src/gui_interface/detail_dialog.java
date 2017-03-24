@@ -130,9 +130,9 @@ public class detail_dialog extends JFrame {
 		if (private_status.equals("")){
 			jl_info.setText("*: Unknown Client Private/Public status.");
 		} else if (private_status.equals("0")){
-			jl_info.setText("*: Client work in Public: All matched and assigned take will be run.");
+			jl_info.setText("*: Client work in Public: All 'Matched' and 'Assigned' task will be run.");
 		} else{
-			jl_info.setText("*: Client work in Private: Olny assigned take will be run.");
+			jl_info.setText("*: Client work in Private: Olny 'Assigned' task will be run.");
 		}
 		jp_info.add(jl_info, BorderLayout.WEST);
 		return jp_info;

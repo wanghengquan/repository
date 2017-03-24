@@ -54,18 +54,19 @@ public class status_bar extends JPanel implements Runnable{
 	}
 	
 	private JPanel construct_system_panel(){
-		JPanel jp_system = new JPanel(new GridLayout(1,5,5,5));
+		JPanel jp_system = new JPanel(new GridLayout(1,5,10,5));
 		JLabel jl_system = new JLabel("System Info:");
 		jp_system.add(jl_system);
 		//cpu info
 		JLabel jl_cpu = new JLabel("CPU:");
 		jl_cpu.setHorizontalAlignment(SwingConstants.RIGHT);
 		jt_cpu = new JTextField();
-		jt_cpu.setEnabled(false);
-		JLabel jl_mem = new JLabel("MEM");
+		jt_cpu.setEditable(false);
+		JLabel jl_mem = new JLabel("MEM:");
 		jl_mem.setHorizontalAlignment(SwingConstants.RIGHT);
 		jt_mem = new JTextField();
-		jt_mem.setEnabled(false);
+		jt_mem.setEditable(false);
+		
 		jp_system.add(jl_cpu);
 		jp_system.add(jt_cpu);
 		jp_system.add(jl_mem);
