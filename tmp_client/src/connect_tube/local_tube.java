@@ -818,9 +818,9 @@ public class local_tube {
 				//get admin queue data
 				HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 				admin_queue_data.putAll(design_data);
-				HashMap<String, String> status_data = new HashMap<String, String>();
-				status_data.put("admin_status", "processing");
-				admin_queue_data.put("Status", status_data);
+				HashMap<String, String> admin_status_data = new HashMap<String, String>();
+				admin_status_data.put("admin_status", "processing");
+				admin_queue_data.put("Status", admin_status_data);
 				task_info.add_queue_data_to_received_admin_queues_treemap(admin_queue_name, admin_queue_data);
 			}
 			// insert design into received task queue : admin_queue_name
@@ -829,6 +829,9 @@ public class local_tube {
 			if (received_task_queues_map.containsKey(admin_queue_name)) {
 				task_queue_data.putAll(received_task_queues_map.get(admin_queue_name));
 			}
+			HashMap<String, String> case_status_data = new HashMap<String, String>();
+			case_status_data.put("cmd_status", "waiting");
+			design_data.put("Status", case_status_data);
 			task_queue_data.put(case_name, design_data);
 			task_info.update_received_task_queues_map(admin_queue_name, task_queue_data);
 		}

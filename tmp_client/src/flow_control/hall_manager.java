@@ -209,7 +209,9 @@ public class hall_manager extends Thread {
 		client_data client_info = new client_data();
 		view_data view_info = new view_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_THREAD);
-		data_server data_runner = new data_server(switch_info, client_info, pool_info);
+		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
+		view_runner.start();
+		data_server data_runner = new data_server(switch_info, client_info, pool_info);		
 		data_runner.start();
 		while(true){
 			if (switch_info.get_data_server_power_up()){
@@ -227,8 +229,6 @@ public class hall_manager extends Thread {
 		}
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
-		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info);
-		view_runner.start();
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {

@@ -437,6 +437,8 @@ public class task_data {
 			while(received_task_data_it.hasNext()){
 				String case_id = received_task_data_it.next();
 				HashMap<String, HashMap<String, String>> case_data = received_task_data.get(case_id);
+				System.out.println(">>>>>>>>>>>>>>>>>");
+				System.out.println(case_data.toString());
 				HashMap<String, String> status_data = case_data.get("Status");
 				if(status_data.containsKey("cmd_status")){
 					if(status_data.get("cmd_status").equalsIgnoreCase("waiting")){

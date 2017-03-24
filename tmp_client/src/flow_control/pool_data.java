@@ -42,7 +42,9 @@ public class pool_data{
 	}
 	
 	public synchronized int get_pool_used_threads(){
-		return pool_used_threads;
+		int temp = 0;
+		temp = pool_used_threads;
+		return temp;
 	}
 
 	public synchronized void set_pool_used_threads(int new_int){

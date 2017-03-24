@@ -26,6 +26,7 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.pool_data;
 import info_parser.xml_parser;
 
 public class view_server extends Thread{
@@ -40,17 +41,24 @@ public class view_server extends Thread{
 	private task_data task_info;
 	private switch_data switch_info;
 	private client_data client_info;
+	private pool_data pool_info;
 	// private String line_seprator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL ;
 	// public function
 	// protected function
 	// private function
 
-	public view_server(switch_data switch_info, client_data client_info, task_data task_info, view_data view_info) {
+	public view_server(
+			switch_data switch_info, 
+			client_data client_info, 
+			task_data task_info, 
+			view_data view_info,
+			pool_data pool_info) {
 		this.switch_info = switch_info;
 		this.task_info = task_info;
 		this.view_info = view_info;
 		this.client_info = client_info;
+		this.pool_info = pool_info;
 	}
 
 	private List<String> get_retest_case_list(String retest_queue){
@@ -189,8 +197,25 @@ public class view_server extends Thread{
 	
 	private void monitor_run() {
 		// ============== All static job start from here ==============
-		// initial 1 : start GUI
-		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info);
+		// initial 1 : start progress
+		start_progress start_prepare = new start_progress(switch_info);
+		new Thread(start_prepare).start();
+		start_prepare.setVisible(true);
+		while(true){
+			if(switch_info.get_back_ground_power_up()){
+				break;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		start_prepare.setVisible(false);
+		start_prepare.dispose();
+		// initial 2 : start GUI
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
 			top_view.setVisible(true);

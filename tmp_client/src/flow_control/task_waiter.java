@@ -200,7 +200,7 @@ public class task_waiter extends Thread {
 		if (queue_list_size == 0) {
 			return queue_name;
 		}
-		String queue_work_mode = switch_info.get_queue_work_mode();
+		String queue_work_mode = switch_info.get_task_work_mode();
 		if (queue_work_mode.equalsIgnoreCase("serial")) {
 			queue_name = get_highest_queue_name(runable_queue_list);
 		} else if (queue_work_mode.equalsIgnoreCase("parallel")) {

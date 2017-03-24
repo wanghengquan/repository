@@ -127,8 +127,8 @@ public class public_data {
 	//========================
 	//========================
 	// work model
-	public final static String DEF_QUEUE_WORK_MODE = "auto"; //"serial", "parallel", "auto"
-	public final static String DEF_CLIENT_WORK_MODE = "auto"; //"manual", "auto"
+	public final static String DEF_TASK_WORK_MODE = "auto"; //"serial", "parallel", "auto"
+	public final static String DEF_MAX_THREAD_MODE = "auto"; //"manual", "auto"
 	
 	
 	public public_data(){

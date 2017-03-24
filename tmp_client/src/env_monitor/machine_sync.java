@@ -105,11 +105,11 @@ public class machine_sync extends Thread {
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				cpu_usage = excute_retruns.get(1);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				INFO_LOGGER.warn("Cannot resolve Operation System name");
-				cpu_usage = "00";
+				cpu_usage = "99";
 			}
 			return cpu_usage;
 		} else {
@@ -126,11 +126,11 @@ public class machine_sync extends Thread {
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				mem_usage = excute_retruns.get(1);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				INFO_LOGGER.warn("Cannot resolve Operation System name");
-				mem_usage = "00";
+				mem_usage = "99";
 			}
 			return mem_usage;
 		} else {

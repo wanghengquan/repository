@@ -46,7 +46,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem play, pause, stop;
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout;
 	JMenuItem upload, key_gen;
-	JMenuItem client, software, performance;
+	JMenuItem client, software, preference;
 	JMenuItem usage, contact, about;
 	private String line_seprator = System.getProperty("line.separator");
 
@@ -166,11 +166,11 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		client.addActionListener(this);
 		software = new JMenuItem("Software...");
 		software.addActionListener(this);
-		performance = new JMenuItem("Performance...");
-		performance.addActionListener(this);
+		preference = new JMenuItem("Preference...");
+		preference.addActionListener(this);
 		setting.add(client);
 		setting.add(software);
-		setting.add(performance);
+		setting.add(preference);
 		return setting;
 	}
 
@@ -287,8 +287,10 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		if (e.getSource().equals(software)) {
 			new software_dialog(main_view, switch_info, client_info).setVisible(true);
 		}
-		if (e.getSource().equals(performance)) {
-			new performance(main_view).setVisible(true);
+		if (e.getSource().equals(preference)) {
+			preference_dialog pref_view = new preference_dialog(main_view, switch_info, client_info);
+			new Thread(pref_view).start();
+			pref_view.setVisible(true);
 		}
 		if (e.getSource().equals(usage)) {
 			MENU_BAR_LOGGER.warn("usage clicked");

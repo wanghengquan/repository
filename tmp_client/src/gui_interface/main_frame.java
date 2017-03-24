@@ -35,6 +35,7 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.pool_data;
 
 public class main_frame extends JFrame {
 	/**
@@ -49,15 +50,22 @@ public class main_frame extends JFrame {
 	private client_data client_info;
 	private view_data view_info;
 	private task_data task_info;
+	private pool_data pool_info;
 	
 	// public function
 	// protected function
 	// private function
-	public main_frame(switch_data switch_info, client_data client_info, view_data view_info, task_data task_info) {
+	public main_frame(
+			switch_data switch_info, 
+			client_data client_info, 
+			view_data view_info, 
+			task_data task_info, 
+			pool_data pool_info) {
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.view_info = view_info;
 		this.task_info = task_info;
+		this.pool_info = pool_info;
 	}
 
 	public void gui_constructor(){
@@ -88,9 +96,13 @@ public class main_frame extends JFrame {
 		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info));
 		work_panel task_insts = new work_panel(view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
+		status_bar status_insts = new status_bar(switch_info, client_info, pool_info);
+		new Thread(status_insts).start();
+		this.getContentPane().add(status_insts, BorderLayout.SOUTH);
 		this.getContentPane().setBackground(Color.white);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		new Thread(task_insts).start();
+		
 	}
 
 	private void launch_system_tray() {
@@ -143,7 +155,8 @@ public class main_frame extends JFrame {
 		view_data view_info = new view_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
-		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info);
+		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_THREAD);
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
 		view_info.set_view_debug(true);
 		MAIN_FRAME_LOGGER.warn("GUI start");
 		if (SwingUtilities.isEventDispatchThread()) {

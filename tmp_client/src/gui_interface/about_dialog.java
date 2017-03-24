@@ -14,7 +14,6 @@ import java.awt.Container;
 import java.util.Vector;
 
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 
@@ -45,7 +44,8 @@ public class about_dialog extends JDialog{
 		support_suite.add("Support Suit File:");
 		support_suite.add(public_data.BASE_SUITEFILEVERSION);
 		about_data.add(support_suite);
-		JTable about_table = new JTable(about_data, about_column);
+		JTable about_table = new info_table(about_data, about_column);
+		about_table.setRowHeight(24);
 		container.add(about_table, BorderLayout.CENTER);
 		JTableHeader table_head = about_table.getTableHeader();
 		container.add(table_head, BorderLayout.NORTH);

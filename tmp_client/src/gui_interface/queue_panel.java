@@ -10,7 +10,6 @@
 package gui_interface;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 //import java.util.Vector;
 import java.awt.event.ActionEvent;
@@ -19,7 +18,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -40,6 +38,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
+import data_center.client_data;
 import utility_funcs.time_info;
 
 public class queue_panel extends JSplitPane implements Runnable{
@@ -49,6 +48,7 @@ public class queue_panel extends JSplitPane implements Runnable{
 	private static final long serialVersionUID = 2L;
 	private static final Logger QUEUE_PANEL_LOGGER = LogManager.getLogger(queue_panel.class.getName());
 	private view_data view_info;
+	private client_data client_info;
 	private task_data task_info;
 	private panel_table reject_table;
 	private panel_table capture_table;
@@ -57,10 +57,11 @@ public class queue_panel extends JSplitPane implements Runnable{
 	private Vector<Vector<String>> reject_data = new Vector<Vector<String>>(); //show on table
 	private Vector<Vector<String>> capture_data = new Vector<Vector<String>>(); //show on table	
 
-	public queue_panel(view_data view_info, task_data task_info) {
+	public queue_panel(view_data view_info, client_data client_info, task_data task_info) {
 		super(JSplitPane.VERTICAL_SPLIT);
 		this.view_info = view_info;
 		this.task_info = task_info;
+		this.client_info = client_info;
 		reject_column.add("Rejected Queue");
 		reject_column.add("Reason");
 		capture_column.add("Captured Queue");
@@ -78,7 +79,7 @@ public class queue_panel extends JSplitPane implements Runnable{
 	private Component panel_top_component() {
 		JPanel reject_panel = new JPanel(new BorderLayout());
 		reject_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		reject_pop_memu reject_menu = new reject_pop_memu(reject_table);
+		reject_pop_memu reject_menu = new reject_pop_memu(reject_table, client_info, task_info);
 		reject_table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e1) {
 				if (reject_table.getSelectedRows().length > 0) {
@@ -258,10 +259,14 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JTable table;
+	private client_data client_info;
+	private task_data task_info;
 	private JMenuItem details;
 
-	public reject_pop_memu(JTable table) {
+	public reject_pop_memu(JTable table, client_data client_info, task_data task_info) {
 		this.table = table;
+		this.client_info = client_info;
+		this.task_info = task_info;
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
 		this.add(details);
@@ -276,6 +281,8 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(details)) {
 			System.out.println("reject details clicked");
+			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
+			new detail_dialog(select_queue, client_info, task_info).setVisible(true);
 		}
 	}
 }

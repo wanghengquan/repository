@@ -10,7 +10,6 @@
 package gui_interface;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -19,8 +18,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,12 +72,14 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_column.add("Status");
 		work_column.add("Reason");
 		work_column.add("Time");
-		work_table = new panel_table(work_data, work_column);		
+		work_table = new panel_table(work_data, work_column);
+		work_table.getColumn("ID").setMaxWidth(100);
+		work_table.getColumn("Design").setMinWidth(400);
 		this.setDividerLocation(300);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
-		queue_panel admin_insts = new queue_panel(view_info, task_info);
+		queue_panel admin_insts = new queue_panel(view_info, client_info, task_info);
 		this.setLeftComponent(admin_insts);
 		this.setRightComponent(panel_right_component());
 		new Thread(admin_insts).start();
@@ -131,7 +130,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			}
 		}		
 		if(watching_queue_area.equalsIgnoreCase("timeout")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("tbd")){
+			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("timeout")){
 				return add_line;//empty line which will be ignore
 			}
 		}
