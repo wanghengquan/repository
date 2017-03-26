@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.pool_data;
 
 public class menu_bar extends JMenuBar implements ActionListener {
 	/**
@@ -39,6 +40,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	private main_frame main_view;
 	private switch_data switch_info;
 	private client_data client_info;
+	private pool_data pool_info;
 	private view_data view_info;
 	String work_path = new String();
 	JMenuItem imports, exports, exit;
@@ -50,11 +52,12 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem usage, contact, about;
 	private String line_seprator = System.getProperty("line.separator");
 
-	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info) {
+	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info, pool_data pool_info) {
 		this.main_view = main_view;
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.view_info = view_info;
+		this.pool_info = pool_info;
 		this.add(construct_file_menu());
 		this.add(construct_view_menu());
 		this.add(construct_run_menu());
@@ -288,7 +291,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			new software_dialog(main_view, switch_info, client_info).setVisible(true);
 		}
 		if (e.getSource().equals(preference)) {
-			preference_dialog pref_view = new preference_dialog(main_view, switch_info, client_info);
+			preference_dialog pref_view = new preference_dialog(main_view, switch_info, pool_info, client_info);
 			new Thread(pref_view).start();
 			pref_view.setVisible(true);
 		}

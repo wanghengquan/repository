@@ -37,7 +37,6 @@ public class switch_data {
 	// client work mode
 	private String task_work_mode = public_data.DEF_TASK_WORK_MODE;
 	private String thread_work_mode = public_data.DEF_MAX_THREAD_MODE;
-	private Integer current_max_thread = Integer.parseInt(public_data.DEF_MAX_THREADS);
 	// public function
 	public switch_data() {
 
@@ -273,6 +272,7 @@ public class switch_data {
 		return value;
 	}
 	
+	/*
 	public void set_current_max_thread(Integer new_data) {
 		rw_lock.writeLock().lock();
 		try {
@@ -292,6 +292,7 @@ public class switch_data {
 		}
 		return value;
 	}
+	*/
 	// protected function
 	// private function
 	

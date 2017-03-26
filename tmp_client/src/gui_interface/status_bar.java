@@ -20,7 +20,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import data_center.client_data;
-import data_center.switch_data;
 import flow_control.pool_data;
 
 public class status_bar extends JPanel implements Runnable{
@@ -29,13 +28,11 @@ public class status_bar extends JPanel implements Runnable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
-	private switch_data switch_info;
 	private pool_data pool_info;
 	JTextField jt_thread, jt_cpu, jt_mem;
 
-	public status_bar(switch_data switch_info, client_data client_info, pool_data pool_info){
+	public status_bar(client_data client_info, pool_data pool_info){
 		this.pool_info = pool_info;
-		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.setLayout(new BorderLayout());
 		//container.add(new JTextField("Edit table and apply save:"), BorderLayout.NORTH);
@@ -75,7 +72,7 @@ public class status_bar extends JPanel implements Runnable{
 	}
 	
 	private void update_thread_data(){
-		int max_thread = switch_info.get_current_max_thread();
+		int max_thread = pool_info.get_pool_current_size();
 		int use_thread = pool_info.get_pool_used_threads();
 		String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
 		jt_thread.setText(show_info);

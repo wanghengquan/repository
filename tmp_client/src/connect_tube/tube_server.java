@@ -241,7 +241,7 @@ public class tube_server extends Thread {
 			status = "Free";
 		}
 		int used_thread = pool_info.get_pool_used_threads();
-		int max_thread = pool_info.get_pool_max_threads();
+		int max_thread = pool_info.get_pool_current_size();
 		String processNum = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
 		simple_data.put("admin_request", admin_request);

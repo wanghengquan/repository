@@ -57,8 +57,8 @@ public class hall_manager extends Thread {
 
 	private HashMap<String, task_waiter> get_waiter_ready(pool_data pool_info) {
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
-		int max_sw_thread = public_data.PERF_POOL_MAXIMUM_THREAD;
-		for (int i = 0; i < max_sw_thread; i++) {
+		int max_pool_size = public_data.PERF_POOL_MAXIMUM_SIZE;
+		for (int i = 0; i < max_pool_size; i++) {
 			task_waiter waiter = new task_waiter(i,switch_info, client_info, pool_info, task_info);
 			String waiter_index = "waiter_" + String.valueOf(i);
 			waiters.put(waiter_index, waiter);
@@ -107,9 +107,9 @@ public class hall_manager extends Thread {
 		// report finished queue list
 		HALL_MANAGER_LOGGER.warn(">>>Finished queue:" + task_info.get_finished_admin_queue_list().toString());
 		// report thread using
-		int max_thread = pool_info.get_pool_max_threads();
-		int used_thread = pool_info.get_pool_used_threads();
-		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + String.valueOf(used_thread) + "/" + String.valueOf(max_thread));
+		String max_thread = String.valueOf(pool_info.get_pool_current_size());
+		String used_thread = String.valueOf(pool_info.get_pool_used_threads());
+		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + used_thread + "/" + max_thread);
 		HALL_MANAGER_LOGGER.warn(">>>==================================");
 		HALL_MANAGER_LOGGER.warn("");
 		HALL_MANAGER_LOGGER.warn(client_info.get_use_soft_insts());
@@ -161,7 +161,7 @@ public class hall_manager extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
-			start_right_task_waiter(waiters_task, pool_info.get_pool_max_threads());
+			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
 			// task 4 : automatic run
 			// task 5 : make general report
 			generate_console_report(pool_info);
@@ -208,7 +208,7 @@ public class hall_manager extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		view_data view_info = new view_data();
-		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_THREAD);
+		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
 		data_server data_runner = new data_server(switch_info, client_info, pool_info);		

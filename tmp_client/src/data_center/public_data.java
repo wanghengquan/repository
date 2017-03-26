@@ -102,7 +102,7 @@ public class public_data {
 	//========================
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
-	public final static int PERF_POOL_MAXIMUM_THREAD = 15;
+	public final static int PERF_POOL_MAXIMUM_SIZE = 15;
 	
 	//========================
 	//>>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
@@ -114,7 +114,8 @@ public class public_data {
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	// Machine
 	public final static String DEF_MACHINE_PRIVATE = "1"; //1 private, 0 public
-	public final static String DEF_MAX_THREADS = "5"; 
+	//public final static String DEF_POOL_MAX_THREADS = "5"; 
+	public final static String DEF_POOL_CURRENT_SIZE = "5";
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	// Base
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");

@@ -31,6 +31,7 @@ import javax.swing.SwingUtilities;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.pool_data;
 
 public class preference_dialog extends JDialog implements ActionListener, Runnable{
 	/**
@@ -39,15 +40,17 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	private static final long serialVersionUID = 1L;
 	private switch_data switch_info;
 	private client_data client_info;
+	private pool_data pool_info;
 	private JPanel preference_panel;
 	private JLabel jl_max_threads, jl_task_assign;
 	private JRadioButton thread_auto, thread_manual, task_auto, task_serial, task_parallel;
 	private JTextField thread_text;
 	private JButton discard, apply;
 
-	public preference_dialog(main_frame main_view, switch_data switch_info, client_data client_info){
+	public preference_dialog(main_frame main_view, switch_data switch_info, pool_data pool_info, client_data client_info){
 		super(main_view, "Preference Setting", true);
 		this.client_info = client_info;
+		this.pool_info = pool_info;
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		container.add(construct_preference_panel());
@@ -173,12 +176,12 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			} else {
 				switch_info.set_thread_work_mode("manual");
 				int new_value = get_srting_int(thread_text.getText());
-				if (new_value < 0 || new_value > public_data.PERF_POOL_MAXIMUM_THREAD){
-					String message = new String("Client accept data: 0 ~ " + String.valueOf(public_data.PERF_POOL_MAXIMUM_THREAD));
+				if (new_value < 0 || new_value > public_data.PERF_POOL_MAXIMUM_SIZE){
+					String message = new String("Client accept data: 0 ~ " + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
-				switch_info.set_current_max_thread(new_value);
+				pool_info.set_pool_current_size(new_value);
 			}
 			if(task_auto.isSelected()){
 				switch_info.set_task_work_mode("auto");
@@ -197,7 +200,8 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			if (SwingUtilities.isEventDispatchThread()) {
 				if(thread_manual.isSelected() && !thread_text.isEnabled()){
 					thread_text.setEnabled(true);
-					thread_text.setText(switch_info.get_current_max_thread().toString());
+					//thread_text.setText(switch_info.get_current_max_thread().toString());
+					thread_text.setText(String.valueOf(pool_info.get_pool_current_size()));
 				}
 				if(thread_auto.isSelected() && thread_text.isEnabled()){
 					thread_text.setEnabled(false);
@@ -209,7 +213,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 						// TODO Auto-generated method stub
 						if(thread_manual.isSelected() && !thread_text.isEnabled()){
 							thread_text.setEnabled(true);
-							thread_text.setText(switch_info.get_current_max_thread().toString());
+							thread_text.setText(String.valueOf(pool_info.get_pool_current_size()));
 						}
 						if(thread_auto.isSelected() && thread_text.isEnabled()){
 							thread_text.setEnabled(false);
@@ -228,8 +232,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();
-		client_data client_info = new client_data();		
-		preference_dialog preference_view = new preference_dialog(null, switch_info, client_info);
+		client_data client_info = new client_data();
+		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
+		preference_dialog preference_view = new preference_dialog(null, switch_info, pool_info, client_info);
 		new Thread(preference_view).start();
 		preference_view.setVisible(true);
 	}

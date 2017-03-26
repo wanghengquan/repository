@@ -12,7 +12,6 @@ package data_center;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,7 +99,7 @@ public class data_server extends Thread {
 		// in
 		// public_data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
-		machine_data.put("max_threads", public_data.DEF_MAX_THREADS);
+		machine_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
@@ -198,9 +197,9 @@ public class data_server extends Thread {
 		HashMap<String, String> cmd_hash = cmd_parser.cmd_hash;
 		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_hash);
-		// initial 4 : update default max thread into Pool Data
+		// initial 4 : update default current size into Pool Data
 		String max_threads = client_info.get_client_data().get("Machine").get("max_threads");
-		pool_info.set_pool_max_threads(Integer.parseInt(max_threads));
+		pool_info.set_pool_current_size(Integer.parseInt(max_threads));
 		// initial 5 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start

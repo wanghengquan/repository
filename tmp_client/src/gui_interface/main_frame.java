@@ -93,10 +93,10 @@ public class main_frame extends JFrame {
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
-		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info));
+		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info, pool_info));
 		work_panel task_insts = new work_panel(view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
-		status_bar status_insts = new status_bar(switch_info, client_info, pool_info);
+		status_bar status_insts = new status_bar(client_info, pool_info);
 		new Thread(status_insts).start();
 		this.getContentPane().add(status_insts, BorderLayout.SOUTH);
 		this.getContentPane().setBackground(Color.white);
@@ -155,7 +155,7 @@ public class main_frame extends JFrame {
 		view_data view_info = new view_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
-		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_THREAD);
+		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
 		view_info.set_view_debug(true);
 		MAIN_FRAME_LOGGER.warn("GUI start");

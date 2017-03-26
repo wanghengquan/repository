@@ -35,7 +35,8 @@ public class pool_data{
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<String, Object>> call_map = new HashMap<String, HashMap<String, Object>>();
 	private int pool_used_threads = 0;
-	private int pool_max_threads = Integer.parseInt(public_data.DEF_MAX_THREADS);
+	//private int pool_max_threads = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
+	private int pool_current_size = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
 	
 	public pool_data(int pool_size){
 		this.run_pool = Executors.newFixedThreadPool(pool_size);
@@ -51,17 +52,17 @@ public class pool_data{
 		this.pool_used_threads = new_int;
 	}
 	
-	public synchronized int get_pool_max_threads(){
-		return this.pool_max_threads;
+	public synchronized int get_pool_current_size(){
+		return this.pool_current_size;
 	}
 
-	public synchronized void set_pool_max_threads(int new_int){
-		this.pool_max_threads = new_int;
+	public synchronized void set_pool_current_size(int new_int){
+		this.pool_current_size = new_int;
 	}	
 	
 	public synchronized int get_available_thread(){
-		if(pool_max_threads > pool_used_threads){
-			return pool_max_threads - pool_used_threads;
+		if(pool_current_size > pool_used_threads){
+			return pool_current_size - pool_used_threads;
 		} else {
 			return 0;
 		}
@@ -70,7 +71,7 @@ public class pool_data{
 	public synchronized Boolean booking_used_thread(int booking_number){
 		Boolean booking_result = new Boolean(true);
 		int future_threads = this.pool_used_threads + booking_number;
-		if (future_threads > pool_max_threads){
+		if (future_threads > pool_current_size){
 			booking_result = false;
 		} else {
 			this.pool_used_threads = future_threads;
