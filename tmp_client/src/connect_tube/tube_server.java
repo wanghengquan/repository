@@ -266,11 +266,10 @@ public class tube_server extends Thread {
 		complex_data.put("os_type", os_type);
 		complex_data.put("high_priority", high_priority);
 		complex_data.put("max_threads", max_threads);
-		Set<String> client_hash_set = client_hash.keySet();
-		Iterator<String> client_hash_it = client_hash_set.iterator();		
+		Iterator<String> client_hash_it = client_hash.keySet().iterator();		
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
-			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("base")) {
+			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("preference")) {
 				continue;
 			}
 			Set<String> value_set = client_hash.get(key_name).keySet();
@@ -294,7 +293,6 @@ public class tube_server extends Thread {
 		} else {
 			send_msg = parser.create_client_document_string(complex_data);
 		}
-		//send_msg = send_msg.replaceAll("\"", "\\\"");
 		send_status = rmq_runner.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
 		return send_status;
 	}

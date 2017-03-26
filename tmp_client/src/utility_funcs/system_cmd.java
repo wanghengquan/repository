@@ -34,7 +34,7 @@ public class system_cmd {
 
 	}
 
-	// run1 command single string
+	// run0 command single string
 	public static ArrayList<String> run(String cmd) throws IOException {
 		/*
 		 * a command line will be execute.
@@ -67,6 +67,44 @@ public class system_cmd {
 		process.destroy();
 		return string_list;
 	}
+	
+	// run1 command single string
+	public static ArrayList<String> run(String cmd, String work_path) throws IOException {
+		/*
+		 * a command line will be execute.
+		 */
+		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
+		String[] cmd_list = cmd.split("\\s+");
+		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
+		proce_build.redirectErrorStream(true);
+		File run_dir = new File(work_path);
+		if (run_dir.exists()) {
+			proce_build.directory(run_dir);
+		}		
+		Process process = proce_build.start();
+		ArrayList<String> string_list = new ArrayList<String>();
+		InputStream fis = process.getInputStream();
+		BufferedReader bri = new BufferedReader(new InputStreamReader(fis));
+		string_list.add(cmd);
+		String line = null;
+		while ((line = bri.readLine()) != null) {
+			string_list.add(line);
+		}
+		bri.close();
+		try {
+			process.waitFor();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			SYSTEM_CMD_LOGGER.error("Run cmd Interrupted: " + cmd);
+		} catch (Exception e2) {
+			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e2.toString());
+		}
+		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
+		SYSTEM_CMD_LOGGER.debug("Exit Code:" + string_list);
+		process.destroy();
+		return string_list;
+	}	
 
 	// run2 command with environment
 	public static ArrayList<String> run(String[] cmds, Map<String, String> envs) throws InterruptedException {

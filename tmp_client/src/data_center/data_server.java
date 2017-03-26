@@ -11,7 +11,6 @@ package data_center;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,17 +36,18 @@ import info_parser.cmd_parser;
  * 					space	=	xx	G
  * 					cpu		=	xx	%
  * 					mem		=	xx	%
+ * 
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
  * 					group	=	xxx
- * 					max_threads=	int
  * 					private	=	0/1
- * 		base	:	save_path = xx
+ * 
+ * 	 preference :	thread_mode = xx
+ * 					task_mode = xx
+ * 					link_mode = both (from command line)
+ * 					max_threads = xx
  * 					work_path = xx
- * 					gui_cmd	  = gui/cmd
- * 					suite_file= xx
- * 					local_remore = remote
- * 					debug		= false
+ * 					save_path = xx
  */
 public class data_server extends Thread {
 	// public property
@@ -56,7 +56,7 @@ public class data_server extends Thread {
 	private static final Logger DATA_SERVER_LOGGER = LogManager.getLogger(data_server.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Thread client_thread;
+	private Thread current_thread;
 	private client_data client_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
@@ -88,31 +88,33 @@ public class data_server extends Thread {
 		while (config_it.hasNext()) {
 			String option = config_it.next();
 			HashMap<String, String> option_data = config_hash.get(option);
-			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
+			if (option.contains("tmp_")) {
 				continue;
 			}
 			client_data.put(option, option_data);
 		}
 		// 2. merge System data
 		client_data.put("System", machine_hash.get("System"));
-		// 3. merge Machine data configuration data > scan data > default data
-		// in
-		// public_data
+		// 3. merge Machine data:
+		// configuration data > scan data > default data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
-		machine_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration data
 		client_data.put("Machine", machine_data);
-		// 4. merge base data (for software use) command data > config data >
-		// default data in public_data
-		HashMap<String, String> base_data = new HashMap<String, String>();
-		// base_data.put("save_path", public_data.DEF_SAVE_PATH);
-		base_data.put("work_path", public_data.DEF_WORK_PATH);
-		base_data.putAll(config_hash.get("tmp_base"));
-		base_data.putAll(cmd_hash);
-		client_data.put("base", base_data);
+		// 4. merge preference data (for software use):
+		// command data > config data > data in public_data
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
+		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
+		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
+		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
+		preference_data.put("work_path", public_data.DEF_WORK_PATH);
+		preference_data.put("save_path", public_data.DEF_SAVE_PATH);
+		preference_data.putAll(config_hash.get("tmp_preference"));
+		preference_data.putAll(cmd_hash);
+		client_data.put("preference", preference_data);
 		client_info.set_client_data(client_data);
 		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
@@ -125,23 +127,15 @@ public class data_server extends Thread {
 		HashMap<String, HashMap<String, String>> config_hash = new HashMap<String, HashMap<String, String>>();
 		machine_hash.putAll(machine_sync.machine_hash);
 		config_hash.putAll(config_sync.config_hash);
-		// 1. merge Software data modified in GUI
+		// 1. merge Software data modified by auto scan
 		Iterator<String> config_it = config_hash.keySet().iterator();
 		while (config_it.hasNext()) {
 			String option = config_it.next();
 			HashMap<String, String> option_data = new HashMap<String, String>();
 			option_data.putAll(config_hash.get(option));
-			if (option.equalsIgnoreCase("tmp_base") || option.equalsIgnoreCase("tmp_machine")) {
+			if (option.contains("tmp_")){
 				continue;
 			}
-			/*
-			if (option_data.containsKey("scan_dir")) {
-				option_data.remove("scan_dir");
-			}
-			if (option_data.containsKey("max_insts")) {
-				option_data.remove("max_insts");
-			}
-			*/
 			client_data.get(option).putAll(option_data);
 		}
 		// 2. merge System data
@@ -154,11 +148,10 @@ public class data_server extends Thread {
 		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>> ();
 		client_hash.putAll(client_info.get_client_data());
-		Set<String> key_set = client_hash.keySet();
-		Iterator<String> key_it = key_set.iterator();
+		Iterator<String> key_it = client_hash.keySet().iterator();
 		while (key_it.hasNext()) {
 			String key = key_it.next();
-			if (key.equalsIgnoreCase("base")) {
+			if (key.equalsIgnoreCase("preference")) {
 				continue;
 			}
 			if (key.equalsIgnoreCase("machine")) {
@@ -183,7 +176,7 @@ public class data_server extends Thread {
 	}
 
 	private void monitor_run() {
-		client_thread = Thread.currentThread();
+		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : start client data worker: 1) config_sync 2) machine_sync
 		config_runner.start();
@@ -194,12 +187,13 @@ public class data_server extends Thread {
 			}
 		}
 		// initial 2 : get command hash data
-		HashMap<String, String> cmd_hash = cmd_parser.cmd_hash;
+		HashMap<String, String> cmd_hash = new HashMap<String, String>();
+		cmd_hash.putAll(cmd_parser.cmd_hash);
 		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_hash);
 		// initial 4 : update default current size into Pool Data
-		String max_threads = client_info.get_client_data().get("Machine").get("max_threads");
-		pool_info.set_pool_current_size(Integer.parseInt(max_threads));
+		String current_max_threads = client_info.get_client_data().get("preference").get("max_threads");
+		pool_info.set_pool_current_size(Integer.parseInt(current_max_threads));
 		// initial 5 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start
@@ -244,8 +238,8 @@ public class data_server extends Thread {
 		config_runner.soft_stop();
 		machine_runner.soft_stop();
 		stop_request = true;
-		if (client_thread != null) {
-			client_thread.interrupt();
+		if (current_thread != null) {
+			current_thread.interrupt();
 		}
 	}
 

@@ -10,8 +10,6 @@
 package data_center;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class public_data {
 	//private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
@@ -33,6 +31,11 @@ public class public_data {
 	//========================
 	// Soft ware bin path
 	public final static String SW_BIN_PATH = get_bin_path();
+	
+	//========================
+	// log setting
+	public final static String LOG_HOME = "D:/logs123";
+	public final static String FILE_NAME = "123.log";
 	
 	//========================
 	// external configure based on software bin path
@@ -106,31 +109,22 @@ public class public_data {
 	
 	//========================
 	//>>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
-	//>>>>>>>>>>>>>>>>>>>>>>>>Please use fresh data in task_data(task_info)
+	//>>>>>>>>>>>>>>>>>>>>>>>>Please use fresh data in switch_data(switch_info)
 	//========================
 	//========================
 	// Software default data command line > configuration; 
 	// Software GUI have higher priority
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	// Machine
-	public final static String DEF_MACHINE_PRIVATE = "1"; //1 private, 0 public
-	//public final static String DEF_POOL_MAX_THREADS = "5"; 
-	public final static String DEF_POOL_CURRENT_SIZE = "5";
-	public final static String DEF_GROUP_NAME = "tmp_client";
-	// Base
-	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
-	//no default save path to make the run result save in the workspace
-	//public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
-
-	//========================
-	//>>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
-	//>>>>>>>>>>>>>>>>>>>>>>>>Please use fresh data in switch_data(switch_info)
-	//========================
-	//========================
-	// work model
-	public final static String DEF_TASK_WORK_MODE = "auto"; //"serial", "parallel", "auto"
+	public final static String DEF_GROUP_NAME = "tmp_client";	
+	public final static String DEF_MACHINE_PRIVATE = "1"; //1 private, 0 public 
+	// preference
+	public final static String DEF_TASK_ASSIGN_MODE = "auto"; //"serial", "parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; //"manual", "auto"
-	
+	public final static String DEF_CLIENT_LINK_MODE = "both"; //"local", "remote", "both"
+	public final static String DEF_POOL_CURRENT_SIZE = "5";
+	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");	
 	
 	public public_data(){
 	}

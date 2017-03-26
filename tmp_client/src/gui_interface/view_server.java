@@ -131,8 +131,8 @@ public class view_server extends Thread{
 	private Boolean import_admin_data_to_processed_data(String import_queue) {
 		Boolean import_status = new Boolean(false);
 		String work_path = new String();
-		if (client_info.get_client_data().containsKey("base")) {
-			work_path = client_info.get_client_data().get("base").get("work_path");
+		if (client_info.get_client_data().containsKey("preference")) {
+			work_path = client_info.get_client_data().get("preference").get("work_path");
 		} else {
 			work_path = public_data.DEF_WORK_PATH;
 		}
@@ -160,8 +160,8 @@ public class view_server extends Thread{
 	private Boolean import_task_data_to_processed_data(String import_queue) {
 		Boolean import_status = new Boolean(false);
 		String work_path = new String();
-		if (client_info.get_client_data().containsKey("base")) {
-			work_path = client_info.get_client_data().get("base").get("work_path");
+		if (client_info.get_client_data().containsKey("preference")) {
+			work_path = client_info.get_client_data().get("preference").get("work_path");
 		} else {
 			work_path = public_data.DEF_WORK_PATH;
 		}
@@ -246,8 +246,10 @@ public class view_server extends Thread{
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : run "retest" cases
+			@SuppressWarnings("unused")
 			Boolean retest_status = implements_retest_task_cases();
 			// task 2 : run "run" action implements
+			@SuppressWarnings("unused")
 			Boolean action_status = implements_run_action_request();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);

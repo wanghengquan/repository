@@ -128,11 +128,11 @@ public class detail_dialog extends JFrame {
 			private_status = client_data.get("Machine").get("private");
 		}
 		if (private_status.equals("")){
-			jl_info.setText("*: Unknown Client Private/Public status.");
+			jl_info.setText("*: Unknown Client Private/Public Mode.");
 		} else if (private_status.equals("0")){
-			jl_info.setText("*: Client work in Public: All 'Matched' and 'Assigned' task will be run.");
+			jl_info.setText("*: Client work in Public Mode: All 'Matched' and 'Assigned' task will be run.");
 		} else{
-			jl_info.setText("*: Client work in Private: Olny 'Assigned' task will be run.");
+			jl_info.setText("*: Client work in Private Mode: Olny 'Assigned' task will be run.");
 		}
 		jp_info.add(jl_info, BorderLayout.WEST);
 		return jp_info;

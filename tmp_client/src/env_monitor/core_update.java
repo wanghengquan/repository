@@ -26,7 +26,7 @@ public class core_update {
 	private String svn_pwd = public_data.SVN_PWD;
 	private String line_seprator = System.getProperty("line.separator");
 	
-	public void update() {
+	public void update(String work_path) {
 		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
 		File trunk_handle = new File(core_name);
 		if (trunk_handle.exists() && trunk_handle.isDirectory()) {
@@ -38,7 +38,7 @@ public class core_update {
 			// 2. execute svn checkout
 			try {
 				// System.out.println("trunk exists");
-				ArrayList<String> info_return = system_cmd.run("svn info " + core_name + " " + user_cmd);
+				ArrayList<String> info_return = system_cmd.run("svn info " + core_name + " " + user_cmd, work_path);
 				StringBuffer cmdout = new StringBuffer();
 				Boolean find_url = false;
 				for (String line : info_return) {
@@ -48,14 +48,14 @@ public class core_update {
 				}
 				if (find_url) {
 					try {
-						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd);
+						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd, work_path);
 						CORE_LOGGER.debug(excute_returns.toString());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						// e.printStackTrace();
 					}
 				} else {
-					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr);
+					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr, work_path);
 					CORE_LOGGER.debug(excute_returns.toString());
 				}
 			} catch (IOException e) {
@@ -64,7 +64,7 @@ public class core_update {
 			}
 		} else {
 			try {
-				ArrayList<String> excute_returns = system_cmd.run("svn co " + core_addr + " " + user_cmd);
+				ArrayList<String> excute_returns = system_cmd.run("svn co " + core_addr + " " + user_cmd, work_path);
 				CORE_LOGGER.debug(excute_returns.toString());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -75,7 +75,8 @@ public class core_update {
 
 	public static void main(String[] argvs) {
 		core_update updater = new core_update();
-		updater.update();
+		String work_path = new String("D:/tmp_work_space");
+		updater.update(work_path);
 		System.exit(0);
 	}
 }

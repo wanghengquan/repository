@@ -35,7 +35,6 @@ public class pool_data{
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<String, Object>> call_map = new HashMap<String, HashMap<String, Object>>();
 	private int pool_used_threads = 0;
-	//private int pool_max_threads = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
 	private int pool_current_size = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
 	
 	public pool_data(int pool_size){

@@ -243,8 +243,8 @@ public class work_panel extends JSplitPane implements Runnable{
 	private Boolean import_admin_data_to_processed_data(String import_queue) {
 		Boolean import_status = new Boolean(false);
 		String work_path = new String();
-		if (client_info.get_client_data().containsKey("base")) {
-			work_path = client_info.get_client_data().get("base").get("work_path");
+		if (client_info.get_client_data().containsKey("preference")) {
+			work_path = client_info.get_client_data().get("preference").get("work_path");
 		} else {
 			work_path = public_data.DEF_WORK_PATH;
 		}
@@ -271,8 +271,8 @@ public class work_panel extends JSplitPane implements Runnable{
 	private Boolean import_task_data_to_processed_data(String import_queue) {
 		Boolean import_status = new Boolean(false);
 		String work_path = new String();
-		if (client_info.get_client_data().containsKey("base")) {
-			work_path = client_info.get_client_data().get("base").get("work_path");
+		if (client_info.get_client_data().containsKey("preference")) {
+			work_path = client_info.get_client_data().get("preference").get("work_path");
 		} else {
 			work_path = public_data.DEF_WORK_PATH;
 		}
@@ -361,6 +361,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	@SuppressWarnings("unused")
 	private JTable table;
 	private JMenuItem retest;
 	private view_data view_info;

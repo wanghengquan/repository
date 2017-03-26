@@ -47,6 +47,7 @@ public class task_waiter extends Thread {
 	private pool_data pool_info;
 	private task_data task_info;
 	private client_data client_info;
+	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private String line_seprator = System.getProperty("line.separator");
 	//private String file_seprator = System.getProperty("file.separator");
@@ -78,7 +79,7 @@ public class task_waiter extends Thread {
 
 	private Boolean import_history_finished_admin_queue_into_memory(){
 		Boolean import_status = new Boolean(false);
-		String work_path = client_info.get_client_data().get("base").get("work_path");
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		ArrayList<String> history_admin_queue_list = new ArrayList<String>();
 		File log_path = new File(work_path + "/" + log_folder + "/finished/admin");
@@ -169,7 +170,7 @@ public class task_waiter extends Thread {
 	
 	private Boolean import_history_finished_task_queue_into_memory(String queue_name){
 		Boolean import_status = new Boolean(false);
-		String work_path = client_info.get_client_data().get("base").get("work_path");
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
 		if (!log_path.exists() || !log_path.canRead()){
@@ -200,7 +201,7 @@ public class task_waiter extends Thread {
 		if (queue_list_size == 0) {
 			return queue_name;
 		}
-		String queue_work_mode = switch_info.get_task_work_mode();
+		String queue_work_mode = client_info.get_client_data().get("preference").get("task_mode");
 		if (queue_work_mode.equalsIgnoreCase("serial")) {
 			queue_name = get_highest_queue_name(runable_queue_list);
 		} else if (queue_work_mode.equalsIgnoreCase("parallel")) {
@@ -635,7 +636,7 @@ public class task_waiter extends Thread {
 			String case_work_path = new String();
 			try {
 				case_work_path = prepare_obj.get_working_dir(task_data,
-						client_info.get_client_data().get("base").get("work_path"));
+						client_info.get_client_data().get("preference").get("work_path"));
 				case_prepare_list = prepare_obj.get_case_ready(task_data,
 						case_work_path);
 			} catch (Exception e) {
@@ -650,7 +651,7 @@ public class task_waiter extends Thread {
 			file_action.append_file(local_case_report, String.join(line_seprator, case_prepare_list) + line_seprator);
 			// task 8 : launch cmd
 			String[] run_cmd = prepare_obj.get_run_command(task_data,
-					client_info.get_client_data().get("base").get("work_path"));
+					client_info.get_client_data().get("preference").get("work_path"));
 			// task 9 : launch env
 			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.get_client_data());
 			// task 10 : launch (add case info to task data)

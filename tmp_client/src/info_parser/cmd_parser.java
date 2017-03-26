@@ -30,7 +30,7 @@ public class cmd_parser {
 	// protected property
 	public static HashMap<String, String> cmd_hash = new HashMap<String, String>();
 	// private property
-	private final Logger CMD_LOGGER = LogManager.getLogger(cmd_parser.class.getName());
+	private final Logger CMD_PARSER_LOGGER = LogManager.getLogger(cmd_parser.class.getName());
 	private String[] args;
 
 	public cmd_parser(String[] args) {
@@ -54,7 +54,7 @@ public class cmd_parser {
 		} catch (ParseException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
-			CMD_LOGGER.error("Command line parse Failed.");
+			CMD_PARSER_LOGGER.error("Command line parse Failed.");
 			get_help(options_obj);
 		}
 		// 3. collect option results
@@ -68,12 +68,11 @@ public class cmd_parser {
 		}
 		// 3.2 remote or local model
 		if (commandline_obj.hasOption('l')) {
-			cmd_hash.put("local_remote", "local");
-		} else if (commandline_obj.hasOption('r')) {
-			cmd_hash.put("local_remote", "remote");
-		} else {
-			cmd_hash.put("local_remote", "remote");
+			cmd_hash.put("link_mode", "local");
 		}
+		if (commandline_obj.hasOption('r')) {
+			cmd_hash.put("link_mode", "remote");
+		} 
 		// 3.3 suite file value
 		if (commandline_obj.hasOption('f')) {
 			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f'));

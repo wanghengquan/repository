@@ -63,7 +63,7 @@ public class software_dialog extends JDialog implements ChangeListener{
 		Iterator<String> client_hash_it = client_hash.keySet().iterator();
 		while(client_hash_it.hasNext()){
 			String section_name = client_hash_it.next();
-			if (section_name.equalsIgnoreCase("base")){
+			if (section_name.equalsIgnoreCase("preference")){
 				continue;
 			}
 			if (section_name.equalsIgnoreCase("system")){

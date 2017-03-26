@@ -36,6 +36,7 @@ public class upload_dialog extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	@SuppressWarnings("unused")
 	private client_data client_info;
 	private JLabel label_username = new JLabel("TMP User Name:");
 	private JLabel label_password = new JLabel("TMP Pass Word:");
@@ -48,7 +49,7 @@ public class upload_dialog extends JFrame{
 	private JButton cancel_button = new JButton("Cancel");
 	private JButton upload_button = new JButton("Upload");
 	private String line_seprator = System.getProperty("line.separator");
-	private JTextArea output_area = new JTextArea("Upload console Outputs:" + line_seprator);
+	private JTextArea output_area = new JTextArea("Upload Console Outputs:" + line_seprator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
 	String work_path = new String();
@@ -86,8 +87,8 @@ public class upload_dialog extends JFrame{
 		my_container.setBackground(Color.white);
 		this.setSize(500, 400);
 		this.setLocation(600,600);
-		if(client_info.get_client_data().containsKey("base")){
-			work_path = client_info.get_client_data().get("base").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
+		if(client_info.get_client_data().containsKey("preference")){
+			work_path = client_info.get_client_data().get("preference").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
 		} else {
 			work_path = public_data.DEF_WORK_PATH;
 		}		

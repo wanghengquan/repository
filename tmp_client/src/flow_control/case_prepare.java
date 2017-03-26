@@ -92,7 +92,7 @@ public class case_prepare {
 				for (String line : system_cmd.run(run_cmd))
 					export_msg.add(line);
 			} catch (IOException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 				CASE_PREPARE_LOGGER.warn("run cmd fail:" + run_cmd);
 			}
 		}

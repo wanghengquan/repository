@@ -35,8 +35,7 @@ public class switch_data {
 	// suite file updating
 	private String suite_file = new String();
 	// client work mode
-	private String task_work_mode = public_data.DEF_TASK_WORK_MODE;
-	private String thread_work_mode = public_data.DEF_MAX_THREAD_MODE;
+
 	// public function
 	public switch_data() {
 
@@ -80,10 +79,10 @@ public class switch_data {
 		return action_need;
 	}
 	
-	public void set_client_self_check() {
+	public void set_client_self_check(Boolean check_status) {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_self_check = true;
+			this.client_self_check = check_status;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -100,10 +99,10 @@ public class switch_data {
 		return status;
 	}
 	
-	public void set_core_script_update() {
+	public void set_core_script_update(Boolean update_status) {
 		rw_lock.writeLock().lock();
 		try {
-			this.core_script_update = true;
+			this.core_script_update = update_status;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -232,45 +231,6 @@ public class switch_data {
 		return value;
 	}
 
-	public void set_thread_work_mode(String new_data) {
-		rw_lock.writeLock().lock();
-		try {
-			this.thread_work_mode = new_data;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-
-	public String get_thread_work_mode() {
-		rw_lock.readLock().lock();
-		String value = new String();
-		try {
-			value = this.thread_work_mode;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
-
-	public void set_task_work_mode(String new_data) {
-		rw_lock.writeLock().lock();
-		try {
-			this.task_work_mode = new_data;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-
-	public String get_task_work_mode() {
-		rw_lock.readLock().lock();
-		String value = new String();
-		try {
-			value = this.task_work_mode;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
 	
 	/*
 	public void set_current_max_thread(Integer new_data) {

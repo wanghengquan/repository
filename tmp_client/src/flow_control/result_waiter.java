@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -99,7 +98,7 @@ public class result_waiter extends Thread {
 			String prj_dir_name = "prj" + case_report_map.get(call_index).get("projectId");
 			String run_dir_name = "run" + case_report_map.get(call_index).get("runId");
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
-			String save_path = client_info.get_client_data().get("base").get("save_path");
+			String save_path = client_info.get_client_data().get("preference").get("save_path");
 			String[] path_array = new String[] { save_path, tmp_result_dir, prj_dir_name, run_dir_name };
 			String case_save_path = String.join(file_seprator, path_array);
 			case_save_path = case_save_path.replaceAll("\\\\", "/");
@@ -161,7 +160,7 @@ public class result_waiter extends Thread {
 		} else {
 			return dump_status;
 		}
-		String work_path = client_info.get_client_data().get("base").get("work_path");
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/finished/admin";
 		File dump_dobj = new File(dump_path);
@@ -200,7 +199,7 @@ public class result_waiter extends Thread {
 		} else {
 			return dump_status;
 		}
-		String work_path = client_info.get_client_data().get("base").get("work_path");
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/finished/task";
 		File dump_dobj = new File(dump_path);

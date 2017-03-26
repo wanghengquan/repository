@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
+import utility_funcs.deep_clone;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -31,15 +32,17 @@ import data_center.switch_data;
  * 					scan_dir=	xxx
  * 					max_insts=	xxx
  * 		....(other software)
+ * 
  * 		tmp_machine:terminal=	xxx
  * 					group	=	xxx
- * 					max_procs=	xxx
  * 					private = 	0
- * 		tmp_base:	rmq_host=	xxx	
- * 					rmq_user=	xxx
- * 					rmq_pwd	=	xxx
+ * 
+ * 		tmp_base:	thread_mode = auto, manual
+ *tmp_preference:	task_mode = auto, parallel, serial
+ * 					max_threads = 5
  * 					work_path=	xxx
  * 					save_path=	xxx
+ * 					
  */
 public class config_sync extends Thread {
 	// public property
@@ -64,6 +67,7 @@ public class config_sync extends Thread {
 	}	
 	// protected function
 	// private function
+	
 	private HashMap<String, String> get_scan_dirs(String scan_path){
 		HashMap<String, String> scan_dirs = new HashMap<String, String>();
 		File scan_handler = new File(scan_path);
@@ -125,7 +129,7 @@ public class config_sync extends Thread {
 			section_data.putAll(ini_data.get(section));
 			HashMap<String, String> update_data = new HashMap<String, String>();
 			if (section.contains("tmp_")) {
-				// for section "tmp_base" , "tmp_machine" and something start with "tmp_"
+				// for section "tmp_preference" , "tmp_machine" and something start with "tmp_"
 				config_hash.put(section, section_data);
 			} else {
 				// consider as software section
@@ -172,8 +176,9 @@ public class config_sync extends Thread {
 		Iterator<String> section_it = config_sections.iterator();
 		while(section_it.hasNext()){
 			String section = section_it.next();
-			HashMap<String, String> section_data = config_hash.get(section);
-			if (section.equalsIgnoreCase("tmp_base") || section.equalsIgnoreCase("tmp_machine")){
+			HashMap<String, String> section_data = new HashMap<String, String>();
+			section_data.putAll(config_hash.get(section));
+			if (section.contains("tmp_")){
 				continue;
 			}
 			HashMap<String, String> update_data = new HashMap<String, String>();
@@ -213,9 +218,9 @@ public class config_sync extends Thread {
 	private Boolean dump_client_data(ini_parser ini_runner){
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-		write_data.putAll(client_info.get_client_data());
+		write_data = deep_clone.clone(client_info.get_client_data());
 		CONFIG_SYNC_LOGGER.warn("Dumping ini data:" + write_data.toString());
-		if(!write_data.containsKey("base")){
+		if(!write_data.containsKey("preference")){
 			dump_status = false;
 			return dump_status;
 		}
@@ -227,20 +232,23 @@ public class config_sync extends Thread {
 			dump_status = false;
 			return dump_status;
 		}		
-		HashMap<String, String> tmp_base_data = new HashMap<String, String>();
+		HashMap<String, String> tmp_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
-		tmp_base_data.put("save_path", write_data.get("base").get("save_path"));
-		tmp_base_data.put("work_path", write_data.get("base").get("work_path"));
+		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
+		tmp_preference_data.put("thread_mode", write_data.get("preference").get("thread_mode"));
+		tmp_preference_data.put("task_mode", write_data.get("preference").get("task_mode"));
+		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
+		tmp_preference_data.put("work_path", write_data.get("preference").get("work_path"));
+		tmp_preference_data.put("save_path", write_data.get("preference").get("save_path"));
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
-		tmp_machine_data.put("max_procs", write_data.get("Machine").get("max_procs"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
-		write_data.remove("base");
+		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
-		write_data.put("tmp_base", tmp_base_data);
+		write_data.put("tmp_preference", tmp_preference_data);
 		write_data.put("tmp_machine", tmp_machine_data);
-		System.out.println(write_data.toString());
+		CONFIG_SYNC_LOGGER.warn(write_data.toString());
 		try {
 			ini_runner.write_ini_data(write_data);
 		} catch (ConfigurationException e) {

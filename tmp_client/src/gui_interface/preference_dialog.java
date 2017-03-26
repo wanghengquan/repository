@@ -9,12 +9,12 @@
  */
 package gui_interface;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,9 +42,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	private client_data client_info;
 	private pool_data pool_info;
 	private JPanel preference_panel;
-	private JLabel jl_max_threads, jl_task_assign;
-	private JRadioButton thread_auto, thread_manual, task_auto, task_serial, task_parallel;
-	private JTextField thread_text;
+	private JLabel jl_link_mode, jl_max_threads, jl_task_assign, jl_work_path, jl_save_path;
+	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel;
+	private JTextField thread_text, jt_work_path, jt_save_path;
 	private JButton discard, apply;
 
 	public preference_dialog(main_frame main_view, switch_data switch_info, pool_data pool_info, client_data client_info){
@@ -55,59 +55,76 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		Container container = this.getContentPane();
 		container.add(construct_preference_panel());
 		this.setLocation(800, 500);
-		this.setSize(500, 250);
+		this.setSize(500, 300);
 	}
 	
 	private JPanel construct_preference_panel(){
-		preference_panel = new JPanel(new BorderLayout());
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(client_info.get_client_data());
+		HashMap<String, String> preference_data = client_data.get("preference");
+		preference_panel = new JPanel(new GridLayout(7,1,5,5));
 		//step 0 : Title line
-		JPanel jp_title = new JPanel(new GridLayout(1,1,10,10));
+		JPanel jp_title = new JPanel(new GridLayout(1,1,5,5));
 		jp_title.add(new JLabel("Preference items:"));
 		jp_title.setBackground(Color.LIGHT_GRAY);
-		//step 1 : center line
-		JPanel jp_center = new JPanel(new GridLayout(4,4,5,5));
-		//first line
+		//step 1 :input 1th line
+		JPanel jp_center1 = new JPanel(new GridLayout(1,4,5,5));
+		jl_link_mode = new JLabel("Link Server:");
+		link_both = new JRadioButton("Both");
+		link_remote = new JRadioButton("Remote");
+		link_local = new JRadioButton("Local");		
+		initial_link_default_value(preference_data.get("link_mode"));
+		ButtonGroup link_group = new ButtonGroup();
+		link_group.add(link_both);
+		link_group.add(link_remote);
+		link_group.add(link_local);
+		jp_center1.add(jl_link_mode);
+		jp_center1.add(link_both);
+		jp_center1.add(link_remote);
+		jp_center1.add(link_local);
+		//step 2 : input 2th line
+		JPanel jp_center2 = new JPanel(new GridLayout(1,4,5,5));
 		jl_max_threads = new JLabel("Max Threads:");
 		thread_auto = new JRadioButton("Auto");
 		thread_manual = new JRadioButton("Manually");
-		thread_text = new JTextField("NA");
-		initial_thread_default_value();
+		thread_text = new JTextField(preference_data.get("max_threads"));
+		initial_thread_default_value(preference_data.get("thread_mode"));
 		ButtonGroup thread_group = new ButtonGroup();
 		thread_group.add(thread_auto);
 		thread_group.add(thread_manual);
-		//input first line
-		jp_center.add(jl_max_threads);
-		jp_center.add(thread_auto);
-		jp_center.add(thread_manual);
-		jp_center.add(thread_text);
-		//step 2 : second line
+		jp_center2.add(jl_max_threads);
+		jp_center2.add(thread_auto);
+		jp_center2.add(thread_manual);
+		jp_center2.add(thread_text);
+		//step 3 : input 3th line
+		JPanel jp_center3 = new JPanel(new GridLayout(1,4,5,5));
 		jl_task_assign = new JLabel("Task Assign:");
 		task_auto = new JRadioButton("Auto");
 		task_serial = new JRadioButton("Serial");
 		task_parallel = new JRadioButton("Parallel");
-		initial_task_default_value();
+		initial_task_default_value(preference_data.get("task_mode"));
 		ButtonGroup task_group = new ButtonGroup();
 		task_group.add(task_auto);
 		task_group.add(task_serial);
 		task_group.add(task_parallel);
-		//input second line
-		jp_center.add(jl_task_assign);
-		jp_center.add(task_auto);
-		jp_center.add(task_serial);
-		jp_center.add(task_parallel);	
-		//input third line
-		jp_center.add(new JLabel());
-		jp_center.add(new JLabel());
-		jp_center.add(new JLabel());
-		jp_center.add(new JLabel());
-		//input 4th line
-		jp_center.add(new JLabel());
-		jp_center.add(new JLabel());
-		jp_center.add(new JLabel());
-		jp_center.add(new JLabel());		
+		jp_center3.add(jl_task_assign);
+		jp_center3.add(task_auto);
+		jp_center3.add(task_serial);
+		jp_center3.add(task_parallel);	
+		//step 4 : input 4th line
+		JPanel jp_center4 = new JPanel(new GridLayout(1,2,5,5));
+		jl_work_path = new JLabel("Work Space:");
+		jt_work_path = new JTextField(preference_data.get("work_path"));
+		jp_center4.add(jl_work_path);
+		jp_center4.add(jt_work_path);
+		//step 5 : input 5th line
+		JPanel jp_center5 = new JPanel(new GridLayout(1,2,5,5));
+		jl_save_path = new JLabel("Save Space:");
+		jt_save_path = new JTextField(preference_data.get("save_path"));
+		jp_center5.add(jl_save_path);
+		jp_center5.add(jt_save_path);		
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,2,5,10));
-		
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
@@ -115,14 +132,42 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jp_bottom.add(discard);
 		jp_bottom.add(apply);
 		//final package
-		preference_panel.add(jp_title, BorderLayout.NORTH);
-		preference_panel.add(jp_center, BorderLayout.CENTER);
-		preference_panel.add(jp_bottom, BorderLayout.SOUTH);
+		preference_panel.add(jp_title);
+		preference_panel.add(jp_center1);
+		preference_panel.add(jp_center2);
+		preference_panel.add(jp_center3);
+		preference_panel.add(jp_center4);
+		preference_panel.add(jp_center5);
+		preference_panel.add(jp_bottom);
 		return preference_panel;
 	}
 
-	private void initial_thread_default_value(){
-		if(switch_info.get_thread_work_mode().equals("auto")){
+	private void initial_link_default_value(String link_mode){
+		switch(link_mode){
+		case "both":
+			link_both.setSelected(true);
+			link_remote.setSelected(false);
+			link_local.setSelected(false);
+			break;
+		case "remote":
+			link_both.setSelected(false);
+			link_remote.setSelected(true);
+			link_local.setSelected(false);
+			break;
+		case "local":
+			link_both.setSelected(false);
+			link_remote.setSelected(false);
+			link_local.setSelected(true);
+			break;
+		default:
+			link_both.setSelected(false);
+			link_remote.setSelected(false);
+			link_local.setSelected(false);			
+		}
+	}
+	
+	private void initial_thread_default_value(String thread_mode){
+		if(thread_mode.equals("auto")){
 			thread_auto.setSelected(true);
 			thread_manual.setSelected(false);
 			thread_text.setEnabled(false);
@@ -133,19 +178,27 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		}
 	}
 	
-	private void initial_task_default_value(){
-		if(switch_info.get_task_work_mode().equals("auto")){
+	private void initial_task_default_value(String task_mode){
+		switch(task_mode){
+		case "auto":
 			task_auto.setSelected(true);
 			task_serial.setSelected(false);
 			task_parallel.setSelected(false);
-		} else if (switch_info.get_task_work_mode().equals("serial")) {
+			break;
+		case "serial":
 			task_auto.setSelected(false);
 			task_serial.setSelected(true);
-			task_parallel.setSelected(false);			
-		} else {
+			task_parallel.setSelected(false);
+			break;
+		case "parallel":
 			task_auto.setSelected(false);
 			task_serial.setSelected(false);
-			task_parallel.setSelected(true);			
+			task_parallel.setSelected(true);
+			break;
+		default:
+			task_auto.setSelected(false);
+			task_serial.setSelected(false);
+			task_parallel.setSelected(false);
 		}
 	}	
 	
@@ -164,32 +217,67 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	}
 	
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void actionPerformed(ActionEvent arg0) {		
 		// TODO Auto-generated method stub
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(client_info.get_client_data());
+		HashMap<String, String> preference_data = client_data.get("preference");		
 		if(arg0.getSource().equals(discard)){
-			initial_thread_default_value();
-			initial_task_default_value();
+			initial_link_default_value(preference_data.get("link_mode"));
+			initial_thread_default_value(preference_data.get("thread_mode"));
+			initial_task_default_value(preference_data.get("task_mode"));
+			jt_work_path.setText(preference_data.get("work_path"));
+			jt_save_path.setText(preference_data.get("save_path"));
 		}
 		if(arg0.getSource().equals(apply)){
-			if(thread_auto.isSelected()){
-				switch_info.set_thread_work_mode("auto");
+			//link mode
+			if(link_both.isSelected()){
+				preference_data.put("link_mode", "both");
+			} else if (link_remote.isSelected()){
+				preference_data.put("link_mode", "remote");
 			} else {
-				switch_info.set_thread_work_mode("manual");
+				preference_data.put("link_mode", "local");
+			}
+			//thread mode
+			if(thread_auto.isSelected()){
+				preference_data.put("thread_mode", "auto");
+			} else {
+				preference_data.put("thread_mode", "manual");
 				int new_value = get_srting_int(thread_text.getText());
 				if (new_value < 0 || new_value > public_data.PERF_POOL_MAXIMUM_SIZE){
-					String message = new String("Client accept data: 0 ~ " + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+					String message = new String("Client accept value: 0 ~ " + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				pool_info.set_pool_current_size(new_value);
+				preference_data.put("max_threads", String.valueOf(new_value));//dup for download data to config file
 			}
+			//task mode
 			if(task_auto.isSelected()){
-				switch_info.set_task_work_mode("auto");
+				preference_data.put("task_mode", "auto");
 			} else if (task_serial.isSelected()){
-				switch_info.set_task_work_mode("serial");
+				preference_data.put("task_mode", "serial");
 			} else {
-				switch_info.set_task_work_mode("parallel");
+				preference_data.put("task_mode", "parallel");
 			}
+			//work path
+			if(jt_work_path.getText().trim().equals("")){
+				String message = new String("Empty work path found.");
+				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+				return;				
+			} else {
+				preference_data.put("work_path", jt_work_path.getText().trim());
+			}
+			//save path
+			if(jt_save_path.getText().trim().equals("")){
+				String message = new String("Empty save path found.");
+				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+				return;				
+			} else {
+				preference_data.put("save_path", jt_save_path.getText().trim());
+			}
+			client_info.set_client_data(client_data);
+			switch_info.set_client_updated();
 		}		
 	}
 
@@ -200,7 +288,6 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			if (SwingUtilities.isEventDispatchThread()) {
 				if(thread_manual.isSelected() && !thread_text.isEnabled()){
 					thread_text.setEnabled(true);
-					//thread_text.setText(switch_info.get_current_max_thread().toString());
 					thread_text.setText(String.valueOf(pool_info.get_pool_current_size()));
 				}
 				if(thread_auto.isSelected() && thread_text.isEnabled()){

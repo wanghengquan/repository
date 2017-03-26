@@ -264,9 +264,9 @@ public class ini_parser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		HashMap<String, String> section_data= read_data.get("tmp_base");
+		HashMap<String, String> section_data= read_data.get("tmp_preference");
 		section_data.put("test2.10", "123");
-		read_data.put("tmp_base", section_data);
+		read_data.put("tmp_preference", section_data);
 		try {
 			ini_parser2.write_ini_data(read_data);
 		} catch (ConfigurationException e) {

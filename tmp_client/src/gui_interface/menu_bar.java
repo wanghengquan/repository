@@ -64,8 +64,8 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		this.add(construct_tool_menu());
 		this.add(construct_setting_menu());
 		this.add(construct_help_menu());
-		if (client_info.get_client_data().containsKey("base")) {
-			work_path = client_info.get_client_data().get("base").get("work_path");
+		if (client_info.get_client_data().containsKey("preference")) {
+			work_path = client_info.get_client_data().get("preference").get("work_path");
 		} else {
 			work_path = public_data.DEF_WORK_PATH;
 		}
