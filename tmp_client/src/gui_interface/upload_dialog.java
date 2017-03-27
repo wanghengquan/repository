@@ -118,7 +118,7 @@ public class upload_dialog extends JFrame{
 	class upload_action implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			String user = field_username.getText();
-			String pswd = field_password.getPassword().toString();
+			String pswd = new String(field_password.getPassword());
 			String file = field_file.getText();
 			
 			String message = new String("No file selected");
@@ -158,6 +158,8 @@ public class upload_dialog extends JFrame{
 			cmd_args.add(user);
 			cmd_args.add("-p");
 			cmd_args.add(pswd);
+			output_area.append(String.join(" ", cmd_args));
+			output_area.append(line_seprator);
 			ProcessBuilder pb = new ProcessBuilder(cmd_args);
 			pb.redirectErrorStream(true);
 			File work_dobj = new File(work_path);
