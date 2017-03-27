@@ -146,8 +146,15 @@ public class result_waiter extends Thread {
 							// forget dump when shutdown client
 			}
 			// dumping task queue
-			dump_admin_data(dump_queue);
-			dump_task_data(dump_queue);
+			Boolean admin_dump = dump_admin_data(dump_queue);
+			Boolean task_dump = dump_task_data(dump_queue);
+			if (admin_dump && task_dump){
+				task_info.remove_queue_from_processed_admin_queues_treemap(dump_queue);
+				task_info.remove_queue_from_processed_task_queues_map(dump_queue);
+				dump_status = true;
+			} else {
+				dump_status = false;
+			}
 		}
 		return dump_status;
 	}
@@ -155,8 +162,8 @@ public class result_waiter extends Thread {
 	private Boolean dump_admin_data(String queue_name) {
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
-		if (task_info.get_received_admin_queues_treemap().containsKey(queue_name)) {
-			admin_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
+		if (task_info.get_processed_admin_queues_treemap().containsKey(queue_name)) {
+			admin_data.putAll(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
 		} else {
 			return dump_status;
 		}
@@ -185,7 +192,7 @@ public class result_waiter extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			RESULT_WAITER_LOGGER.warn("dump finished queue failed:" + queue_name);
+			RESULT_WAITER_LOGGER.warn("dump finished admin queue failed:" + queue_name);
 			dump_status = false;
 		}
 		return dump_status;
@@ -224,7 +231,7 @@ public class result_waiter extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			RESULT_WAITER_LOGGER.warn("dump finished queue failed:" + queue_name);
+			RESULT_WAITER_LOGGER.warn("dump finished task queue failed:" + queue_name);
 			dump_status = false;
 		}
 		return dump_status;
@@ -657,8 +664,11 @@ public class result_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// use call_status and case_report_data for all tasks
 			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
-			// task 1 : get call map status
+			// task 0 : get call map status
 			call_status = get_call_status_map();
+			// task 1 : dump finished queue
+			Boolean dump_status = dump_finished_data(call_status);
+			// following actions based on a non-empty call back.
 			if (call_status.size() < 1) {
 				RESULT_WAITER_LOGGER.warn(waiter_name + ":Thread Pool Empty...");
 				continue;
@@ -682,8 +692,6 @@ public class result_waiter extends Thread {
 			Boolean release_resource_status = release_resource_usage(call_status);
 			// task 8 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
-			// task 9 : dump finished queue
-			Boolean dump_status = dump_finished_data(call_status);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status && dump_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": work fine.");

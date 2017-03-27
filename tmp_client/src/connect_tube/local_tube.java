@@ -10,6 +10,7 @@
 package connect_tube;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.xls_parser;
+import info_parser.xml_parser;
 import utility_funcs.time_info;
 
 /*
@@ -842,7 +844,28 @@ public class local_tube {
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
 		sheet_parser.generate_local_admin_task_queues("D:/java_dev/diamond_regression.xlsx", current_terminal);
-		System.out.println(task_info.get_received_task_queues_map().toString());
-		System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		//System.out.println(task_info.get_received_task_queues_map().toString());
+		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		xml_parser xml_parser2 = new xml_parser();
+		
+		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
+		String queue_name = dump_queue_it.next();
+		HashMap<String, HashMap<String, String>> admin_queue_data = task_info.get_queue_data_from_received_admin_queues_treemap(queue_name);
+		System.out.println(queue_name);
+		System.out.println(admin_queue_data);
+		try {
+			xml_parser2.dump_finished_admin_data(admin_queue_data, queue_name, "D:/tmp_work_space/logs/finished/admin/test.xml");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = task_info.get_received_task_queues_map().get(queue_name);
+		System.out.println(task_queue_data);
+		try {
+			xml_parser2.dump_finished_task_data(task_queue_data, queue_name, "D:/tmp_work_space/logs/finished/task/test.xml");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

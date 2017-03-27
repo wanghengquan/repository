@@ -74,7 +74,9 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_column.add("Time");
 		work_table = new panel_table(work_data, work_column);
 		work_table.getColumn("ID").setMaxWidth(100);
+		work_table.getColumn("Status").setMaxWidth(100);
 		work_table.getColumn("Design").setMinWidth(400);
+		work_table.getColumn("Time").setMaxWidth(200);
 		this.setDividerLocation(300);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
@@ -116,32 +118,32 @@ public class work_panel extends JSplitPane implements Runnable{
 		}
 		if(watching_queue_area.equalsIgnoreCase("passed")){
 			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("passed")){
-				return add_line;//empty line which will be ignore
+				return add_line;//non-passed line which will be ignore
 			}
 		}
 		if(watching_queue_area.equalsIgnoreCase("failed")){
 			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("failed")){
-				return add_line;//empty line which will be ignore
+				return add_line;//non-failed line which will be ignore
 			}
 		}
 		if(watching_queue_area.equalsIgnoreCase("tbd")){
 			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("tbd")){
-				return add_line;//empty line which will be ignore
+				return add_line;//non-tbd line which will be ignore
 			}
 		}		
 		if(watching_queue_area.equalsIgnoreCase("timeout")){
 			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("timeout")){
-				return add_line;//empty line which will be ignore
+				return add_line;//non-timeout line which will be ignore
 			}
 		}
 		if(watching_queue_area.equalsIgnoreCase("processing")){
 			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("processing")){
-				return add_line;//empty line which will be ignore
+				return add_line;//non-processing line which will be ignore
 			}
 		}
 		if(watching_queue_area.equalsIgnoreCase("waiting")){
 			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("waiting")){
-				return add_line;//empty line which will be ignore
+				return add_line;//non-waiting line which will be ignore
 			}
 		}		
 		if (design_data.get("ID").containsKey("id")) {
@@ -164,7 +166,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		} else {
 			add_line.add("Waiting");
 		}
-		if (design_data.get("Status").containsKey("reason")) {
+		if (design_data.get("Status").containsKey("cmd_reason")) {
 			add_line.add(design_data.get("Status").get("reason"));
 		} else {
 			add_line.add("NA");

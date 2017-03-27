@@ -100,9 +100,6 @@ public class start_progress extends JDialog implements Runnable, status_value{
 		
 	}
 	
-
-	
-	
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();		
 		start_progress progress_view = new start_progress(switch_info);

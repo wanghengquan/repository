@@ -175,8 +175,7 @@ public class xml_parser {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		root_element.addAttribute("time", time_info.get_date_time());
-		Set<String> admin_queue_data_set = admin_queue_data.keySet();
-		Iterator<String> admin_queue_data_it = admin_queue_data_set.iterator();
+		Iterator<String> admin_queue_data_it = admin_queue_data.keySet().iterator();
 		while (admin_queue_data_it.hasNext()) {
 			String level2_key = admin_queue_data_it.next();
 			HashMap<String, String> level2_data = admin_queue_data.get(level2_key);
@@ -191,10 +190,12 @@ public class xml_parser {
 		OutputFormat format = OutputFormat.createPrettyPrint();
 		XMLWriter writer = new XMLWriter(new FileWriter(xml_path), format);
 		writer.write(document);
+		writer.flush();
+		writer.close();
 		return dump_status;
 	}
 
-	// case
+	// task queue
 	public Boolean dump_finished_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
 			String queue_name, String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
@@ -220,9 +221,11 @@ public class xml_parser {
 				}
 			}
 		}
-		OutputFormat format = OutputFormat.createPrettyPrint();
+		OutputFormat format = OutputFormat.createPrettyPrint();		
 		XMLWriter writer = new XMLWriter(new FileWriter(xml_path), format);
 		writer.write(document);
+		writer.flush();
+		writer.close();
 		return dump_status;
 	}
 

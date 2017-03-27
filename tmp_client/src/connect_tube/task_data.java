@@ -243,6 +243,19 @@ public class task_data {
 		return queue_data;
 	}	
 	
+	public HashMap<String, HashMap<String, String>> get_queue_data_from_processed_admin_queues_treemap(String queue_name) {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			if(processed_admin_queues_treemap.containsKey(queue_name)){
+				queue_data.putAll(processed_admin_queues_treemap.get(queue_name));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queue_data;
+	}
+	
 	public Boolean update_queue_to_processed_admin_queues_treemap(String queue_name, HashMap<String, HashMap<String, String>> queue_data) {
 		Boolean update_status = new Boolean(true);
 		rw_lock.writeLock().lock();
@@ -573,6 +586,20 @@ public class task_data {
 					processed_task_queues_map.get(queue_name).remove(case_id);
 					remove_result = true;
 				}
+			} 
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_result;
+	}
+	
+	public Boolean remove_queue_from_processed_task_queues_map(String queue_name) {
+		Boolean remove_result = new Boolean(false);
+		rw_lock.writeLock().lock();
+		try {
+			if (processed_task_queues_map.containsKey(queue_name)){
+				processed_task_queues_map.remove(queue_name);
+				remove_result = true;
 			} 
 		} finally {
 			rw_lock.writeLock().unlock();

@@ -122,6 +122,7 @@ public class view_server extends Thread{
 			}
 			task_info.move_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 			task_info.move_task_from_processed_to_received_task_queues_map(queue_name);
+			task_info.remove_finished_admin_queue_list(queue_name);
 		}
 		task_info.mark_queue_in_received_admin_queues_treemap(queue_name, run_action);
 		return action_status;
@@ -199,8 +200,9 @@ public class view_server extends Thread{
 		// ============== All static job start from here ==============
 		// initial 1 : start progress
 		start_progress start_prepare = new start_progress(switch_info);
-		new Thread(start_prepare).start();
 		start_prepare.setVisible(true);
+		new Thread(start_prepare).start();
+		
 		while(true){
 			if(switch_info.get_back_ground_power_up()){
 				break;

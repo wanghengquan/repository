@@ -47,7 +47,7 @@ public class hall_manager extends Thread {
 	// protected function
 	// private function
 
-	private hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info, view_data view_info) {
+	public hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info, view_data view_info) {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
