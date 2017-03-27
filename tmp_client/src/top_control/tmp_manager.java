@@ -9,8 +9,15 @@
  */
 package top_control;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import connect_tube.task_data;
 import connect_tube.tube_server;
@@ -100,6 +107,25 @@ public class tmp_manager extends Thread  {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
+		//log config
+		String class_path_str = public_data.class.getResource("").getPath();
+		File class_path = new File(class_path_str);
+		String bin_path = class_path.getParentFile().getParent();
+		String cfg_path = bin_path + "/conf/log4j2.xml"; 
+		ConfigurationSource source = null;
+		try {
+			source = new ConfigurationSource(new FileInputStream(cfg_path));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Configurator.initialize(null, source);
+		
+		
+		
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();

@@ -32,7 +32,7 @@ public class hall_manager extends Thread {
 	private static final Logger HALL_MANAGER_LOGGER = LogManager.getLogger(hall_manager.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Thread client_thread;
+	private Thread current_thread;
 	private switch_data switch_info;
 	private task_data task_info;
 	private client_data client_info;
@@ -140,7 +140,7 @@ public class hall_manager extends Thread {
 	}
 
 	private void monitor_run() {
-		client_thread = Thread.currentThread();
+		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : start task waiters
 		waiters_task = get_waiter_ready(pool_info);
@@ -184,8 +184,8 @@ public class hall_manager extends Thread {
 	public void hard_stop() {
 		stop_sub_threads();
 		stop_request = true;
-		if (client_thread != null) {
-			client_thread.interrupt();
+		if (current_thread != null) {
+			current_thread.interrupt();
 		}
 	}
 
