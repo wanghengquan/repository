@@ -20,7 +20,7 @@
 		</RollingRandomAccessFile>        
     </Appenders>
     <Loggers>
-        <Logger name="info_parser.cfg_parser" level="INFO" additivity="false">  
+        <Logger name="top_control.tmp_manager" level="INFO" additivity="false">  
             <AppenderRef ref="Console" />  
         </Logger> 
         <Root level="WARN">

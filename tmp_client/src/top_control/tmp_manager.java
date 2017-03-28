@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +37,8 @@ public class tmp_manager extends Thread  {
 	// public property
 	// protected property
 	// private property
-	private static final Logger TMP_MANAGER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
+	//private static final Logger TMP_MANAGER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
+	private static Logger TMP_MANAGER_LOGGER = null; 
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread client_thread;
@@ -45,6 +48,8 @@ public class tmp_manager extends Thread  {
 	// protected function
 	// private function	
 	
+	public tmp_manager(){
+	}
 	
 	public void run() {
 		try {
@@ -68,7 +73,7 @@ public class tmp_manager extends Thread  {
 					e.printStackTrace();
 				}
 			} else {
-				TMP_MANAGER_LOGGER.debug("Client Thread running...");
+				//TMP_MANAGER_LOGGER.debug("Client Thread running...");
 			}
 			
 			// System.out.println("Thread running...");
@@ -103,29 +108,53 @@ public class tmp_manager extends Thread  {
 		}
 	}
 	
+	private static String get_bin_path(){
+		URL url = tmp_manager.class.getProtectionDomain().getCodeSource().getLocation();
+		String filePath = new String();
+		try {
+			filePath = URLDecoder.decode(url.getPath(), "utf-8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("ori = " + filePath);
+		if (filePath.endsWith(".jar")) {
+			filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
+		}
+		File file = new File(filePath);
+		filePath = file.getAbsolutePath();
+		System.out.println("new = " + filePath);
+		return filePath;
+	}
+	
+	private static void initial_log_config(){
+		ConfigurationSource source;
+		String bin_path = get_bin_path();
+		System.out.println("Log4j2 = " + bin_path);
+		File bin_dobj = new File(bin_path);
+		String work_path = bin_dobj.getParentFile().toString();
+		String conf_path = work_path + "/conf/log4j2.xml";
+		System.out.println("Log4j2 fullPath = " + conf_path);
+		File file = new File(conf_path);
+		try {
+			source = new ConfigurationSource(new FileInputStream(file), file);
+			Configurator.initialize(null, source);
+			TMP_MANAGER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	/*
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		//log config
-		String class_path_str = public_data.class.getResource("").getPath();
-		File class_path = new File(class_path_str);
-		String bin_path = class_path.getParentFile().getParent();
-		String cfg_path = bin_path + "/conf/log4j2.xml"; 
-		ConfigurationSource source = null;
-		try {
-			source = new ConfigurationSource(new FileInputStream(cfg_path));
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		Configurator.initialize(null, source);
-		
-		
-		
+		initial_log_config();
+		TMP_MANAGER_LOGGER.debug("debug out put");
+		TMP_MANAGER_LOGGER.info("Info out put");
+		TMP_MANAGER_LOGGER.warn("Warn out put");
+		TMP_MANAGER_LOGGER.error("Error out put");
+		TMP_MANAGER_LOGGER.fatal("Fatal out put");	
+		tmp_manager new_manager = new tmp_manager();
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
