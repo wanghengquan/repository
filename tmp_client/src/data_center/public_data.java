@@ -11,6 +11,8 @@ package data_center;
 
 import java.io.File;
 
+import top_control.tmp_manager;
+
 public class public_data {
 	//private static final Logger PUB_LOGGER = LogManager.getLogger(public_data.class.getName());
 	//========================
@@ -130,10 +132,12 @@ public class public_data {
 	}
 	
 	private static String get_bin_path(){
-		String class_path_str = public_data.class.getResource("").getPath();
-		File class_path = new File(class_path_str);
-		String bin_path = class_path.getParentFile().getParent();
-		return bin_path.replaceAll("\\\\", "/");
+		String bin_path = tmp_manager.get_bin_path();
+		File bin_dobj = new File(bin_path);
+		String install_path = bin_dobj.getParentFile().getAbsolutePath();
+		System.out.println(">>>>>>>>>>");
+		System.out.println(install_path);
+		return install_path.replaceAll("\\\\", "/");
 	}
 	
 	/*

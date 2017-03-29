@@ -108,7 +108,7 @@ public class tmp_manager extends Thread  {
 		}
 	}
 	
-	private static String get_bin_path(){
+	public static String get_bin_path(){
 		URL url = tmp_manager.class.getProtectionDomain().getCodeSource().getLocation();
 		String filePath = new String();
 		try {
