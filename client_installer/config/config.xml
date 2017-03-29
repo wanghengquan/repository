@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Installer>
+    <Name>TestRail Client</Name>
+    <Version>1.0.0</Version>
+    <Title>TestRail Client Installer</Title>
+    <Publisher>Lattice.SWQA</Publisher>
+    <StartMenuDir>Super App</StartMenuDir>
+    <TargetDir>@HomeDir@/InstallationDirectory</TargetDir>
+</Installer>
