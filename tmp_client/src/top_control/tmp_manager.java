@@ -12,7 +12,6 @@ package top_control;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 
@@ -116,24 +115,22 @@ public class tmp_manager extends Thread  {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("ori = " + filePath);
 		if (filePath.endsWith(".jar")) {
 			filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
 		}
 		File file = new File(filePath);
 		filePath = file.getAbsolutePath();
-		System.out.println("new = " + filePath);
+		System.out.println(">>>Info: Software bin path:" + filePath);
 		return filePath;
 	}
 	
 	private static void initial_log_config(){
 		ConfigurationSource source;
 		String bin_path = get_bin_path();
-		System.out.println("Log4j2 = " + bin_path);
 		File bin_dobj = new File(bin_path);
 		String work_path = bin_dobj.getParentFile().toString();
 		String conf_path = work_path + "/conf/log4j2.xml";
-		System.out.println("Log4j2 fullPath = " + conf_path);
+		System.out.println(">>>Info: Software log config path:" + conf_path);
 		File file = new File(conf_path);
 		try {
 			source = new ConfigurationSource(new FileInputStream(file), file);
@@ -154,7 +151,6 @@ public class tmp_manager extends Thread  {
 		TMP_MANAGER_LOGGER.warn("Warn out put");
 		TMP_MANAGER_LOGGER.error("Error out put");
 		TMP_MANAGER_LOGGER.fatal("Fatal out put");	
-		tmp_manager new_manager = new tmp_manager();
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();

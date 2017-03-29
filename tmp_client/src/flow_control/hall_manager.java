@@ -99,24 +99,24 @@ public class hall_manager extends Thread {
 
 	private void generate_console_report(pool_data pool_info) {
 		// report processing queue list
-		HALL_MANAGER_LOGGER.warn(">>>==========Console Report==========");
-		HALL_MANAGER_LOGGER.warn(">>>Captured queue:" + task_info.get_captured_admin_queues_treemap().keySet().toString());
+		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
+		HALL_MANAGER_LOGGER.info(">>>Captured queue:" + task_info.get_captured_admin_queues_treemap().keySet().toString());
 		// report processing queue list
-		HALL_MANAGER_LOGGER.warn(">>>Processing queue:" + task_info.get_processing_admin_queue_list().toString());
+		HALL_MANAGER_LOGGER.info(">>>Processing queue:" + task_info.get_processing_admin_queue_list().toString());
 		// report running queue list
-		HALL_MANAGER_LOGGER.warn(">>>Running queue:" + task_info.get_running_admin_queue_list().toString());
+		HALL_MANAGER_LOGGER.info(">>>Running queue:" + task_info.get_running_admin_queue_list().toString());
 		// report finished queue list
-		HALL_MANAGER_LOGGER.warn(">>>Finished queue:" + task_info.get_finished_admin_queue_list().toString());
+		HALL_MANAGER_LOGGER.info(">>>Finished queue:" + task_info.get_finished_admin_queue_list().toString());
 		// report thread using
 		String max_thread = String.valueOf(pool_info.get_pool_current_size());
 		String used_thread = String.valueOf(pool_info.get_pool_used_threads());
-		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + used_thread + "/" + max_thread);
-		HALL_MANAGER_LOGGER.warn(">>>==================================");
-		HALL_MANAGER_LOGGER.warn("");
-		HALL_MANAGER_LOGGER.warn(client_info.get_use_soft_insts());
-		HALL_MANAGER_LOGGER.warn(client_info.get_max_soft_insts());
-		HALL_MANAGER_LOGGER.warn(client_info.get_available_software_insts());		
-		HALL_MANAGER_LOGGER.warn(client_info.get_client_data().toString());
+		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread);
+		HALL_MANAGER_LOGGER.info(">>>==================================");
+		HALL_MANAGER_LOGGER.info("");
+		HALL_MANAGER_LOGGER.info(client_info.get_use_soft_insts());
+		HALL_MANAGER_LOGGER.info(client_info.get_max_soft_insts());
+		HALL_MANAGER_LOGGER.info(client_info.get_available_software_insts());		
+		HALL_MANAGER_LOGGER.info(client_info.get_client_data().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
 	}

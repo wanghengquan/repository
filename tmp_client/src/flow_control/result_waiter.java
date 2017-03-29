@@ -670,7 +670,7 @@ public class result_waiter extends Thread {
 			Boolean dump_status = dump_finished_data(call_status);
 			// following actions based on a non-empty call back.
 			if (call_status.size() < 1) {
-				RESULT_WAITER_LOGGER.warn(waiter_name + ":Thread Pool Empty...");
+				RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
 				continue;
 			}
 			// task 2 : cancel timeout call
@@ -696,7 +696,7 @@ public class result_waiter extends Thread {
 					&& release_pool_thread_status && release_resource_status && post_status && dump_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": work fine.");
 			} else {
-				RESULT_WAITER_LOGGER.warn(waiter_name + ": Get some warning process. please check.");
+				RESULT_WAITER_LOGGER.info(waiter_name + ": Get some warning process. please check.");
 			}
 		}
 	}

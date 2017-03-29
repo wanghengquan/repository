@@ -352,7 +352,7 @@ public class task_waiter extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Found empty/invalid Task Queue:" + queue_name);
+				TASK_WAITER_LOGGER.info(waiter_name + ":Found empty/invalid Task Queue:" + queue_name);
 			}
 		}
 		return indexed_case_data;
@@ -574,7 +574,7 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.warn(waiter_name + ":No matched queue found.");
 				continue;
 			} else {
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Focus on " + queue_name);
+				TASK_WAITER_LOGGER.info(waiter_name + ":Focus on " + queue_name);
 			}
 			// task 3 : get admin data                  ======================>key variable 2: admin_data OK now
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();		
@@ -600,7 +600,7 @@ public class task_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 			task_data.putAll(get_final_task_data(queue_name, admin_data));
 			if (task_data.isEmpty()){
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Try change queue to finished status:" + queue_name);
+				TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
 				task_info.update_finished_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
 				//move queue form received to processed admin queue treemap
@@ -623,7 +623,7 @@ public class task_waiter extends Thread {
 			}
 			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id, task_data);
 			if(register_status){
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Launched " + queue_name + "," + case_id);
+				TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
 				task_info.increase_running_admin_queue_list(queue_name);//start running this queue.
 			} else {
 				client_info.release_use_soft_insts(software_cost);
