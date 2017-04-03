@@ -40,7 +40,11 @@ public class tmp_manager extends Thread  {
 	private static Logger TMP_MANAGER_LOGGER = null; 
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private Thread client_thread;
+	private Thread current_thread;
+	private client_state initial_state;
+	private client_state maintain_state;
+	private client_state work_state;
+	private client_state tmp_state;
 	//private String line_seprator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
 	// public function
@@ -48,6 +52,9 @@ public class tmp_manager extends Thread  {
 	// private function	
 	
 	public tmp_manager(){
+		this.initial_state = new initial_state(this);
+		this.maintain_state = new maintain_state(this);
+		this.work_state = new work_state(this);
 	}
 	
 	public void run() {
@@ -60,7 +67,7 @@ public class tmp_manager extends Thread  {
 	}
 
 	private void monitor_run() {
-		client_thread = Thread.currentThread();
+		current_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -72,10 +79,13 @@ public class tmp_manager extends Thread  {
 					e.printStackTrace();
 				}
 			} else {
-				//TMP_MANAGER_LOGGER.debug("Client Thread running...");
+				TMP_MANAGER_LOGGER.debug("Client Thread running...");
 			}
 			
-			// System.out.println("Thread running...");
+			
+			
+			
+			
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
@@ -91,8 +101,8 @@ public class tmp_manager extends Thread  {
 
 	public void hard_stop() {
 		stop_request = true;
-		if (client_thread != null) {
-			client_thread.interrupt();
+		if (current_thread != null) {
+			current_thread.interrupt();
 		}
 	}
 
