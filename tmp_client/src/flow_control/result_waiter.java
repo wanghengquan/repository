@@ -675,8 +675,6 @@ public class result_waiter extends Thread {
 			}
 			// task 2 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
-			System.out.println(">>>>>>>>>>>>>>>>testing result waiter line670");
-			System.out.println(call_status.toString());
 			// task 3 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
 			Boolean send_case_status = send_case_report(case_report_data);

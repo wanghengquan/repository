@@ -156,11 +156,11 @@ public class tmp_manager extends Thread  {
 	 */
 	public static void main(String[] args) {
 		initial_log_config();
-		TMP_MANAGER_LOGGER.debug("debug out put");
-		TMP_MANAGER_LOGGER.info("Info out put");
-		TMP_MANAGER_LOGGER.warn("Warn out put");
-		TMP_MANAGER_LOGGER.error("Error out put");
-		TMP_MANAGER_LOGGER.fatal("Fatal out put");	
+		TMP_MANAGER_LOGGER.debug("debug output");
+		TMP_MANAGER_LOGGER.info("Info output");
+		TMP_MANAGER_LOGGER.warn("Warn output");
+		TMP_MANAGER_LOGGER.error("Error output");
+		TMP_MANAGER_LOGGER.fatal("Fatal output");	
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();

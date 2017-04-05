@@ -112,10 +112,10 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread);
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
-		HALL_MANAGER_LOGGER.info(client_info.get_use_soft_insts());
-		HALL_MANAGER_LOGGER.info(client_info.get_max_soft_insts());
-		HALL_MANAGER_LOGGER.info(client_info.get_available_software_insts());		
-		HALL_MANAGER_LOGGER.info(client_info.get_client_data().toString());
+		HALL_MANAGER_LOGGER.debug(client_info.get_use_soft_insts());
+		HALL_MANAGER_LOGGER.debug(client_info.get_max_soft_insts());
+		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());		
+		HALL_MANAGER_LOGGER.debug(client_info.get_client_data().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
 		//HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
 	}

@@ -561,7 +561,7 @@ public class task_waiter extends Thread {
 			reload_finished_queue_data();//reload finished task data if queue changed to processing from finished
 			// task 1 : check available task queue and thread
 			if (task_info.get_processing_admin_queue_list().size() < 1) {
-				TASK_WAITER_LOGGER.warn(waiter_name + ":No Processing queue found.");
+				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
 				continue;
 			}
 			if (pool_info.get_available_thread() < 1) {

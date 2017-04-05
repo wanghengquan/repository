@@ -216,9 +216,9 @@ public class data_server extends Thread {
 			// task 2: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
 			// HashMap<String, Integer> soft_ware =
-			DATA_SERVER_LOGGER.warn(client_info.get_max_soft_insts());
-			DATA_SERVER_LOGGER.warn(client_info.get_use_soft_insts());
-			DATA_SERVER_LOGGER.warn(client_info.get_client_data());
+			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
+			DATA_SERVER_LOGGER.debug(client_info.get_use_soft_insts());
+			DATA_SERVER_LOGGER.debug(client_info.get_client_data());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
