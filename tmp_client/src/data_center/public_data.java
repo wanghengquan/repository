@@ -125,6 +125,7 @@ public class public_data {
 	public final static String DEF_MAX_THREAD_MODE = "auto"; //"manual", "auto"
 	public final static String DEF_CLIENT_LINK_MODE = "both"; //"local", "remote", "both"
 	public final static String DEF_POOL_CURRENT_SIZE = "5";
+	public final static String DEF_SHOW_WELCOME = "1";
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");	
 	

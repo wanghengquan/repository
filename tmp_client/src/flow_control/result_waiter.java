@@ -98,7 +98,7 @@ public class result_waiter extends Thread {
 			String prj_dir_name = "prj" + case_report_map.get(call_index).get("projectId");
 			String run_dir_name = "run" + case_report_map.get(call_index).get("runId");
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
-			String save_path = client_info.get_client_data().get("preference").get("save_path");
+			String save_path = client_info.get_client_data().get("preference").get("save_path").replaceAll("\\\\", "/");
 			String[] path_array = new String[] { save_path, tmp_result_dir, prj_dir_name, run_dir_name };
 			String case_save_path = String.join(file_seprator, path_array);
 			case_save_path = case_save_path.replaceAll("\\\\", "/");
@@ -110,6 +110,14 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = final_cleanup(case_work_path);
 			// task 2 : zip case to save path
+			if(case_work_path.contains(save_path)){
+				//case save path same with work path no need to copy
+				continue;
+			}
+			if(save_path.trim().equals("")){
+				//no save path, skip copy
+				continue;
+			}
 			if (cmd_status.equalsIgnoreCase("failed")) {
 				run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
 			} else {

@@ -202,7 +202,6 @@ public class view_server extends Thread{
 		start_progress start_prepare = new start_progress(switch_info);
 		start_prepare.setVisible(true);
 		new Thread(start_prepare).start();
-		
 		while(true){
 			if(switch_info.get_back_ground_power_up()){
 				break;
@@ -221,6 +220,7 @@ public class view_server extends Thread{
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
 			top_view.setVisible(true);
+			top_view.show_welcome_letter();
 		} else {
 			SwingUtilities.invokeLater(new Runnable(){
 				@Override
@@ -228,6 +228,7 @@ public class view_server extends Thread{
 					// TODO Auto-generated method stub
 					top_view.gui_constructor();
 					top_view.setVisible(true);
+					top_view.show_welcome_letter();
 				}
 			});
 		}

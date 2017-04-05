@@ -14,6 +14,7 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -266,7 +267,14 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;				
 			} else {
-				preference_data.put("work_path", jt_work_path.getText().trim());
+				File work_dobj = new File(jt_work_path.getText().trim());
+				String message = new String("work path Not Exists.");
+				if(work_dobj.exists()){
+					preference_data.put("work_path", jt_work_path.getText().trim());
+				} else {
+					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+					return;					
+				}
 			}
 			//save path
 			if(jt_save_path.getText().trim().equals("")){
@@ -274,7 +282,14 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;				
 			} else {
-				preference_data.put("save_path", jt_save_path.getText().trim());
+				File save_dobj = new File(jt_save_path.getText().trim());
+				String message = new String("save path Not Exists.");
+				if(save_dobj.exists()){
+					preference_data.put("save_path", jt_save_path.getText().trim());
+				} else {
+					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+					return;					
+				}				
 			}
 			client_info.set_client_data(client_data);
 			switch_info.set_client_updated();

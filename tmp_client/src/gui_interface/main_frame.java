@@ -23,6 +23,7 @@ import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -71,7 +72,18 @@ public class main_frame extends JFrame {
 	public void gui_constructor(){
 		default_font_set();
 		initial_components();
-		launch_system_tray();
+		launch_system_tray();		
+	}
+	
+	public void show_welcome_letter(){
+		//show welcome if need
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(client_info.get_client_data());
+		HashMap<String, String> preference_data = client_data.get("preference");
+		if(preference_data != null && preference_data.get("show_welcome").equals("1")){
+			welcome_dialog welcome_view = new welcome_dialog(this, switch_info, client_info);
+			welcome_view.setVisible(true);
+		}		
 	}
 	
 	public void default_font_set() {
@@ -102,7 +114,6 @@ public class main_frame extends JFrame {
 		this.getContentPane().setBackground(Color.white);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		new Thread(task_insts).start();
-		
 	}
 
 	private void launch_system_tray() {
@@ -162,6 +173,7 @@ public class main_frame extends JFrame {
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
 			top_view.setVisible(true);
+			top_view.show_welcome_letter();
 		} else {
 			SwingUtilities.invokeLater(new Runnable(){
 				@Override
@@ -169,6 +181,7 @@ public class main_frame extends JFrame {
 					// TODO Auto-generated method stub
 					top_view.gui_constructor();
 					top_view.setVisible(true);
+					top_view.show_welcome_letter();
 				}
 			});
 		}

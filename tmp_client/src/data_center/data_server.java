@@ -46,6 +46,7 @@ import info_parser.cmd_parser;
  * 					task_mode = xx
  * 					link_mode = both (from command line)
  * 					max_threads = xx
+ *                  show_welcome = xx
  * 					work_path = xx
  * 					save_path = xx
  */
@@ -110,6 +111,7 @@ public class data_server extends Thread {
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
 		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
+		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("work_path", public_data.DEF_WORK_PATH);
 		preference_data.put("save_path", public_data.DEF_SAVE_PATH);
 		preference_data.putAll(config_hash.get("tmp_preference"));
