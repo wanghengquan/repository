@@ -162,10 +162,10 @@ public class hall_manager extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
-			// task 4 : automatic run
-			// task 5 : make general report
+			// task 2 : automatic run
+			// task 3 : make general report
 			generate_console_report(pool_info);
-			// task 6 : stop waiters
+			// task 4 : stop waiters
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 				//Thread.sleep(2 * 1000);

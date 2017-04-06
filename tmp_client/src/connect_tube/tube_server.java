@@ -188,39 +188,6 @@ public class tube_server extends Thread {
 		task_info.set_captured_admin_queues_treemap(captured_admin_queue);
 		task_info.set_rejected_admin_reason_treemap(new_rejected_reason_queue);
 	}
-	
-	/*
-	private void update_captured_admin_queues() {
-		Map<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		client_data.putAll(client_info.get_client_data());
-		total_admin_queue.putAll(task_info.get_received_admin_queues_treemap());	
-		Set<String> queue_set = total_admin_queue.keySet();
-		Iterator<String> queue_it = queue_set.iterator();
-		while (queue_it.hasNext()) {
-			String queue_name = queue_it.next();
-			ArrayList<String> mismatch_item = new ArrayList<String>();
-			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data.putAll(total_admin_queue.get(queue_name));
-			// check mismatch list
-			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_data);
-			if (mismatch_item.isEmpty()) {
-				task_info.update_captured_admin_queues_treemap(queue_name, queue_data);
-				task_info.remove_rejected_admin_queue_list(queue_name);
-				task_info.remove_rejected_admin_queue_treemap(queue_name);
-			} else {
-				if (!task_info.get_rejected_admin_queue_list().contains(queue_name)){
-					//console show
-					TUBE_SERVER_LOGGER.warn("Rejected:" + queue_name + ", Reason:" + mismatch_item.toString());
-					//reject list update
-					task_info.add_rejected_admin_queue_list(queue_name);
-					//reason record
-					task_info.add_rejected_admin_queue_treemap(queue_name, String.join(",", mismatch_item));
-				}
-			}
-		}
-	}
-	 */
 
 	private Boolean send_client_info(String mode) {
 		Boolean send_status = new Boolean(true);

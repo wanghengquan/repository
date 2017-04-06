@@ -30,6 +30,7 @@ import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
+import info_parser.cmd_parser;
 
 
 public class tmp_manager extends Thread  {
@@ -155,6 +156,8 @@ public class tmp_manager extends Thread  {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
+		cmd_parser cmd_run = new cmd_parser(args);
+		cmd_run.cmdline_parser();
 		initial_log_config();
 		TMP_MANAGER_LOGGER.debug("debug output");
 		TMP_MANAGER_LOGGER.info("Info output");
@@ -186,6 +189,7 @@ public class tmp_manager extends Thread  {
 		}
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
+		System.out.println(client_info.get_client_data());
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {
