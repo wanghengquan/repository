@@ -100,9 +100,10 @@ public class view_server extends Thread{
 			return retest_status;
 		}
 		//move case from processed to received and mark case with waiting
-		task_info.move_task_list_from_processed_to_received_task_queues_map(queue_name, case_list);
+		task_info.copy_task_list_from_processed_to_received_task_queues_map(queue_name, case_list);
+		task_info.mark_task_list_for_processed_task_queues_map(queue_name, case_list, "waiting");
 		//mark admin_status to processing
-		task_info.move_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+		task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 		task_info.active_waiting_received_admin_queues_treemap(queue_name);
 		return retest_status;
 	}
@@ -120,8 +121,9 @@ public class view_server extends Thread{
 				import_admin_data_to_processed_data(queue_name);
 				import_task_data_to_processed_data(queue_name);
 			}
-			task_info.move_admin_from_processed_to_received_admin_queues_treemap(queue_name);
-			task_info.move_task_from_processed_to_received_task_queues_map(queue_name);
+			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
+			task_info.mark_task_queue_for_processed_task_queues_map(queue_name, "waiting");
 			task_info.remove_finished_admin_queue_list(queue_name);
 		}
 		task_info.mark_queue_in_received_admin_queues_treemap(queue_name, run_action);
@@ -216,6 +218,17 @@ public class view_server extends Thread{
 		start_prepare.setVisible(false);
 		start_prepare.dispose();
 		// initial 2 : start GUI
+		while(true){
+			if(switch_info.get_data_server_power_up()){
+				break;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}	
 		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
@@ -232,7 +245,7 @@ public class view_server extends Thread{
 				}
 			});
 		}
-		// initial 2 : xxxx
+		//======================================
 		current_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {

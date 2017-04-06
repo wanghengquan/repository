@@ -49,7 +49,7 @@ public class welcome_dialog extends JDialog implements ActionListener{
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		container.add(construct_welcome_panel());
-		this.setLocation(500, 500);
+		this.setLocation(400, 400);
 		this.setSize(700, 500);
 	}
 	
@@ -70,7 +70,7 @@ public class welcome_dialog extends JDialog implements ActionListener{
 		//welcome letters
 		JTextArea letter_area = new JTextArea();
 		letter_area.setLineWrap(true);
-		letter_area.append("Please setting your Work Space and Save Space in following Text Field." + line_seprator);
+		letter_area.append("Please setting your 'Work Space' and 'Save Space' in following Text Fields." + line_seprator);
 		letter_area.append("Work Space: Where TMP Client store runtime result locally"  + line_seprator);
 		letter_area.append("Save Space: Where TMP Client copy local result to (Also called 'Unify result store space')"  + line_seprator);
 		letter_area.append("Bydefault:Save Space will be same with Work Space which means TMP Client will not copy the local result to remote space."  + line_seprator);

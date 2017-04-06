@@ -175,10 +175,13 @@ public class tube_server extends Thread {
 			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_data);
 			if (mismatch_item.isEmpty()) {
 				captured_admin_queue.put(queue_name, queue_data);
+				if(!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
+					TUBE_SERVER_LOGGER.info("Captured:" + queue_name);				
+				}
 			} else {
 				new_rejected_reason_queue.put(queue_name, String.join(",", mismatch_item));
 				if(!old_rejected_reason_queue.containsKey(queue_name)){
-					TUBE_SERVER_LOGGER.warn("Rejected:" + queue_name + ", Reason:" + mismatch_item.toString());
+					TUBE_SERVER_LOGGER.info("Rejected:" + queue_name + ", Reason:" + mismatch_item.toString());
 				}
 			}
 		}

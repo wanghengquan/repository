@@ -130,7 +130,7 @@ public class tmp_manager extends Thread  {
 		}
 		File file = new File(filePath);
 		filePath = file.getAbsolutePath();
-		System.out.println(">>>Info: Software bin path:" + filePath);
+		System.out.println(">>>Info: SW bin path:" + filePath);
 		return filePath;
 	}
 	
@@ -140,7 +140,7 @@ public class tmp_manager extends Thread  {
 		File bin_dobj = new File(bin_path);
 		String work_path = bin_dobj.getParentFile().toString();
 		String conf_path = work_path + "/conf/log4j2.xml";
-		System.out.println(">>>Info: Software log config path:" + conf_path);
+		System.out.println(">>>Info: SW log config path:" + conf_path);
 		File file = new File(conf_path);
 		try {
 			source = new ConfigurationSource(new FileInputStream(file), file);

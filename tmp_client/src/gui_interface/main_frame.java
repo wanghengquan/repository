@@ -100,7 +100,7 @@ public class main_frame extends JFrame {
 	}
 	
 	private void initial_components() {
-		this.setLocation(400, 100);
+		this.setLocation(300, 50);
 		this.setSize(1200, 1000);
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);

@@ -189,16 +189,19 @@ public class work_panel extends JSplitPane implements Runnable{
 		if (watching_queue_area.equals("")){
 			watching_queue_area = "all";
 		}
-		show_update = true;
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
 		// try import non exists queue data
 		if (!processed_task_queues_map.containsKey(watching_queue)) {
-			//both admin and task
-			import_admin_data_to_processed_data(watching_queue);
-			import_task_data_to_processed_data(watching_queue);
+			//both admin and task should be successfully import otherwise skip import
+			Boolean admin_import_status = import_admin_data_to_processed_data(watching_queue);
+			Boolean task_import_status = import_task_data_to_processed_data(watching_queue);
+			if (!admin_import_status || !task_import_status){
+				return show_update; // no data show
+			}
 		}
+		show_update = true;
 		if (!processed_task_queues_map.containsKey(watching_queue)) {
 			Vector<String> add_line = new Vector<String>();
 			add_line.add("No data found.");
@@ -262,7 +265,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			WORK_PANEl_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
+			WORK_PANEl_LOGGER.warn("Import xml admin data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
 		task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
@@ -291,7 +294,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			WORK_PANEl_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
+			WORK_PANEl_LOGGER.warn("Import xml task data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
 		task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);

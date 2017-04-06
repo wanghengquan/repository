@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import utility_funcs.deep_clone;
+
 public class task_data {
 	// public property
 	// {queue_name: {case_id_or_title: {}}}
@@ -153,7 +155,7 @@ public class task_data {
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			if(received_admin_queues_treemap.containsKey(queue_name)){
-				queue_data.putAll(received_admin_queues_treemap.get(queue_name));
+				queue_data = deep_clone.clone(received_admin_queues_treemap.get(queue_name));
 			}
 		} finally {
 			rw_lock.readLock().unlock();
@@ -282,17 +284,20 @@ public class task_data {
 		return remove_status;
 	}
 	
-	public Boolean move_admin_from_processed_to_received_admin_queues_treemap(String queue_name) {
+	public Boolean copy_admin_from_processed_to_received_admin_queues_treemap(String queue_name) {
 		Boolean copy_status = new Boolean(true);
 		rw_lock.writeLock().lock();
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			if (processed_admin_queues_treemap.containsKey(queue_name)){
-				admin_data.putAll(processed_admin_queues_treemap.get(queue_name));
+				admin_data = deep_clone.clone(processed_admin_queues_treemap.get(queue_name));
+				System.out.println(">>>292");
+				System.out.println(">>>admin name:" + queue_name);
+				System.out.println(">>>admin data:" + admin_data.toString());
 				HashMap<String, String> status_data = admin_data.get("Status");
 				status_data.put("admin_status", "waiting");
 				received_admin_queues_treemap.put(queue_name, admin_data);
-				processed_admin_queues_treemap.remove(queue_name);
+				//processed_admin_queues_treemap.remove(queue_name);
 			} else {
 				copy_status = false;
 			}
@@ -441,17 +446,15 @@ public class task_data {
 		Map<String, HashMap<String, HashMap<String, String>>> return_id_case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			TreeMap<String, HashMap<String, HashMap<String, String>>> received_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			//TreeMap<String, HashMap<String, HashMap<String, String>>> processed_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			received_task_data.putAll(received_task_queues_map.get(queue_name));
-			if(processed_task_queues_map.containsKey(queue_name)){
-				processed_task_data.putAll(processed_task_queues_map.get(queue_name));
-			}
+			//if(processed_task_queues_map.containsKey(queue_name)){
+			//	processed_task_data.putAll(processed_task_queues_map.get(queue_name));
+			//}
 			Iterator<String> received_task_data_it = received_task_data.keySet().iterator();
 			while(received_task_data_it.hasNext()){
 				String case_id = received_task_data_it.next();
 				HashMap<String, HashMap<String, String>> case_data = received_task_data.get(case_id);
-				System.out.println(">>>>>>>>>>>>>>>>>");
-				System.out.println(case_data.toString());
 				HashMap<String, String> status_data = case_data.get("Status");
 				if(status_data.containsKey("cmd_status")){
 					if(status_data.get("cmd_status").equalsIgnoreCase("waiting")){
@@ -520,37 +523,59 @@ public class task_data {
 		return register_status;
 	}
 	
-	public void move_task_list_from_processed_to_received_task_queues_map(String queue_name, ArrayList<String> case_list) {
+	public Boolean copy_task_list_from_processed_to_received_task_queues_map(String queue_name, ArrayList<String> case_list) {
 		rw_lock.writeLock().lock();
+		Boolean copy_status = new Boolean(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if(received_task_queues_map.containsKey(queue_name)){
-				queue_data.putAll(received_task_queues_map.get(queue_name));
+				queue_data = deep_clone.clone(received_task_queues_map.get(queue_name));
 			}			
 			for(String case_id : case_list){
 				HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
-				task_data.putAll(processed_task_queues_map.get(queue_name).get(case_id));
+				task_data = deep_clone.clone(processed_task_queues_map.get(queue_name).get(case_id));
 				HashMap<String, String> status_data = task_data.get("Status");
 				status_data.put("cmd_status", "waiting");
 				queue_data.put(case_id, task_data);
-				processed_task_queues_map.get(queue_name).remove(case_id);
+				//processed_task_queues_map.get(queue_name).remove(case_id);
 			}
 			received_task_queues_map.put(queue_name, queue_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
+		return copy_status;
 	}
 	
-	public void move_task_from_processed_to_received_task_queues_map(String queue_name) {
+	public Boolean mark_task_list_for_processed_task_queues_map(
+			String queue_name, 
+			ArrayList<String> case_list,
+			String action_request) {
 		rw_lock.writeLock().lock();
+		Boolean mark_status = new Boolean(true);
+		try {		
+			for(String case_id : case_list){
+				HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+				task_data = processed_task_queues_map.get(queue_name).get(case_id);
+				HashMap<String, String> status_data = task_data.get("Status");
+				status_data.put("cmd_status", action_request);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return mark_status;
+	}
+	
+	public Boolean copy_task_queue_from_processed_to_received_task_queues_map(String queue_name) {
+		rw_lock.writeLock().lock();
+		Boolean copy_status = new Boolean(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if(received_task_queues_map.containsKey(queue_name)){
-				queue_data.putAll(received_task_queues_map.get(queue_name));
+				queue_data = deep_clone.clone(received_task_queues_map.get(queue_name));
 			}
 			if (processed_task_queues_map.containsKey(queue_name)){
 				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-				processed_queue_data.putAll(processed_task_queues_map.get(queue_name));
+				processed_queue_data = deep_clone.clone(processed_task_queues_map.get(queue_name));
 				Iterator<String> processed_queue_data_it = processed_queue_data.keySet().iterator();
 				while(processed_queue_data_it.hasNext()){
 					HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
@@ -559,14 +584,43 @@ public class task_data {
 					HashMap<String, String> status_data = task_data.get("Status");
 					status_data.put("cmd_status", "waiting");
 					queue_data.put(case_id, task_data);
-					processed_task_queues_map.get(queue_name).remove(case_id);
+					//processed_task_queues_map.get(queue_name).remove(case_id);
 				}
+			} else {
+				copy_status = false;
 			}
 			received_task_queues_map.put(queue_name, queue_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
+		return copy_status;
 	}
+	
+	public Boolean mark_task_queue_for_processed_task_queues_map(
+			String queue_name,
+			String action_request) {
+		rw_lock.writeLock().lock();
+		Boolean mark_status = new Boolean(true);
+		try {
+			if (processed_task_queues_map.containsKey(queue_name)){
+				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+				processed_queue_data = processed_task_queues_map.get(queue_name);
+				Iterator<String> processed_queue_data_it = processed_queue_data.keySet().iterator();
+				while(processed_queue_data_it.hasNext()){
+					HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+					String case_id = processed_queue_data_it.next();
+					task_data = processed_queue_data.get(case_id);
+					HashMap<String, String> status_data = task_data.get("Status");
+					status_data.put("cmd_status", action_request);
+				}
+			} else {
+				mark_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return mark_status;
+	}	
 	
 	public void update_queue_to_processed_task_queues_map(String queue_name, TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data) {
 		rw_lock.writeLock().lock();

@@ -91,7 +91,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 						reject_menu.show(e1.getComponent(), e1.getX(), e1.getY());
 					}
 				} else {
-					QUEUE_PANEL_LOGGER.warn("No line selected");
+					QUEUE_PANEL_LOGGER.info("No line selected");
 				}
 			}
 		});
@@ -180,7 +180,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
 		int select_index = reject_table.getSelectedRow();
-		if (select_index >= 0) {
+		int total_rows = reject_table.getRowCount();
+		if (select_index >= 0 && select_index < total_rows) {
 			selected_queue = (String) reject_table.getValueAt(select_index, 0);
 		} else {
 			update_status = false;
@@ -193,7 +194,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
 		int select_index = capture_table.getSelectedRow();
-		if (select_index >= 0) {
+		int total_rows = capture_table.getRowCount();
+		if (select_index >= 0 && select_index < total_rows) {
 			selected_queue = (String) capture_table.getValueAt(select_index, 0);
 		} else {
 			update_status = false;

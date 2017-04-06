@@ -106,18 +106,7 @@ public class task_waiter extends Thread {
 		}
 		return import_status;
 	}
-	/*
-	private void update_captured_queue_list() {
-		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
-		Iterator<String> captured_it = captured_admin_queue_set.iterator();
-		ArrayList<String> captured_admin_queue_list = new ArrayList<String>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			captured_admin_queue_list.add(queue_name);
-		}
-		task_info.set_captured_admin_queue_list(captured_admin_queue_list);
-	}
-	*/
+
 	private void update_processing_queue_list() {
 		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
@@ -358,17 +347,22 @@ public class task_waiter extends Thread {
 		return indexed_case_data;
 	}
 	
-	private void remove_finished_admin_queue_from_tube(String queue_name){
+	private void move_finished_admin_queue_from_tube(String queue_name){
 		// more received admin queue data to processed queue data
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		queue_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
+		if(queue_data == null || queue_data.isEmpty()){
+			TASK_WAITER_LOGGER.info(waiter_name + ":Move queue already finished, " + queue_name);
+			return;
+		}
 		task_info.update_queue_to_processed_admin_queues_treemap(queue_name, queue_data);
 		//delete all buffered info
 		task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
 		task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
+		System.out.println(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
 	}
 	
-	private void remove_finished_task_queue_from_tube(String queue_name){
+	private void move_finished_task_queue_from_tube(String queue_name){
 		//only need to remove buffered task queue in received task map if have(task from rmq do not have)
 		//since task case will add into processed task map, so we don't need to copy again.
 		task_info.remove_queue_from_received_task_queues_map(queue_name);
@@ -571,7 +565,7 @@ public class task_waiter extends Thread {
 			String queue_name = new String();
 			queue_name = get_right_task_queue();
 			if (queue_name.equals("") || queue_name == null) {
-				TASK_WAITER_LOGGER.warn(waiter_name + ":No matched queue found.");
+				TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
 				continue;
 			} else {
 				TASK_WAITER_LOGGER.info(waiter_name + ":Focus on " + queue_name);
@@ -580,6 +574,7 @@ public class task_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();		
 			admin_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));			
 			if(admin_data.isEmpty()){
+				TASK_WAITER_LOGGER.warn(waiter_name + ":empty admin queue find," + queue_name);
 				continue; //in case this queue deleted by other threads
 			}
 			// task 4 : resource booking (thread, software usage)  ==========> Resource booking finished, release if not launched 
@@ -595,7 +590,7 @@ public class task_waiter extends Thread {
 			if (!thread_booking) {
 				client_info.release_use_soft_insts(software_cost);
 				continue;
-			}			
+			}
 			// task 5 : get one task case data        ========================>key variable 3: task_data OK now
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 			task_data.putAll(get_final_task_data(queue_name, admin_data));
@@ -604,8 +599,8 @@ public class task_waiter extends Thread {
 				task_info.update_finished_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
 				//move queue form received to processed admin queue treemap
-				remove_finished_admin_queue_from_tube(queue_name); 
-				remove_finished_task_queue_from_tube(queue_name); 
+				move_finished_admin_queue_from_tube(queue_name); 
+				move_finished_task_queue_from_tube(queue_name); 
 				//release booking info
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
@@ -616,7 +611,7 @@ public class task_waiter extends Thread {
 			try {
 				case_id = task_data.get("ID").get("id");
 			} catch (Exception e) {
-				TASK_WAITER_LOGGER.warn(waiter_name + ":No id case find, ignore:" + task_data.toString());
+				TASK_WAITER_LOGGER.info(waiter_name + ":No id case find, ignore:" + task_data.toString());
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
 				continue;
@@ -626,6 +621,7 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
 				task_info.increase_running_admin_queue_list(queue_name);//start running this queue.
 			} else {
+				TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
 				continue;//register false, some one else may register this case already.

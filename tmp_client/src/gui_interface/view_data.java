@@ -196,10 +196,10 @@ public class view_data {
 		}
 	}
 	
-	public void set_run_action_request(String queue_area) {
+	public void set_run_action_request(String request_action) {
 		rw_lock.writeLock().lock();
 		try {
-			this.run_action_request = queue_area;
+			this.run_action_request = request_action;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
