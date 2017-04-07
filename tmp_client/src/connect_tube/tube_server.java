@@ -194,7 +194,8 @@ public class tube_server extends Thread {
 		Boolean send_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		client_hash = deep_clone.clone(client_info.get_client_data());
-		//client_hash.putAll(client_info.get_client_data());
+		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
+		processing_admin_queue_list.addAll(task_info.get_processing_admin_queue_list());
 		HashMap<String, String> simple_data = new HashMap<String, String>();
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
@@ -218,6 +219,7 @@ public class tube_server extends Thread {
 		simple_data.put("admin_request", admin_request);
 		simple_data.put("status", status);
 		simple_data.put("processNum", processNum);
+		simple_data.put("task_take", String.join("\n", processing_admin_queue_list));
 		// complex data send
 		String host_ip = client_hash.get("Machine").get("ip");
 		String os = client_hash.get("System").get("os");
@@ -250,7 +252,7 @@ public class tube_server extends Thread {
 			if (value_set.contains("max_insts")) {
 				value_set.remove("max_insts");
 			}
-			String key_value = String.join(line_seprator, value_set);
+			String key_value = String.join("\n", value_set);
 			if (key_value.equals("")) {
 				key_value = "NA";
 			}

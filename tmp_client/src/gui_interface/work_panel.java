@@ -179,8 +179,21 @@ public class work_panel extends JSplitPane implements Runnable{
 		return add_line;
 	}
 
+	private Vector<Vector<String>> get_blank_data(){
+		Vector<Vector<String>> blank_data = new Vector<Vector<String>>();
+		Vector<String> add_line = new Vector<String>();
+		add_line.add("No data found.");
+		add_line.add("..");
+		add_line.add("..");
+		add_line.add("..");
+		add_line.add("..");
+		add_line.add("..");
+		blank_data.add(add_line);
+		return blank_data;
+	}
+	
 	private Boolean update_working_queue_data() {
-		Boolean show_update = new Boolean(false);
+		Boolean show_update = new Boolean(true);
 		String watching_queue = view_info.get_watching_queue();
 		String watching_queue_area = view_info.get_watching_queue_area();
 		if (watching_queue.equals("")) {
@@ -198,36 +211,21 @@ public class work_panel extends JSplitPane implements Runnable{
 			Boolean admin_import_status = import_admin_data_to_processed_data(watching_queue);
 			Boolean task_import_status = import_task_data_to_processed_data(watching_queue);
 			if (!admin_import_status || !task_import_status){
+				work_data.clear();
+				work_data.addAll(get_blank_data());
 				return show_update; // no data show
 			}
 		}
-		show_update = true;
 		if (!processed_task_queues_map.containsKey(watching_queue)) {
-			Vector<String> add_line = new Vector<String>();
-			add_line.add("No data found.");
-			add_line.add("..");
-			add_line.add("..");
-			add_line.add("..");
-			add_line.add("..");
-			add_line.add("..");
-			new_data.add(add_line);
 			work_data.clear();
-			work_data.addAll(new_data);
+			work_data.addAll(get_blank_data());
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		queue_data.putAll(processed_task_queues_map.get(watching_queue));
 		if (queue_data.size() < 1) {
-			Vector<String> add_line = new Vector<String>();
-			add_line.add("No data found.");
-			add_line.add("..");
-			add_line.add("..");
-			add_line.add("..");
-			add_line.add("..");
-			add_line.add("..");
-			new_data.add(add_line);
 			work_data.clear();
-			work_data.addAll(new_data);
+			work_data.addAll(get_blank_data());
 			return show_update;
 		}
 		Iterator<String> case_it = queue_data.keySet().iterator();
