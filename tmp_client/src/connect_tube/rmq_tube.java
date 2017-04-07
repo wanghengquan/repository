@@ -66,11 +66,11 @@ public class rmq_tube {
 			channel.close();
 			connection.close();
 		} catch (IOException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			RMQ_TUBE_LOGGER.warn("exchange_send ioexception");
 			send_status = false;
 		} catch (TimeoutException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			RMQ_TUBE_LOGGER.warn("exchange_send timeout exception");
 			send_status = false;
 		}
@@ -98,11 +98,11 @@ public class rmq_tube {
 			channel.close();
 			connection.close();
 		} catch (IOException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			RMQ_TUBE_LOGGER.warn("basic_send ioexception");
 			send_status = false;
 		} catch (TimeoutException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			RMQ_TUBE_LOGGER.warn("basic_send timeoutexception");
 			send_status = false;
 		}
@@ -187,15 +187,15 @@ public class rmq_tube {
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				//remote_admin_queue_receive_treemap.putAll(update_admin_queue(message, current_terminal));
+				// remote_admin_queue_receive_treemap.putAll(update_admin_queue(message,
+				// current_terminal));
 				update_admin_queue(message, current_terminal);
 			}
 		};
 		channel.basicConsume(queueName, true, consumer);
 	}
 
-	private Boolean update_admin_queue(String message,
-			String current_terminal) {
+	private Boolean update_admin_queue(String message, String current_terminal) {
 		Boolean update_status = new Boolean(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(message);

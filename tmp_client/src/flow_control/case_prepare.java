@@ -31,7 +31,7 @@ public class case_prepare {
 	// protected property
 	// private property
 	private static final Logger CASE_PREPARE_LOGGER = LogManager.getLogger(task_waiter.class.getName());
-	//private String line_seprator = System.getProperty("line.separator");
+	// private String line_seprator = System.getProperty("line.separator");
 	private String file_seprator = System.getProperty("file.separator");
 
 	public case_prepare() {
@@ -78,7 +78,7 @@ public class case_prepare {
 		// generate destination URL
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
-		String design_des_url = case_work_path + "/" +design_base_name;
+		String design_des_url = case_work_path + "/" + design_base_name;
 		// get access author key
 		String auth_key = task_data.get("CaseInfo").get("auth_key");
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
@@ -92,7 +92,7 @@ public class case_prepare {
 				for (String line : system_cmd.run(run_cmd))
 					export_msg.add(line);
 			} catch (IOException e) {
-				//e.printStackTrace();
+				// e.printStackTrace();
 				CASE_PREPARE_LOGGER.warn("run cmd fail:" + run_cmd);
 			}
 		}
@@ -102,7 +102,7 @@ public class case_prepare {
 	protected ArrayList<String> get_script_export(HashMap<String, HashMap<String, String>> task_data,
 			String case_work_path) throws IOException, Exception {
 		ArrayList<String> export_msg = new ArrayList<String>();
-		// generate source URL 
+		// generate source URL
 		String script_addr = task_data.get("CaseInfo").get("script_address");
 		if (script_addr.equals("") || script_addr == null) {
 			CASE_PREPARE_LOGGER.info("Internal script used, no export need.");
@@ -165,35 +165,34 @@ public class case_prepare {
 		return cmd_list;
 	}
 
-	protected HashMap<String, String> get_run_environment(
-			HashMap<String, HashMap<String, String>> task_data,
-			HashMap<String, HashMap<String, String>> client_data){
+	protected HashMap<String, String> get_run_environment(HashMap<String, HashMap<String, String>> task_data,
+			HashMap<String, HashMap<String, String>> client_data) {
 		HashMap<String, String> run_env = new HashMap<String, String>();
-		//put python unbuffered environ
-		if(task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")){
+		// put python unbuffered environ
+		if (task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")) {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
-		//put environ for software requirements
+		// put environ for software requirements
 		Set<String> software_request_set = task_data.get("Software").keySet();
 		Iterator<String> software_request_it = software_request_set.iterator();
-		while(software_request_it.hasNext()){
+		while (software_request_it.hasNext()) {
 			String software_name = software_request_it.next();
 			String software_build = task_data.get("Software").get(software_name);
 			String software_path = client_data.get(software_name).get(software_build);
 			String software_env_name = "EXTERNAL_" + software_name.toUpperCase() + "_PATH";
 			run_env.put(software_env_name, software_path);
 		}
-		//put environ in task info Environment
+		// put environ in task info Environment
 		Set<String> env_request_set = task_data.get("Environment").keySet();
 		Iterator<String> env_request_it = env_request_set.iterator();
-		while(env_request_it.hasNext()){
+		while (env_request_it.hasNext()) {
 			String env_name = env_request_it.next();
 			String env_value = task_data.get("Environment").get(env_name);
 			run_env.put(env_name, env_value);
 		}
 		return run_env;
 	}
-	
+
 	/*
 	 * Current we support the following address: repository + suite_path +
 	 * design_name http://linux12v/test_dir + test_suite + test_case
@@ -253,15 +252,13 @@ public class case_prepare {
 		return cmd_array;
 	}
 
-	protected ArrayList<String> get_case_ready(
-			HashMap<String, HashMap<String, String>> task_data, 
-			String working_dir
-			) throws Exception{
+	protected ArrayList<String> get_case_ready(HashMap<String, HashMap<String, String>> task_data, String working_dir)
+			throws Exception {
 		ArrayList<String> export_list = new ArrayList<String>();
 		ArrayList<String> export_design = this.get_design_export(task_data, working_dir);
 		ArrayList<String> export_script = this.get_script_export(task_data, working_dir);
 		export_list.addAll(export_design);
 		export_list.addAll(export_script);
-		return export_list;		
+		return export_list;
 	}
 }

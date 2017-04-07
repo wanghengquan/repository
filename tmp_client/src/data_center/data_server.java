@@ -71,7 +71,8 @@ public class data_server extends Thread {
 	// protected function
 	// private function
 
-	public data_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info, pool_data pool_info) {
+	public data_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info,
+			pool_data pool_info) {
 		this.cmd_info = cmd_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
@@ -85,7 +86,7 @@ public class data_server extends Thread {
 		HashMap<String, HashMap<String, String>> machine_hash = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> config_hash = new HashMap<String, HashMap<String, String>>();
 		machine_hash.putAll(machine_sync.machine_hash);
-		config_hash.putAll(config_sync.config_hash);		
+		config_hash.putAll(config_sync.config_hash);
 		// 1. merge Software data
 		Iterator<String> config_it = config_hash.keySet().iterator();
 		while (config_it.hasNext()) {
@@ -104,7 +105,8 @@ public class data_server extends Thread {
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
-		machine_data.putAll(config_hash.get("tmp_machine")); // configuration data
+		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
+																// data
 		client_data.put("Machine", machine_data);
 		// 4. merge preference data (for software use):
 		// command data > config data > data in public_data
@@ -137,7 +139,7 @@ public class data_server extends Thread {
 			String option = config_it.next();
 			HashMap<String, String> option_data = new HashMap<String, String>();
 			option_data.putAll(config_hash.get(option));
-			if (option.contains("tmp_")){
+			if (option.contains("tmp_")) {
 				continue;
 			}
 			client_data.get(option).putAll(option_data);
@@ -150,7 +152,7 @@ public class data_server extends Thread {
 
 	private void update_max_sw_insts_limitation() {
 		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
-		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>> ();
+		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		client_hash.putAll(client_info.get_client_data());
 		Iterator<String> key_it = client_hash.keySet().iterator();
 		while (key_it.hasNext()) {

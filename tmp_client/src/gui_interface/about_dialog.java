@@ -19,7 +19,7 @@ import javax.swing.table.JTableHeader;
 
 import data_center.public_data;
 
-public class about_dialog extends JDialog{
+public class about_dialog extends JDialog {
 	/**
 	 * 
 	 */
@@ -30,7 +30,7 @@ public class about_dialog extends JDialog{
 	private Vector<String> date = new Vector<String>();
 	private Vector<String> support_suite = new Vector<String>();
 
-	public about_dialog(main_frame main_view){
+	public about_dialog(main_frame main_view) {
 		super(main_view, "About TestRail Client", true);
 		Container container = this.getContentPane();
 		about_column.add("Item");
@@ -52,7 +52,7 @@ public class about_dialog extends JDialog{
 		this.setLocation(800, 500);
 		this.setSize(400, 300);
 	}
-	
+
 	public static void main(String[] args) {
 		about_dialog about_info = new about_dialog(null);
 		about_info.setVisible(true);

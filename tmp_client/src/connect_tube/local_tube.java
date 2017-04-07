@@ -32,6 +32,7 @@ public class local_tube {
 	// private property
 	private final Logger LOCAL_LOGGER = LogManager.getLogger(local_tube.class.getName());
 	private task_data task_info;
+
 	// public function
 	public local_tube(task_data task_info) {
 		this.task_info = task_info;
@@ -641,8 +642,7 @@ public class local_tube {
 		return merged_data;
 	}
 
-	public static HashMap<String, String> comm_admin_task_merge(
-			HashMap<String, String> globle_data,
+	public static HashMap<String, String> comm_admin_task_merge(HashMap<String, String> globle_data,
 			HashMap<String, String> local_data) {
 		Set<String> local_set = local_data.keySet();
 		Iterator<String> local_it = local_set.iterator();
@@ -650,13 +650,13 @@ public class local_tube {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
 			if (local_key.equals("cmd") && !local_value.equals("")) {
-				if (local_data.containsKey("override") && local_data.get("override").equals("local")){
+				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
 					globle_data.put("cmd", local_value);
-				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")){
+				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
 					continue;
 				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
 					globle_data.put("cmd", local_value);
-				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")){
+				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
 					continue;
 				} else {
 					String local_cmd = local_data.get("cmd");
@@ -665,9 +665,10 @@ public class local_tube {
 					globle_data.put("cmd", overall_cmd);
 				}
 			} else {
-				//non command key 1)globle have value, local must have value then overwrite
-				if (globle_data.containsKey(local_key)){
-					if (!local_value.equals("")){
+				// non command key 1)globle have value, local must have value
+				// then overwrite
+				if (globle_data.containsKey(local_key)) {
+					if (!local_value.equals("")) {
 						globle_data.put(local_key, local_value);
 					}
 				} else {
@@ -677,7 +678,7 @@ public class local_tube {
 		}
 		return globle_data;
 	}
-	
+
 	private Boolean is_request_match(HashMap<String, HashMap<String, String>> queue_data,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// compare sub map data Software, System, Machine
@@ -700,10 +701,7 @@ public class local_tube {
 		return is_match;
 	}
 
-	private String get_one_queue_name(
-			String admin_queue_base, 
-			String queue_pre_fix,
-			String current_terminal,
+	private String get_one_queue_name(String admin_queue_base, String queue_pre_fix, String current_terminal,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// generate queue name
 		String queue_name = new String();
@@ -751,11 +749,8 @@ public class local_tube {
 	 * {queue_name: {ID : {prj : name,suite: name}, System: {os : name}}}
 	 */
 	@SuppressWarnings("unused")
-	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_one_queue_hash(
-			String admin_queue_base,
-			String queue_pre_fix, 
-			String current_terminal,
-			HashMap<String, HashMap<String, String>> design_data) {
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_one_queue_hash(String admin_queue_base,
+			String queue_pre_fix, String current_terminal, HashMap<String, HashMap<String, String>> design_data) {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> one_queue_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		// generate queue name
 		String queue_name = new String();
@@ -782,8 +777,10 @@ public class local_tube {
 		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);
 		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_data,
 				case_data);
-		//TreeMap<String, HashMap<String, HashMap<String, String>>> current_admin_queue_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		//current_admin_queue_treemap.putAll(task_info.get_received_admin_queues_treemap());
+		// TreeMap<String, HashMap<String, HashMap<String, String>>>
+		// current_admin_queue_treemap = new TreeMap<String, HashMap<String,
+		// HashMap<String, String>>>();
+		// current_admin_queue_treemap.putAll(task_info.get_received_admin_queues_treemap());
 		String admin_queue_base = new String();
 		if (suite_data.containsKey("suite_name")) {
 			admin_queue_base = suite_data.get("suite_name");
@@ -804,7 +801,8 @@ public class local_tube {
 			Iterator<String> admin_queues_it = current_received_admin_queues_treemap.keySet().iterator();
 			while (admin_queues_it.hasNext()) {
 				admin_queue_name = admin_queues_it.next();
-				HashMap<String, HashMap<String, String>> current_admin_queue_data = current_received_admin_queues_treemap.get(admin_queue_name);
+				HashMap<String, HashMap<String, String>> current_admin_queue_data = current_received_admin_queues_treemap
+						.get(admin_queue_name);
 				if (is_request_match(current_admin_queue_data, design_data)) {
 					is_admin_queue_exists = true;
 					break;
@@ -813,11 +811,12 @@ public class local_tube {
 			// if admin queue note exists, create one
 			// xxx@runxxx_suite_time
 			if (!is_admin_queue_exists) {
-				//get admin queue name
-				//make the new admin queue name use total received admin queues number + 1
+				// get admin queue name
+				// make the new admin queue name use total received admin queues
+				// number + 1
 				String queue_pre_fix = String.valueOf(current_received_admin_queues_treemap.keySet().size() + 1);
 				admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
-				//get admin queue data
+				// get admin queue data
 				HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 				admin_queue_data.putAll(design_data);
 				HashMap<String, String> admin_status_data = new HashMap<String, String>();
@@ -826,7 +825,8 @@ public class local_tube {
 				task_info.add_queue_data_to_received_admin_queues_treemap(admin_queue_name, admin_queue_data);
 			}
 			// insert design into received task queue : admin_queue_name
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = task_info.get_received_task_queues_map();
+			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = task_info
+					.get_received_task_queues_map();
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			if (received_task_queues_map.containsKey(admin_queue_name)) {
 				task_queue_data.putAll(received_task_queues_map.get(admin_queue_name));
@@ -844,25 +844,29 @@ public class local_tube {
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
 		sheet_parser.generate_local_admin_task_queues("D:/java_dev/diamond_regression.xlsx", current_terminal);
-		//System.out.println(task_info.get_received_task_queues_map().toString());
-		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		// System.out.println(task_info.get_received_task_queues_map().toString());
+		// System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		xml_parser xml_parser2 = new xml_parser();
-		
+
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
 		String queue_name = dump_queue_it.next();
-		HashMap<String, HashMap<String, String>> admin_queue_data = task_info.get_queue_data_from_received_admin_queues_treemap(queue_name);
+		HashMap<String, HashMap<String, String>> admin_queue_data = task_info
+				.get_queue_data_from_received_admin_queues_treemap(queue_name);
 		System.out.println(queue_name);
 		System.out.println(admin_queue_data);
 		try {
-			xml_parser2.dump_finished_admin_data(admin_queue_data, queue_name, "D:/tmp_work_space/logs/finished/admin/test.xml");
+			xml_parser2.dump_finished_admin_data(admin_queue_data, queue_name,
+					"D:/tmp_work_space/logs/finished/admin/test.xml");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = task_info.get_received_task_queues_map().get(queue_name);
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = task_info
+				.get_received_task_queues_map().get(queue_name);
 		System.out.println(task_queue_data);
 		try {
-			xml_parser2.dump_finished_task_data(task_queue_data, queue_name, "D:/tmp_work_space/logs/finished/task/test.xml");
+			xml_parser2.dump_finished_task_data(task_queue_data, queue_name,
+					"D:/tmp_work_space/logs/finished/task/test.xml");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

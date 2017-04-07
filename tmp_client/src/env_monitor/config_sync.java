@@ -56,6 +56,7 @@ public class config_sync extends Thread {
 	private client_data client_info;
 	private switch_data switch_info;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
+
 	// public function
 	public config_sync() {
 
@@ -64,21 +65,21 @@ public class config_sync extends Thread {
 	public config_sync(switch_data switch_info, client_data client_info) {
 		this.switch_info = switch_info;
 		this.client_info = client_info;
-	}	
+	}
 	// protected function
 	// private function
-	
-	private HashMap<String, String> get_scan_dirs(String scan_path){
+
+	private HashMap<String, String> get_scan_dirs(String scan_path) {
 		HashMap<String, String> scan_dirs = new HashMap<String, String>();
 		File scan_handler = new File(scan_path);
-		File [] all_handlers = scan_handler.listFiles();
-		for(File sub_handler: all_handlers){
+		File[] all_handlers = scan_handler.listFiles();
+		for (File sub_handler : all_handlers) {
 			String build_name = sub_handler.getName();
-			if (!sub_handler.isDirectory()){
+			if (!sub_handler.isDirectory()) {
 				continue;
 			}
 			File success_file = new File(sub_handler.getAbsolutePath() + "/success.ini");
-			if (!success_file.exists() || !success_file.canRead()){
+			if (!success_file.exists() || !success_file.canRead()) {
 				continue;
 			}
 			ini_parser build_parser = new ini_parser(success_file.getAbsolutePath().replaceAll("\\\\", "/"));
@@ -87,39 +88,39 @@ public class config_sync extends Thread {
 				build_data = build_parser.read_ini_data();
 			} catch (ConfigurationException e) {
 				// TODO Auto-generated catch block
-				//e.printStackTrace();
+				// e.printStackTrace();
 				CONFIG_SYNC_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
 				continue;
 			}
-			if (!build_data.containsKey("root")){
+			if (!build_data.containsKey("root")) {
 				continue;
 			}
-			if (!build_data.get("root").containsKey("path")){
+			if (!build_data.get("root").containsKey("path")) {
 				continue;
 			}
 			String path = build_data.get("root").get("path");
 			CONFIG_SYNC_LOGGER.debug("Catch SW path:" + path);
-			scan_dirs.put(build_name,path);
+			scan_dirs.put(build_name, path);
 		}
 		return scan_dirs;
 	}
-	
-	private Boolean get_build_diff(String section, HashMap<String, String> scan_data){
-		if (scan_data.isEmpty()){
+
+	private Boolean get_build_diff(String section, HashMap<String, String> scan_data) {
+		if (scan_data.isEmpty()) {
 			return false;
 		}
 		HashMap<String, String> recording_data = config_hash.get(section);
 		Set<String> scan_options = scan_data.keySet();
 		Iterator<String> scan_options_it = scan_options.iterator();
-		while(scan_options_it.hasNext()){
+		while (scan_options_it.hasNext()) {
 			String scan_option = scan_options_it.next();
-			if (!recording_data.containsKey(scan_option)){
+			if (!recording_data.containsKey(scan_option)) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	private void update_static_data(HashMap<String, HashMap<String, String>> ini_data) {
 		Set<String> config_sections = ini_data.keySet();
 		Iterator<String> section_it = config_sections.iterator();
@@ -129,35 +130,36 @@ public class config_sync extends Thread {
 			section_data.putAll(ini_data.get(section));
 			HashMap<String, String> update_data = new HashMap<String, String>();
 			if (section.contains("tmp_")) {
-				// for section "tmp_preference" , "tmp_machine" and something start with "tmp_"
+				// for section "tmp_preference" , "tmp_machine" and something
+				// start with "tmp_"
 				config_hash.put(section, section_data);
 			} else {
 				// consider as software section
 				Set<String> options_set = section_data.keySet();
 				Iterator<String> option_it = options_set.iterator();
-				while(option_it.hasNext()){
+				while (option_it.hasNext()) {
 					String option = option_it.next();
 					String value = section_data.get(option);
-					if (option.equalsIgnoreCase("scan_dir") || option.equalsIgnoreCase("max_insts")){
+					if (option.equalsIgnoreCase("scan_dir") || option.equalsIgnoreCase("max_insts")) {
 						continue;
 					} else {
 						File sw_path = new File(value);
-						if (sw_path.exists() && sw_path.isDirectory()){
+						if (sw_path.exists() && sw_path.isDirectory()) {
 							update_data.put(option, value);
 						} else {
 							CONFIG_SYNC_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
 						}
 					}
 				}
-				if (section_data.containsKey("scan_dir") && !section_data.get("scan_dir").equals("")){
+				if (section_data.containsKey("scan_dir") && !section_data.get("scan_dir").equals("")) {
 					File scan_dir = new File(section_data.get("scan_dir"));
-					if (scan_dir.exists() && scan_dir.isDirectory()){
+					if (scan_dir.exists() && scan_dir.isDirectory()) {
 						update_data.put("scan_dir", section_data.get("scan_dir"));
 					} else {
 						CONFIG_SYNC_LOGGER.warn(section + ".scan_dir, not exist. skipped");
 					}
 				}
-				if (section_data.containsKey("max_insts") && !section_data.get("max_insts").equals("")){
+				if (section_data.containsKey("max_insts") && !section_data.get("max_insts").equals("")) {
 					update_data.put("max_insts", section_data.get("max_insts"));
 				} else {
 					update_data.put("max_insts", public_data.DEF_SW_MAX_INSTANCES);
@@ -166,7 +168,7 @@ public class config_sync extends Thread {
 			}
 		}
 	}
-	
+
 	/*
 	 * scan update
 	 */
@@ -174,32 +176,32 @@ public class config_sync extends Thread {
 		int config_updated = 0;
 		Set<String> config_sections = config_hash.keySet();
 		Iterator<String> section_it = config_sections.iterator();
-		while(section_it.hasNext()){
+		while (section_it.hasNext()) {
 			String section = section_it.next();
 			HashMap<String, String> section_data = new HashMap<String, String>();
 			section_data.putAll(config_hash.get(section));
-			if (section.contains("tmp_")){
+			if (section.contains("tmp_")) {
 				continue;
 			}
 			HashMap<String, String> update_data = new HashMap<String, String>();
 			Set<String> options_set = section_data.keySet();
 			Iterator<String> option_it = options_set.iterator();
-			while(option_it.hasNext()){
+			while (option_it.hasNext()) {
 				String option = option_it.next();
 				String value = section_data.get(option);
-				if (option.equals("scan_dir")){
+				if (option.equals("scan_dir")) {
 					update_data.put(option, value);
 					HashMap<String, String> scan_data = get_scan_dirs(value);
-					Boolean new_update  = get_build_diff(section, scan_data);
-					if (new_update){
+					Boolean new_update = get_build_diff(section, scan_data);
+					if (new_update) {
 						update_data.putAll(scan_data);
-						config_updated++; //internal config file save
+						config_updated++; // internal config file save
 					}
-				} else if (option.equals("max_insts")){
+				} else if (option.equals("max_insts")) {
 					update_data.put(option, value);
 				} else {
 					File sw_path = new File(value);
-					if (sw_path.exists()){
+					if (sw_path.exists()) {
 						update_data.put(option, value);
 					} else {
 						CONFIG_SYNC_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
@@ -208,30 +210,30 @@ public class config_sync extends Thread {
 			}
 			config_hash.put(section, update_data);
 		}
-		if (config_updated > 0){
+		if (config_updated > 0) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private Boolean dump_client_data(ini_parser ini_runner){
+	private Boolean dump_client_data(ini_parser ini_runner) {
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
 		write_data = deep_clone.clone(client_info.get_client_data());
 		CONFIG_SYNC_LOGGER.warn("Dumping ini data:" + write_data.toString());
-		if(!write_data.containsKey("preference")){
+		if (!write_data.containsKey("preference")) {
 			dump_status = false;
 			return dump_status;
 		}
-		if(!write_data.containsKey("Machine")){
+		if (!write_data.containsKey("Machine")) {
 			dump_status = false;
 			return dump_status;
 		}
-		if(!write_data.containsKey("System")){
+		if (!write_data.containsKey("System")) {
 			dump_status = false;
 			return dump_status;
-		}		
+		}
 		HashMap<String, String> tmp_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
 		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
@@ -260,7 +262,7 @@ public class config_sync extends Thread {
 		}
 		return dump_status;
 	}
-	
+
 	public void run() {
 		try {
 			monitor_run();
@@ -273,7 +275,7 @@ public class config_sync extends Thread {
 	private void monitor_run() {
 		conf_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		//initial 1 : get overall configuration data
+		// initial 1 : get overall configuration data
 		ini_parser ini_runner = new ini_parser(public_data.CONF_DEFAULT_INI);
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
@@ -301,14 +303,14 @@ public class config_sync extends Thread {
 				CONFIG_SYNC_LOGGER.debug(config_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
-			//task 1 : dump configuration updating
+			// task 1 : dump configuration updating
 			Boolean dump_request = switch_info.impl_dump_config_request();
-			if (dump_request){
+			if (dump_request) {
 				dump_client_data(ini_runner);
 			}
-			//task 2 : update data in loop
-			Boolean config_updated = update_dynamic_data();			
-			if (config_updated){
+			// task 2 : update data in loop
+			Boolean config_updated = update_dynamic_data();
+			if (config_updated) {
 				switch_info.set_client_updated();
 			}
 			try {

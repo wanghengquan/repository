@@ -23,7 +23,7 @@ public class switch_data {
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// client update
-	private int send_admin_request = 5;  //for client start up use why???
+	private int send_admin_request = 5; // for client start up use why???
 	private int dump_config_request = 0;
 	// Thread start sequence
 	private Boolean client_self_check = new Boolean(false);
@@ -50,12 +50,12 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-	
-	public Boolean impl_send_admin_request(){
+
+	public Boolean impl_send_admin_request() {
 		rw_lock.writeLock().lock();
 		Boolean action_need = new Boolean(false);
 		try {
-			if (send_admin_request > 0){
+			if (send_admin_request > 0) {
 				action_need = true;
 				this.send_admin_request = send_admin_request - 1;
 			}
@@ -65,11 +65,11 @@ public class switch_data {
 		return action_need;
 	}
 
-	public Boolean impl_dump_config_request(){
+	public Boolean impl_dump_config_request() {
 		rw_lock.writeLock().lock();
 		Boolean action_need = new Boolean(false);
 		try {
-			if (dump_config_request > 0){
+			if (dump_config_request > 0) {
 				action_need = true;
 				dump_config_request = dump_config_request - 1;
 			}
@@ -78,7 +78,7 @@ public class switch_data {
 		}
 		return action_need;
 	}
-	
+
 	public void set_client_self_check(Boolean check_status) {
 		rw_lock.writeLock().lock();
 		try {
@@ -86,8 +86,8 @@ public class switch_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public Boolean get_client_self_check() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
@@ -98,7 +98,7 @@ public class switch_data {
 		}
 		return status;
 	}
-	
+
 	public void set_core_script_update(Boolean update_status) {
 		rw_lock.writeLock().lock();
 		try {
@@ -106,8 +106,8 @@ public class switch_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public Boolean get_core_script_update() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
@@ -118,7 +118,7 @@ public class switch_data {
 		}
 		return status;
 	}
-	
+
 	public void set_data_server_power_up() {
 		rw_lock.writeLock().lock();
 		try {
@@ -126,8 +126,8 @@ public class switch_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public Boolean get_data_server_power_up() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
@@ -137,8 +137,8 @@ public class switch_data {
 			rw_lock.readLock().unlock();
 		}
 		return status;
-	}	
-	
+	}
+
 	public void set_tube_server_power_up() {
 		rw_lock.writeLock().lock();
 		try {
@@ -146,8 +146,8 @@ public class switch_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public Boolean get_tube_server_power_up() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
@@ -158,7 +158,7 @@ public class switch_data {
 		}
 		return status;
 	}
-	
+
 	public void set_hall_server_power_up() {
 		rw_lock.writeLock().lock();
 		try {
@@ -166,8 +166,8 @@ public class switch_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public Boolean get_hall_server_power_up() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
@@ -178,7 +178,7 @@ public class switch_data {
 		}
 		return status;
 	}
-	
+
 	public void set_back_ground_power_up() {
 		rw_lock.writeLock().lock();
 		try {
@@ -186,8 +186,8 @@ public class switch_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public Boolean get_back_ground_power_up() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
@@ -198,7 +198,7 @@ public class switch_data {
 		}
 		return status;
 	}
-	
+
 	public void set_suite_file(String new_data) {
 		rw_lock.writeLock().lock();
 		try {
@@ -217,8 +217,8 @@ public class switch_data {
 			rw_lock.readLock().unlock();
 		}
 		return value;
-	}	
-	
+	}
+
 	public String impl_suite_file() {
 		rw_lock.writeLock().lock();
 		String value = new String();
@@ -231,29 +231,16 @@ public class switch_data {
 		return value;
 	}
 
-	
 	/*
-	public void set_current_max_thread(Integer new_data) {
-		rw_lock.writeLock().lock();
-		try {
-			this.current_max_thread = new_data;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-
-	public Integer get_current_max_thread() {
-		rw_lock.readLock().lock();
-		int value = new Integer(0);
-		try {
-			value = this.current_max_thread;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return value;
-	}
-	*/
+	 * public void set_current_max_thread(Integer new_data) {
+	 * rw_lock.writeLock().lock(); try { this.current_max_thread = new_data; }
+	 * finally { rw_lock.writeLock().unlock(); } }
+	 * 
+	 * public Integer get_current_max_thread() { rw_lock.readLock().lock(); int
+	 * value = new Integer(0); try { value = this.current_max_thread; } finally
+	 * { rw_lock.readLock().unlock(); } return value; }
+	 */
 	// protected function
 	// private function
-	
+
 }

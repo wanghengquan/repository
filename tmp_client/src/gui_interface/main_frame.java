@@ -52,15 +52,11 @@ public class main_frame extends JFrame {
 	private view_data view_info;
 	private task_data task_info;
 	private pool_data pool_info;
-	
+
 	// public function
 	// protected function
 	// private function
-	public main_frame(
-			switch_data switch_info, 
-			client_data client_info, 
-			view_data view_info, 
-			task_data task_info, 
+	public main_frame(switch_data switch_info, client_data client_info, view_data view_info, task_data task_info,
 			pool_data pool_info) {
 		this.switch_info = switch_info;
 		this.client_info = client_info;
@@ -69,25 +65,25 @@ public class main_frame extends JFrame {
 		this.pool_info = pool_info;
 	}
 
-	public void gui_constructor(){
+	public void gui_constructor() {
 		default_font_set();
 		initial_components();
-		launch_system_tray();		
+		launch_system_tray();
 	}
-	
-	public void show_welcome_letter(){
-		//show welcome if need
+
+	public void show_welcome_letter() {
+		// show welcome if need
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		client_data.putAll(client_info.get_client_data());
 		HashMap<String, String> preference_data = client_data.get("preference");
-		if(preference_data != null && preference_data.get("show_welcome").equals("1")){
+		if (preference_data != null && preference_data.get("show_welcome").equals("1")) {
 			welcome_dialog welcome_view = new welcome_dialog(this, switch_info, client_info);
 			welcome_view.setVisible(true);
-		}		
+		}
 	}
-	
+
 	public void default_font_set() {
-		//UIManager.put("Menu.font", new Font("Serif", Font.PLAIN, 20));
+		// UIManager.put("Menu.font", new Font("Serif", Font.PLAIN, 20));
 		Font font = new Font("Serif", Font.PLAIN, 20);
 		Enumeration<Object> keys = UIManager.getDefaults().keys();
 		while (keys.hasMoreElements()) {
@@ -98,7 +94,7 @@ public class main_frame extends JFrame {
 			}
 		}
 	}
-	
+
 	private void initial_components() {
 		this.setLocation(300, 50);
 		this.setSize(1200, 1000);
@@ -175,7 +171,7 @@ public class main_frame extends JFrame {
 			top_view.setVisible(true);
 			top_view.show_welcome_letter();
 		} else {
-			SwingUtilities.invokeLater(new Runnable(){
+			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub

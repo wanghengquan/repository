@@ -30,7 +30,9 @@ import utility_funcs.deep_clone;
 
 public class tube_server extends Thread {
 	// public property
-	// public static ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queues = new ConcurrentHashMap<String, HashMap<String, HashMap<String, String>>>();
+	// public static ConcurrentHashMap<String, HashMap<String, HashMap<String,
+	// String>>> captured_admin_queues = new ConcurrentHashMap<String,
+	// HashMap<String, HashMap<String, String>>>();
 	// protected property
 	// private property
 	private static final Logger TUBE_SERVER_LOGGER = LogManager.getLogger(tube_server.class.getName());
@@ -51,7 +53,7 @@ public class tube_server extends Thread {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.pool_info = pool_info;
-		this.rmq_runner = new rmq_tube(task_info);   //should be changed later
+		this.rmq_runner = new rmq_tube(task_info); // should be changed later
 	}
 
 	// protected function
@@ -111,8 +113,8 @@ public class tube_server extends Thread {
 			}
 		}
 		return machine_match;
-	}	
-	
+	}
+
 	private Boolean admin_queue_software_key_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		Boolean software_match = new Boolean(true);
@@ -136,27 +138,27 @@ public class tube_server extends Thread {
 			}
 		}
 		return software_match;
-	}	
-	
+	}
+
 	public ArrayList<String> admin_queue_mismatch_list_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		ArrayList<String> mismatch_list = new ArrayList<String>();
-		if(!admin_queue_system_key_check(queue_data, client_hash)){
+		if (!admin_queue_system_key_check(queue_data, client_hash)) {
 			mismatch_list.add("System");
 		}
-		if(!admin_queue_machine_key_check(queue_data, client_hash)){
+		if (!admin_queue_machine_key_check(queue_data, client_hash)) {
 			mismatch_list.add("Machine");
 		}
-		if(!admin_queue_software_key_check(queue_data, client_hash)){
+		if (!admin_queue_software_key_check(queue_data, client_hash)) {
 			mismatch_list.add("Software");
-		}		
+		}
 		return mismatch_list;
 	}
-	
+
 	/*
 	 * task 2: flash tube output: captured and rejected treemap
 	 */
-	private void flash_tube_output(){
+	private void flash_tube_output() {
 		Map<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		Map<String, HashMap<String, HashMap<String, String>>> total_admin_queue = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queue = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
@@ -176,12 +178,12 @@ public class tube_server extends Thread {
 			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_data);
 			if (mismatch_item.isEmpty()) {
 				captured_admin_queue.put(queue_name, queue_data);
-				if(!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-					TUBE_SERVER_LOGGER.info("Captured:" + queue_name);				
+				if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)) {
+					TUBE_SERVER_LOGGER.info("Captured:" + queue_name);
 				}
 			} else {
 				new_rejected_reason_queue.put(queue_name, String.join(",", mismatch_item));
-				if(!old_rejected_reason_queue.containsKey(queue_name)){
+				if (!old_rejected_reason_queue.containsKey(queue_name)) {
 					TUBE_SERVER_LOGGER.info("Rejected:" + queue_name + ", Reason:" + mismatch_item.toString());
 				}
 			}
@@ -239,7 +241,7 @@ public class tube_server extends Thread {
 		complex_data.put("os_type", os_type);
 		complex_data.put("high_priority", high_priority);
 		complex_data.put("max_threads", max_threads);
-		Iterator<String> client_hash_it = client_hash.keySet().iterator();		
+		Iterator<String> client_hash_it = client_hash.keySet().iterator();
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
 			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("preference")) {
@@ -257,7 +259,7 @@ public class tube_server extends Thread {
 				key_value = "NA";
 			}
 			complex_data.put(key_name, key_value);
-		}		
+		}
 		// generate xml message
 		String send_msg = new String();
 		xml_parser parser = new xml_parser();
@@ -270,9 +272,9 @@ public class tube_server extends Thread {
 		return send_status;
 	}
 
-	private void run_import_suite_file(){
+	private void run_import_suite_file() {
 		String suite_files = switch_info.impl_suite_file();
-		if (suite_files.equals("")){
+		if (suite_files.equals("")) {
 			return;
 		}
 		local_tube local_tube_parser = new local_tube(task_info);
@@ -280,9 +282,9 @@ public class tube_server extends Thread {
 		for (String file : file_list) {
 			local_tube_parser.generate_local_admin_task_queues(file,
 					client_info.get_client_data().get("Machine").get("terminal"));
-		}	
+		}
 	}
-	
+
 	public void run() {
 		try {
 			monitor_run();
@@ -295,16 +297,18 @@ public class tube_server extends Thread {
 	private void monitor_run() {
 		tube_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		// initial 1 : start rmq tube (admin queque)   //should be remove later
+		// initial 1 : start rmq tube (admin queque) //should be remove later
 		try {
-			//rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME, "D27639");
-			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME, client_info.get_client_data().get("Machine").get("terminal"));
+			// rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
+			// "D27639");
+			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
+					client_info.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
-			//e1.printStackTrace();
+			// e1.printStackTrace();
 			TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
 			TUBE_SERVER_LOGGER.error("Client will run in local model.");
-			//System.exit(1);
+			// System.exit(1);
 		}
 		// initial 2 : send client detail info
 		send_client_info("simple");
@@ -327,7 +331,8 @@ public class tube_server extends Thread {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update received tube(local file,  remote will update by rmq_tube)
+			// task 1: update received tube(local file, remote will update by
+			// rmq_tube)
 			run_import_suite_file();
 			// task 2: flash tube output: captured and rejected treemap
 			flash_tube_output();
@@ -375,7 +380,7 @@ public class tube_server extends Thread {
 	 */
 	public static void main(String[] args) {
 		cmd_parser cmd_run = new cmd_parser(args);
-		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();		
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
@@ -390,7 +395,7 @@ public class tube_server extends Thread {
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
-			//System.out.println(task_info.get_rejected_admin_reason_treemap());
+			// System.out.println(task_info.get_rejected_admin_reason_treemap());
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {

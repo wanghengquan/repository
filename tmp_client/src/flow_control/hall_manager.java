@@ -48,7 +48,8 @@ public class hall_manager extends Thread {
 	// protected function
 	// private function
 
-	public hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info, view_data view_info) {
+	public hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info,
+			view_data view_info) {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
@@ -60,7 +61,7 @@ public class hall_manager extends Thread {
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
 		int max_pool_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 		for (int i = 0; i < max_pool_size; i++) {
-			task_waiter waiter = new task_waiter(i,switch_info, client_info, pool_info, task_info);
+			task_waiter waiter = new task_waiter(i, switch_info, client_info, pool_info, task_info);
 			String waiter_index = "waiter_" + String.valueOf(i);
 			waiters.put(waiter_index, waiter);
 			waiter.start();
@@ -100,7 +101,8 @@ public class hall_manager extends Thread {
 	private void generate_console_report(pool_data pool_info) {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
-		HALL_MANAGER_LOGGER.info(">>>Captured queue:" + task_info.get_captured_admin_queues_treemap().keySet().toString());
+		HALL_MANAGER_LOGGER
+				.info(">>>Captured queue:" + task_info.get_captured_admin_queues_treemap().keySet().toString());
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>Processing queue:" + task_info.get_processing_admin_queue_list().toString());
 		// report running queue list
@@ -115,16 +117,18 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.debug(client_info.get_use_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_max_soft_insts());
-		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());		
+		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_client_data().toString());
-		//HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" + task_info.get_captured_admin_queues_treemap().toString());
-		//HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" + task_info.get_processed_task_queues_map().toString());
+		// HALL_MANAGER_LOGGER.warn(">>>>>>captured queues:" +
+		// task_info.get_captured_admin_queues_treemap().toString());
+		// HALL_MANAGER_LOGGER.warn(">>>>>>processed queues:" +
+		// task_info.get_processed_task_queues_map().toString());
 	}
-	
-	private void stop_sub_threads(){
+
+	private void stop_sub_threads() {
 		waiter_result.soft_stop();
 		Iterator<String> waiters_it = waiters_task.keySet().iterator();
-		while(waiters_it.hasNext()){
+		while (waiters_it.hasNext()) {
 			String waiter_name = waiters_it.next();
 			task_waiter waiter = waiters_task.get(waiter_name);
 			waiter.soft_stop();
@@ -164,7 +168,7 @@ public class hall_manager extends Thread {
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
 			// task 2 : automatic run
-			
+
 			// task 3 : make general report
 			generate_console_report(pool_info);
 			// task 4 : stop waiters
@@ -206,7 +210,7 @@ public class hall_manager extends Thread {
 	 */
 	public static void main(String[] args) {
 		cmd_parser cmd_run = new cmd_parser(args);
-		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();		
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
@@ -214,18 +218,18 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();
-		while(true){
-			if (switch_info.get_data_server_power_up()){
+		while (true) {
+			if (switch_info.get_data_server_power_up()) {
 				System.out.println(">>>data server power up");
 				break;
 			}
 		}
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
-		while(true){
-			if (switch_info.get_tube_server_power_up()){
+		while (true) {
+			if (switch_info.get_tube_server_power_up()) {
 				System.out.println(">>>tube server power up");
 				break;
 			}
@@ -233,16 +237,16 @@ public class hall_manager extends Thread {
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
 		try {
-			Thread.sleep(10*1000);
+			Thread.sleep(10 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//jason.soft_stop();
+		// jason.soft_stop();
 		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + "jason stopped");
-		//tube_runner.soft_stop();
+		// tube_runner.soft_stop();
 		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + "tube_runner stopped");
-		//data_runner.soft_stop();
+		// data_runner.soft_stop();
 		HALL_MANAGER_LOGGER.warn(">>>Used Thread:" + "data_runner stopped");
 	}
 }

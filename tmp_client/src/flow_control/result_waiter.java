@@ -110,12 +110,12 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = final_cleanup(case_work_path);
 			// task 2 : zip case to save path
-			if(case_work_path.contains(save_path)){
-				//case save path same with work path no need to copy
+			if (case_work_path.contains(save_path)) {
+				// case save path same with work path no need to copy
 				continue;
 			}
-			if(save_path.trim().equals("")){
-				//no save path, skip copy
+			if (save_path.trim().equals("")) {
+				// no save path, skip copy
 				continue;
 			}
 			if (cmd_status.equalsIgnoreCase("failed")) {
@@ -156,7 +156,7 @@ public class result_waiter extends Thread {
 			// dumping task queue
 			Boolean admin_dump = dump_admin_data(dump_queue);
 			Boolean task_dump = dump_task_data(dump_queue);
-			if (admin_dump && task_dump){
+			if (admin_dump && task_dump) {
 				task_info.remove_queue_from_processed_admin_queues_treemap(dump_queue);
 				task_info.remove_queue_from_processed_task_queues_map(dump_queue);
 				dump_status = true;

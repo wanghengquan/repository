@@ -25,7 +25,7 @@ public class core_update {
 	private String svn_user = public_data.SVN_USER;
 	private String svn_pwd = public_data.SVN_PWD;
 	private String line_seprator = System.getProperty("line.separator");
-	
+
 	public void update(String work_path) {
 		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
 		File trunk_handle = new File(core_name);
@@ -48,14 +48,16 @@ public class core_update {
 				}
 				if (find_url) {
 					try {
-						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd, work_path);
+						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd,
+								work_path);
 						CORE_LOGGER.debug(excute_returns.toString());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						// e.printStackTrace();
 					}
 				} else {
-					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr, work_path);
+					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr,
+							work_path);
 					CORE_LOGGER.debug(excute_returns.toString());
 				}
 			} catch (IOException e) {
