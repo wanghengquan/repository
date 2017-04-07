@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class cmd_parser {
 	// public property
 	// protected property
-	public static HashMap<String, String> cmd_hash = new HashMap<String, String>();
+	// public static HashMap<String, String> cmd_hash = new HashMap<String, String>();
 	// private property
 	private final Logger CMD_PARSER_LOGGER = LogManager.getLogger(cmd_parser.class.getName());
 	private String[] args;
@@ -44,6 +44,7 @@ public class cmd_parser {
 	 * @enduml
 	 */	
 	public HashMap<String, String> cmdline_parser() {
+		HashMap<String, String> cmd_hash = new HashMap<String, String>();
 		// 1. get defined options
 		Options options_obj = get_options();
 		// 2. option parser
@@ -139,12 +140,12 @@ public class cmd_parser {
 	 */
 	public static void main(String[] args) {
 		cmd_parser my_parser = new cmd_parser(args);
-		my_parser.cmdline_parser();
-		Set<String> options = cmd_hash.keySet();
+		HashMap<String, String> cmd_data = my_parser.cmdline_parser();
+		Set<String> options = cmd_data.keySet();
 		Iterator<String> it = options.iterator();
 		while (it.hasNext()) {
 			String option_key = it.next();
-			String option_value = cmd_hash.get(option_key);
+			String option_value = cmd_data.get(option_key);
 			System.out.println(option_key + " = " + option_value);
 		}
 	}

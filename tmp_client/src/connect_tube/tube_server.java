@@ -24,6 +24,7 @@ import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import utility_funcs.deep_clone;
 
@@ -371,11 +372,13 @@ public class tube_server extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
+		cmd_parser cmd_run = new cmd_parser(args);
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();		
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
 		task_data task_info = new task_data();
-		data_server data_runner = new data_server(switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
@@ -385,7 +388,7 @@ public class tube_server extends Thread {
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
-			System.out.println(task_info.get_rejected_admin_reason_treemap());
+			//System.out.println(task_info.get_rejected_admin_reason_treemap());
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {

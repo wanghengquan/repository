@@ -23,6 +23,7 @@ import data_center.data_server;
 import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
+import info_parser.cmd_parser;
 import data_center.public_data;
 
 public class hall_manager extends Thread {
@@ -163,12 +164,12 @@ public class hall_manager extends Thread {
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
 			// task 2 : automatic run
+			
 			// task 3 : make general report
 			generate_console_report(pool_info);
 			// task 4 : stop waiters
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
-				//Thread.sleep(2 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -204,6 +205,8 @@ public class hall_manager extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
+		cmd_parser cmd_run = new cmd_parser(args);
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();		
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
@@ -211,7 +214,7 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
-		data_server data_runner = new data_server(switch_info, client_info, pool_info);		
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
 		data_runner.start();
 		while(true){
 			if (switch_info.get_data_server_power_up()){

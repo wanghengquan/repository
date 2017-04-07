@@ -58,6 +58,7 @@ public class data_server extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread current_thread;
+	private HashMap<String, String> cmd_info;
 	private client_data client_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
@@ -70,7 +71,8 @@ public class data_server extends Thread {
 	// protected function
 	// private function
 
-	public data_server(switch_data switch_info, client_data client_info, pool_data pool_info) {
+	public data_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info, pool_data pool_info) {
+		this.cmd_info = cmd_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
 		this.pool_info = pool_info;
@@ -188,15 +190,12 @@ public class data_server extends Thread {
 				break;
 			}
 		}
-		// initial 2 : get command hash data
-		HashMap<String, String> cmd_hash = new HashMap<String, String>();
-		cmd_hash.putAll(cmd_parser.cmd_hash);
-		// initial 3 : generate initial client data
-		initial_merge_client_data(cmd_hash);
-		// initial 4 : update default current size into Pool Data
+		// initial 2 : generate initial client data
+		initial_merge_client_data(cmd_info);
+		// initial 3 : update default current size into Pool Data
 		String current_max_threads = client_info.get_client_data().get("preference").get("max_threads");
 		pool_info.set_pool_current_size(Integer.parseInt(current_max_threads));
-		// initial 5 : Announce data server ready
+		// initial 4 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start
 		while (!stop_request) {
@@ -210,7 +209,7 @@ public class data_server extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				DATA_SERVER_LOGGER.debug("data_server Thread running...");
+				DATA_SERVER_LOGGER.info("data_server Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: update client data hash
@@ -261,11 +260,11 @@ public class data_server extends Thread {
 	 */
 	public static void main(String[] args) {
 		cmd_parser cmd_run = new cmd_parser(args);
-		cmd_run.cmdline_parser();
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
-		data_server server_runner = new data_server(switch_info, client_info, pool_info);
+		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		server_runner.start();
 		try {
 			Thread.sleep(10 * 1000);

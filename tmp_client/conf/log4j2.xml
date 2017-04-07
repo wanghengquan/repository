@@ -28,8 +28,11 @@
 		<Logger name="flow_control.task_waiter" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />
 		</Logger> 
-		<Logger name="connect_tube.tube_server" level="INFO" additivity="false">
+		<Logger name="flow_control.case_prepare" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />
 		</Logger> 
+		<Logger name="connect_tube.tube_server" level="INFO" additivity="false">
+			<AppenderRef ref="Console_simple" />
+		</Logger> 		
 	</Loggers>
 </Configuration>

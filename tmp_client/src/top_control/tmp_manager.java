@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -130,7 +131,7 @@ public class tmp_manager extends Thread  {
 			filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
 		}
 		File file = new File(filePath);
-		filePath = file.getAbsolutePath();
+		filePath = file.getAbsolutePath().replaceAll("\\\\", "/");
 		System.out.println(">>>Info: SW bin path:" + filePath);
 		return filePath;
 	}
@@ -139,8 +140,7 @@ public class tmp_manager extends Thread  {
 		ConfigurationSource source;
 		String bin_path = get_bin_path();
 		File bin_dobj = new File(bin_path);
-		String work_path = bin_dobj.getParentFile().toString();
-		String conf_path = work_path + "/conf/log4j2.xml";
+		String conf_path = bin_dobj.getParentFile().toString().replaceAll("\\\\", "/") + "/conf/log4j2.xml";
 		System.out.println(">>>Info: SW log config path:" + conf_path);
 		File file = new File(conf_path);
 		try {
@@ -156,14 +156,12 @@ public class tmp_manager extends Thread  {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		cmd_parser cmd_run = new cmd_parser(args);
-		cmd_run.cmdline_parser();
 		initial_log_config();
-		TMP_MANAGER_LOGGER.debug("debug output");
-		TMP_MANAGER_LOGGER.info("Info output");
-		TMP_MANAGER_LOGGER.warn("Warn output");
-		TMP_MANAGER_LOGGER.error("Error output");
-		TMP_MANAGER_LOGGER.fatal("Fatal output");	
+		TMP_MANAGER_LOGGER.debug("debug output test");
+		TMP_MANAGER_LOGGER.info("Info output test");
+		TMP_MANAGER_LOGGER.warn("Warn output test");
+		TMP_MANAGER_LOGGER.error("Error output test");
+		TMP_MANAGER_LOGGER.fatal("Fatal output test");	
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
@@ -171,7 +169,9 @@ public class tmp_manager extends Thread  {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
-		data_server data_runner = new data_server(switch_info, client_info, pool_info);		
+		cmd_parser cmd_run = new cmd_parser(args);
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();		
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
 		data_runner.start();
 		while(true){
 			if (switch_info.get_data_server_power_up()){
@@ -189,7 +189,6 @@ public class tmp_manager extends Thread  {
 		}
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
-		System.out.println(client_info.get_client_data());
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {

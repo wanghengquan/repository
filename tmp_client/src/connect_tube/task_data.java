@@ -291,9 +291,6 @@ public class task_data {
 		try {
 			if (processed_admin_queues_treemap.containsKey(queue_name)){
 				admin_data = deep_clone.clone(processed_admin_queues_treemap.get(queue_name));
-				System.out.println(">>>292");
-				System.out.println(">>>admin name:" + queue_name);
-				System.out.println(">>>admin data:" + admin_data.toString());
 				HashMap<String, String> status_data = admin_data.get("Status");
 				status_data.put("admin_status", "waiting");
 				received_admin_queues_treemap.put(queue_name, admin_data);

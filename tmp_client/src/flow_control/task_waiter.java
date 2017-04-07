@@ -359,7 +359,6 @@ public class task_waiter extends Thread {
 		//delete all buffered info
 		task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
 		task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
-		System.out.println(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
 	}
 	
 	private void move_finished_task_queue_from_tube(String queue_name){

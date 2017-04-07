@@ -135,7 +135,7 @@ public class public_data {
 	private static String get_bin_path(){
 		String bin_path = tmp_manager.get_bin_path();
 		File bin_dobj = new File(bin_path);
-		String install_path = bin_dobj.getParentFile().getAbsolutePath();
+		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 		System.out.println(">>>Info: SW root path:" + install_path);
 		return install_path.replaceAll("\\\\", "/");
 	}
