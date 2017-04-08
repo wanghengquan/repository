@@ -120,20 +120,18 @@ public class tmp_manager extends Thread  {
 	}
 	
 	public static String get_bin_path(){
-		URL url = tmp_manager.class.getProtectionDomain().getCodeSource().getLocation();
-		String filePath = new String();
-		try {
-			filePath = URLDecoder.decode(url.getPath(), "utf-8");
-		} catch (Exception e) {
-			e.printStackTrace();
+		String class_path = System.getProperty("java.class.path"); 
+		String path_split = System.getProperty("path.separator");
+		String bin_path = class_path.split(path_split)[0];
+		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")  || bin_path.endsWith(".so")){
+			System.out.println(">>>129:" + bin_path);
+			bin_path = bin_path.substring(0, bin_path.lastIndexOf(File.separator) + 1);  
 		}
-		if (filePath.endsWith(".jar")) {
-			filePath = filePath.substring(0, filePath.lastIndexOf("/") + 1);
-		}
-		File file = new File(filePath);
-		filePath = file.getAbsolutePath().replaceAll("\\\\", "/");
-		System.out.println(">>>Info: SW bin path:" + filePath);
-		return filePath;
+		System.out.println(">>>132:" + bin_path);
+		File file = new File(bin_path);
+		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
+		System.out.println(">>>Info: SW bin path:" + bin_path);
+		return bin_path;
 	}
 	
 	private static void initial_log_config(){
