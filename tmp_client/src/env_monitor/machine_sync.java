@@ -153,7 +153,7 @@ public class machine_sync extends Thread {
 	}
 
 	private String get_host_ip() {
-		String host_ip = null;
+		String host_ip = new String("NA");
 		try {
 			for (Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces(); interfaces
 					.hasMoreElements();) {
@@ -291,6 +291,8 @@ public class machine_sync extends Thread {
 	public static void main(String[] args) {
 		machine_sync client_update = new machine_sync(1);
 		client_update.start();
+		System.out.println(client_update.get_host_ip());
+		System.exit(0);
 		INFO_LOGGER.warn("thread start...");
 		try {
 			Thread.sleep(10 * 1000);
