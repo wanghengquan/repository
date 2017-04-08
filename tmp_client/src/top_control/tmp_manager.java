@@ -165,10 +165,12 @@ public class tmp_manager extends Thread  {
 		client_data client_info = new client_data();
 		view_data view_info = new view_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
-		view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
-		view_runner.start();
 		cmd_parser cmd_run = new cmd_parser(args);
-		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();		
+		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
+		if(cmd_info.get("cmd_gui").equals("gui")){
+			view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
+			view_runner.start();
+		}
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
 		data_runner.start();
 		while(true){

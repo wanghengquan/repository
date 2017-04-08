@@ -108,7 +108,7 @@ public class main_frame extends JFrame {
 		new Thread(status_insts).start();
 		this.getContentPane().add(status_insts, BorderLayout.SOUTH);
 		this.getContentPane().setBackground(Color.white);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		new Thread(task_insts).start();
 	}
 
