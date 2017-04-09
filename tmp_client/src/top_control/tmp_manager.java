@@ -27,6 +27,7 @@ import data_center.client_data;
 import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
+import env_monitor.self_check;
 import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
@@ -150,6 +151,12 @@ public class tmp_manager extends Thread  {
 			e.printStackTrace();
 		}
 	}
+	
+	private static Boolean run_self_check(switch_data switch_info){
+		self_check my_check = new self_check(switch_info);
+		return my_check.do_self_check();
+	}
+	
 	/*
 	 * main entry for test
 	 */
@@ -167,10 +174,17 @@ public class tmp_manager extends Thread  {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		cmd_parser cmd_run = new cmd_parser(args);
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
+		//run self check
+		if(!run_self_check(switch_info)){
+			System.out.println(">>>Self check failed.");
+			System.exit(0);
+		}
+		//launch GUI
 		if(cmd_info.get("cmd_gui").equals("gui")){
 			view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 			view_runner.start();
 		}
+		//launch data server
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
 		data_runner.start();
 		while(true){
@@ -179,6 +193,7 @@ public class tmp_manager extends Thread  {
 				break;
 			}
 		}
+		//launch tube server
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while(true){
@@ -187,6 +202,7 @@ public class tmp_manager extends Thread  {
 				break;
 			}
 		}
+		//launch hall manager
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
 		try {

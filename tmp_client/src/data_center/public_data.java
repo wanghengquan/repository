@@ -24,7 +24,7 @@ public class public_data {
 	// ========================
 	// base
 	public final static String BASE_CURRENTVERSION = "2.05.01"; // External.Internal.DEV
-	public final static String BASE_BUILDDATE = "2017/3/22";
+	public final static String BASE_BUILDDATE = "2017/4/10";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -90,11 +90,8 @@ public class public_data {
 	// ========================
 	// Encryption public key
 	public final static String ENCRY_KEY = "@Lattice";
-	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/f0c3/eaa3otw=="; // SVN
-																				// encryption
-																				// string
-																				// for:
-																				// guest_+_welcome
+	//SVN encryption string for: guest_+_welcome
+	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/f0c3/eaa3otw==";
 
 	// ========================
 	// link to SVN configuration data only shown here

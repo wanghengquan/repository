@@ -11,7 +11,6 @@ package gui_interface;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.util.Vector;
 
 import javax.swing.JDialog;

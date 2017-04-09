@@ -21,7 +21,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import utility_funcs.system_cmd;
 
-public class self_check extends Thread {
+public class self_check {
 	// public property
 	// protected property
 	// private property
@@ -128,28 +128,22 @@ public class self_check extends Thread {
 			return false;
 		}
 	}
-
-	public void run() {
-		try {
-			monitor_run();
-		} catch (Exception run_exception) {
-			run_exception.printStackTrace();
-			System.exit(1);
-		}
-	}
-
-	private void monitor_run() {
+	
+	public Boolean do_self_check() {
+		Boolean check_result = new Boolean(false);
 		Boolean java_pass = java_version_check();
 		Boolean python_pass = python_version_check();
 		Boolean svn_pass = svn_version_check();
 		if (java_pass && python_pass && svn_pass) {
 			switch_info.set_client_self_check(true);
+			check_result = true;
 		} else {
 			SELF_CHECK_LOGGER.error("Self Check failed, System error out.");
 			SELF_CHECK_LOGGER.error("Client JAVA version:" + get_java_version());
 			SELF_CHECK_LOGGER.error("Client Python version:" + get_python_version());
 			SELF_CHECK_LOGGER.error("Client SVN version:" + get_svn_version());
 		}
+		return check_result;
 	}
 
 	/*
@@ -158,6 +152,6 @@ public class self_check extends Thread {
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();
 		self_check my_check = new self_check(switch_info);
-		my_check.start();
+		my_check.do_self_check();
 	}
 }
