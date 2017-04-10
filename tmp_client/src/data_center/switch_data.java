@@ -25,6 +25,7 @@ public class switch_data {
 	// client update
 	private int send_admin_request = 5; // for client start up use why???
 	private int dump_config_request = 0;
+	private int check_core_request = 0;
 	// Thread start sequence
 	private Boolean client_self_check = new Boolean(false);
 	private Boolean core_script_update = new Boolean(false);
@@ -46,6 +47,7 @@ public class switch_data {
 		try {
 			this.send_admin_request = send_admin_request + 2;
 			this.dump_config_request = dump_config_request + 1;
+			this.check_core_request = check_core_request + 1;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -79,6 +81,20 @@ public class switch_data {
 		return action_need;
 	}
 
+	public Boolean impl_check_core_request() {
+		rw_lock.writeLock().lock();
+		Boolean action_need = new Boolean(false);
+		try {
+			if (check_core_request > 0) {
+				action_need = true;
+				check_core_request = check_core_request - 1;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return action_need;
+	}
+	
 	public void set_client_self_check(Boolean check_status) {
 		rw_lock.writeLock().lock();
 		try {

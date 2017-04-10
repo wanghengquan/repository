@@ -52,14 +52,29 @@ public class tmp_manager extends Thread  {
 	private client_state tmp_state;
 	//private String line_seprator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
+	private switch_data switch_info;
+	private client_data client_info;
 	// public function
 	// protected function
 	// private function	
 	
-	public tmp_manager(){
+	public tmp_manager(switch_data switch_info, client_data client_info){
 		this.initial_state = new initial_state(this);
 		this.maintain_state = new maintain_state(this);
 		this.work_state = new work_state(this);
+		this.switch_info = switch_info;
+		this.client_info = client_info;
+	}
+	
+	private Boolean implements_core_update(){
+		Boolean impl_status = new Boolean(true);
+		if(switch_info.impl_check_core_request()){
+			core_update my_core = new core_update();
+			my_core.update(client_info.get_client_data().get("preference").get("work_path"));
+		} else{
+			impl_status = false;
+		}
+		return impl_status;
 	}
 	
 	public void run() {
@@ -73,6 +88,10 @@ public class tmp_manager extends Thread  {
 
 	private void monitor_run() {
 		current_thread = Thread.currentThread();
+		// ============== All static job start from here ==============
+		// initial 1 : 
+		// initial 2 : 
+		// start loop:
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -86,11 +105,12 @@ public class tmp_manager extends Thread  {
 			} else {
 				TMP_MANAGER_LOGGER.debug("Client Thread running...");
 			}
-			
-			
-			
-			
-			
+			// ============== All dynamic job start from here ==============
+			// task 1 : update core script
+			implements_core_update();
+			// task 2 : 
+			// task 3 : 
+			// task 4 : 
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
@@ -127,10 +147,8 @@ public class tmp_manager extends Thread  {
 		String path_split = System.getProperty("path.separator");
 		String bin_path = class_path.split(path_split)[0];
 		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")  || bin_path.endsWith(".so")){
-			System.out.println(">>>129:" + bin_path);
 			bin_path = bin_path.substring(0, bin_path.lastIndexOf(File.separator) + 1);  
 		}
-		System.out.println(">>>132:" + bin_path);
 		File file = new File(bin_path);
 		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
 		System.out.println(">>>Info: SW bin path:" + bin_path);
@@ -213,6 +231,9 @@ public class tmp_manager extends Thread  {
 		//launch hall manager
 		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
 		jason.start();
+		//launch tmp manager
+		tmp_manager top_run = new tmp_manager(switch_info, client_info);
+		top_run.start();
 		try {
 			Thread.sleep(10*1000);
 		} catch (InterruptedException e) {
