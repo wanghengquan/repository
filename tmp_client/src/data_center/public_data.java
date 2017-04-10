@@ -42,7 +42,7 @@ public class public_data {
 
 	// ========================
 	// external configure based on software bin path
-	public final static String CONF_DEFAULT_INI = SW_BIN_PATH + "/conf/default.conf";
+	public final static String CONF_DEFAULT_INI = SW_BIN_PATH + "/conf/default.ini";
 
 	// ========================
 	// external configure based on software bin path
