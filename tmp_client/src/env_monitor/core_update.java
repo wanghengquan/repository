@@ -26,6 +26,10 @@ public class core_update {
 	private String svn_pwd = public_data.SVN_PWD;
 	private String line_seprator = System.getProperty("line.separator");
 
+	public core_update(){
+		
+	}
+	
 	public void update(String work_path) {
 		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
 		File trunk_handle = new File(core_name);

@@ -72,6 +72,14 @@ public class config_sync extends Thread {
 	private HashMap<String, String> get_scan_dirs(String scan_path) {
 		HashMap<String, String> scan_dirs = new HashMap<String, String>();
 		File scan_handler = new File(scan_path);
+		if(!scan_handler.exists()){
+			CONFIG_SYNC_LOGGER.warn("Scan path not exist:" + scan_path);
+			return scan_dirs;
+		}
+		if(!scan_handler.isDirectory()){
+			CONFIG_SYNC_LOGGER.warn("Scan path not a Directory:" + scan_path);
+			return scan_dirs;
+		}	
 		File[] all_handlers = scan_handler.listFiles();
 		for (File sub_handler : all_handlers) {
 			String build_name = sub_handler.getName();

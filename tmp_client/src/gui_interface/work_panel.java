@@ -167,7 +167,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			add_line.add("Waiting");
 		}
 		if (design_data.get("Status").containsKey("cmd_reason")) {
-			add_line.add(design_data.get("Status").get("reason"));
+			add_line.add(design_data.get("Status").get("cmd_reason"));
 		} else {
 			add_line.add("NA");
 		}

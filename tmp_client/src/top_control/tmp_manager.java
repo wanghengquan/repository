@@ -27,6 +27,8 @@ import data_center.client_data;
 import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
+import env_monitor.core_update;
+import env_monitor.kill_winpop;
 import env_monitor.self_check;
 import flow_control.hall_manager;
 import flow_control.pool_data;
@@ -193,6 +195,12 @@ public class tmp_manager extends Thread  {
 				break;
 			}
 		}
+		//core script prepare
+		core_update my_core = new core_update();
+		my_core.update(client_info.get_client_data().get("preference").get("work_path"));
+		//kill pop window launch
+		kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_PROCESS);
+		my_kill.start();
 		//launch tube server
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
