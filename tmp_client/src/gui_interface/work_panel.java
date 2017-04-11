@@ -93,13 +93,24 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_table.setShowVerticalLines(true);
 		work_table.setShowHorizontalLines(true);
 		work_table.addMouseListener(new MouseAdapter() {
+			//for windows popmenu
 			public void mouseReleased(MouseEvent e) {
 				if (work_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
 						table_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
-					WORK_PANEl_LOGGER.warn("No line selected");
+					WORK_PANEl_LOGGER.info("No line selected");
+				}
+			}
+			//for linux popmenu
+			public void mousePressed(MouseEvent e) {
+				if (work_table.getSelectedRows().length > 0) {
+					if (e.isPopupTrigger()) {
+						table_menu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				} else {
+					WORK_PANEl_LOGGER.info("No line selected");
 				}
 			}
 		});

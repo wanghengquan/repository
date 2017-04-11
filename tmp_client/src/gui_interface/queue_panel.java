@@ -85,7 +85,18 @@ public class queue_panel extends JSplitPane implements Runnable {
 		reject_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		reject_pop_memu reject_menu = new reject_pop_memu(reject_table, client_info, task_info);
 		reject_table.addMouseListener(new MouseAdapter() {
+			//for windows popmenu
 			public void mouseReleased(MouseEvent e1) {
+				if (reject_table.getSelectedRows().length > 0) {
+					if (e1.isPopupTrigger()) {
+						reject_menu.show(e1.getComponent(), e1.getX(), e1.getY());
+					}
+				} else {
+					QUEUE_PANEL_LOGGER.info("No line selected");
+				}
+			}
+			//for linux popmenu
+			public void mousePressed(MouseEvent e1) {
 				if (reject_table.getSelectedRows().length > 0) {
 					if (e1.isPopupTrigger()) {
 						reject_menu.show(e1.getComponent(), e1.getX(), e1.getY());
@@ -105,13 +116,24 @@ public class queue_panel extends JSplitPane implements Runnable {
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, view_info);
 		capture_table.addMouseListener(new MouseAdapter() {
+			//for windows popmenu
 			public void mouseReleased(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
-					QUEUE_PANEL_LOGGER.warn("No line selected");
+					QUEUE_PANEL_LOGGER.info("No line selected");
+				}
+			}
+			//for linux popmenu
+			public void mousePressed(MouseEvent e) {
+				if (capture_table.getSelectedRows().length > 0) {
+					if (e.isPopupTrigger()) {
+						capture_menu.show(e.getComponent(), e.getX(), e.getY());
+					}
+				} else {
+					QUEUE_PANEL_LOGGER.info("No line selected");
 				}
 			}
 		});
