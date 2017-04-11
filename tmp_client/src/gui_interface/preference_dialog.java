@@ -276,21 +276,22 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 					return;					
 				}
 			}
-			//save path
-			if(jt_save_path.getText().trim().equals("")){
-				String message = new String("Empty save path found.");
-				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
-				return;				
+			// save path
+			String save_path = new String();
+			if (jt_save_path.getText().trim().equals("")) {
+				save_path = jt_work_path.getText().trim();
 			} else {
-				File save_dobj = new File(jt_save_path.getText().trim());
-				String message = new String("save path Not Exists.");
-				if(save_dobj.exists()){
-					preference_data.put("save_path", jt_save_path.getText().trim());
-				} else {
-					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
-					return;					
-				}				
+				save_path = jt_save_path.getText().trim();
 			}
+			File save_dobj = new File(save_path);
+			String message = new String("save path Not Exists.");
+			if (save_dobj.exists()) {
+				preference_data.put("save_path", save_path);
+			} else {
+				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			//input data
 			client_info.set_client_data(client_data);
 			switch_info.set_client_updated();
 		}		
