@@ -41,7 +41,7 @@ public class about_dialog extends JDialog {
 		date.add("Build Date:");
 		date.add(public_data.BASE_BUILDDATE);
 		about_data.add(date);
-		support_suite.add("Support Suit File:");
+		support_suite.add("Support Suite File:");
 		support_suite.add(public_data.BASE_SUITEFILEVERSION);
 		about_data.add(support_suite);
 		JTable about_table = new info_table(about_data, about_column);
