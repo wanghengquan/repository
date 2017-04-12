@@ -217,7 +217,7 @@ public class tmp_manager extends Thread  {
 		core_update my_core = new core_update();
 		my_core.update(client_info.get_client_data().get("preference").get("work_path"));
 		//kill pop window launch
-		kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_PROCESS);
+		kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
 		my_kill.start();
 		//launch tube server
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
