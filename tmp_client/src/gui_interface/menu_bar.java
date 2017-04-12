@@ -129,7 +129,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		run.add(play);
 		run.add(pause);
 		run.add(stop);
-		JMenu retest = new JMenu("Rtest...");
+		JMenu retest = new JMenu("Retest...");
 		retest_all = new JMenuItem("All");
 		retest_all.addActionListener(this);
 		retest_selected = new JMenuItem("Selected");
