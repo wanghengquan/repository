@@ -111,7 +111,7 @@ public class public_data {
 	// ========================
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
-	public final static int PERF_POOL_MAXIMUM_SIZE = 15;
+	public final static int PERF_POOL_MAXIMUM_SIZE = 20;
 
 	// ========================
 	// >>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
