@@ -207,7 +207,12 @@ public class tube_server extends Thread {
 		}
 		// admin_request = "1";
 		String cpu_used = client_hash.get("System").get("cpu");
-		int cpu_used_int = Integer.parseInt(cpu_used);
+		int cpu_used_int = 0;
+		try{
+			cpu_used_int = Integer.parseInt(cpu_used);
+		} catch (Exception e) {
+			cpu_used_int = 99;
+		}
 		String status = new String();
 		if (cpu_used_int > 60) {
 			status = "Busy";

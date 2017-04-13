@@ -166,7 +166,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 				File work_dobj = new File(jt_work.getText().trim());
 				String message = new String("work path Not Exists.");
 				if (work_dobj.exists()) {
-					preference_data.put("work_path", jt_work.getText().trim());
+					preference_data.put("work_path", jt_work.getText().trim().replaceAll("\\\\", "/"));
 				} else {
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:",
 							JOptionPane.INFORMATION_MESSAGE);
@@ -176,9 +176,9 @@ public class welcome_dialog extends JDialog implements ActionListener {
 			// save path
 			String save_path = new String();
 			if (jt_save.getText().trim().equals("")) {
-				save_path = jt_work.getText().trim();
+				save_path = jt_work.getText().trim().replaceAll("\\\\", "/");
 			} else {
-				save_path = jt_save.getText().trim();
+				save_path = jt_save.getText().trim().replaceAll("\\\\", "/");
 			}
 			File save_dobj = new File(save_path);
 			String message = new String("save path Not Exists.");

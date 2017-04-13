@@ -270,7 +270,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				File work_dobj = new File(jt_work_path.getText().trim());
 				String message = new String("work path Not Exists.");
 				if(work_dobj.exists()){
-					preference_data.put("work_path", jt_work_path.getText().trim());
+					preference_data.put("work_path", jt_work_path.getText().trim().replaceAll("\\\\", "/"));
 				} else {
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;					
@@ -279,9 +279,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			// save path
 			String save_path = new String();
 			if (jt_save_path.getText().trim().equals("")) {
-				save_path = jt_work_path.getText().trim();
+				save_path = jt_work_path.getText().trim().replaceAll("\\\\", "/");
 			} else {
-				save_path = jt_save_path.getText().trim();
+				save_path = jt_save_path.getText().trim().replaceAll("\\\\", "/");
 			}
 			File save_dobj = new File(save_path);
 			String message = new String("save path Not Exists.");
