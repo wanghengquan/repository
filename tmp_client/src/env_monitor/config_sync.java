@@ -229,7 +229,7 @@ public class config_sync extends Thread {
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
 		write_data = deep_clone.clone(client_info.get_client_data());
-		CONFIG_SYNC_LOGGER.warn("Dumping ini data:" + write_data.toString());
+		CONFIG_SYNC_LOGGER.info("Dumping ini data:" + write_data.toString());
 		if (!write_data.containsKey("preference")) {
 			dump_status = false;
 			return dump_status;
