@@ -23,8 +23,8 @@ public class public_data {
 
 	// ========================
 	// base
-	public final static String BASE_CURRENTVERSION = "2.05.03"; // External.Internal.DEV
-	public final static String BASE_BUILDDATE = "2017/4/13";
+	public final static String BASE_CURRENTVERSION = "2.05.04"; // External.Internal.DEV
+	public final static String BASE_BUILDDATE = "2017/4/14";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
