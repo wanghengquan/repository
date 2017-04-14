@@ -227,6 +227,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			initial_link_default_value(preference_data.get("link_mode"));
 			initial_thread_default_value(preference_data.get("thread_mode"));
 			initial_task_default_value(preference_data.get("task_mode"));
+			thread_text.setText(preference_data.get("max_threads"));
 			jt_work_path.setText(preference_data.get("work_path"));
 			jt_save_path.setText(preference_data.get("save_path"));
 		}

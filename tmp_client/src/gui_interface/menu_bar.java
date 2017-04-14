@@ -15,7 +15,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -322,14 +321,11 @@ public class menu_bar extends JMenuBar implements ActionListener {
 				Desktop desktop = Desktop.getDesktop();
 				try {
 					desktop.mail(new URI("mailto:" + public_data.BASE_CONTACT_MAIL));
-				} catch (IOException contact_e) {
+				} catch (Exception contact_e) {
 					// TODO Auto-generated catch block
-					contact_e.printStackTrace();
+					// contact_e.printStackTrace();
 					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-				} catch (URISyntaxException contact_e) {
-					// TODO Auto-generated catch block
-					contact_e.printStackTrace();
-				}
+				} 
 			} else {
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			}
