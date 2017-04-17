@@ -382,7 +382,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	private task_data task_info;
 	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
 	private JMenuItem details, results;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	public table_pop_memu(JTable table, task_data task_info, view_data view_info) {
 		this.table = table;
@@ -469,7 +469,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(results)) {
 			System.out.println("results clicked");
 			String title = "Open Folder Failed:";
-			String message = "Cannot open case result DIR, unknow error." + line_seprator;			
+			String message = "Cannot open case result DIR, unknow error." + line_separator;			
 			String watching_queue = view_info.get_watching_queue();
 			List<String> case_list = view_info.get_select_task_case();
 			if(case_list.size() < 1){
@@ -486,7 +486,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			message = "Can not open path with system register browser" + line_seprator + work_path;
+			message = "Can not open path with system register browser" + line_separator + work_path;
 			if(Desktop.isDesktopSupported()){
 				Desktop desktop = Desktop.getDesktop();
 				try {

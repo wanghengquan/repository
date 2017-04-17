@@ -24,6 +24,7 @@ import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import utility_funcs.file_action;
 import data_center.public_data;
 
 public class hall_manager extends Thread {
@@ -39,7 +40,7 @@ public class hall_manager extends Thread {
 	private client_data client_info;
 	private pool_data pool_info;
 	private view_data view_info;
-	// private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
 	HashMap<String, task_waiter> waiters_task;
@@ -136,6 +137,12 @@ public class hall_manager extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}				
 			System.exit(1);
 		}
 	}

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
 import utility_funcs.system_cmd;
+import utility_funcs.file_action;
 import utility_funcs.linux_info;
 
 /*
@@ -45,6 +46,7 @@ public class machine_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread machine_thread;
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 
@@ -231,7 +233,7 @@ public class machine_sync extends Thread {
 		try {
 			monitor_run();
 		} catch (Exception run_exception) {
-			run_exception.printStackTrace();
+			run_exception.printStackTrace();	
 			System.exit(1);
 		}
 	}

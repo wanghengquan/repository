@@ -26,7 +26,7 @@ public class self_check {
 	// protected property
 	// private property
 	private static final Logger SELF_CHECK_LOGGER = LogManager.getLogger(self_check.class.getName());
-	// private String line_seprator = System.getProperty("line.separator");
+	// private String line_separator = System.getProperty("line.separator");
 	private switch_data switch_info;
 	// public function
 	// protected function

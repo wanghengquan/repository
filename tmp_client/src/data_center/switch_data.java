@@ -23,7 +23,7 @@ public class switch_data {
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// client update
-	private int send_admin_request = 5; // for client start up use why???
+	private int send_admin_request = 6; // for client start up use why???
 	private int dump_config_request = 0;
 	private int check_core_request = 0;
 	// Thread start sequence

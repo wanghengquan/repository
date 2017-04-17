@@ -29,6 +29,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import info_parser.xml_parser;
+import utility_funcs.file_action;
 
 public class view_server extends Thread{
 	// public property
@@ -43,7 +44,7 @@ public class view_server extends Thread{
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
-	// private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL ;
 	// public function
 	// protected function
@@ -194,6 +195,12 @@ public class view_server extends Thread{
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}

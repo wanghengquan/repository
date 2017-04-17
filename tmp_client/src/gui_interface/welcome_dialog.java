@@ -41,7 +41,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 	private JTextField jt_work, jt_save;
 	private JCheckBox jc_welcome;
 	private JButton jb_discard, jb_apply;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	public welcome_dialog(main_frame main_view, switch_data switch_info, client_data client_info) {
 		super(main_view, "Welcome & Initial Setting", true);
@@ -71,15 +71,15 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		JTextArea letter_area = new JTextArea();
 		letter_area.setLineWrap(true);
 		letter_area
-				.append("Please setting your 'Work Space' and 'Save Space' in following Text Fields." + line_seprator);
-		letter_area.append("Work Space: Where TMP Client store runtime result locally" + line_seprator);
+				.append("Please setting your 'Work Space' and 'Save Space' in following Text Fields." + line_separator);
+		letter_area.append("Work Space: Where TMP Client store runtime result locally" + line_separator);
 		letter_area.append("Save Space: Where TMP Client copy local result to (Also called 'Unify result store space')"
-				+ line_seprator);
+				+ line_separator);
 		letter_area
 				.append("Bydefault:Save Space will be same with Work Space which means TMP Client will not copy the local result to remote space."
-						+ line_seprator);
-		letter_area.append("If we leave the 'Save Space' blank TMP Client will also skip copy action." + line_seprator);
-		letter_area.append(line_seprator);
+						+ line_separator);
+		letter_area.append("If we leave the 'Save Space' blank TMP Client will also skip copy action." + line_separator);
+		letter_area.append(line_separator);
 		letter_area.append("We strongly suggest you review all TMP Client setting in:Menu Bar --> 'Setting'.");
 		letter_area.setEditable(false);
 		JScrollPane sp = new JScrollPane(letter_area);

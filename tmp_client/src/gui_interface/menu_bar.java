@@ -49,7 +49,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem upload, key_gen;
 	JMenuItem client, software, preference;
 	JMenuItem usage, contact, about;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info,
 			pool_data pool_info) {
@@ -297,7 +297,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(usage)) {
 			MENU_BAR_LOGGER.warn("usage clicked");
-			String message = new String("Cannot open usage file:" + line_seprator + public_data.DOC_USAGE);
+			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_USAGE);
 			String title = new String("Open usage file failed");
 			if (Desktop.isDesktopSupported()) {
 				Desktop desktop = Desktop.getDesktop();
@@ -315,7 +315,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		if (e.getSource().equals(contact)) {
 			MENU_BAR_LOGGER.warn("Contact clicked");
 			String title = "Open Mail Failed:";
-			String message = "Can not open system register mail." + line_seprator + "Please send mail to:"
+			String message = "Can not open system register mail." + line_separator + "Please send mail to:"
 					+ public_data.BASE_CONTACT_MAIL;
 			if (Desktop.isDesktopSupported()) {
 				Desktop desktop = Desktop.getDesktop();

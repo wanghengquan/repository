@@ -27,6 +27,7 @@ import flow_control.pool_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
 
 public class tube_server extends Thread {
 	// public property
@@ -45,7 +46,7 @@ public class tube_server extends Thread {
 	private task_data task_info;
 	private rmq_tube rmq_runner;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	// public function
 	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
@@ -226,7 +227,7 @@ public class tube_server extends Thread {
 		simple_data.put("admin_request", admin_request);
 		simple_data.put("status", status);
 		simple_data.put("processNum", processNum);
-		simple_data.put("task_take", String.join(line_seprator, processing_admin_queue_list));
+		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
 		// complex data send
 		String host_ip = client_hash.get("Machine").get("ip");
 		String os = client_hash.get("System").get("os");
@@ -259,7 +260,7 @@ public class tube_server extends Thread {
 			if (value_set.contains("max_insts")) {
 				value_set.remove("max_insts");
 			}
-			String key_value = String.join(line_seprator, value_set);
+			String key_value = String.join(line_separator, value_set);
 			if (key_value.equals("")) {
 				key_value = "NA";
 			}
@@ -295,6 +296,12 @@ public class tube_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}

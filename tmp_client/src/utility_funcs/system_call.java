@@ -20,7 +20,7 @@ public class system_call implements Callable<Object> {
 	private String[] cmds;
 	private Map<String, String> envs;
 	private int timeout = 0;
-	//private String line_seprator = System.getProperty("line.separator");
+	//private String line_separator = System.getProperty("line.separator");
 
 	public system_call(String[] cmds, Map<String, String> envs) {
 		this.cmds = cmds;

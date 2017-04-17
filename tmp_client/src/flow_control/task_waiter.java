@@ -50,7 +50,7 @@ public class task_waiter extends Thread {
 	private client_data client_info;
 	@SuppressWarnings("unused")
 	private switch_data switch_info;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 	// private String file_seprator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
@@ -310,6 +310,7 @@ public class task_waiter extends Thread {
 	private HashMap<String, HashMap<String, String>> get_final_task_data(String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_task_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		HashMap<String, HashMap<String, String>> formated_case_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 		indexed_task_data.putAll(get_indexed_task_data(queue_name));
@@ -323,14 +324,15 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, String>> raw_case_data = indexed_task_data.get(case_title);
 		// again: merge case data admin queue and local queue (remote need,
 		// local is done)
+		formated_case_data.putAll(get_formated_case_data(raw_case_data));
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
-			raw_task_data.putAll(raw_case_data);// local data no need to merge
+			raw_task_data.putAll(formated_case_data);// local data no need to merge
 		} else {
 			// remote data, initial merge, rerun remote task will use local
 			// model(no merge need) (consider cmd option)
-			raw_task_data.putAll(get_merged_remote_task_info(admin_data, raw_case_data));
+			raw_task_data.putAll(get_merged_remote_task_info(admin_data, formated_case_data));
 		}
-		task_data.putAll(get_formated_case_data(raw_task_data));
+		task_data.putAll(this.merge_default_task_data(raw_task_data));
 		return task_data;
 	}
 
@@ -403,16 +405,10 @@ public class task_waiter extends Thread {
 		String suite_path = new String("");
 		String design_name = new String("");
 		String script_address = new String("");
-		String auth_key = public_data.ENCRY_DEF_STRING;
-		String priority = public_data.TASK_DEF_PRIORITY;
-		String timeout = public_data.TASK_DEF_TIMEOUT;
 		caseinfo_hash.put("repository", repository);
 		caseinfo_hash.put("suite_path", suite_path);
 		caseinfo_hash.put("design_name", design_name);
 		caseinfo_hash.put("script_address", script_address);
-		caseinfo_hash.put("auth_key", auth_key);
-		caseinfo_hash.put("priority", priority);
-		caseinfo_hash.put("timeout", timeout);
 		if (case_data.containsKey("CaseInfo")) {
 			caseinfo_hash.putAll(case_data.get("CaseInfo"));
 		}
@@ -482,8 +478,69 @@ public class task_waiter extends Thread {
 		return formated_data;
 	}
 
+	private HashMap<String, HashMap<String, String>> merge_default_task_data(
+			HashMap<String, HashMap<String, String>> case_data) {
+		HashMap<String, HashMap<String, String>> default_data = new HashMap<String, HashMap<String, String>>();
+		// ID format NA
+		HashMap<String, String> id_hash = new HashMap<String, String>();
+		if (case_data.containsKey("ID")) {
+			id_hash.putAll(case_data.get("ID"));
+		}
+		default_data.put("ID", id_hash);		
+		// CaseInfo format
+		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
+		String auth_key = public_data.ENCRY_DEF_STRING;
+		String priority = public_data.TASK_DEF_PRIORITY;
+		String timeout = public_data.TASK_DEF_TIMEOUT;
+		caseinfo_hash.put("auth_key", auth_key);
+		caseinfo_hash.put("priority", priority);
+		caseinfo_hash.put("timeout", timeout);
+		if (case_data.containsKey("CaseInfo")) {
+			caseinfo_hash.putAll(case_data.get("CaseInfo"));
+		}
+		default_data.put("CaseInfo", caseinfo_hash);
+		// Environment NA
+		HashMap<String, String> envinfo_hash = new HashMap<String, String>();
+		if (case_data.containsKey("Environment")) {
+			envinfo_hash.putAll(case_data.get("Environment"));
+		}
+		default_data.put("Environment", envinfo_hash);		
+		// LaunchCommand NA
+		HashMap<String, String> command_hash = new HashMap<String, String>();
+		if (case_data.containsKey("LaunchCommand")) {
+			command_hash.putAll(case_data.get("LaunchCommand"));
+		}
+		default_data.put("LaunchCommand", command_hash);		
+		// Machine format NA
+		HashMap<String, String> machine_hash = new HashMap<String, String>();
+		if (case_data.containsKey("Machine")) {
+			machine_hash.putAll(case_data.get("Machine"));
+		}
+		default_data.put("Machine", machine_hash);		
+		// System format NA
+		HashMap<String, String> system_hash = new HashMap<String, String>();
+		if (case_data.containsKey("System")) {
+			system_hash.putAll(case_data.get("System"));
+		}
+		default_data.put("System", system_hash);		
+		// Software NA
+		HashMap<String, String> software_hash = new HashMap<String, String>();
+		if (case_data.containsKey("Software")) {
+			software_hash.putAll(case_data.get("Software"));
+		}
+		default_data.put("Software", software_hash);
+		// Status NA
+		HashMap<String, String> status_hash = new HashMap<String, String>();
+		if (case_data.containsKey("Status")) {
+			status_hash.putAll(case_data.get("Status"));
+		}
+		default_data.put("Status", status_hash);
+		return default_data;
+	}
+	
 	private HashMap<String, HashMap<String, String>> get_merged_remote_task_info(
-			HashMap<String, HashMap<String, String>> admin_hash, HashMap<String, HashMap<String, String>> case_hash) {
+			HashMap<String, HashMap<String, String>> admin_hash, 
+			HashMap<String, HashMap<String, String>> case_hash) {
 		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
 		// case_hash is formated
 		Set<String> case_hash_set = case_hash.keySet();
@@ -521,6 +578,12 @@ public class task_waiter extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}
@@ -562,11 +625,11 @@ public class task_waiter extends Thread {
 											// changed to processing from
 											// finished
 			// task 1 : check available task queue and thread
+			if (pool_info.get_available_thread() < 1) {
+				continue;
+			}			
 			if (task_info.get_processing_admin_queue_list().size() < 1) {
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
-				continue;
-			}
-			if (pool_info.get_available_thread() < 1) {
 				continue;
 			}
 			// task 2 : get working queue ======================>key variable 1:
@@ -661,8 +724,8 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			String local_case_report = case_work_path + "/" + public_data.WORKSPACE_CASE_REPORT_NAME;
-			file_action.append_file(local_case_report, "[Export]" + line_seprator);
-			file_action.append_file(local_case_report, String.join(line_seprator, case_prepare_list) + line_seprator);
+			file_action.append_file(local_case_report, "[Export]" + line_separator);
+			file_action.append_file(local_case_report, String.join(line_separator, case_prepare_list) + line_separator);
 			// task 8 : launch cmd
 			String[] run_cmd = prepare_obj.get_run_command(task_data,
 					client_info.get_client_data().get("preference").get("work_path"));

@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -55,6 +56,7 @@ public class config_sync extends Thread {
 	private Thread conf_thread;
 	private client_data client_info;
 	private switch_data switch_info;
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 
 	// public function
@@ -276,6 +278,12 @@ public class config_sync extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}

@@ -31,7 +31,7 @@ public class case_prepare {
 	// protected property
 	// private property
 	private static final Logger CASE_PREPARE_LOGGER = LogManager.getLogger(task_waiter.class.getName());
-	// private String line_seprator = System.getProperty("line.separator");
+	// private String line_separator = System.getProperty("line.separator");
 	private String file_seprator = System.getProperty("file.separator");
 
 	public case_prepare() {

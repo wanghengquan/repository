@@ -52,8 +52,8 @@ public class result_waiter extends Thread {
 	private rmq_tube rmq_runner;
 	@SuppressWarnings("unused")
 	private switch_data switch_info;
-	private String line_seprator = System.getProperty("line.separator");
-	private String file_seprator = System.getProperty("file.separator");
+	private String line_separator = System.getProperty("line.separator");
+	private String file_separator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
 	// protected function
@@ -100,13 +100,13 @@ public class result_waiter extends Thread {
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 			String save_path = client_info.get_client_data().get("preference").get("save_path").replaceAll("\\\\", "/");
 			String[] path_array = new String[] { save_path, tmp_result_dir, prj_dir_name, run_dir_name };
-			String case_save_path = String.join(file_seprator, path_array);
+			String case_save_path = String.join(file_separator, path_array);
 			case_save_path = case_save_path.replaceAll("\\\\", "/");
 			// public data for every case end
 			// task 0 : case local report generate
 			String local_case_report = case_work_path + "/" + public_data.WORKSPACE_CASE_REPORT_NAME;
-			file_action.append_file(local_case_report, line_seprator + "[Run]" + line_seprator);
-			file_action.append_file(local_case_report, String.join(line_seprator, cmd_output_list));
+			file_action.append_file(local_case_report, line_separator + "[Run]" + line_separator);
+			file_action.append_file(local_case_report, String.join(line_separator, cmd_output_list));
 			// task 1 : final running process clean up
 			run_status = final_cleanup(case_work_path);
 			// task 2 : zip case to save path
@@ -361,16 +361,16 @@ public class result_waiter extends Thread {
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
 			StringBuilder runlog = new StringBuilder();
-			runlog.append(":" + line_seprator);
-			runlog.append("####################" + line_seprator);
+			runlog.append(":" + line_separator);
+			runlog.append("####################" + line_separator);
 			String host_name = client_info.get_client_data().get("Machine").get("terminal");
 			String work_path = (String) one_call_data.get("case_dir");
-			runlog.append("Result Location ==> " + host_name + ":" + work_path + line_seprator);
-			runlog.append(line_seprator);
-			runlog.append(line_seprator);
+			runlog.append("Result Location ==> " + host_name + ":" + work_path + line_separator);
+			runlog.append(line_separator);
+			runlog.append(line_separator);
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("cmd_output");
-			runlog.append(String.join(line_seprator, runtime_output_list));
-			runlog.append(line_seprator);
+			runlog.append(String.join(line_separator, runtime_output_list));
+			runlog.append(line_separator);
 			String runlog_str = runlog.toString();
 			hash_data.put("runLog", remove_xml_modifier(runlog_str));
 			runtime_data.put(call_index, hash_data);
@@ -551,7 +551,9 @@ public class result_waiter extends Thread {
 				} catch (InterruptedException | ExecutionException | TimeoutException e) {
 					// e.printStackTrace();
 					RESULT_WAITER_LOGGER.warn("Get call result exception.");
-					hash_data.put("cmd_output", "");
+					ArrayList<String> default_output = new ArrayList<String>();
+					default_output.add("NA");
+					hash_data.put("cmd_output", default_output);
 				}
 			} else if (current_time - start_time > time_out + 5) {
 				hash_data.put("call_status", "timeout");
@@ -641,6 +643,12 @@ public class result_waiter extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}
 			System.exit(1);
 		}
 	}
