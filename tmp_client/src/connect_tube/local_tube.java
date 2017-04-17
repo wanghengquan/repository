@@ -668,7 +668,7 @@ public class local_tube {
 				// non command key 1)globle have value, local must have value
 				// then overwrite
 				if (globle_data.containsKey(local_key)) {
-					if (!local_value.equals("")) {
+					if (!(local_value == null) && !local_value.equals("")) {
 						globle_data.put(local_key, local_value);
 					}
 				} else {
@@ -827,7 +827,7 @@ public class local_tube {
 			// insert design into received task queue : admin_queue_name
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = task_info
 					.get_received_task_queues_map();
-			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 			if (received_task_queues_map.containsKey(admin_queue_name)) {
 				task_queue_data.putAll(received_task_queues_map.get(admin_queue_name));
 			}

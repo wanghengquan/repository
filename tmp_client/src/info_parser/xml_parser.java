@@ -29,6 +29,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
+import connect_tube.taskid_compare;
 import utility_funcs.time_info;
 
 /*
@@ -260,7 +261,7 @@ public class xml_parser {
 	
 	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_xml_file_task_queue_data(String xml_path)
 			throws DocumentException {
-		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
 		String time_modified = time_info.get_date_time(new Date(time));

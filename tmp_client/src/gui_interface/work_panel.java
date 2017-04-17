@@ -43,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentException;
 
 import connect_tube.task_data;
+import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
 import info_parser.xml_parser;
@@ -232,7 +233,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			work_data.addAll(get_blank_data());
 			return show_update;
 		}
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 		queue_data.putAll(processed_task_queues_map.get(watching_queue));
 		if (queue_data.size() < 1) {
 			work_data.clear();
@@ -296,10 +297,9 @@ public class work_panel extends JSplitPane implements Runnable{
 			return import_status;
 		}
 		xml_parser file_parser = new xml_parser();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 		try {
-			import_task_data = file_parser
-					.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/"));
+			import_task_data.putAll(file_parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();

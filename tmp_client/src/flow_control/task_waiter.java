@@ -26,6 +26,7 @@ import org.dom4j.DocumentException;
 import connect_tube.local_tube;
 import connect_tube.rmq_tube;
 import connect_tube.task_data;
+import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -169,7 +170,7 @@ public class task_waiter extends Thread {
 			return import_status;
 		}
 		xml_parser parser = new xml_parser();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 		try {
 			queue_data.putAll(parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
@@ -309,27 +310,27 @@ public class task_waiter extends Thread {
 	private HashMap<String, HashMap<String, String>> get_final_task_data(String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_task_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 		indexed_task_data.putAll(get_indexed_task_data(queue_name));
 		if (indexed_task_data.isEmpty()) {
 			return task_data;// empty data
 		}
-		// remote queue have a real case title while local queue case title ==
-		// case id
+		// remote queue has case title while local queue case title == case id.
 		// let's remove this title
 		Iterator<String> indexed_it = indexed_task_data.keySet().iterator();
 		String case_title = indexed_it.next();
 		HashMap<String, HashMap<String, String>> raw_case_data = indexed_task_data.get(case_title);
-		HashMap<String, HashMap<String, String>> formated_case_data = get_formated_case_data(raw_case_data);
 		// again: merge case data admin queue and local queue (remote need,
 		// local is done)
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
-			task_data.putAll(formated_case_data);// local data no need to merge
+			raw_task_data.putAll(raw_case_data);// local data no need to merge
 		} else {
 			// remote data, initial merge, rerun remote task will use local
 			// model(no merge need) (consider cmd option)
-			task_data.putAll(get_merged_remote_task_info(admin_data, formated_case_data));
+			raw_task_data.putAll(get_merged_remote_task_info(admin_data, raw_case_data));
 		}
+		task_data.putAll(get_formated_case_data(raw_task_data));
 		return task_data;
 	}
 
