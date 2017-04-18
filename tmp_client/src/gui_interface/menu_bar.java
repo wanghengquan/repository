@@ -315,7 +315,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		if (e.getSource().equals(contact)) {
 			MENU_BAR_LOGGER.warn("Contact clicked");
 			String title = "Open Mail Failed:";
-			String message = "Can not open system register mail." + line_separator + "Please send mail to:"
+			String message = "Can not open system registered mail." + line_separator + "Please send mail to:"
 					+ public_data.BASE_CONTACT_MAIL;
 			if (Desktop.isDesktopSupported()) {
 				Desktop desktop = Desktop.getDesktop();
