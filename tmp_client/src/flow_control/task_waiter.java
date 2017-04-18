@@ -12,6 +12,7 @@ package flow_control;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import info_parser.xml_parser;
+import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.system_call;
 
@@ -110,16 +112,18 @@ public class task_waiter extends Thread {
 	}
 
 	private void update_processing_queue_list() {
-		Set<String> captured_admin_queue_set = task_info.get_captured_admin_queues_treemap().keySet();
+		Set<String> captured_admin_queue_set = new HashSet<String>();
+		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());	
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
-			if (!task_info.get_data_from_captured_admin_queues_treemap(queue_name).containsKey("Status")) {
-				continue;
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));			
+			if (queue_data.isEmpty()) {
+				continue; // some one delete this queue already
 			}
-			String queue_status = task_info.get_data_from_captured_admin_queues_treemap(queue_name).get("Status")
-					.get("admin_status");
+			String queue_status = queue_data.get("Status").get("admin_status");
 			if (queue_status.equalsIgnoreCase("processing")) {
 				processing_admin_queue_list.add(queue_name);
 			}
@@ -161,8 +165,11 @@ public class task_waiter extends Thread {
 		}
 	}
 
-	private Boolean import_history_finished_task_queue_into_memory(String queue_name) {
+	private synchronized Boolean import_history_finished_task_queue_into_memory(String queue_name) {
 		Boolean import_status = new Boolean(false);
+		if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
+			return import_status;// task_data already in memory, no import need.
+		}		
 		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
