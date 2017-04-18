@@ -202,11 +202,7 @@ public class tube_server extends Thread {
 		HashMap<String, String> simple_data = new HashMap<String, String>();
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
-		String admin_request = "0";
-		if (switch_info.impl_send_admin_request()) {
-			admin_request = "1";
-		}
-		// admin_request = "1";
+		String admin_request = "1";
 		String cpu_used = client_hash.get("System").get("cpu");
 		int cpu_used_int = 0;
 		try{
@@ -224,10 +220,13 @@ public class tube_server extends Thread {
 		int max_thread = pool_info.get_pool_current_size();
 		String processNum = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
-		simple_data.put("admin_request", admin_request);
 		simple_data.put("status", status);
 		simple_data.put("processNum", processNum);
 		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
+		//client only sent request(1), server side will response and reset the value to 0
+		if (switch_info.impl_send_admin_request()) {
+			simple_data.put("admin_request", admin_request);
+		}		
 		// complex data send
 		String host_ip = client_hash.get("Machine").get("ip");
 		String os = client_hash.get("System").get("os");
@@ -323,8 +322,6 @@ public class tube_server extends Thread {
 			// System.exit(1);
 		}
 		// initial 2 : send client detail info
-		send_client_info("simple");
-		send_client_info("simple");
 		send_client_info("complex");
 		// initial 3 : Announce tube server ready
 		switch_info.set_tube_server_power_up();

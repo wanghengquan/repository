@@ -23,7 +23,7 @@ public class switch_data {
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// client update
-	private int send_admin_request = 6; // for client start up use why???
+	private int send_admin_request = 1; // for client start up 
 	private int dump_config_request = 0;
 	private int check_core_request = 0;
 	// Thread start sequence
@@ -45,7 +45,7 @@ public class switch_data {
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
-			this.send_admin_request = send_admin_request + 2;
+			this.send_admin_request = send_admin_request + 1;
 			this.dump_config_request = dump_config_request + 1;
 			this.check_core_request = check_core_request + 1;
 		} finally {
