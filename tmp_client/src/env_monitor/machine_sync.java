@@ -198,8 +198,11 @@ public class machine_sync extends Thread {
 			// type = "NA";
 			arch = "NA";
 		} else {
-			// type = os.split("_")[0];
-			arch = os.split("_")[1];
+			if(os.contains("_")){
+				arch = os.split("_")[1];
+			} else {
+				arch = "NA";
+			}
 		}
 		String terminal = get_host_name();
 		String ip = get_host_ip();
