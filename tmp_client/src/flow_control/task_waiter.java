@@ -27,7 +27,6 @@ import org.dom4j.DocumentException;
 import connect_tube.local_tube;
 import connect_tube.rmq_tube;
 import connect_tube.task_data;
-import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -177,7 +176,7 @@ public class task_waiter extends Thread {
 			return import_status;
 		}
 		xml_parser parser = new xml_parser();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			queue_data.putAll(parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {

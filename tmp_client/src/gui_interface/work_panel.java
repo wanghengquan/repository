@@ -47,6 +47,7 @@ import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
 import info_parser.xml_parser;
+import utility_funcs.deep_clone;
 import utility_funcs.time_info;
 
 public class work_panel extends JSplitPane implements Runnable{
@@ -228,13 +229,14 @@ public class work_panel extends JSplitPane implements Runnable{
 				return show_update; // no data show
 			}
 		}
+		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
 		if (!processed_task_queues_map.containsKey(watching_queue)) {
 			work_data.clear();
 			work_data.addAll(get_blank_data());
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
-		queue_data.putAll(processed_task_queues_map.get(watching_queue));
+		queue_data.putAll(deep_clone.clone(processed_task_queues_map.get(watching_queue)));
 		if (queue_data.size() < 1) {
 			work_data.clear();
 			work_data.addAll(get_blank_data());
@@ -297,7 +299,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			return import_status;
 		}
 		xml_parser file_parser = new xml_parser();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			import_task_data.putAll(file_parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {

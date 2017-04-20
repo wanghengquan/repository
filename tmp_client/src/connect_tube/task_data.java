@@ -371,7 +371,7 @@ public class task_data {
 	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_queue_from_processed_task_queues_map(
 			String queue_name) {
 		rw_lock.readLock().lock();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
 				queue_data.putAll(this.processed_task_queues_map.get(queue_name));
@@ -386,7 +386,7 @@ public class task_data {
 		rw_lock.writeLock().lock();
 		Map<String, HashMap<String, HashMap<String, String>>> return_id_case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			TreeMap<String, HashMap<String, HashMap<String, String>>> received_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+			TreeMap<String, HashMap<String, HashMap<String, String>>> received_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			// TreeMap<String, HashMap<String, HashMap<String, String>>>
 			// processed_task_data = new TreeMap<String, HashMap<String,
 			// HashMap<String, String>>>();
@@ -425,7 +425,7 @@ public class task_data {
 	public void update_case_to_processed_task_queues_map(String queue_name, String case_id,
 			HashMap<String, HashMap<String, String>> case_data) {
 		rw_lock.writeLock().lock();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
 				queue_data.putAll(processed_task_queues_map.get(queue_name));
@@ -441,7 +441,7 @@ public class task_data {
 			HashMap<String, HashMap<String, String>> case_data) {
 		rw_lock.writeLock().lock();
 		Boolean register_status = new Boolean(false);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		HashMap<String, HashMap<String, String>> ori_case_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			if (!processed_task_queues_map.containsKey(queue_name)) {
@@ -472,7 +472,7 @@ public class task_data {
 			ArrayList<String> case_list) {
 		rw_lock.writeLock().lock();
 		Boolean copy_status = new Boolean(true);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (received_task_queues_map.containsKey(queue_name)) {
 				queue_data = deep_clone.clone(received_task_queues_map.get(queue_name));
@@ -512,13 +512,15 @@ public class task_data {
 	public Boolean copy_task_queue_from_processed_to_received_task_queues_map(String queue_name) {
 		rw_lock.writeLock().lock();
 		Boolean copy_status = new Boolean(true);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (received_task_queues_map.containsKey(queue_name)) {
 				queue_data = deep_clone.clone(received_task_queues_map.get(queue_name));
 			}
 			if (processed_task_queues_map.containsKey(queue_name)) {
-				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+				System.out.println(">>>>>>>>>");
+				System.out.println(processed_task_queues_map.get(queue_name).toString());
 				processed_queue_data = deep_clone.clone(processed_task_queues_map.get(queue_name));
 				Iterator<String> processed_queue_data_it = processed_queue_data.keySet().iterator();
 				while (processed_queue_data_it.hasNext()) {
@@ -545,7 +547,7 @@ public class task_data {
 		Boolean mark_status = new Boolean(true);
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
-				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 				processed_queue_data.putAll(processed_task_queues_map.get(queue_name));
 				Iterator<String> processed_queue_data_it = processed_queue_data.keySet().iterator();
 				while (processed_queue_data_it.hasNext()) {

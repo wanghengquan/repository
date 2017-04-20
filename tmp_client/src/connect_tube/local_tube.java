@@ -827,7 +827,7 @@ public class local_tube {
 			// insert design into received task queue : admin_queue_name
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = task_info
 					.get_received_task_queues_map();
-			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			if (received_task_queues_map.containsKey(admin_queue_name)) {
 				task_queue_data.putAll(received_task_queues_map.get(admin_queue_name));
 			}

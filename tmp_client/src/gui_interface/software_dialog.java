@@ -126,6 +126,9 @@ class value_pane extends JPanel implements ActionListener{
 		JLabel jl_scan_dir = new JLabel("Auto Scan Directory:");
 		jt_scan_dir = new JTextField("");
 		if (client_info.get_client_data().containsKey(tab_name)){
+			System.out.println(">>>>");
+			System.out.println(tab_name);
+			System.out.println(">>>>" + client_info.get_client_data().get(tab_name).get("max_insts"));
 			jt_max_insts.setText(client_info.get_client_data().get(tab_name).get("max_insts"));
 			jt_scan_dir.setText(client_info.get_client_data().get(tab_name).get("scan_dir"));
 		} else {
@@ -238,6 +241,10 @@ class value_pane extends JPanel implements ActionListener{
 			client_hash.get(tab_name).putAll(new_data);
 			client_hash.get(tab_name).put("scan_dir", jt_scan_dir.getText());
 			client_hash.get(tab_name).put("max_insts", jt_max_insts.getText());
+			System.out.println(">>>>");
+			System.out.println(tab_name);
+			System.out.println(jt_max_insts.getText());
+			System.out.println(client_hash.toString());
 			client_info.set_client_data(client_hash);
 			switch_info.set_client_updated();
 		}
