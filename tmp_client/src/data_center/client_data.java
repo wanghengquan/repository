@@ -67,6 +67,26 @@ public class client_data {
 		}
 	}
 
+	public void append_software_build(String section, HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> software_data =  client_hash.get(section);
+			software_data.putAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void delete_software_build(String section, String build) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> software_data =  client_hash.get(section);
+			software_data.remove(build);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
 	public HashMap<String, Integer> get_max_soft_insts() {
 		rw_lock.readLock().lock();
 		HashMap<String, Integer> temp = new HashMap<String, Integer>();

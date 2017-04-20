@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -394,7 +395,9 @@ public class task_data {
 			// if(processed_task_queues_map.containsKey(queue_name)){
 			// processed_task_data.putAll(processed_task_queues_map.get(queue_name));
 			// }
-			Iterator<String> received_task_data_it = received_task_data.keySet().iterator();
+			TreeSet<String> received_task_data_set = new TreeSet<String>(new taskid_compare());
+			received_task_data_set.addAll(received_task_data.keySet());
+			Iterator<String> received_task_data_it = received_task_data_set.iterator();
 			while (received_task_data_it.hasNext()) {
 				String case_id = received_task_data_it.next();
 				HashMap<String, HashMap<String, String>> case_data = received_task_data.get(case_id);
