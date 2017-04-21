@@ -105,6 +105,26 @@ public class queue_panel extends JSplitPane implements Runnable {
 					QUEUE_PANEL_LOGGER.info("No line selected");
 				}
 			}
+			
+			public void mouseClicked(MouseEvent e) {
+				if (reject_table.getSelectedRows().length > 0) {
+					int i = e.getButton();
+					if(i != MouseEvent.BUTTON1){
+						QUEUE_PANEL_LOGGER.info("non Button1 clicked, skip.");
+						return;
+					}
+					int click_count = e.getClickCount();
+					if(click_count < 2){
+						QUEUE_PANEL_LOGGER.info("click count:" + String.valueOf(click_count) + ", skip.");
+						return;
+					}
+					String select_queue = (String) reject_table.getValueAt(reject_table.getSelectedRow(), 0);
+					QUEUE_PANEL_LOGGER.info("Enable queue:" + select_queue);
+					new detail_dialog(select_queue, client_info, task_info).setVisible(true);					
+				} else {
+					QUEUE_PANEL_LOGGER.error("No line selected");
+				}
+			}
 		});
 		JScrollPane scroll_panel = new JScrollPane(reject_table);
 		reject_panel.add(scroll_panel);
@@ -134,6 +154,27 @@ public class queue_panel extends JSplitPane implements Runnable {
 					}
 				} else {
 					QUEUE_PANEL_LOGGER.info("No line selected");
+				}
+			}
+			
+			public void mouseClicked(MouseEvent e) {
+				if (capture_table.getSelectedRows().length > 0) {
+					int i = e.getButton();
+					if(i != MouseEvent.BUTTON1){
+						QUEUE_PANEL_LOGGER.info("non Button1 clicked, skip.");
+						return;
+					}
+					int click_count = e.getClickCount();
+					if(click_count < 2){
+						QUEUE_PANEL_LOGGER.info("click count:" + String.valueOf(click_count) + ", skip.");
+						return;
+					}
+					String select_queue = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
+					QUEUE_PANEL_LOGGER.info("Enable queue:" + select_queue);
+					view_info.set_watching_queue(select_queue);
+					view_info.set_watching_queue_area("all");
+				} else {
+					QUEUE_PANEL_LOGGER.error("No line selected");
 				}
 			}
 		});

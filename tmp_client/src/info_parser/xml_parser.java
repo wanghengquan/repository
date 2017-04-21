@@ -141,7 +141,8 @@ public class xml_parser {
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			XML_PARSER_LOGGER.warn("get rmq xml data failed.");
+			XML_PARSER_LOGGER.warn("Wrong xml format received, skip.");
+			return level1_data;
 		}
 		Element root_node = xml_doc.getRootElement();
 		if (root_node.attribute("title") == null) {
@@ -234,13 +235,13 @@ public class xml_parser {
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
-		String time_modified = time_info.get_date_time(new Date(time));
+		String time_modified = time_info.get_date_hhmm(new Date(time));
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.equalsIgnoreCase(time_modified)) {
-			XML_PARSER_LOGGER.warn("xml modified outside, ignore this xml data.");
+		if (!time_create.contains(time_modified)) {
+			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
 			return admin_queue_data;
 		}
 		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
@@ -263,13 +264,13 @@ public class xml_parser {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
-		String time_modified = time_info.get_date_time(new Date(time));
+		String time_modified = time_info.get_date_hhmm(new Date(time));
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.equalsIgnoreCase(time_modified)) {
-			XML_PARSER_LOGGER.warn("xml modified outside, ignore this xml data.");
+		if (!time_create.contains(time_modified)) {
+			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
 			return task_queue_data;
 		}
 		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {

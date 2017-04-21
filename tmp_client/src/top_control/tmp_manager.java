@@ -223,6 +223,7 @@ public class tmp_manager extends Thread  {
 		//core script prepare
 		core_update my_core = new core_update();
 		my_core.update(client_info.get_client_data().get("preference").get("work_path"));
+		System.out.println(">>>Core updated...");
 		//kill pop window launch
 		kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
 		my_kill.start();

@@ -230,7 +230,7 @@ public class task_data {
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			if (processed_admin_queues_treemap.containsKey(queue_name)) {
-				admin_data = deep_clone.clone(processed_admin_queues_treemap.get(queue_name));
+				admin_data.putAll(deep_clone.clone(processed_admin_queues_treemap.get(queue_name)));
 				HashMap<String, String> status_data = admin_data.get("Status");
 				status_data.put("admin_status", "waiting");
 				received_admin_queues_treemap.put(queue_name, admin_data);
@@ -522,8 +522,6 @@ public class task_data {
 			}
 			if (processed_task_queues_map.containsKey(queue_name)) {
 				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-				System.out.println(">>>>>>>>>");
-				System.out.println(processed_task_queues_map.get(queue_name).toString());
 				processed_queue_data = deep_clone.clone(processed_task_queues_map.get(queue_name));
 				Iterator<String> processed_queue_data_it = processed_queue_data.keySet().iterator();
 				while (processed_queue_data_it.hasNext()) {

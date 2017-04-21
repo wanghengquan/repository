@@ -119,8 +119,12 @@ public class view_server extends Thread{
 		}
 		if(task_info.get_finished_admin_queue_list().contains(queue_name)){
 			if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
-				import_admin_data_to_processed_data(queue_name);
-				import_task_data_to_processed_data(queue_name);
+				Boolean import_admin_status = import_admin_data_to_processed_data(queue_name);
+				Boolean import_task_status = import_task_data_to_processed_data(queue_name);
+				if (!import_admin_status || !import_task_status){
+					VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action);
+					return action_status;
+				}
 			}
 			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
@@ -155,8 +159,12 @@ public class view_server extends Thread{
 			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
-		import_status = true;
+		if (import_admin_data.isEmpty()){
+			import_status = false;
+		} else {
+			task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+			import_status = true;
+		}
 		return import_status;
 	}
 	
@@ -184,8 +192,12 @@ public class view_server extends Thread{
 			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
-		import_status = true;
+		if (import_task_data.isEmpty()){
+			import_status = false;
+		} else {
+			task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+			import_status = true;
+		}
 		return import_status;
 	}	
 	

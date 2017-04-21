@@ -48,12 +48,17 @@ public class time_info {
 		return formatter.format(date);
 	}
 
+	public static String get_date_hhmm(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmm");
+		return formatter.format(date);
+	}
+	
 	public static Timestamp get_time_stamp() {
 		return new Timestamp(new Date().getTime());
 	}
 
 	public static void main(String[] argv) {
-		System.out.println(get_date_time());
+		System.out.println(get_date_hhmm(new Date()));
 		System.out.println(System.currentTimeMillis()); 
 	}
 

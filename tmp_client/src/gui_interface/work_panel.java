@@ -115,6 +115,26 @@ public class work_panel extends JSplitPane implements Runnable{
 					WORK_PANEl_LOGGER.info("No line selected");
 				}
 			}
+			
+			public void mouseClicked(MouseEvent e) {
+				if (work_table.getSelectedRows().length > 0) {
+					int i = e.getButton();
+					if(i != MouseEvent.BUTTON1){
+						WORK_PANEl_LOGGER.info("non Button1 clicked, skip.");
+						return;
+					}
+					int click_count = e.getClickCount();
+					if(click_count < 2){
+						WORK_PANEl_LOGGER.info("click count:" + String.valueOf(click_count) + ", skip.");
+						return;
+					}
+					String select_task = (String) work_table.getValueAt(work_table.getSelectedRow(), 0);
+					WORK_PANEl_LOGGER.warn("clicked task:" + select_task);
+					table_menu.open_result_folder();
+				} else {
+					WORK_PANEl_LOGGER.error("No line selected");
+				}
+			}		
 		});
 		JScrollPane scroll_panel = new JScrollPane(work_table);
 		work_panel.add(scroll_panel);
@@ -217,13 +237,13 @@ public class work_panel extends JSplitPane implements Runnable{
 		}
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
-		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
 		// try import non exists queue data
-		if (!processed_task_queues_map.containsKey(watching_queue)) {
+		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue) || !task_info.get_processed_admin_queues_treemap().containsKey(watching_queue)) {
 			//both admin and task should be successfully import otherwise skip import
 			Boolean admin_import_status = import_admin_data_to_processed_data(watching_queue);
 			Boolean task_import_status = import_task_data_to_processed_data(watching_queue);
 			if (!admin_import_status || !task_import_status){
+				WORK_PANEl_LOGGER.warn("Import queue data failed:" + watching_queue + ", " + watching_queue_area);
 				work_data.clear();
 				work_data.addAll(get_blank_data());
 				return show_update; // no data show
@@ -280,8 +300,12 @@ public class work_panel extends JSplitPane implements Runnable{
 			WORK_PANEl_LOGGER.warn("Import xml admin data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
-		import_status = true;
+		if (import_admin_data.isEmpty()){
+			import_status = false;
+		} else {
+			task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+			import_status = true;
+		}
 		return import_status;
 	}
 	
@@ -308,8 +332,12 @@ public class work_panel extends JSplitPane implements Runnable{
 			WORK_PANEl_LOGGER.warn("Import xml task data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
-		import_status = true;
+		if (import_task_data.isEmpty()){
+			import_status = false;
+		} else {
+			task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+			import_status = true;
+		}
 		return import_status;
 	}
 	
@@ -428,8 +456,42 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 
 	public table_pop_memu get_table_pop_menu() {
 		return this;
+	} 
+	
+	public void open_result_folder(){
+		String title = "Open Folder Failed:";
+		String message = "Cannot open case result DIR, unknow error." + line_separator;			
+		String watching_queue = view_info.get_watching_queue();
+		List<String> case_list = view_info.get_select_task_case();
+		if(case_list.size() < 1){
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		String case_id = case_list.get(0);
+		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+		String work_path = new String();
+		try{
+			case_data.putAll(task_info.get_case_from_processed_task_queues_map(watching_queue, case_id));
+			work_path = case_data.get("Status").get("location");
+		} catch (Exception e){
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		message = "Can not open path with system register browser" + line_separator + work_path;
+		if(Desktop.isDesktopSupported()){
+			Desktop desktop = Desktop.getDesktop();
+			try {
+				desktop.open(new File(work_path));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			}
+		} else {
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+		}	
 	}
-
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -470,40 +532,9 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}
 		if (arg0.getSource().equals(results)) {
 			System.out.println("results clicked");
-			String title = "Open Folder Failed:";
-			String message = "Cannot open case result DIR, unknow error." + line_separator;			
-			String watching_queue = view_info.get_watching_queue();
-			List<String> case_list = view_info.get_select_task_case();
-			if(case_list.size() < 1){
-				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
-			String case_id = case_list.get(0);
-			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
-			String work_path = new String();
-			try{
-				case_data.putAll(task_info.get_case_from_processed_task_queues_map(watching_queue, case_id));
-				work_path = case_data.get("Status").get("location");
-			} catch (Exception e){
-				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
-			message = "Can not open path with system register browser" + line_separator + work_path;
-			if(Desktop.isDesktopSupported()){
-				Desktop desktop = Desktop.getDesktop();
-				try {
-					desktop.open(new File(work_path));
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-				}
-			} else {
-				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-			}
+			open_result_folder();
 		}
 	}
-
 }
 
 // Unused!!!

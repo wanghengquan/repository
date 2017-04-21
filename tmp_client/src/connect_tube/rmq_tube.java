@@ -198,7 +198,8 @@ public class rmq_tube {
 	private Boolean update_admin_queue(String message, String current_terminal) {
 		Boolean update_status = new Boolean(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(message);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_rmq_xml_data(message));
 		Set<String> msg_key_set = msg_hash.keySet();
 		if (msg_key_set.isEmpty()) {
 			return update_status;
