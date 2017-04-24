@@ -238,12 +238,12 @@ public class work_panel extends JSplitPane implements Runnable{
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		// try import non exists queue data
-		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue) || !task_info.get_processed_admin_queues_treemap().containsKey(watching_queue)) {
+		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue)) {
 			//both admin and task should be successfully import otherwise skip import
-			Boolean admin_import_status = import_admin_data_to_processed_data(watching_queue);
+			import_admin_data_to_processed_data(watching_queue);
 			Boolean task_import_status = import_task_data_to_processed_data(watching_queue);
-			if (!admin_import_status || !task_import_status){
-				WORK_PANEl_LOGGER.warn("Import queue data failed:" + watching_queue + ", " + watching_queue_area);
+			if (!task_import_status){
+				WORK_PANEl_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_queue_area);
 				work_data.clear();
 				work_data.addAll(get_blank_data());
 				return show_update; // no data show
