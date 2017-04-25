@@ -56,14 +56,13 @@ public class case_prepare {
 		// delete previously run result.
 		if (case_work_path_fobj.exists() && case_work_path_fobj.isDirectory()) {
 			if (FileUtils.deleteQuietly(case_work_path_fobj)) {
-				CASE_PREPARE_LOGGER.debug("Previously run case deleted pass:" + case_work_path);
+				CASE_PREPARE_LOGGER.info("Previously run case deleted pass:" + case_work_path);
 			} else {
 				CASE_PREPARE_LOGGER.info("Previously run case deleted fail:" + case_work_path);
 			}
-		} else {
-			// create new case path if not have
-			FileUtils.forceMkdir(case_work_path_fobj);
 		}
+		//Create new case path if not have
+		FileUtils.forceMkdir(case_work_path_fobj);
 		return case_work_path;
 	}
 
@@ -132,11 +131,11 @@ public class case_prepare {
 	}
 
 	protected String[] get_run_command(HashMap<String, HashMap<String, String>> task_data, String work_path) {
-		String launch_cmd = task_data.get("LaunchCommand").get("cmd");
-		String script_addr = task_data.get("CaseInfo").get("script_address");
+		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
+		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
 		// user command used
 		if (script_addr.length() > 1) {
-			return launch_cmd.split(" ");
+			return launch_cmd.split("\\s+");
 		}
 		// internal script cmd used
 		// core script will be export to work space
@@ -149,19 +148,19 @@ public class case_prepare {
 		String design_base_name = design_name_fobj.getName();
 		String[] cmd_list;
 		if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + design_base_name).split(" ");
+			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + design_base_name).split(" ");
+			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + design_base_name).split(" ");
+			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + design_base_name).split(" ");
+			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + design_base_name).split(" ");
+			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + design_base_name).split(" ");
+			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");
 		else
-			cmd_list = launch_cmd.split(" ");
+			cmd_list = launch_cmd.split("\\s+");
 		return cmd_list;
 	}
 
