@@ -188,6 +188,9 @@ public class tmp_manager extends Thread  {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
+		System.out.println(">>>Info: Current Version:" + public_data.BASE_CURRENTVERSION);
+		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
+		System.out.println("");
 		initial_log_config();
 		TMP_MANAGER_LOGGER.debug("debug output test");
 		TMP_MANAGER_LOGGER.info("Info output test");
