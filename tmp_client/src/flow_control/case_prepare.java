@@ -56,7 +56,7 @@ public class case_prepare {
 		// delete previously run result.
 		if (case_work_path_fobj.exists() && case_work_path_fobj.isDirectory()) {
 			if (FileUtils.deleteQuietly(case_work_path_fobj)) {
-				CASE_PREPARE_LOGGER.info("Previously run case deleted pass:" + case_work_path);
+				CASE_PREPARE_LOGGER.debug("Previously run case deleted pass:" + case_work_path);
 			} else {
 				CASE_PREPARE_LOGGER.info("Previously run case deleted fail:" + case_work_path);
 			}
