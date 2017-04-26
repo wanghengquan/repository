@@ -190,6 +190,7 @@ public class tmp_manager extends Thread  {
 	public static void main(String[] args) {
 		System.out.println(">>>Info: Current Version:" + public_data.BASE_CURRENTVERSION);
 		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
+		System.out.println(">>>Info: Contact Us:" + public_data.BASE_CONTACT_MAIL);
 		System.out.println("");
 		initial_log_config();
 		TMP_MANAGER_LOGGER.debug("debug output test");

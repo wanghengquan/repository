@@ -156,8 +156,8 @@ public class system_cmd {
 		 * This function used to run command in another way: ProcessBuilder
 		 */
 		ArrayList<String> string_list = new ArrayList<String>();
-		string_list.add("Environments:" + envs.toString());
-		string_list.add(Arrays.toString(cmds).replaceAll("[\\[\\]\\s,]", " "));
+		string_list.add("Environments :" + envs.toString());
+		string_list.add("LaunchCommand:" + String.join(" ", cmds));
 		ProcessBuilder pb = new ProcessBuilder(cmds);
 		pb.redirectErrorStream(true);
 		File run_dir = new File(directory);
@@ -183,7 +183,7 @@ public class system_cmd {
 				string_list.add("<status>TBD</status>");
 			}
 		} else {
-			SYSTEM_CMD_LOGGER.warn("Clean up, timeout task cleanup.");
+			SYSTEM_CMD_LOGGER.warn("Timeout task cleanup.");
 			string_list.add("<status>Timeout</status>");
 			string_list.add("<reason>Timeout</reason>");
 			p.destroyForcibly();
