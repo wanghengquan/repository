@@ -101,6 +101,9 @@ public class config_sync extends Thread {
 				// e.printStackTrace();
 				CONFIG_SYNC_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
 				continue;
+			} catch (Exception e) {
+				CONFIG_SYNC_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
+				continue;				
 			}
 			if (!build_data.containsKey("root")) {
 				continue;
