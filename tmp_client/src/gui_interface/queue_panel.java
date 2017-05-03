@@ -71,7 +71,11 @@ public class queue_panel extends JSplitPane implements Runnable {
 		capture_column.add("Captured Queue");
 		capture_column.add("Status");
 		reject_table = new panel_table(reject_data, reject_column);
+		reject_table.getColumn("Rejected Queue").setMinWidth(150);
+		reject_table.getColumn("Reason").setMinWidth(150);
 		capture_table = new panel_table(capture_data, capture_column);
+		capture_table.getColumn("Captured Queue").setMinWidth(150);
+		capture_table.getColumn("Status").setMinWidth(150);		
 		this.setDividerLocation(400);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
