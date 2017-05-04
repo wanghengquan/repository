@@ -70,27 +70,27 @@ public class Launcher {
     }
 
     private static void usage() {
-        System.err.println(emphOn + "Jupidator version " + SystemVersion.VERSION + " release " + SystemVersion.RELEASE + emphOff);
+        System.err.println(emphOn + "Jupdater version " + SystemVersion.VERSION + " release " + SystemVersion.RELEASE + emphOff);
         System.err.println("Usage:");
         System.err.println();
-        System.err.println(emphOn + "java -jar jupidator.jar [-u|--update] URL [APPHOME [RELEASE [VERSION]]]" + emphOff);
+        System.err.println(emphOn + "java -jar Jupdater.jar [-u|--update] URL [APPHOME [RELEASE [VERSION]]]" + emphOff);
         System.err.println("Start the update mechanism from the command line for a specific application. Valid options are:");
         System.err.println("     APPHOME defaults to .");
         System.err.println("     RELEASE defaults to 1");
         System.err.println("     VERSION defaults to null");
         System.err.println();
-        System.err.println(emphOn + "java -jar jupidator.jar -l|--list [DIR]" + emphOff);
+        System.err.println(emphOn + "java -jar Jupdater.jar -l|--list [DIR]" + emphOff);
         System.err.println("Create a signature XML file to store current status of a specific directory, to be used later on with the --produce command. Valid options are:");
         System.err.println("     DIR defaults to .");
         System.err.println();
-        System.err.println(emphOn + "java -jar jupidator.jar -p|--produce [NEWDIR [VERSION [OUTDIR [OLDSTRUCT]]]]" + emphOff);
+        System.err.println(emphOn + "java -jar Jupdater.jar -p|--produce [NEWDIR [VERSION [OUTDIR [OLDSTRUCT]]]]" + emphOff);
         System.err.println("Find differences between a given directory and XML status information as produced by --list command, and output this information to disk. Valid options are:");
         System.err.println("     NEWDIR defaults to .");
         System.err.println("     VERSION defaults to 0.1");
         System.err.println("     OUTDIR defaults to output_DATE");
         System.err.println("     OLDSTRUCT defaults to stdin");
         System.err.println();
-        System.err.println(emphOn + "java -jar jupidator.jar -c|--create URL [OUTPUT]" + emphOff);
+        System.err.println(emphOn + "java -jar Jupdater.jar -c|--create URL [OUTPUT]" + emphOff);
         System.err.println("Create a styled changelog file. Valid options are:");
         System.err.println("     URL the location of the changelog");
         System.err.println("     OUTPUT the output file");
