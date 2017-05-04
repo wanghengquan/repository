@@ -35,6 +35,7 @@ import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import self_update.app_update;
 import utility_funcs.file_action;
 
 
@@ -97,6 +98,7 @@ public class tmp_manager extends Thread  {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : 
+		app_update update_obj = new app_update(switch_info, client_info);
 		// initial 2 : 
 		// start loop:
 		while (!stop_request) {
