@@ -48,15 +48,23 @@ public class app_update extends Thread implements UpdatedApplication  {
 	}
 	
 	public void create_update(){
+		String run_mode = client_info.get_client_data().get("preference").get("cmd_gui");
+		Boolean force_console_update = new Boolean(false);
+		if (run_mode.equalsIgnoreCase("cmd")){
+			force_console_update = true;
+		}
         try {
-            new Updater(
+        	Updater app_update =  new Updater(
                     public_data.UPDATE_URL,
                     public_data.SW_HOME_PATH,
                     public_data.BASE_CURRENTVERSION_INT,
                     public_data.BASE_CURRENTVERSION,
-                    this).actionDisplay();
+                    this,
+                    force_console_update);
+        	app_update.actionDisplay();
         } catch (UpdaterException ex) {
             ex.printStackTrace();
+            APP_UPDATE_LOGGER.warn("TMP client self update failed.");
         }
 	}
 	
