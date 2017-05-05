@@ -61,6 +61,7 @@ public class Updater {
     private ProcessBuilder procbuilder;
     //jason added
     private Boolean force_console = false;
+    private Boolean update_skipped = false;
 
     public Updater(String xmlurl, String appHome, UpdatedApplication application) throws UpdaterException {
         this(xmlurl, new ApplicationInfo(appHome), application);
@@ -192,6 +193,7 @@ public class Updater {
             gui.startDialog();
         } else {
         	System.out.println("Skip update.");
+        	update_skipped = true;
         }
     }
 
@@ -307,5 +309,9 @@ public class Updater {
 
     public String getChangeLog(boolean onlyActive) {
         return HTMLCreator.getList(curVersion.getAppElements().getLogList(), onlyActive);
+    }
+    
+    public Boolean isUpdateSkip(){
+    	return this.update_skipped;
     }
 }

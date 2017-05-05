@@ -56,6 +56,7 @@ public class tmp_manager extends Thread  {
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
 	private switch_data switch_info;
 	private client_data client_info;
+	private int hall_idle_count = 0;
 	// public function
 	// protected function
 	// private function	
@@ -68,15 +69,33 @@ public class tmp_manager extends Thread  {
 		this.client_info = client_info;
 	}
 	
-	private Boolean implements_core_update(){
-		Boolean impl_status = new Boolean(true);
-		if(switch_info.impl_check_core_request()){
-			core_update my_core = new core_update();
-			my_core.update(client_info.get_client_data().get("preference").get("work_path"));
-		} else{
-			impl_status = false;
+	private void implements_self_quite_update(){
+		//self update only work in console mode
+		String run_mode = client_info.get_client_data().get("preference").get("cmd_gui");  
+		if (run_mode.equalsIgnoreCase("cmd")){ 
+			app_update update_obj = new app_update(switch_info, client_info);
+			update_obj.console_update();
 		}
-		return impl_status;
+	}
+	
+	private void implements_core_script_update(){
+		core_update my_core = new core_update();
+		my_core.update(client_info.get_client_data().get("preference").get("work_path"));
+	}
+	
+	private Boolean run_maintenance_mode(){
+		String current_hall_status = switch_info.get_client_hall_status();
+		if(current_hall_status.equalsIgnoreCase("idle")){
+			hall_idle_count += 1;
+		} else {
+			hall_idle_count = 0;
+		}
+		if (hall_idle_count > 30){
+			//cycle is base_interval * 2 * 30 = 5 minutes
+			hall_idle_count = 0;
+			return true;
+		}
+		return false;
 	}
 	
 	public void run() {
@@ -97,8 +116,9 @@ public class tmp_manager extends Thread  {
 	private void monitor_run() {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		// initial 1 : 
+		// initial 1 : check app update
 		app_update update_obj = new app_update(switch_info, client_info);
+		update_obj.smart_update();
 		// initial 2 : 
 		// start loop:
 		while (!stop_request) {
@@ -115,9 +135,15 @@ public class tmp_manager extends Thread  {
 				TMP_MANAGER_LOGGER.debug("Client Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1 : update core script
-			implements_core_update();
-			// task 2 : 
+			// task 1 : run maintenance mode
+			if(run_maintenance_mode()){
+				TMP_MANAGER_LOGGER.warn("Client Going to maintenance mode...");
+				switch_info.set_client_maintenance_mode(true);
+				implements_self_quite_update();
+				implements_core_script_update();
+				switch_info.set_client_maintenance_mode(false);
+			}
+			// task 2 :
 			// task 3 : 
 			// task 4 : 
 			try {

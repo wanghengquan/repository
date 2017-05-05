@@ -35,8 +35,9 @@ public class switch_data {
 	private Boolean back_ground_power_up = new Boolean(false);
 	// suite file updating
 	private String suite_file = new String();
-	// client work mode
-
+	// client hall status(idle or busy) : thread pool not empty == busy
+    private String client_hall_status = new String("busy");
+    private Boolean client_maintenance_mode = new Boolean(false);
 	// public function
 	public switch_data() {
 
@@ -213,8 +214,48 @@ public class switch_data {
 			rw_lock.readLock().unlock();
 		}
 		return status;
+	}	
+	
+	public void set_client_hall_status(String current_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_hall_status = current_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
 	}
 
+	public String get_client_hall_status() {
+		String status = new String("");
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_hall_status;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
+	public void set_client_maintenance_mode(Boolean current_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_maintenance_mode = current_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_client_maintenance_mode() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_maintenance_mode;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
 	public void set_suite_file(String new_data) {
 		rw_lock.writeLock().lock();
 		try {

@@ -332,7 +332,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(about)) {
 			MENU_BAR_LOGGER.warn("about clicked");
-			new about_dialog(main_view).setVisible(true);
+			new about_dialog(main_view, switch_info, client_info).setVisible(true);
 		}
 	}
 }

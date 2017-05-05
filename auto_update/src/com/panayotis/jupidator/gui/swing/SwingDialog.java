@@ -26,15 +26,19 @@
 package com.panayotis.jupidator.gui.swing;
 
 import com.panayotis.jupidator.Updater;
+
+
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 
 import static com.panayotis.jupidator.i18n.I18N._;
 
@@ -42,7 +46,7 @@ import static com.panayotis.jupidator.i18n.I18N._;
  *
  * @author teras
  */
-class SwingDialog extends JDialog {
+class SwingDialog extends JFrame {
 
     private static final BufferedImage sysicon;
     //
@@ -54,7 +58,7 @@ class SwingDialog extends JDialog {
     static {
         BufferedImage img = null;
         try {
-            img = ImageIO.read(SwingDialog.class.getResource("/com/panayotis/jupidator/icons/package.png"));
+            img = ImageIO.read(SwingDialog.class.getResource("/com/panayotis/jupidator/icons/info.png"));
         } catch (IOException ex) {
         }
         sysicon = img;
@@ -64,7 +68,8 @@ class SwingDialog extends JDialog {
      * Creates new SwingDialog
      */
     public SwingDialog() {
-        super((Frame) null, false);
+        //super((Frame) null, false);
+    	super();
         initComponents();
         InfoPane = new JEditorPane();
         InfoPane.setEditable(false);
@@ -83,7 +88,8 @@ class SwingDialog extends JDialog {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
+		Image icon_image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/com/panayotis/jupidator/icons/package.png"));
+		this.setIconImage(icon_image);
         ProgressP = new javax.swing.JPanel();
         BarPanel = new javax.swing.JPanel();
         PBar = new javax.swing.JProgressBar();
@@ -267,7 +273,7 @@ private void ActionBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_ActionBActionPerformed
 
 private void InfoBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_InfoBActionPerformed
-    new AboutDialog(this).setVisible(true);
+    //new AboutDialog(this).setVisible(true);
 }//GEN-LAST:event_InfoBActionPerformed
 
 private void DetailsBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DetailsBActionPerformed

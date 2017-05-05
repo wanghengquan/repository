@@ -122,6 +122,15 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.debug(client_info.get_client_data().toString());
 	}
 
+	private void hall_status_report(pool_data pool_info){
+		int used_thread = pool_info.get_pool_used_threads();
+		if (used_thread == 0){
+			switch_info.set_client_hall_status("idle");
+		} else {
+			switch_info.set_client_hall_status("busy");
+		}
+	}
+	
 	private void stop_sub_threads() {
 		waiter_result.soft_stop();
 		Iterator<String> waiters_it = waiters_task.keySet().iterator();
@@ -170,11 +179,12 @@ public class hall_manager extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
-			// task 2 : automatic run
-
-			// task 3 : make general report
-			generate_console_report(pool_info);
-			// task 4 : stop waiters
+			// task 2 : make general report
+			if(!switch_info.get_client_maintenance_mode()){
+				generate_console_report(pool_info);
+			}
+			// task 3 : Status report
+			hall_status_report(pool_info);
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
