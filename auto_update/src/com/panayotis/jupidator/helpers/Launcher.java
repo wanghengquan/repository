@@ -175,7 +175,6 @@ public class Launcher {
         	FORCE_CONSOLE = args[4];
 
         ApplicationInfo ap = new ApplicationInfo(APPHOME, RELEASE, VERSION);
-
         try {
         	Updater upd = null;
         	if (FORCE_CONSOLE.equalsIgnoreCase("true"))

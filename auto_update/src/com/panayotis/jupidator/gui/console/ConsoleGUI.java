@@ -99,7 +99,7 @@ public class ConsoleGUI implements JupidatorGUI {
     }
 
     public void endDialog() {
-        System.out.println(_("Thank you for using Jupidator") + "  (http://sourceforge.net/projects/jupidator/)");
+        System.out.println(_("Thank you for using Jupdater"));
         System.out.println();
     }
 

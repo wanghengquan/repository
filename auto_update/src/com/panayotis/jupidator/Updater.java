@@ -81,8 +81,7 @@ public class Updater {
     }
 
     public Updater(String xmlurl, String appHome, int release, String version, UpdatedApplication application, Boolean force_console) throws UpdaterException {
-        this(xmlurl, new ApplicationInfo(appHome, release, version), application);
-        this.force_console = force_console;
+        this(xmlurl, new ApplicationInfo(appHome, release, version), application, force_console);
     }    
     
     @Deprecated
@@ -183,6 +182,7 @@ public class Updater {
     }
 
     public void actionDisplay() throws UpdaterException {
+    	
         if (!curVersion.isEmpty()) {
             PermissionManager.manager.estimatePrivileges(new File(curInfo.getApplicationHome() + File.separator + AppVersion.FILETAG));
             getGUI();  /* GUI is created lazily, when needed (very important) */
@@ -190,6 +190,8 @@ public class Updater {
             watcher.setCallBack(gui);
             gui.setInformation(this, curVersion.getAppElements(), curInfo);
             gui.startDialog();
+        } else {
+        	System.out.println("Skip update.");
         }
     }
 

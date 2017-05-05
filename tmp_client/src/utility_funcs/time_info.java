@@ -60,6 +60,7 @@ public class time_info {
 	public static void main(String[] argv) {
 		System.out.println(get_date_hhmm(new Date()));
 		System.out.println(System.currentTimeMillis()); 
+		System.out.println(get_time_stamp().toString());	
 	}
 
 }
