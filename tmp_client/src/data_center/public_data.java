@@ -129,6 +129,7 @@ public class public_data {
 	// Machine
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
+	public final static String DEF_UNATTENDED_MODE = "0"; // 1 UNATTENDED(no user), 0 ATTENDED(user there)
 	// preference
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial",
 																// "parallel",

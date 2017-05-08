@@ -64,7 +64,9 @@ public class about_dialog extends JDialog implements ActionListener {
 		JTableHeader table_head = about_table.getTableHeader();
 		container.add(table_head, BorderLayout.NORTH);
 		container.add(construct_action_panel(), BorderLayout.SOUTH);
-		this.setLocation(800, 500);
+		//this.setLocation(800, 500);
+		this.setLocationRelativeTo(main_view);
+		this.pack();
 		this.setSize(400, 300);
 	}
 
@@ -89,7 +91,7 @@ public class about_dialog extends JDialog implements ActionListener {
 			//this.setVisible(false);
 			this.dispose();
 			app_update update_obj = new app_update(switch_info, client_info);
-			if(!update_obj.gui_update()){
+			if(!update_obj.gui_manual_update()){
 				String message = new String("TMP Client new version not available...");
 				String title = new String("Update message");
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);

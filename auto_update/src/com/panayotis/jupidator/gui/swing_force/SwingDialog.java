@@ -23,7 +23,7 @@
  *
  * Created on September 25, 2008, 3:54 AM
  */
-package com.panayotis.jupidator.gui.swing;
+package com.panayotis.jupidator.gui.swing_force;
 
 import com.panayotis.jupidator.Updater;
 
@@ -77,9 +77,9 @@ class SwingDialog extends JFrame {
         ChangeLogP.setViewportView(InfoPane);
         DetailedP.add(ChangeLogP, BorderLayout.CENTER);
 
-        LaterB.requestFocus();
+        UpdateB.requestFocus();
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -165,8 +165,7 @@ class SwingDialog extends JFrame {
         jPanel5.add(VersInfoL, java.awt.BorderLayout.CENTER);
 
         jPanel1.setLayout(new java.awt.BorderLayout());
-        
-        /*
+
         InfoB.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/panayotis/jupidator/icons/info.png"))); // NOI18N
         InfoB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 4, 4, 0));
         InfoB.setBorderPainted(false);
@@ -178,7 +177,7 @@ class SwingDialog extends JFrame {
             }
         });
         //jPanel1.add(InfoB, java.awt.BorderLayout.EAST);
-		*/
+
         NewVerL.setFont(NewVerL.getFont().deriveFont(NewVerL.getFont().getStyle() | java.awt.Font.BOLD, NewVerL.getFont().getSize()+1));
         NewVerL.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 4, 0));
         jPanel1.add(NewVerL, java.awt.BorderLayout.CENTER);
@@ -226,7 +225,7 @@ class SwingDialog extends JFrame {
             }
         });
         jPanel4.add(UpdateB, java.awt.BorderLayout.EAST);
-
+        
         SkipB.setText(_("Skip"));
         SkipB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

@@ -37,6 +37,7 @@ import data_center.switch_data;
  * 		tmp_machine:terminal=	xxx
  * 					group	=	xxx
  * 					private = 	0
+ * 					unattended = 1  unattended mode (no user there)
  * 
  * 		tmp_base:	thread_mode = auto, manual
  *tmp_preference:	task_mode = auto, parallel, serial
@@ -265,6 +266,7 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
+		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");

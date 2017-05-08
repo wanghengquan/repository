@@ -38,6 +38,7 @@ public class client_dialog extends JDialog implements ActionListener {
 	private Vector<String> terminal = new Vector<String>();
 	private Vector<String> group = new Vector<String>();
 	private Vector<String> client_private = new Vector<String>();
+	private Vector<String> unattended = new Vector<String>();
 
 	private JButton discard, apply;
 	private JTable client_table;
@@ -53,8 +54,9 @@ public class client_dialog extends JDialog implements ActionListener {
 		container.add(construct_action_panel(), BorderLayout.SOUTH);
 		JTableHeader table_head = client_table.getTableHeader();
 		container.add(table_head, BorderLayout.NORTH);
-		this.setLocation(800, 500);
-		this.setSize(400, 200);
+		//this.setLocation(800, 500);
+		this.setLocationRelativeTo(main_view);
+		this.setSize(400, 250);
 	}
 
 	public void reset_table_data() {
@@ -62,21 +64,26 @@ public class client_dialog extends JDialog implements ActionListener {
 		group.clear();
 		client_private.clear();
 		client_data.clear();
+		unattended.clear();
 		terminal.add("Terminal:");
 		group.add("Group:");
 		client_private.add("Private Client:");
+		unattended.add("Unattended Mode:");
 		if (client_info.get_client_data().containsKey("Machine")) {
 			terminal.add(client_info.get_client_data().get("Machine").get("terminal"));
 			group.add(client_info.get_client_data().get("Machine").get("group"));
 			client_private.add(client_info.get_client_data().get("Machine").get("private"));
+			unattended.add(client_info.get_client_data().get("Machine").get("unattended"));
 		} else {
 			terminal.add("Test");
 			group.add("Test");
 			client_private.add("Test");
+			unattended.add("Test");
 		}
 		client_data.add(terminal);
 		client_data.add(group);
 		client_data.add(client_private);
+		client_data.add(unattended);
 	}
 
 	public JTable construct_table_panel() {
@@ -115,6 +122,7 @@ public class client_dialog extends JDialog implements ActionListener {
 			machine_data.put("terminal", (String) client_table.getValueAt(0, 1));
 			machine_data.put("group", (String) client_table.getValueAt(1, 1));
 			machine_data.put("private", (String) client_table.getValueAt(2, 1));
+			machine_data.put("unattended", (String) client_table.getValueAt(3, 1));
 			client_info.set_client_data(update_data);
 			switch_info.set_client_updated();
 		}

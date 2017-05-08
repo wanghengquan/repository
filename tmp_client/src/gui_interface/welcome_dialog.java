@@ -49,7 +49,8 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		container.add(construct_welcome_panel());
-		this.setLocation(400, 400);
+		//this.setLocation(400, 400);
+		this.setLocationRelativeTo(main_view);
 		this.setSize(700, 500);
 	}
 

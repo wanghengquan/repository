@@ -40,7 +40,7 @@ public class app_update implements UpdatedApplication  {
 		this.client_info = client_info;
 	}
 	
-	public Boolean gui_update(){
+	public Boolean gui_manual_update(){
         try {
         	Updater app_update =  new Updater(
                     public_data.UPDATE_URL,
@@ -48,6 +48,7 @@ public class app_update implements UpdatedApplication  {
                     public_data.BASE_CURRENTVERSION_INT,
                     public_data.BASE_CURRENTVERSION,
                     this,
+                    false,
                     false);
         	app_update.actionDisplay();
         	try {
@@ -66,27 +67,16 @@ public class app_update implements UpdatedApplication  {
         return true;
 	}
 	
-	public void console_update(){
-        try {
-        	Updater app_update =  new Updater(
-                    public_data.UPDATE_URL,
-                    public_data.SW_HOME_PATH,
-                    public_data.BASE_CURRENTVERSION_INT,
-                    public_data.BASE_CURRENTVERSION,
-                    this,
-                    true);
-        	app_update.actionDisplay();
-        } catch (UpdaterException ex) {
-            ex.printStackTrace();
-            APP_UPDATE_LOGGER.warn("TMP client self update failed.");
-        }
-	}
-	
 	public void smart_update(){
-		String run_mode = client_info.get_client_data().get("preference").get("cmd_gui"); 
-		Boolean force_console_update = new Boolean(false); 
-		if (run_mode.equalsIgnoreCase("cmd")){ 
-			force_console_update = true; 
+		String user_interface = client_info.get_client_data().get("preference").get("cmd_gui");
+		String unattended_mode = client_info.get_client_data().get("Machine").get("unattended");
+		Boolean console_update = new Boolean(false); 
+		if (user_interface.equalsIgnoreCase("cmd")){ 
+			console_update = true; 
+		} 
+		Boolean unattended_update = new Boolean(false);
+		if (unattended_mode.equalsIgnoreCase("1")){ 
+			unattended_update = true; 
 		} 		
         try {
         	Updater app_update =  new Updater(
@@ -95,7 +85,8 @@ public class app_update implements UpdatedApplication  {
                     public_data.BASE_CURRENTVERSION_INT,
                     public_data.BASE_CURRENTVERSION,
                     this,
-                    force_console_update);
+                    unattended_update,
+                    console_update);
         	app_update.actionDisplay();
         } catch (UpdaterException ex) {
             ex.printStackTrace();

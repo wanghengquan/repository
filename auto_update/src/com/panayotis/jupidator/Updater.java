@@ -30,6 +30,7 @@ import com.panayotis.jupidator.gui.UpdateWatcher;
 import com.panayotis.jupidator.gui.console.ConsoleGUI;
 import com.panayotis.jupidator.gui.console_force.ForceConsole;
 import com.panayotis.jupidator.gui.swing.SwingGUI;
+import com.panayotis.jupidator.gui.swing_force.ForceGUI;
 import com.panayotis.jupidator.loglist.creators.HTMLCreator;
 import com.panayotis.jupidator.versioning.SystemVersion;
 import java.awt.GraphicsEnvironment;
@@ -60,7 +61,8 @@ public class Updater {
     private UpdateWatcher watcher;
     private ProcessBuilder procbuilder;
     //jason added
-    private Boolean force_console = false;
+    private Boolean unattended_mode = false;
+    private Boolean console_mode = false;
     private Boolean update_skipped = false;
 
     public Updater(String xmlurl, String appHome, UpdatedApplication application) throws UpdaterException {
@@ -81,8 +83,8 @@ public class Updater {
         this(xmlurl, new ApplicationInfo(appHome, release, version), application);
     }
 
-    public Updater(String xmlurl, String appHome, int release, String version, UpdatedApplication application, Boolean force_console) throws UpdaterException {
-        this(xmlurl, new ApplicationInfo(appHome, release, version), application, force_console);
+    public Updater(String xmlurl, String appHome, int release, String version, UpdatedApplication application, Boolean unattended_mode, Boolean console_mode) throws UpdaterException {
+        this(xmlurl, new ApplicationInfo(appHome, release, version), application, unattended_mode, console_mode);
     }    
     
     @Deprecated
@@ -110,8 +112,9 @@ public class Updater {
         }
     }
 
-    public Updater(String xmlurl, ApplicationInfo appinfo, UpdatedApplication application, Boolean force_console) throws UpdaterException {
-    	this.force_console = force_console;
+    public Updater(String xmlurl, ApplicationInfo appinfo, UpdatedApplication application, Boolean unattended_mode, Boolean console_mode) throws UpdaterException {
+    	this.unattended_mode = unattended_mode;
+    	this.console_mode = console_mode;
         curInfo = hostInfo = appinfo;
         hostVersion = curVersion = Version.loadVersion(xmlurl, appinfo);
         this.application = application == null ? new SimpleApplication() : application;
@@ -167,13 +170,19 @@ public class Updater {
      * needed
      */
     public JupidatorGUI getGUI() {
-        if (gui == null)
-        	if (force_console)
-        		gui = new ForceConsole();
-        	else if (GraphicsEnvironment.isHeadless())
-                gui = new ConsoleGUI();
-            else
-                gui = new SwingGUI();
+        if (gui == null){
+        	if(unattended_mode){
+        		if (console_mode)
+        			gui = new ForceConsole();
+        		else
+        			gui = new ForceGUI();
+        	} else {
+        		if (console_mode)
+        			gui = new ConsoleGUI();
+        		else
+        			gui = new SwingGUI();
+        	}
+        }
         return gui;
     }
 

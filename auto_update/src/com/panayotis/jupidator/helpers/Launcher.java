@@ -149,7 +149,7 @@ public class Launcher {
         String APPHOME = ".";
         int RELEASE = 1;
         String VERSION = null;
-        String FORCE_CONSOLE = "false";
+        
 
         /* 
          * Ignore -u/--update parameter. 
@@ -171,16 +171,10 @@ public class Launcher {
             }
         if (args.length > 3)
             VERSION = args[3];
-        if (args.length > 4)
-        	FORCE_CONSOLE = args[4];
 
         ApplicationInfo ap = new ApplicationInfo(APPHOME, RELEASE, VERSION);
         try {
-        	Updater upd = null;
-        	if (FORCE_CONSOLE.equalsIgnoreCase("true"))
-        		upd = new Updater(URL, ap, null, true);
-        	else
-        		upd = new Updater(URL, ap, null, false);
+        	Updater upd = new Updater(URL, ap, null);
             upd.actionDisplay();
         } catch (UpdaterException ex) {
             displayError(ex);

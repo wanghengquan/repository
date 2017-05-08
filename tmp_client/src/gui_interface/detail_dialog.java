@@ -53,7 +53,8 @@ public class detail_dialog extends JFrame {
 		JTableHeader table_head = compare_table.getTableHeader();
 		container.add(table_head, BorderLayout.NORTH);
 		container.add(construct_bottom_panel(), BorderLayout.SOUTH);
-		this.setLocation(800, 500);
+		//this.setLocation(800, 500);
+		this.setLocationRelativeTo(null);
 		this.setSize(700, 300);
 	}
 

@@ -42,6 +42,7 @@ import utility_funcs.file_action;
  * 					ip		=	xxx
  * 					group	=	xxx
  * 					private	=	0/1
+ * 					unattended = 0/1
  * 
  * 	 preference :	thread_mode = xx
  * 					task_mode = xx
@@ -105,6 +106,7 @@ public class data_server extends Thread {
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
+		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
 																// data

@@ -71,10 +71,10 @@ public class tmp_manager extends Thread  {
 	
 	private void implements_self_quite_update(){
 		//self update only work in console mode
-		String run_mode = client_info.get_client_data().get("preference").get("cmd_gui");  
-		if (run_mode.equalsIgnoreCase("cmd")){ 
+		String unattended_mode = client_info.get_client_data().get("Machine").get("unattended");  
+		if (unattended_mode.equalsIgnoreCase("1")){ 
 			app_update update_obj = new app_update(switch_info, client_info);
-			update_obj.console_update();
+			update_obj.smart_update();
 		}
 	}
 	
@@ -266,6 +266,18 @@ public class tmp_manager extends Thread  {
 			if (switch_info.get_tube_server_power_up()){
 				System.out.println(">>>tube server power up");
 				break;
+			}
+		}
+		// wait for background power up
+		while(true){
+			if(switch_info.get_back_ground_power_up()){
+				break;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		//launch hall manager

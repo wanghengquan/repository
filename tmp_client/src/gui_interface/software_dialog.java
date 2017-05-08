@@ -51,7 +51,8 @@ public class software_dialog extends JDialog implements ChangeListener{
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		this.setLocation(800, 500);
+		//this.setLocation(800, 500);
+		this.setLocationRelativeTo(main_view);
 		this.setSize(700, 500);
 	}
 

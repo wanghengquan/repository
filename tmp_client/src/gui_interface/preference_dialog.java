@@ -55,7 +55,8 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		container.add(construct_preference_panel());
-		this.setLocation(800, 500);
+		//this.setLocation(800, 500);
+		this.setLocationRelativeTo(main_view);
 		this.setSize(500, 300);
 	}
 	
