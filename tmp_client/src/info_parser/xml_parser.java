@@ -299,12 +299,14 @@ public class xml_parser {
 
 	public static void main(String[] args) {
 		xml_parser xml_parser2 = new xml_parser();
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		try {
-			System.out.println(xml_parser2.get_xml_file_task_queue_data("D:/tmp_work_space/logs/finished/task/501@run_826_032217_191000.xml").toString());
+			queue_data = xml_parser2.get_xml_file_admin_queue_data("D:/tmp_work_space/logs/retrieve/received_admin/511@run_997_041817_141406.xml");
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println(queue_data.toString());
 	}
 	
 	public static void main2(String[] args) {
@@ -320,14 +322,6 @@ public class xml_parser {
 		result_data2.put("result", "fail");
 		result_data.put("T123456", result_data1);
 		result_data.put("T654321", result_data2);
-		// System.out.println(result_data.toString());
-		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		try {
-			task_queue_data = xml_parser2.get_xml_file_task_queue_data("D:/java_dev/test.xml");
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println(task_queue_data.toString());
+		System.out.println(result_data.toString());
 	}
 }

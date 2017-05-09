@@ -110,11 +110,13 @@ public class task_waiter extends Thread {
 		return import_status;
 	}
 
-	private synchronized void retrieve_queues_into_memory(){
-		retrieve_received_admin_data();
-		retrieve_processed_admin_data();
-		retrieve_received_task_data();
-		retrieve_processed_task_data();
+	private void retrieve_queues_into_memory(){
+		synchronized (this.getClass()) {	
+			retrieve_received_admin_data();
+			retrieve_processed_admin_data();
+			retrieve_received_task_data();
+			retrieve_processed_task_data();
+		}
 	}
 	
 	private void retrieve_received_admin_data(){
@@ -136,6 +138,9 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			String queue_name = file.getName().split("\\.")[0];
+			if(queue_name.equals("511@run_990_041417_150416")){
+				System.out.println("start");
+			}
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
 			if (queue_data.isEmpty()){
