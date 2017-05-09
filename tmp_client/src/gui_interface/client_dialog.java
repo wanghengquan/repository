@@ -55,7 +55,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		JTableHeader table_head = client_table.getTableHeader();
 		container.add(table_head, BorderLayout.NORTH);
 		//this.setLocation(800, 500);
-		this.setLocationRelativeTo(main_view);
+		//this.setLocationRelativeTo(main_view);
 		this.setSize(400, 250);
 	}
 

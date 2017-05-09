@@ -83,12 +83,11 @@ public class SwingGUI implements JupidatorGUI {
     public void startDialog() {
         if (gui != null)
             return;
-
-        try {
-            if (systemlook)
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-        }
+        //try {
+        //    if (systemlook)
+        //        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        //} catch (Exception ex) {
+        //}
         gui = new SwingDialog();
         gui.callback = callback;
         gui.NewVerL.setText(newver);

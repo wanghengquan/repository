@@ -86,7 +86,7 @@ public class upload_dialog extends JFrame{
 		upload_button.addActionListener(new upload_action());
 		my_container.setBackground(Color.white);
 		this.setSize(500, 400);
-		this.setLocationRelativeTo(null);
+		//this.setLocationRelativeTo(null);
 		//this.setLocation(600,600);
 		if(client_info.get_client_data().containsKey("preference")){
 			work_path = client_info.get_client_data().get("preference").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	

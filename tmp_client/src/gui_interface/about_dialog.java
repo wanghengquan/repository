@@ -65,8 +65,6 @@ public class about_dialog extends JDialog implements ActionListener {
 		container.add(table_head, BorderLayout.NORTH);
 		container.add(construct_action_panel(), BorderLayout.SOUTH);
 		//this.setLocation(800, 500);
-		this.setLocationRelativeTo(main_view);
-		this.pack();
 		this.setSize(400, 300);
 	}
 

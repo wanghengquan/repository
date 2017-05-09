@@ -359,7 +359,8 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(details)) {
 			System.out.println("reject details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
-			new detail_dialog(select_queue, client_info, task_info).setVisible(true);
+			detail_dialog detail_view = new detail_dialog(select_queue, client_info, task_info);
+			detail_view.setVisible(true);
 		}
 	}
 }

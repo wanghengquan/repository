@@ -279,20 +279,29 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.warn("upload clicked");
-			new upload_dialog(client_info).setVisible(true);
+			upload_dialog upload_view = new upload_dialog(client_info);
+			upload_view.setLocationRelativeTo(main_view);
+			upload_view.setVisible(true);
 		}
 		if (e.getSource().equals(key_gen)) {
-			new encode_dialog(main_view).setVisible(true);
+			encode_dialog encode_view = new encode_dialog(main_view);
+			encode_view.setLocationRelativeTo(main_view);
+			encode_view.setVisible(true);
 		}
 		if (e.getSource().equals(client)) {
-			new client_dialog(main_view, switch_info, client_info).setVisible(true);
+			client_dialog client_view = new client_dialog(main_view, switch_info, client_info);
+			client_view.setLocationRelativeTo(main_view);
+			client_view.setVisible(true);
 		}
 		if (e.getSource().equals(software)) {
-			new software_dialog(main_view, switch_info, client_info).setVisible(true);
+			software_dialog software_view = new software_dialog(main_view, switch_info, client_info);
+			software_view.setLocationRelativeTo(main_view);
+			software_view.setVisible(true);
 		}
 		if (e.getSource().equals(preference)) {
 			preference_dialog pref_view = new preference_dialog(main_view, switch_info, pool_info, client_info);
 			new Thread(pref_view).start();
+			pref_view.setLocationRelativeTo(main_view);
 			pref_view.setVisible(true);
 		}
 		if (e.getSource().equals(usage)) {
@@ -332,7 +341,9 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(about)) {
 			MENU_BAR_LOGGER.warn("about clicked");
-			new about_dialog(main_view, switch_info, client_info).setVisible(true);
+			about_dialog about_view = new about_dialog(main_view, switch_info, client_info);
+			about_view.setLocationRelativeTo(main_view);
+			about_view.setVisible(true);
 		}
 	}
 }

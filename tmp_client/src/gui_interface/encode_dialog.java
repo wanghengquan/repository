@@ -57,7 +57,7 @@ public class encode_dialog extends JFrame {
 		gen_button.addActionListener(new genAction());
 		my_container.setBackground(Color.white);
 		this.setSize(400, 300);
-		this.setLocationRelativeTo(main_view);
+		//this.setLocationRelativeTo(main_view);
 		//this.setLocation(600, 600);
 	}
 
