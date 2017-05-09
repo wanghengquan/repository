@@ -26,6 +26,9 @@ public class switch_data {
 	private int send_admin_request = 1; // for client start up 
 	private int dump_config_request = 0;
 	private int check_core_request = 0;
+	// client house keep request
+	private int house_keep_request = 0;
+	private int client_stop_request = 0;
 	// Thread start sequence
 	private Boolean client_self_check = new Boolean(false);
 	private Boolean core_script_update = new Boolean(false);
@@ -94,6 +97,57 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 		return action_need;
+	}
+	
+	public void set_house_keep_request() {
+		rw_lock.writeLock().lock();
+		try {
+			this.house_keep_request = house_keep_request + 1;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void decrease_house_keep_request() {
+		rw_lock.writeLock().lock();
+		try {
+			if (house_keep_request > 0) {
+				house_keep_request = house_keep_request - 1;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public int get_house_keep_request() {
+		int result = 0;
+		rw_lock.readLock().lock();		
+		try {
+			result = this.house_keep_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
+	public void set_client_stop_request() {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_stop_request = client_stop_request + 1;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public int get_client_stop_request() {
+		int result = 0;
+		rw_lock.readLock().lock();		
+		try {
+			result = this.client_stop_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
 	}
 	
 	public void set_client_self_check(Boolean check_status) {

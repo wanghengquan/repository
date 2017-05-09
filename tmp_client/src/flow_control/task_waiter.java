@@ -110,6 +110,133 @@ public class task_waiter extends Thread {
 		return import_status;
 	}
 
+	private synchronized void retrieve_queues_into_memory(){
+		retrieve_received_admin_data();
+		retrieve_processed_admin_data();
+		retrieve_received_task_data();
+		retrieve_processed_task_data();
+	}
+	
+	private void retrieve_received_admin_data(){
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/retrieve/received_admin");
+		if (!log_path.exists() || !log_path.canRead()) {
+			return;
+		}
+		File[] file_list = log_path.listFiles();
+		for (File file : file_list) {
+			if (file.isDirectory()) {
+				continue;
+			}
+			if (!file.getName().contains(".xml")) {
+				continue;
+			}
+			if (!file.getName().contains("@")) {
+				continue;
+			}
+			String queue_name = file.getName().split("\\.")[0];
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
+			if (queue_data.isEmpty()){
+				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
+				continue;
+			}
+			file.delete();
+			task_info.update_queue_to_received_admin_queues_treemap(queue_name, queue_data);
+		}
+	}
+	
+	private void retrieve_processed_admin_data(){
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/retrieve/processed_admin");
+		if (!log_path.exists() || !log_path.canRead()) {
+			return;
+		}
+		File[] file_list = log_path.listFiles();
+		for (File file : file_list) {
+			if (file.isDirectory()) {
+				continue;
+			}
+			if (!file.getName().contains(".xml")) {
+				continue;
+			}
+			if (!file.getName().contains("@")) {
+				continue;
+			}
+			String queue_name = file.getName().split("\\.")[0];
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
+			if (queue_data.isEmpty()){
+				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
+				continue;
+			}
+			file.delete();
+			task_info.update_queue_to_processed_admin_queues_treemap(queue_name, queue_data);
+		}		
+	}
+	
+	private void retrieve_received_task_data(){
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/retrieve/received_task");
+		if (!log_path.exists() || !log_path.canRead()) {
+			return;
+		}
+		File[] file_list = log_path.listFiles();
+		for (File file : file_list) {
+			if (file.isDirectory()) {
+				continue;
+			}
+			if (!file.getName().contains(".xml")) {
+				continue;
+			}
+			if (!file.getName().contains("@")) {
+				continue;
+			}
+			String queue_name = file.getName().split("\\.")[0];
+			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			queue_data.putAll(import_task_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
+			if (queue_data.isEmpty()){
+				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
+				continue;
+			}
+			file.delete();
+			task_info.update_queue_to_received_task_queues_map(queue_name, queue_data);
+		}	
+	}
+	
+	private void retrieve_processed_task_data(){
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		File log_path = new File(work_path + "/" + log_folder + "/retrieve/processed_task");
+		if (!log_path.exists() || !log_path.canRead()) {
+			return;
+		}
+		File[] file_list = log_path.listFiles();
+		for (File file : file_list) {
+			if (file.isDirectory()) {
+				continue;
+			}
+			if (!file.getName().contains(".xml")) {
+				continue;
+			}
+			if (!file.getName().contains("@")) {
+				continue;
+			}
+			String queue_name = file.getName().split("\\.")[0];
+			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			queue_data.putAll(import_task_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
+			if (queue_data.isEmpty()){
+				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
+				continue;
+			}
+			file.delete();
+			task_info.update_queue_to_processed_task_queues_map(queue_name, queue_data);
+		}		
+	}
+	
 	private void update_processing_queue_list() {
 		Set<String> captured_admin_queue_set = new HashSet<String>();
 		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());	
@@ -171,24 +298,53 @@ public class task_waiter extends Thread {
 		}		
 		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
-		if (!log_path.exists() || !log_path.canRead()) {
-			return import_status;
-		}
-		xml_parser parser = new xml_parser();
+		String xml_path = work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml";
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		try {
-			queue_data.putAll(parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + queue_name);
+		queue_data.putAll(import_task_data(xml_path));
+		if(queue_data.isEmpty()){
 			return import_status;
 		}
 		task_info.update_queue_to_processed_task_queues_map(queue_name, queue_data);
+		import_status = true;
 		return import_status;
 	}
 
+	private HashMap<String, HashMap<String, String>> import_admin_data(String xml_path) {
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		File xml_frh = new File(xml_path);
+		if (!xml_frh.exists() || !xml_frh.canRead()) {
+			return queue_data;
+		}
+		xml_parser parser = new xml_parser();
+		try {
+			queue_data.putAll(parser.get_xml_file_admin_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + xml_path);
+			return queue_data;
+		}
+		return queue_data;
+	}
+	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data(String xml_path) {
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		File xml_frh = new File(xml_path);
+		if (!xml_frh.exists() || !xml_frh.canRead()) {
+			return queue_data;
+		}
+		xml_parser parser = new xml_parser();
+		try {
+			queue_data.putAll(parser.get_xml_file_task_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + xml_path);
+			return queue_data;
+		}
+		return queue_data;
+	}
+	
 	private String get_right_task_queue() {
 		String queue_name = new String();
 		// pending_queue_list = total processing_admin_queue -
@@ -596,8 +752,10 @@ public class task_waiter extends Thread {
 
 	private void monitor_run() {
 		// ============== All static job start from here ==============
-		// initial 1 : start task waiters
+		// initial 1 : import_history_finished_admin_queue
 		import_history_finished_admin_queue_into_memory();
+		// initial 2 : retrieve previously dumping working queues
+		retrieve_queues_into_memory();
 		// initial end
 		waiter_thread = Thread.currentThread();
 		while (!stop_request) {

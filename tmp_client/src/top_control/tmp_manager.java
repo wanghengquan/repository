@@ -90,12 +90,32 @@ public class tmp_manager extends Thread  {
 		} else {
 			hall_idle_count = 0;
 		}
-		if (hall_idle_count > 30){
-			//cycle is base_interval * 2 * 30 = 5 minutes
+		if (hall_idle_count > 60){
+			//cycle is base_interval * 1 * 60 = 5 minutes
 			hall_idle_count = 0;
 			return true;
 		}
 		return false;
+	}
+	
+	private void client_stop_acknowledge(){
+		if(switch_info.get_client_stop_request() < 1){
+			return;
+		}
+		int count = 0;
+		while(switch_info.get_house_keep_request() > 0){
+			if (count > 20){
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			count++;
+		}
+		System.exit(0);
 	}
 	
 	public void run() {
@@ -144,10 +164,11 @@ public class tmp_manager extends Thread  {
 				switch_info.set_client_maintenance_mode(false);
 			}
 			// task 2 :
+			client_stop_acknowledge();
 			// task 3 : 
 			// task 4 : 
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -101,7 +101,7 @@ public class task_data {
 
 	public Boolean add_queue_data_to_received_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
-		rw_lock.readLock().lock();
+		rw_lock.writeLock().lock();
 		Boolean add_status = new Boolean(false);
 		try {
 			if (!received_admin_queues_treemap.containsKey(queue_name)) {
@@ -109,11 +109,23 @@ public class task_data {
 				add_status = true;
 			}
 		} finally {
-			rw_lock.readLock().unlock();
+			rw_lock.writeLock().unlock();
 		}
 		return add_status;
 	}
 
+	public Boolean update_queue_to_received_admin_queues_treemap(String queue_name,
+			HashMap<String, HashMap<String, String>> queue_data) {
+		Boolean update_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			this.received_admin_queues_treemap.put(queue_name, queue_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+	
 	public Boolean update_received_admin_queues_treemap(
 			TreeMap<String, HashMap<String, HashMap<String, String>>> update_queue) {
 		Boolean update_status = new Boolean(true);
@@ -196,7 +208,7 @@ public class task_data {
 		}
 		return queue_data;
 	}
-
+	
 	public Boolean update_queue_to_processed_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
 		Boolean update_status = new Boolean(true);
@@ -331,7 +343,7 @@ public class task_data {
 		return update_status;
 	}
 
-	public Boolean update_received_task_queues_map(String queue_name,
+	public Boolean update_queue_to_received_task_queues_map(String queue_name,
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data) {
 		Boolean update_status = new Boolean(true);
 		rw_lock.writeLock().lock();

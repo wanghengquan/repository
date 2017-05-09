@@ -93,6 +93,7 @@ public class main_frame extends JFrame {
 		HashMap<String, String> preference_data = client_data.get("preference");
 		if (preference_data != null && preference_data.get("show_welcome").equals("1")) {
 			welcome_dialog welcome_view = new welcome_dialog(this, switch_info, client_info);
+			welcome_view.setLocationRelativeTo(this);
 			welcome_view.setVisible(true);
 		}
 	}
@@ -161,7 +162,8 @@ public class main_frame extends JFrame {
 		MenuItem close = new MenuItem("Close");
 		close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
-				System.exit(0);
+				switch_info.set_house_keep_request();
+				switch_info.set_client_stop_request();
 			}
 		});
 		MenuItem open = new MenuItem("Open");

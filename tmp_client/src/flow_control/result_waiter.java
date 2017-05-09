@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -33,6 +34,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import gui_interface.view_data;
 import info_parser.xml_parser;
+import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
@@ -154,8 +156,8 @@ public class result_waiter extends Thread {
 							// forget dump when shutdown client
 			}
 			// dumping task queue
-			Boolean admin_dump = dump_admin_data(dump_queue);
-			Boolean task_dump = dump_task_data(dump_queue);
+			Boolean admin_dump = dump_finished_admin_data(dump_queue);
+			Boolean task_dump = dump_finished_task_data(dump_queue);
 			if (admin_dump && task_dump) {
 				task_info.remove_queue_from_processed_admin_queues_treemap(dump_queue);
 				task_info.remove_queue_from_processed_task_queues_map(dump_queue);
@@ -167,7 +169,7 @@ public class result_waiter extends Thread {
 		return dump_status;
 	}
 
-	private Boolean dump_admin_data(String queue_name) {
+	private Boolean dump_finished_admin_data(String queue_name) {
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 		if (task_info.get_processed_admin_queues_treemap().containsKey(queue_name)) {
@@ -178,35 +180,11 @@ public class result_waiter extends Thread {
 		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/finished/admin";
-		File dump_dobj = new File(dump_path);
-		if (dump_dobj.exists() && dump_dobj.isDirectory()) {
-			RESULT_WAITER_LOGGER.debug("dump folder exists.");
-		} else {
-			// create new case path if not have
-			try {
-				FileUtils.forceMkdir(dump_dobj);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				RESULT_WAITER_LOGGER.warn("Make log folder failed.");
-				e.printStackTrace();
-				dump_status = false;
-			}
-		}
-		String file_name = queue_name + ".xml";
-		String dump_file = dump_path + "/" + file_name;
-		xml_parser parser = new xml_parser();
-		try {
-			dump_status = parser.dump_finished_admin_data(admin_data, queue_name, dump_file.replaceAll("\\\\", "/"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			RESULT_WAITER_LOGGER.warn("dump finished admin queue failed:" + queue_name);
-			dump_status = false;
-		}
+		dump_status = dump_admin_data(queue_name, admin_data, dump_path);
 		return dump_status;
 	}
 
-	private Boolean dump_task_data(String queue_name) {
+	private Boolean dump_finished_task_data(String queue_name) {
 		Boolean dump_status = new Boolean(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
@@ -217,6 +195,54 @@ public class result_waiter extends Thread {
 		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/finished/task";
+		dump_status = dump_task_data(queue_name, task_data, dump_path);
+		return dump_status;
+	}
+
+	private Boolean dump_admin_data(
+			String queue_name,
+			HashMap<String, HashMap<String, String>> admin_data,
+			String dump_path) {
+		Boolean dump_status = new Boolean(false);
+		if (admin_data == null || admin_data.isEmpty()){
+			return dump_status;
+		}
+		File dump_dobj = new File(dump_path);
+		if (dump_dobj.exists() && dump_dobj.isDirectory()) {
+			RESULT_WAITER_LOGGER.debug("dump folder exists.");
+		} else {
+			// create new case path if not have
+			try {
+				FileUtils.forceMkdir(dump_dobj);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				RESULT_WAITER_LOGGER.warn("Make log folder failed.");
+				e.printStackTrace();
+				return dump_status;
+			}
+		}
+		String file_name = queue_name + ".xml";
+		String dump_file = dump_path + "/" + file_name;
+		xml_parser parser = new xml_parser();
+		try {
+			dump_status = parser.dump_admin_data(admin_data, queue_name, dump_file.replaceAll("\\\\", "/"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			RESULT_WAITER_LOGGER.warn("dump finished admin queue failed:" + queue_name);
+			dump_status = false;
+		}
+		return dump_status;
+	}
+	
+	private Boolean dump_task_data(
+			String queue_name,
+			TreeMap<String, HashMap<String, HashMap<String, String>>> task_data,
+			String dump_path) {
+		Boolean dump_status = new Boolean(false);
+		if (task_data == null || task_data.isEmpty()){
+			return dump_status;
+		}		
 		File dump_dobj = new File(dump_path);
 		if (dump_dobj.exists() && dump_dobj.isDirectory()) {
 			RESULT_WAITER_LOGGER.debug("dump folder exists.");
@@ -235,7 +261,7 @@ public class result_waiter extends Thread {
 		String dump_file = dump_path + "/" + file_name;
 		xml_parser parser = new xml_parser();
 		try {
-			dump_status = parser.dump_finished_task_data(task_data, queue_name, dump_file.replaceAll("\\\\", "/"));
+			dump_status = parser.dump_task_data(task_data, queue_name, dump_file.replaceAll("\\\\", "/"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -244,7 +270,7 @@ public class result_waiter extends Thread {
 		}
 		return dump_status;
 	}
-
+	
 	private Boolean release_resource_usage(HashMap<String, HashMap<String, Object>> call_status_map) {
 		Boolean release_status = new Boolean(true);
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
@@ -643,6 +669,99 @@ public class result_waiter extends Thread {
 		return copy_status;
 	}
 
+	private void house_keeping_acknowledge(){
+		if (switch_info.get_house_keep_request() < 1){
+			return;
+		}
+		//run house keeping
+		dump_received_admin_data();
+		dump_processed_admin_data();
+		dump_received_task_data();
+		dump_processed_task_data();
+		//finish house keeping
+		switch_info.decrease_house_keep_request();
+	}
+	
+	private void dump_received_admin_data(){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		received_admin_queues_treemap.putAll(task_info.get_received_admin_queues_treemap());
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_path = work_path + "/" + log_folder + "/retrieve/received_admin";
+		Iterator<String> queue_it = received_admin_queues_treemap.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			if(received_admin_queues_treemap.containsKey(queue_name)){
+				queue_data.putAll(received_admin_queues_treemap.get(queue_name));
+			}
+			if(queue_data.isEmpty()){
+				continue;
+			}
+			dump_admin_data(queue_name, queue_data, dump_path);
+		}
+	}
+	
+	private void dump_processed_admin_data(){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> processed_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		processed_admin_queues_treemap.putAll(task_info.get_processed_admin_queues_treemap());
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_path = work_path + "/" + log_folder + "/retrieve/processed_admin";
+		Iterator<String> queue_it = processed_admin_queues_treemap.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			if(processed_admin_queues_treemap.containsKey(queue_name)){
+				queue_data.putAll(processed_admin_queues_treemap.get(queue_name));
+			}
+			if(queue_data.isEmpty()){
+				continue;
+			}
+			dump_admin_data(queue_name, queue_data, dump_path);
+		}
+	}
+	
+	private void dump_received_task_data(){
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		received_task_queues_map.putAll(task_info.get_received_task_queues_map());
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_path = work_path + "/" + log_folder + "/retrieve/received_task";
+		Iterator<String> queue_it = received_task_queues_map.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			if(received_task_queues_map.containsKey(queue_name)){
+				queue_data.putAll(received_task_queues_map.get(queue_name));
+			}
+			if(queue_data.isEmpty()){
+				continue;
+			}
+			dump_task_data(queue_name, queue_data, dump_path);
+		}
+	}
+	
+	private void dump_processed_task_data(){
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
+		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_path = work_path + "/" + log_folder + "/retrieve/processed_task";
+		Iterator<String> queue_it = processed_task_queues_map.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			if(processed_task_queues_map.containsKey(queue_name)){
+				queue_data.putAll(processed_task_queues_map.get(queue_name));
+			}
+			if(queue_data.isEmpty()){
+				continue;
+			}
+			dump_task_data(queue_name, queue_data, dump_path);
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -685,31 +804,35 @@ public class result_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// use call_status and case_report_data for all tasks
 			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
-			// task 0 : get call map status
+			// task 1 : get call map status
 			call_status = get_call_status_map();
-			// task 1 : dump finished queue
+			// task 2 : dump finished queue
 			Boolean dump_status = dump_finished_data(call_status);
+			// task 3 : house keeping acknowledge
+			house_keeping_acknowledge();
+			//
+			//
 			// following actions based on a non-empty call back.
 			if (call_status.size() < 1) {
 				RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
 				continue;
 			}
-			// task 2 : cancel timeout call
+			// task 4 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
-			// task 3 : general case report
+			// task 5 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
 			Boolean send_case_status = send_case_report(case_report_data);
-			// task 4 : detail case runtime log report
+			// task 6 : detail case runtime log report
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
 					call_status);
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
-			// task 5 : update processed task data info
+			// task 7 : update processed task data info
 			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
-			// task 6 : release occupied pool thread
+			// task 8 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
-			// task 7 : release occupied resource usage
+			// task 9 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
-			// task 8 : post process
+			// task 10 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status && dump_status) {

@@ -170,8 +170,10 @@ public class xml_parser {
 	}
 
 	// admin queue
-	public Boolean dump_finished_admin_data(HashMap<String, HashMap<String, String>> admin_queue_data,
-			String queue_name, String xml_path) throws IOException {
+	public Boolean dump_admin_data(
+			HashMap<String, HashMap<String, String>> admin_queue_data,
+			String queue_name, 
+			String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
@@ -197,8 +199,9 @@ public class xml_parser {
 	}
 
 	// task queue
-	public Boolean dump_finished_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
-			String queue_name, String xml_path) throws IOException {
+	public Boolean dump_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
+			String queue_name, 
+			String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");

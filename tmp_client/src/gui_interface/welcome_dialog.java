@@ -50,7 +50,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		Container container = this.getContentPane();
 		container.add(construct_welcome_panel());
 		//this.setLocation(400, 400);
-		this.setLocationRelativeTo(main_view);
+		//this.setLocationRelativeTo(main_view);
 		this.setSize(700, 500);
 	}
 
@@ -77,7 +77,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		letter_area.append("Save Space: Where TMP Client copy local result to (Also called 'Unify result store space')"
 				+ line_separator);
 		letter_area
-				.append("Bydefault:Save Space will be same with Work Space which means TMP Client will not copy the local result to remote space."
+				.append("By default:'Save Space' will be same with 'Work Space' which means TMP Client will not copy the local result to remote space."
 						+ line_separator);
 		letter_area.append("If we leave the 'Save Space' blank TMP Client will also skip copy action." + line_separator);
 		letter_area.append(line_separator);
