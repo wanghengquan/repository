@@ -63,9 +63,9 @@ public class work_panel extends JSplitPane implements Runnable{
 	private Vector<String> work_column = new Vector<String>();
 	private Vector<Vector<String>> work_data = new Vector<Vector<String>>(); //show on table
 
-	public work_panel(view_data viewinfo, client_data client_info, task_data task_info) {
+	public work_panel(view_data view_info, client_data client_info, task_data task_info) {
 		super();//default constructor
-		this.view_info = viewinfo;
+		this.view_info = view_info;
 		this.client_info = client_info;
 		this.task_info = task_info;
 		work_column.add("ID");
@@ -414,6 +414,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	@SuppressWarnings("unused")
 	private JTable table;
 	private JMenuItem retest;
+	private JMenuItem stop;
 	private view_data view_info;
 	private task_data task_info;
 	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
@@ -426,6 +427,8 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		this.view_info = view_info;
 		retest = new JMenuItem("Retest");
 		retest.addActionListener(this);
+		stop = new JMenuItem("Stop");
+		stop.addActionListener(this);
 		JMenu view = new JMenu("View...");
 		view_all = new JMenuItem("All");
 		view_all.addActionListener(this);
@@ -453,6 +456,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		results = new JMenuItem("Results");
 		results.addActionListener(this);
 		this.add(retest);
+		//this.add(stop);
 		this.addSeparator();
 		this.add(view);
 		this.addSeparator();
@@ -505,6 +509,10 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("retest clicked");
 			view_info.set_retest_queue_area("selected");
 		}
+		if (arg0.getSource().equals(stop)) {
+			System.out.println("stop clicked");
+			view_info.set_stop_case_request();
+		}		
 		if (arg0.getSource().equals(view_all)) {
 			System.out.println("view all");
 			view_info.set_watching_queue_area("all");

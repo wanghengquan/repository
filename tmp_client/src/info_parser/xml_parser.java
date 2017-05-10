@@ -310,6 +310,7 @@ public class xml_parser {
 	}
 	
 	public static void main2(String[] args) {
+		@SuppressWarnings("unused")
 		xml_parser xml_parser2 = new xml_parser();
 		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> result_data1 = new HashMap<String, String>();

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +35,6 @@ import data_center.public_data;
 import data_center.switch_data;
 import gui_interface.view_data;
 import info_parser.xml_parser;
-import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
@@ -52,7 +52,6 @@ public class result_waiter extends Thread {
 	private task_data task_info;
 	private view_data view_info;
 	private rmq_tube rmq_runner;
-	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private String line_separator = System.getProperty("line.separator");
 	private String file_separator = System.getProperty("file.separator");
@@ -552,6 +551,29 @@ public class result_waiter extends Thread {
 		return cancel_status;
 	}
 
+	private Boolean cancel_gui_request_call(HashMap<String, HashMap<String, Object>> call_status_map) {
+		Boolean cancel_status = new Boolean(true);
+		if(!view_info.impl_stop_case_request()){
+			return cancel_status;
+		}
+		String queue_name = view_info.get_select_captured_queue();
+		List<String> select_task_case = view_info.get_select_task_case();
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			String call_name = (String) call_status_map.get(call_index).get("queue_name");
+			String call_id = (String) call_status_map.get(call_index).get("case_id");
+			if (!call_name.equalsIgnoreCase(queue_name)){
+				continue;
+			}
+			if (!select_task_case.contains(call_id)){
+				continue;
+			}
+			Future<?> call_back = (Future<?>) call_status_map.get(call_index).get("call_back");
+			cancel_status = call_back.cancel(true);
+		}
+		return cancel_status;
+	}
 	/*
 	 * call status map: {case_id@queue_name:{"call_back":call_back,
 	 * "queue_name":queue_name, "case_id":case_id, "case_dir":case_dir,
@@ -819,6 +841,7 @@ public class result_waiter extends Thread {
 			}
 			// task 4 : cancel timeout call
 			Boolean cancel_status = cancel_timeout_call(call_status);
+			cancel_gui_request_call(call_status);
 			// task 5 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
 			Boolean send_case_status = send_case_report(case_report_data);
