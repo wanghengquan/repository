@@ -31,6 +31,7 @@ public class view_data {
 	private String watching_queue_area = new String();//all, processing, passed, failed, TBD, timeout,
 	private String retest_queue_area = new String();//all, selected, passed, failed, TBD, timeout,
 	private int stop_case_request = 0;
+	private List<String> delete_finished_queue = new ArrayList<String>();
 	private String select_rejected_queue = new String();
 	private String select_captured_queue = new String();
 	private List<String> select_task_case = new ArrayList<String>();
@@ -168,6 +169,27 @@ public class view_data {
 			rw_lock.readLock().unlock();
 		}
 		return stop_request;
+	}
+
+	public void add_delete_finished_queue(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			this.delete_finished_queue.add(queue_name);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public List<String> impl_delete_finished_queue() {
+		List<String> delete_list = new ArrayList<String>();
+		rw_lock.writeLock().lock();
+		try {
+			delete_list.addAll(delete_finished_queue);
+			this.delete_finished_queue.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return delete_list;
 	}
 	
 	public String get_select_rejected_queue() {

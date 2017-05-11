@@ -65,6 +65,8 @@ public class task_data {
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
+	// ====updated by result waiter====
+	private ArrayList<String> thread_pool_admin_queue_list = new ArrayList<String>();
 	// =============================================member
 	// end=====================================
 
@@ -862,6 +864,27 @@ public class task_data {
 		}
 	}
 
+	public ArrayList<String> get_thread_pool_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(thread_pool_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_thread_pool_admin_queue_list(ArrayList<String> queue_list) {
+		rw_lock.writeLock().lock();
+		try {
+			thread_pool_admin_queue_list.clear();
+			thread_pool_admin_queue_list.addAll(queue_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	/*
 	 * main entry for test
 	 */

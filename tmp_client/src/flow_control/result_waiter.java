@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -128,6 +129,18 @@ public class result_waiter extends Thread {
 		return run_status;
 	}
 
+	private void update_thread_pool_running_queue(HashMap<String, HashMap<String, Object>> call_status_map){
+		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			String queue_name = (String) one_call_data.get("queue_name");
+			running_queue_in_pool.add(queue_name);
+		}
+		task_info.set_thread_pool_admin_queue_list(running_queue_in_pool);
+	}
+	
 	private Boolean dump_finished_data(HashMap<String, HashMap<String, Object>> call_status_map) {
 		Boolean dump_status = new Boolean(true);
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
@@ -505,7 +518,7 @@ public class result_waiter extends Thread {
 	}
 
 	private String get_cmd_status(ArrayList<String> cmd_output) {
-		String status = new String();
+		String status = new String("NA");
 		for (String line : cmd_output) {
 			if (!line.contains("<status>")) {
 				continue;
@@ -563,10 +576,14 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			String call_name = (String) call_status_map.get(call_index).get("queue_name");
 			String call_id = (String) call_status_map.get(call_index).get("case_id");
+			String call_status = (String) call_status_map.get(call_index).get("call_status");
 			if (!call_name.equalsIgnoreCase(queue_name)){
 				continue;
 			}
 			if (!select_task_case.contains(call_id)){
+				continue;
+			}
+			if (!call_status.equalsIgnoreCase("processing")){
 				continue;
 			}
 			Future<?> call_back = (Future<?>) call_status_map.get(call_index).get("call_back");
@@ -601,7 +618,7 @@ public class result_waiter extends Thread {
 				hash_data.put("call_status", "done");
 				try {
 					hash_data.put("cmd_output", call_back.get(10, TimeUnit.SECONDS));
-				} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				} catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
 					// e.printStackTrace();
 					RESULT_WAITER_LOGGER.warn("Get call result exception.");
 					ArrayList<String> default_output = new ArrayList<String>();
@@ -828,9 +845,11 @@ public class result_waiter extends Thread {
 			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
 			// task 1 : get call map status
 			call_status = get_call_status_map();
-			// task 2 : dump finished queue
+			// task 2 : update running queue in thread pool
+			update_thread_pool_running_queue(call_status);
+			// task 3 : dump finished queue
 			Boolean dump_status = dump_finished_data(call_status);
-			// task 3 : house keeping acknowledge
+			// task 4 : house keeping acknowledge
 			house_keeping_acknowledge();
 			//
 			//
@@ -839,23 +858,23 @@ public class result_waiter extends Thread {
 				RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
 				continue;
 			}
-			// task 4 : cancel timeout call
+			// task 5 : cancel running call:1. time out, 2. user terminate
 			Boolean cancel_status = cancel_timeout_call(call_status);
 			cancel_gui_request_call(call_status);
-			// task 5 : general case report
+			// task 6 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
 			Boolean send_case_status = send_case_report(case_report_data);
-			// task 6 : detail case runtime log report
+			// task 7 : detail case runtime log report
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
 					call_status);
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
-			// task 7 : update processed task data info
+			// task 8 : update processed task data info
 			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
-			// task 8 : release occupied pool thread
+			// task 9 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
-			// task 9 : release occupied resource usage
+			// task 10 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
-			// task 10 : post process
+			// task 11 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status && dump_status) {

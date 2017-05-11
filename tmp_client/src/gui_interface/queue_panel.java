@@ -133,8 +133,22 @@ public class queue_panel extends JSplitPane implements Runnable {
 		JScrollPane scroll_panel = new JScrollPane(reject_table);
 		reject_panel.add(scroll_panel);
 		return reject_panel;
+	}	
+	
+	private Boolean is_selected_queue_deletable(){
+		Boolean run_status = new Boolean(false);
+		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
+		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
+		if(!status.equalsIgnoreCase("finished")){
+			return run_status;
+		}
+		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+			return run_status;
+		}
+		run_status = true;
+		return run_status;
 	}
-
+	
 	private Component panel_bottom_component() {
 		JPanel capture_panel = new JPanel(new BorderLayout());
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -144,6 +158,11 @@ public class queue_panel extends JSplitPane implements Runnable {
 			public void mouseReleased(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						if (is_selected_queue_deletable()){
+							capture_menu.enable_delete_item();
+						} else {
+							capture_menu.disable_delete_item();
+						}
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -154,6 +173,11 @@ public class queue_panel extends JSplitPane implements Runnable {
 			public void mousePressed(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						if (is_selected_queue_deletable()){
+							capture_menu.enable_delete_item();
+						} else {
+							capture_menu.disable_delete_item();
+						}						
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -373,6 +397,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private JMenuItem show;
 	private JMenuItem run_play, run_pause, run_stop;
+	private JMenuItem delete;
 	private view_data view_info;
 
 	public capture_pop_memu(JTable table, view_data view_info) {
@@ -393,12 +418,24 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		run.add(run_pause);
 		run.add(run_stop);
 		this.add(run);
+		this.addSeparator();
+		delete = new JMenuItem("Delete");
+		delete.addActionListener(this);
+		this.add(delete);
 	}
 
 	public capture_pop_memu get_capture_pop_menu() {
 		return this;
 	}
 
+	public void disable_delete_item() {
+		delete.setEnabled(false);
+	}
+
+	public void enable_delete_item() {
+		delete.setEnabled(true);
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -420,6 +457,15 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("run_stop clicked");
 			view_info.set_run_action_request("stop");
 		}
+		if (arg0.getSource().equals(delete)) {
+			System.out.println("delete clicked");
+			int select_index = table.getSelectedRow();
+			if (select_index < 0){
+				return;
+			}
+			String queue_name = (String) table.getValueAt(select_index, 0);
+			view_info.add_delete_finished_queue(queue_name);
+		}		
 	}
 
 }

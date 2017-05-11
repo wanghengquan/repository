@@ -90,7 +90,7 @@ public class view_server extends Thread{
 		return case_list;
 	}
 	
-	private Boolean implements_retest_task_cases(){
+	private Boolean implements_retest_task_request(){
 		Boolean retest_status = new Boolean(true);
 		//get retest queue name
 		String queue_name = view_info.get_watching_queue();
@@ -201,6 +201,34 @@ public class view_server extends Thread{
 		return import_status;
 	}	
 	
+	private void implements_del_finished_request(){
+		//get delete list
+		List<String> delete_list = new ArrayList<String>();
+		delete_list.addAll(view_info.impl_delete_finished_queue());
+		for (String queue_name : delete_list){
+			//delete data in memory
+			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
+			task_info.remove_queue_from_processed_task_queues_map(queue_name);
+			task_info.remove_finished_admin_queue_list(queue_name);
+			//delete data in disk
+			String work_path = new String();
+			if (client_info.get_client_data().containsKey("preference")) {
+				work_path = client_info.get_client_data().get("preference").get("work_path");
+			} else {
+				work_path = public_data.DEF_WORK_PATH;
+			}
+			String log_folder = public_data.WORKSPACE_LOG_DIR;
+			File admin_path = new File(work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
+			File task_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
+			if (admin_path.exists() && admin_path.isFile()) {
+				admin_path.delete();
+			}
+			if (task_path.exists() && task_path.isFile()) {
+				task_path.delete();
+			}			
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -280,11 +308,11 @@ public class view_server extends Thread{
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : run "retest" cases
-			@SuppressWarnings("unused")
-			Boolean retest_status = implements_retest_task_cases();
+			implements_retest_task_request();
 			// task 2 : run "run" action implements
-			@SuppressWarnings("unused")
-			Boolean action_status = implements_run_action_request();
+			implements_run_action_request();
+			// task 3 : delete finished queue data
+			implements_del_finished_request();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

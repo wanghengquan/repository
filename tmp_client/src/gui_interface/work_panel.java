@@ -95,6 +95,18 @@ public class work_panel extends JSplitPane implements Runnable{
 		new Thread(admin_insts).start();
 	}
 
+	private int get_processing_lines(panel_table work_table){
+		int proc_lines = 0;
+		int[] select_rows = work_table.getSelectedRows();
+		for(int row_index : select_rows){
+			String status = (String) work_table.getValueAt(row_index, 3);
+			if (status.equalsIgnoreCase("processing")){
+				proc_lines++;
+			}
+		}
+		return proc_lines;
+	}
+	
 	private Component panel_right_component() {
 		JPanel work_panel = new JPanel(new BorderLayout());
 		table_pop_memu table_menu = new table_pop_memu(work_table, task_info, view_info);
@@ -105,6 +117,11 @@ public class work_panel extends JSplitPane implements Runnable{
 			public void mouseReleased(MouseEvent e) {
 				if (work_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						if(get_processing_lines(work_table) > 0){
+							table_menu.enable_terminate_item();
+						} else {
+							table_menu.disable_terminate_item();
+						}
 						table_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -115,6 +132,11 @@ public class work_panel extends JSplitPane implements Runnable{
 			public void mousePressed(MouseEvent e) {
 				if (work_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						if(get_processing_lines(work_table) > 0){
+							table_menu.enable_terminate_item();
+						} else {
+							table_menu.disable_terminate_item();
+						}						
 						table_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -414,7 +436,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	@SuppressWarnings("unused")
 	private JTable table;
 	private JMenuItem retest;
-	private JMenuItem stop;
+	private JMenuItem terminate;
 	private view_data view_info;
 	private task_data task_info;
 	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
@@ -427,8 +449,8 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		this.view_info = view_info;
 		retest = new JMenuItem("Retest");
 		retest.addActionListener(this);
-		stop = new JMenuItem("Stop");
-		stop.addActionListener(this);
+		terminate = new JMenuItem("Terminate");
+		terminate.addActionListener(this);
 		JMenu view = new JMenu("View...");
 		view_all = new JMenuItem("All");
 		view_all.addActionListener(this);
@@ -456,7 +478,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		results = new JMenuItem("Results");
 		results.addActionListener(this);
 		this.add(retest);
-		//this.add(stop);
+		this.add(terminate);
 		this.addSeparator();
 		this.add(view);
 		this.addSeparator();
@@ -467,6 +489,14 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	public table_pop_memu get_table_pop_menu() {
 		return this;
 	} 
+	
+	public void disable_terminate_item() {
+		terminate.setEnabled(false);
+	}
+	
+	public void enable_terminate_item() {
+		terminate.setEnabled(true);
+	}
 	
 	public void open_result_folder(){
 		String title = "Open Folder Failed:";
@@ -509,8 +539,8 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("retest clicked");
 			view_info.set_retest_queue_area("selected");
 		}
-		if (arg0.getSource().equals(stop)) {
-			System.out.println("stop clicked");
+		if (arg0.getSource().equals(terminate)) {
+			System.out.println("terminate clicked");
 			view_info.set_stop_case_request();
 		}		
 		if (arg0.getSource().equals(view_all)) {
