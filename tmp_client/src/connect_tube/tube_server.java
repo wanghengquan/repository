@@ -283,7 +283,7 @@ public class tube_server extends Thread {
 		return send_status;
 	}
 
-	private void run_import_suite_file() {
+	private void run_import_local_admin() {
 		String suite_files = switch_info.impl_suite_file();
 		if (suite_files.equals("")) {
 			return;
@@ -296,6 +296,24 @@ public class tube_server extends Thread {
 		}
 	}
 
+	private void run_import_remote_admin(){
+		String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+		if (link_mode.equalsIgnoreCase("local")){
+			try {
+				rmq_runner.stop_admin_tube();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				TUBE_SERVER_LOGGER.error("Stop Link to RabbitMQ server failed.");
+			}
+		} else {
+			try {
+				rmq_runner.start_admin_tube(client_info.get_client_data().get("Machine").get("terminal"));
+			} catch (Exception e1) {
+				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
+			}
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -314,21 +332,9 @@ public class tube_server extends Thread {
 	private void monitor_run() {
 		tube_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		// initial 1 : start rmq tube (admin queque) //should be remove later
-		try {
-			// rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
-			// "D27639");
-			rmq_runner.read_admin_server(client_info.get_client_data().get("Machine").get("terminal"));
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			// e1.printStackTrace();
-			TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
-			TUBE_SERVER_LOGGER.error("Client will run in local model.");
-			// System.exit(1);
-		}
-		// initial 2 : send client detail info
+		// initial 1 : send client detail info
 		send_client_info("complex");
-		// initial 3 : Announce tube server ready
+		// initial 2 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
 		int send_count = 0;
 		while (!stop_request) {
@@ -345,13 +351,14 @@ public class tube_server extends Thread {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update received tube(local file, remote will update by
-			// rmq_tube)
-			run_import_suite_file();
-			// task 2: flash tube output: captured and rejected treemap
+			// task 1: update remote admin
+			run_import_remote_admin();
+			// task 2: update local admin (local file, import)
+			run_import_local_admin();
+			// task 3: flash tube output: captured and rejected treemap
 			flash_tube_output();
-			// task 3: send client info to Remote server
-			if (send_count < 6) {
+			// task 4: send client info to Remote server
+			if (send_count < 10) {
 				send_count++;
 				send_client_info("simple");
 			} else {
@@ -359,7 +366,7 @@ public class tube_server extends Thread {
 				send_client_info("complex");
 			}
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
