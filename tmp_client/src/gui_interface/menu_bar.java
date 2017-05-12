@@ -197,6 +197,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if (e.getSource().equals(imports)) {
+			String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+			if (link_mode.equals("remote")){
+				String title = new String("Link mode error");
+				String message = new String("Client run in remote mode, cannot import local suite file.");
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}			
 			JFileChooser import_file = new JFileChooser(work_path);
 			import_file.setDialogTitle("Select Test Suite file");
 			int return_value = import_file.showOpenDialog(null);
