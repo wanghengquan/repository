@@ -42,22 +42,24 @@ public class status_bar extends JPanel implements Runnable{
 	}
 	
 	private JPanel construct_link_panel(){
-		JPanel jp_link = new JPanel(new GridLayout(1,2,10,5));
+		JPanel jp_link = new JPanel(new GridLayout(1,3,10,5));
 		JLabel jl_link = new JLabel("Link To:");
 		jt_link = new JTextField();
 		jt_link.setEditable(false);
 		jp_link.add(jl_link);
 		jp_link.add(jt_link);
+		jp_link.add(new JLabel(""));
 		return jp_link;
 	}
 	
 	private JPanel construct_thread_panel(){
-		JPanel jp_thread = new JPanel(new GridLayout(1,2,10,5));
+		JPanel jp_thread = new JPanel(new GridLayout(1,3,10,5));
 		JLabel jl_thread = new JLabel("Working Thread(s):");
 		jt_thread = new JTextField();
 		jt_thread.setEditable(false);
 		jp_thread.add(jl_thread);
 		jp_thread.add(jt_thread);
+		jp_thread.add(new JLabel(""));
 		return jp_thread;
 	}
 	
