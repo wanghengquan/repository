@@ -263,6 +263,8 @@ public class tmp_manager extends Thread  {
 		if(cmd_info.get("cmd_gui").equals("gui")){
 			view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 			view_runner.start();
+		} else {
+			switch_info.set_back_ground_power_up();
 		}
 		//launch data server
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
@@ -292,6 +294,7 @@ public class tmp_manager extends Thread  {
 		// wait for background power up
 		while(true){
 			if(switch_info.get_back_ground_power_up()){
+				System.out.println(">>>back_ground power up");
 				break;
 			}
 			try {
