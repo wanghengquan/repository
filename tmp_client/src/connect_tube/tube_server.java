@@ -218,10 +218,10 @@ public class tube_server extends Thread {
 		}
 		int used_thread = pool_info.get_pool_used_threads();
 		int max_thread = pool_info.get_pool_current_size();
-		String processNum = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
+		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
 		simple_data.put("status", status);
-		simple_data.put("processNum", processNum);
+		simple_data.put("used_thread", rpt_thread);
 		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
 		//client only sent request(1), server side will response and reset the value to 0
 		if (switch_info.impl_send_admin_request()) {
@@ -231,21 +231,27 @@ public class tube_server extends Thread {
 		String host_ip = client_hash.get("Machine").get("ip");
 		String os = client_hash.get("System").get("os");
 		String group_name = client_hash.get("Machine").get("group");
-		String memory_left = client_hash.get("System").get("mem");
+		String memory_used = client_hash.get("System").get("mem");
 		String disk_left = client_hash.get("System").get("space");
 		String os_type = client_hash.get("System").get("os_type");
-		String high_priority = "NA";
-		String max_threads = String.valueOf(max_thread);
+		String private_mode = client_hash.get("Machine").get("private");
+		String unattended_mode = client_hash.get("Machine").get("unattended");
+		String client_version = public_data.BASE_CURRENTVERSION;
+		//String high_priority = "NA";
+		//String max_threads = String.valueOf(max_thread);
 		complex_data.putAll(simple_data);
 		complex_data.put("host_ip", host_ip);
 		complex_data.put("os", os);
 		complex_data.put("group_name", group_name);
-		complex_data.put("memory_left", memory_left);
+		complex_data.put("memory_used", memory_used);
 		complex_data.put("disk_left", disk_left);
 		complex_data.put("cpu_used", cpu_used);
 		complex_data.put("os_type", os_type);
-		complex_data.put("high_priority", high_priority);
-		complex_data.put("max_threads", max_threads);
+		complex_data.put("private_mode", private_mode);
+		complex_data.put("unattended_mode", unattended_mode);
+		complex_data.put("client_version", client_version);
+		//complex_data.put("high_priority", high_priority);
+		//complex_data.put("max_threads", max_threads);
 		Iterator<String> client_hash_it = client_hash.keySet().iterator();
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
@@ -312,8 +318,7 @@ public class tube_server extends Thread {
 		try {
 			// rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
 			// "D27639");
-			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
-					client_info.get_client_data().get("Machine").get("terminal"));
+			rmq_runner.read_admin_server(client_info.get_client_data().get("Machine").get("terminal"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();

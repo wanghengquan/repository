@@ -167,7 +167,7 @@ public class rmq_tube {
 		return msg_hash;
 	}
 
-	public void read_admin_server(String queue_name, String current_terminal) throws Exception {
+	public void read_admin_server(String current_terminal) throws Exception {
 		/*
 		 * This function used to read the admin queue and return the strings at
 		 * here we use Publish/Subscribe in rabbitmq

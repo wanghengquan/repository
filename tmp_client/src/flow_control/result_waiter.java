@@ -569,7 +569,7 @@ public class result_waiter extends Thread {
 		if(!view_info.impl_stop_case_request()){
 			return cancel_status;
 		}
-		String queue_name = view_info.get_select_captured_queue();
+		String queue_name = view_info.get_watching_queue();
 		List<String> select_task_case = view_info.get_select_task_case();
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
