@@ -94,7 +94,7 @@ public class SwingGUI implements JupidatorGUI {
         gui.VersInfoL.setText(versinfo);
         gui.setTitle(title);
         gui.InfoPane.setContentType("text/html");
-        gui.InfoPane.setText(infopane);
+        gui.InfoPane.setText(infopane.replaceAll("@@", "<br />"));
         gui.icon = icon;
         gui.SkipB.setVisible(skipvisible);
         gui.PrevL.setVisible(prevvisible);
