@@ -403,12 +403,19 @@ public class result_waiter extends Thread {
 			runlog.append(line_separator);
 			runlog.append("####################" + line_separator);
 			String host_name = client_info.get_client_data().get("Machine").get("terminal");
-			//String work_path = client_info.get_client_data().get("preference").get("work_path");
-			//String save_path = client_info.get_client_data().get("preference").get("save_path");
 			String run_path = (String) one_call_data.get("case_dir");
-			runlog.append("Result Location ==> " + host_name + ":" + run_path + line_separator);
-			runlog.append("Unified Location(Win Default) ==> " + "//lsh-smb01/sw/qa/qadata/results" + line_separator);
-			runlog.append("Unified Location(Lin Default) ==> " + "/lsh/sw/qa/qadata/results" + line_separator);
+			runlog.append("Runtime Location ==> " + host_name + ":" + run_path + line_separator);
+			String detail_path = new String();
+			detail_path = "/prj" + task_data.get("ID").get("project") + "/run" + task_data.get("ID").get("run") +
+					"/T" + task_data.get("ID").get("id");
+			String win_link = new String();
+			String lin_link = new String();
+			//Access for Windows: <a href=\\lsh-smb01\home/rel/ng1_0.1205\icd target='_explorer.exe'>\\lsh-smb01\home\rel\ng1_0.1205\icd</a>
+			win_link = String.format("<a href=\\\\lsh-smb01\\sw/qa/qadata/results%s target='_explorer.exe'>\\\\lsh-smb01\\sw/qa/qadata/results%s</a>", detail_path, detail_path);
+			lin_link = String.format("<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>", detail_path, detail_path);
+			runlog.append("Unified Location(Win Default) ==> " + win_link + line_separator);
+			runlog.append("Unified Location(Lin Default) ==> " + lin_link + line_separator);
+			runlog.append("Note: If the above link not work, please copy it to your file explorer manually." + line_separator);
 			runlog.append(line_separator);
 			runlog.append(line_separator);
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("cmd_output");
@@ -497,7 +504,7 @@ public class result_waiter extends Thread {
 			hash_data.put("reason", cmd_reason);
 			// String host_name =
 			// client_info.get_client_data().get("Machine").get("terminal");
-			String work_path = (String) one_call_data.get("case_dir");
+			String work_path = (String) one_call_data.get("case_dir");		
 			hash_data.put("location", work_path);
 			case_data.put(call_index, hash_data);
 		}

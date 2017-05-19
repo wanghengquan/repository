@@ -405,7 +405,9 @@ public class task_data {
 			// TreeMap<String, HashMap<String, HashMap<String, String>>>
 			// processed_task_data = new TreeMap<String, HashMap<String,
 			// HashMap<String, String>>>();
-			received_task_data.putAll(received_task_queues_map.get(queue_name));
+			if(received_task_queues_map.containsKey(queue_name)){
+				received_task_data.putAll(received_task_queues_map.get(queue_name));
+			}
 			// if(processed_task_queues_map.containsKey(queue_name)){
 			// processed_task_data.putAll(processed_task_queues_map.get(queue_name));
 			// }

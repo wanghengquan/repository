@@ -73,6 +73,10 @@ public class tube_server extends Thread {
 		while (system_require_it.hasNext()) {
 			String key_name = system_require_it.next();
 			String value = system_require_data.get(key_name);
+			if (!client_hash.get("System").containsKey(key_name)){
+				system_match = false;
+				break;
+			}			
 			if (key_name.equals("min_space")) {
 				String client_available_space = client_hash.get("System").get("space");
 				if (Integer.valueOf(value) > Integer.valueOf(client_available_space)) {
@@ -102,6 +106,10 @@ public class tube_server extends Thread {
 		while (machine_require_it.hasNext()) {
 			String key_name = machine_require_it.next();
 			String value = machine_require_data.get(key_name);
+			if (!client_hash.get("Machine").containsKey(key_name)){
+				machine_match = false;
+				break;
+			}
 			if (!value.contains(client_hash.get("Machine").get(key_name))) {
 				machine_match = false;
 				break;

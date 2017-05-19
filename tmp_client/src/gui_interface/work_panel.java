@@ -158,7 +158,7 @@ public class work_panel extends JSplitPane implements Runnable{
 					}
 					String select_task = (String) work_table.getValueAt(work_table.getSelectedRow(), 0);
 					WORK_PANEl_LOGGER.warn("clicked task:" + select_task);
-					table_menu.open_result_folder();
+					table_menu.open_result_folder(select_task);
 				} else {
 					WORK_PANEl_LOGGER.error("No line selected");
 				}
@@ -498,7 +498,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		terminate.setEnabled(true);
 	}
 	
-	public void open_result_folder(){
+	public void open_result_folder(String prefer_id){
 		String title = "Open Folder Failed:";
 		String message = "Cannot open case result DIR, unknow error." + line_separator;			
 		String watching_queue = view_info.get_watching_queue();
@@ -507,7 +507,12 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
-		String case_id = case_list.get(0);
+		String case_id = new String();
+		if (prefer_id == null){
+			case_id = case_list.get(0);
+		} else {
+			case_id = prefer_id;
+		}
 		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
 		String work_path = new String();
 		try{
@@ -576,7 +581,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}
 		if (arg0.getSource().equals(results)) {
 			System.out.println("results clicked");
-			open_result_folder();
+			open_result_folder(null);
 		}
 	}
 }

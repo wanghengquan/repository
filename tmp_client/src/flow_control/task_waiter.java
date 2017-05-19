@@ -508,6 +508,7 @@ public class task_waiter extends Thread {
 		// buffered task queues_tube_map
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
 			// task case from local
+			// System.out.println(">>>>:" + Thread.currentThread().getName());
 			indexed_case_data.putAll(task_info.get_one_indexed_case_data(queue_name));
 		} else {
 			try {
@@ -893,6 +894,7 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			String local_case_report = case_work_path + "/" + public_data.WORKSPACE_CASE_REPORT_NAME;
+			file_action.append_file(local_case_report, "Client Version:" + public_data.BASE_CURRENTVERSION + line_separator);
 			file_action.append_file(local_case_report, "[Export]" + line_separator);
 			file_action.append_file(local_case_report, String.join(line_separator, case_prepare_list) + line_separator);
 			// task 8 : launch cmd
