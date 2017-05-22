@@ -80,7 +80,6 @@ public abstract class XFileModElement extends XTargetElement {
             return from.delete();
         } else {
             /* if it is not a directory, copy file */
-
             if (to.isDirectory())   // If we copy to a directory, copy this file inside the directory
                 to = new File(to, from.getName());
             if (!safeMkDir(to.getParentFile())) // Fail if parent destination directory could not be created

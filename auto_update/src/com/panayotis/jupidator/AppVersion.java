@@ -35,7 +35,8 @@ import jupidator.launcher.XElement;
  */
 public class AppVersion {
 
-    public static final String FILETAG = ".last_successful_update";
+    //public static final String FILETAG = ".last_successful_update";
+	public static final String FILETAG = "auto_update.log";
     private final String version;
     private final int release;
 

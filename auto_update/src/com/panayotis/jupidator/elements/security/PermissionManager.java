@@ -118,7 +118,6 @@ public class PermissionManager implements Serializable {
         for (String cmd : command)
             debug.append(cmd).append(" ");
         application.receiveMessage(debug.toString());
-
         return new ProcessBuilder(command);
     }
 
