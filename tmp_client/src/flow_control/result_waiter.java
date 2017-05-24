@@ -413,8 +413,8 @@ public class result_waiter extends Thread {
 			//Access for Windows: <a href=\\lsh-smb01\home/rel/ng1_0.1205\icd target='_explorer.exe'>\\lsh-smb01\home\rel\ng1_0.1205\icd</a>
 			win_link = String.format("<a href=\\\\lsh-smb01\\sw/qa/qadata/results%s target='_explorer.exe'>\\\\lsh-smb01\\sw/qa/qadata/results%s</a>", detail_path, detail_path);
 			lin_link = String.format("<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>", detail_path, detail_path);
-			runlog.append("Unified Location(Win Default) ==> " + win_link + line_separator);
-			runlog.append("Unified Location(Lin Default) ==> " + lin_link + line_separator);
+			runlog.append("Unified Location(Win Default Access) ==> " + win_link + line_separator);
+			runlog.append("Unified Location(Lin Default Access) ==> " + lin_link + line_separator);
 			runlog.append("Note: If the above link not work, please copy it to your file explorer manually." + line_separator);
 			runlog.append(line_separator);
 			runlog.append(line_separator);
@@ -842,7 +842,7 @@ public class result_waiter extends Thread {
 			}
 			// take a rest
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 4 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

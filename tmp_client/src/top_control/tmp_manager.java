@@ -69,7 +69,7 @@ public class tmp_manager extends Thread  {
 		this.client_info = client_info;
 	}
 	
-	private void implements_self_quite_update(){
+	private void implements_self_quiet_update(){
 		//self update only work in console mode
 		String unattended_mode = client_info.get_client_data().get("Machine").get("unattended");  
 		if (unattended_mode.equalsIgnoreCase("1")){ 
@@ -159,7 +159,7 @@ public class tmp_manager extends Thread  {
 			if(run_maintenance_mode()){
 				TMP_MANAGER_LOGGER.warn("Client Going to maintenance mode...");
 				switch_info.set_client_maintenance_mode(true);
-				implements_self_quite_update();
+				implements_self_quiet_update();
 				implements_core_script_update();
 				switch_info.set_client_maintenance_mode(false);
 			}
