@@ -687,10 +687,15 @@ public class result_waiter extends Thread {
 		}
 		File case_path_obj = new File(case_dir);
 		String case_folder_name = case_path_obj.getName();
-		// String case_parent_path =
 		// case_path_obj.getParent().replaceAll("\\\\", "/");
 		File save_dest_folder = new File(save_path, case_folder_name);
 		File save_dest_file = new File(save_path, case_folder_name + ".zip");
+		if (save_dest_folder.exists()){
+			FileUtils.deleteQuietly(save_dest_folder);
+		}
+		if (save_dest_file.exists()){
+			FileUtils.deleteQuietly(save_dest_file);
+		}		
 		if (!save_path_fobj.exists()) {
 			save_path_fobj.mkdirs();
 			save_path_fobj.setWritable(true, false);

@@ -35,6 +35,7 @@ import javax.swing.event.ChangeListener;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import utility_funcs.deep_clone;
 
 public class software_dialog extends JDialog implements ChangeListener{
 	/**
@@ -237,10 +238,11 @@ class value_pane extends JPanel implements ActionListener{
 				}
 				new_data.put(build, path);
 			}
-			client_hash.putAll(client_info.get_client_data());
-			client_hash.get(tab_name).putAll(new_data);
-			client_hash.get(tab_name).put("scan_dir", jt_scan_dir.getText());
-			client_hash.get(tab_name).put("max_insts", jt_max_insts.getText());
+			//client_hash.putAll(client_info.get_client_data());
+			client_hash.putAll(deep_clone.clone(client_info.get_client_data()));
+			new_data.put("scan_dir", jt_scan_dir.getText());
+			new_data.put("max_insts", jt_max_insts.getText());
+			client_hash.put(tab_name, new_data);
 			client_info.set_client_data(client_hash);
 			switch_info.set_client_updated();
 		}

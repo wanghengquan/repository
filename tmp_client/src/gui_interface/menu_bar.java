@@ -48,9 +48,9 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout;
 	JMenuItem upload, key_gen;
 	JMenuItem client, software, preference;
-	JMenuItem usage, contact, about;
-	private String line_separator = System.getProperty("line.separator");
-
+	JMenuItem usage, client_help, tmp_doc, tmp_example, contact, about;
+	private String line_separator = System.getProperty("line.separator");	
+	
 	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info,
 			pool_data pool_info) {
 		this.main_view = main_view;
@@ -179,8 +179,16 @@ public class menu_bar extends JMenuBar implements ActionListener {
 
 	public JMenu construct_help_menu() {
 		JMenu help = new JMenu("Help");
-		usage = new JMenuItem("Usage...");
-		usage.addActionListener(this);
+		JMenu usage = new JMenu("Usage");
+		client_help = new JMenuItem("Client Help...");
+		client_help.addActionListener(this);		
+		tmp_doc = new JMenuItem("TMP Doc...");
+		tmp_doc.addActionListener(this);		
+		tmp_example = new JMenuItem("TMP Example...");
+		tmp_example.addActionListener(this);		
+		usage.add(client_help);
+		usage.add(tmp_doc);
+		usage.add(tmp_example);
 		contact = new JMenuItem("Contact...");
 		contact.addActionListener(this);
 		about = new JMenuItem("About...");
@@ -313,23 +321,57 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			pref_view.setLocationRelativeTo(main_view);
 			pref_view.setVisible(true);
 		}
-		if (e.getSource().equals(usage)) {
-			MENU_BAR_LOGGER.warn("usage clicked");
-			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_USAGE);
+		if (e.getSource().equals(client_help)) {
+			MENU_BAR_LOGGER.warn("client usage clicked");
+			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_CLIENT_USAGE);
 			String title = new String("Open usage file failed");
 			if (Desktop.isDesktopSupported()) {
 				Desktop desktop = Desktop.getDesktop();
 				try {
-					desktop.open(new File(public_data.DOC_USAGE));
-				} catch (IOException usage_exception) {
+					desktop.open(new File(public_data.DOC_CLIENT_USAGE));
+				} catch (IOException client_exception) {
 					// TODO Auto-generated catch block
-					usage_exception.printStackTrace();
+					client_exception.printStackTrace();
 					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 				}
 			} else {
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
+		if (e.getSource().equals(tmp_doc)) {
+			MENU_BAR_LOGGER.warn("tmp client usage clicked");
+			String message = new String("Cannot open usage folder:" + line_separator + public_data.DOC_TMP_USAGE);
+			String title = new String("Open TMP documents folder failed");
+			if (Desktop.isDesktopSupported()) {
+				Desktop desktop = Desktop.getDesktop();
+				try {
+					desktop.open(new File(public_data.DOC_TMP_USAGE));
+				} catch (IOException tmp_doc_exception) {
+					// TODO Auto-generated catch block
+					tmp_doc_exception.printStackTrace();
+					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			}	
+		}
+		if (e.getSource().equals(tmp_example)) {
+			MENU_BAR_LOGGER.warn("tmp example usage clicked");
+			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_EXAMPLE_PATH);
+			String title = new String("Open example folder failed");
+			if (Desktop.isDesktopSupported()) {
+				Desktop desktop = Desktop.getDesktop();
+				try {
+					desktop.open(new File(public_data.DOC_EXAMPLE_PATH));
+				} catch (IOException tmp_example_exception) {
+					// TODO Auto-generated catch block
+					tmp_example_exception.printStackTrace();
+					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			}
+		}		
 		if (e.getSource().equals(contact)) {
 			MENU_BAR_LOGGER.warn("Contact clicked");
 			String title = "Open Mail Failed:";
