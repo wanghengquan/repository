@@ -54,6 +54,7 @@ public class public_data {
 	// ========================
 	// Remote update path
 	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";
+	// public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/test.xml";
 	
 	// ========================
 	// workspace folder configuration, real path = work_path + following folder
