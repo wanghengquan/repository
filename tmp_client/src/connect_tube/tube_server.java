@@ -27,6 +27,7 @@ import flow_control.pool_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
 
 public class tube_server extends Thread {
 	// public property
@@ -45,7 +46,7 @@ public class tube_server extends Thread {
 	private task_data task_info;
 	private rmq_tube rmq_runner;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	// public function
 	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
@@ -72,6 +73,10 @@ public class tube_server extends Thread {
 		while (system_require_it.hasNext()) {
 			String key_name = system_require_it.next();
 			String value = system_require_data.get(key_name);
+			if (!client_hash.get("System").containsKey(key_name)){
+				system_match = false;
+				break;
+			}			
 			if (key_name.equals("min_space")) {
 				String client_available_space = client_hash.get("System").get("space");
 				if (Integer.valueOf(value) > Integer.valueOf(client_available_space)) {
@@ -101,6 +106,10 @@ public class tube_server extends Thread {
 		while (machine_require_it.hasNext()) {
 			String key_name = machine_require_it.next();
 			String value = machine_require_data.get(key_name);
+			if (!client_hash.get("Machine").containsKey(key_name)){
+				machine_match = false;
+				break;
+			}
 			if (!value.contains(client_hash.get("Machine").get(key_name))) {
 				machine_match = false;
 				break;
@@ -201,13 +210,14 @@ public class tube_server extends Thread {
 		HashMap<String, String> simple_data = new HashMap<String, String>();
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
-		String admin_request = "0";
-		if (switch_info.impl_send_admin_request()) {
-			admin_request = "1";
-		}
-		// admin_request = "1";
+		String admin_request = "1";
 		String cpu_used = client_hash.get("System").get("cpu");
-		int cpu_used_int = Integer.parseInt(cpu_used);
+		int cpu_used_int = 0;
+		try{
+			cpu_used_int = Integer.parseInt(cpu_used);
+		} catch (Exception e) {
+			cpu_used_int = 99;
+		}
 		String status = new String();
 		if (cpu_used_int > 60) {
 			status = "Busy";
@@ -216,31 +226,40 @@ public class tube_server extends Thread {
 		}
 		int used_thread = pool_info.get_pool_used_threads();
 		int max_thread = pool_info.get_pool_current_size();
-		String processNum = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
+		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
-		simple_data.put("admin_request", admin_request);
 		simple_data.put("status", status);
-		simple_data.put("processNum", processNum);
-		simple_data.put("task_take", String.join(line_seprator, processing_admin_queue_list));
+		simple_data.put("used_thread", rpt_thread);
+		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
+		//client only sent request(1), server side will response and reset the value to 0
+		if (switch_info.impl_send_admin_request()) {
+			simple_data.put("admin_request", admin_request);
+		}		
 		// complex data send
 		String host_ip = client_hash.get("Machine").get("ip");
 		String os = client_hash.get("System").get("os");
 		String group_name = client_hash.get("Machine").get("group");
-		String memory_left = client_hash.get("System").get("mem");
+		String memory_used = client_hash.get("System").get("mem");
 		String disk_left = client_hash.get("System").get("space");
 		String os_type = client_hash.get("System").get("os_type");
-		String high_priority = "NA";
-		String max_threads = String.valueOf(max_thread);
+		String private_mode = client_hash.get("Machine").get("private");
+		String unattended_mode = client_hash.get("Machine").get("unattended");
+		String client_version = public_data.BASE_CURRENTVERSION;
+		//String high_priority = "NA";
+		//String max_threads = String.valueOf(max_thread);
 		complex_data.putAll(simple_data);
 		complex_data.put("host_ip", host_ip);
 		complex_data.put("os", os);
 		complex_data.put("group_name", group_name);
-		complex_data.put("memory_left", memory_left);
+		complex_data.put("memory_used", memory_used);
 		complex_data.put("disk_left", disk_left);
 		complex_data.put("cpu_used", cpu_used);
 		complex_data.put("os_type", os_type);
-		complex_data.put("high_priority", high_priority);
-		complex_data.put("max_threads", max_threads);
+		complex_data.put("private_mode", private_mode);
+		complex_data.put("unattended_mode", unattended_mode);
+		complex_data.put("client_version", client_version);
+		//complex_data.put("high_priority", high_priority);
+		//complex_data.put("max_threads", max_threads);
 		Iterator<String> client_hash_it = client_hash.keySet().iterator();
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
@@ -254,7 +273,7 @@ public class tube_server extends Thread {
 			if (value_set.contains("max_insts")) {
 				value_set.remove("max_insts");
 			}
-			String key_value = String.join(line_seprator, value_set);
+			String key_value = String.join(line_separator, value_set);
 			if (key_value.equals("")) {
 				key_value = "NA";
 			}
@@ -272,7 +291,7 @@ public class tube_server extends Thread {
 		return send_status;
 	}
 
-	private void run_import_suite_file() {
+	private void run_import_local_admin() {
 		String suite_files = switch_info.impl_suite_file();
 		if (suite_files.equals("")) {
 			return;
@@ -285,11 +304,35 @@ public class tube_server extends Thread {
 		}
 	}
 
+	private void run_import_remote_admin(){
+		String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+		if (link_mode.equalsIgnoreCase("local")){
+			try {
+				rmq_runner.stop_admin_tube();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				TUBE_SERVER_LOGGER.error("Stop Link to RabbitMQ server failed.");
+			}
+		} else {
+			try {
+				rmq_runner.start_admin_tube(client_info.get_client_data().get("Machine").get("terminal"));
+			} catch (Exception e1) {
+				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
+			}
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}
@@ -297,24 +340,9 @@ public class tube_server extends Thread {
 	private void monitor_run() {
 		tube_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		// initial 1 : start rmq tube (admin queque) //should be remove later
-		try {
-			// rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
-			// "D27639");
-			rmq_runner.read_admin_server(public_data.RMQ_ADMIN_NAME,
-					client_info.get_client_data().get("Machine").get("terminal"));
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			// e1.printStackTrace();
-			TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
-			TUBE_SERVER_LOGGER.error("Client will run in local model.");
-			// System.exit(1);
-		}
-		// initial 2 : send client detail info
-		send_client_info("simple");
-		send_client_info("simple");
+		// initial 1 : send client detail info
 		send_client_info("complex");
-		// initial 3 : Announce tube server ready
+		// initial 2 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
 		int send_count = 0;
 		while (!stop_request) {
@@ -331,13 +359,14 @@ public class tube_server extends Thread {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update received tube(local file, remote will update by
-			// rmq_tube)
-			run_import_suite_file();
-			// task 2: flash tube output: captured and rejected treemap
+			// task 1: update remote admin
+			run_import_remote_admin();
+			// task 2: update local admin (local file, import)
+			run_import_local_admin();
+			// task 3: flash tube output: captured and rejected treemap
 			flash_tube_output();
-			// task 3: send client info to Remote server
-			if (send_count < 6) {
+			// task 4: send client info to Remote server
+			if (send_count < 10) {
 				send_count++;
 				send_client_info("simple");
 			} else {
@@ -345,7 +374,7 @@ public class tube_server extends Thread {
 				send_client_info("complex");
 			}
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

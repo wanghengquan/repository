@@ -29,24 +29,37 @@ public class status_bar extends JPanel implements Runnable{
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
 	private pool_data pool_info;
-	JTextField jt_thread, jt_cpu, jt_mem;
+	JTextField jt_thread, jt_link, jt_cpu, jt_mem;
 
 	public status_bar(client_data client_info, pool_data pool_info){
 		this.pool_info = pool_info;
 		this.client_info = client_info;
 		this.setLayout(new BorderLayout());
 		//container.add(new JTextField("Edit table and apply save:"), BorderLayout.NORTH);
-		this.add(construct_thread_panel(), BorderLayout.WEST);
-		this.add(construct_system_panel(), BorderLayout.EAST);	
+		this.add(construct_link_panel(), BorderLayout.WEST);
+		this.add(construct_thread_panel(), BorderLayout.CENTER);
+		this.add(construct_system_panel(), BorderLayout.EAST);
+	}
+	
+	private JPanel construct_link_panel(){
+		JPanel jp_link = new JPanel(new GridLayout(1,3,10,5));
+		JLabel jl_link = new JLabel("Link To:");
+		jt_link = new JTextField();
+		jt_link.setEditable(false);
+		jp_link.add(jl_link);
+		jp_link.add(jt_link);
+		jp_link.add(new JLabel(""));
+		return jp_link;
 	}
 	
 	private JPanel construct_thread_panel(){
-		JPanel jp_thread = new JPanel(new GridLayout(1,2,10,5));
+		JPanel jp_thread = new JPanel(new GridLayout(1,3,10,5));
 		JLabel jl_thread = new JLabel("Working Thread(s):");
 		jt_thread = new JTextField();
 		jt_thread.setEditable(false);
 		jp_thread.add(jl_thread);
 		jp_thread.add(jt_thread);
+		jp_thread.add(new JLabel(""));
 		return jp_thread;
 	}
 	
@@ -69,6 +82,16 @@ public class status_bar extends JPanel implements Runnable{
 		jp_system.add(jl_mem);
 		jp_system.add(jt_mem);
 		return jp_system;
+	}
+	
+	private void update_link_data(){
+		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
+		client_hash.putAll(client_info.get_client_data());
+		String link_info = new String("NA");
+		if(client_hash.containsKey("preference")){
+			link_info = client_hash.get("preference").get("link_mode");
+		}
+		jt_link.setText(link_info.substring(0, 1).toUpperCase() + link_info.substring(1));
 	}
 	
 	private void update_thread_data(){
@@ -102,6 +125,7 @@ public class status_bar extends JPanel implements Runnable{
 		// TODO Auto-generated method stub
 		while (true) {
 			if (SwingUtilities.isEventDispatchThread()) {
+				update_link_data();
 				update_thread_data();
 				update_system_data();
 			} else {
@@ -109,6 +133,7 @@ public class status_bar extends JPanel implements Runnable{
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
+						update_link_data();
 						update_thread_data();
 						update_system_data();
 					}

@@ -28,6 +28,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import info_parser.xml_parser;
+import utility_funcs.file_action;
 
 public class view_server extends Thread{
 	// public property
@@ -42,7 +43,7 @@ public class view_server extends Thread{
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
-	// private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL ;
 	// public function
 	// protected function
@@ -89,7 +90,7 @@ public class view_server extends Thread{
 		return case_list;
 	}
 	
-	private Boolean implements_retest_task_cases(){
+	private Boolean implements_retest_task_request(){
 		Boolean retest_status = new Boolean(true);
 		//get retest queue name
 		String queue_name = view_info.get_watching_queue();
@@ -118,8 +119,12 @@ public class view_server extends Thread{
 		}
 		if(task_info.get_finished_admin_queue_list().contains(queue_name)){
 			if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
-				import_admin_data_to_processed_data(queue_name);
-				import_task_data_to_processed_data(queue_name);
+				Boolean import_admin_status = import_admin_data_to_processed_data(queue_name);
+				Boolean import_task_status = import_task_data_to_processed_data(queue_name);
+				if (!import_admin_status || !import_task_status){
+					VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action);
+					return action_status;
+				}
 			}
 			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
@@ -154,8 +159,12 @@ public class view_server extends Thread{
 			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
-		import_status = true;
+		if (import_admin_data.isEmpty()){
+			import_status = false;
+		} else {
+			task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+			import_status = true;
+		}
 		return import_status;
 	}
 	
@@ -176,24 +185,61 @@ public class view_server extends Thread{
 		xml_parser file_parser = new xml_parser();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			import_task_data = file_parser
-					.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/"));
+			import_task_data.putAll(file_parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
 			return import_status;
 		}
-		task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
-		import_status = true;
+		if (import_task_data.isEmpty()){
+			import_status = false;
+		} else {
+			task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+			import_status = true;
+		}
 		return import_status;
 	}	
+	
+	private void implements_del_finished_request(){
+		//get delete list
+		List<String> delete_list = new ArrayList<String>();
+		delete_list.addAll(view_info.impl_delete_finished_queue());
+		for (String queue_name : delete_list){
+			//delete data in memory
+			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
+			task_info.remove_queue_from_processed_task_queues_map(queue_name);
+			task_info.remove_finished_admin_queue_list(queue_name);
+			//delete data in disk
+			String work_path = new String();
+			if (client_info.get_client_data().containsKey("preference")) {
+				work_path = client_info.get_client_data().get("preference").get("work_path");
+			} else {
+				work_path = public_data.DEF_WORK_PATH;
+			}
+			String log_folder = public_data.WORKSPACE_LOG_DIR;
+			File admin_path = new File(work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
+			File task_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
+			if (admin_path.exists() && admin_path.isFile()) {
+				admin_path.delete();
+			}
+			if (task_path.exists() && task_path.isFile()) {
+				task_path.delete();
+			}			
+		}
+	}
 	
 	public void run() {
 		try {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}
@@ -262,11 +308,11 @@ public class view_server extends Thread{
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : run "retest" cases
-			@SuppressWarnings("unused")
-			Boolean retest_status = implements_retest_task_cases();
+			implements_retest_task_request();
 			// task 2 : run "run" action implements
-			@SuppressWarnings("unused")
-			Boolean action_status = implements_run_action_request();
+			implements_run_action_request();
+			// task 3 : delete finished queue data
+			implements_del_finished_request();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

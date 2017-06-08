@@ -668,7 +668,7 @@ public class local_tube {
 				// non command key 1)globle have value, local must have value
 				// then overwrite
 				if (globle_data.containsKey(local_key)) {
-					if (!local_value.equals("")) {
+					if (!(local_value == null) && !local_value.equals("")) {
 						globle_data.put(local_key, local_value);
 					}
 				} else {
@@ -835,7 +835,7 @@ public class local_tube {
 			case_status_data.put("cmd_status", "waiting");
 			design_data.put("Status", case_status_data);
 			task_queue_data.put(case_name, design_data);
-			task_info.update_received_task_queues_map(admin_queue_name, task_queue_data);
+			task_info.update_queue_to_received_task_queues_map(admin_queue_name, task_queue_data);
 		}
 	}
 
@@ -855,7 +855,7 @@ public class local_tube {
 		System.out.println(queue_name);
 		System.out.println(admin_queue_data);
 		try {
-			xml_parser2.dump_finished_admin_data(admin_queue_data, queue_name,
+			xml_parser2.dump_admin_data(admin_queue_data, queue_name,
 					"D:/tmp_work_space/logs/finished/admin/test.xml");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -865,7 +865,7 @@ public class local_tube {
 				.get_received_task_queues_map().get(queue_name);
 		System.out.println(task_queue_data);
 		try {
-			xml_parser2.dump_finished_task_data(task_queue_data, queue_name,
+			xml_parser2.dump_task_data(task_queue_data, queue_name,
 					"D:/tmp_work_space/logs/finished/task/test.xml");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -23,9 +23,12 @@ public class switch_data {
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// client update
-	private int send_admin_request = 5; // for client start up use why???
+	private int send_admin_request = 1; // for client start up 
 	private int dump_config_request = 0;
 	private int check_core_request = 0;
+	// client house keep request
+	private int house_keep_request = 0;
+	private int client_stop_request = 0;
 	// Thread start sequence
 	private Boolean client_self_check = new Boolean(false);
 	private Boolean core_script_update = new Boolean(false);
@@ -35,8 +38,9 @@ public class switch_data {
 	private Boolean back_ground_power_up = new Boolean(false);
 	// suite file updating
 	private String suite_file = new String();
-	// client work mode
-
+	// client hall status(idle or busy) : thread pool not empty == busy
+    private String client_hall_status = new String("busy");
+    private Boolean client_maintenance_mode = new Boolean(false);
 	// public function
 	public switch_data() {
 
@@ -45,7 +49,7 @@ public class switch_data {
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
-			this.send_admin_request = send_admin_request + 2;
+			this.send_admin_request = send_admin_request + 1;
 			this.dump_config_request = dump_config_request + 1;
 			this.check_core_request = check_core_request + 1;
 		} finally {
@@ -93,6 +97,57 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 		return action_need;
+	}
+	
+	public void set_house_keep_request() {
+		rw_lock.writeLock().lock();
+		try {
+			this.house_keep_request = house_keep_request + 1;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void decrease_house_keep_request() {
+		rw_lock.writeLock().lock();
+		try {
+			if (house_keep_request > 0) {
+				house_keep_request = house_keep_request - 1;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public int get_house_keep_request() {
+		int result = 0;
+		rw_lock.readLock().lock();		
+		try {
+			result = this.house_keep_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
+	public void set_client_stop_request() {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_stop_request = client_stop_request + 1;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public int get_client_stop_request() {
+		int result = 0;
+		rw_lock.readLock().lock();		
+		try {
+			result = this.client_stop_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
 	}
 	
 	public void set_client_self_check(Boolean check_status) {
@@ -213,8 +268,48 @@ public class switch_data {
 			rw_lock.readLock().unlock();
 		}
 		return status;
+	}	
+	
+	public void set_client_hall_status(String current_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_hall_status = current_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
 	}
 
+	public String get_client_hall_status() {
+		String status = new String("");
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_hall_status;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
+	public void set_client_maintenance_mode(Boolean current_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_maintenance_mode = current_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_client_maintenance_mode() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_maintenance_mode;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
 	public void set_suite_file(String new_data) {
 		rw_lock.writeLock().lock();
 		try {

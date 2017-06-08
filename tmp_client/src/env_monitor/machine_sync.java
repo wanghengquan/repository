@@ -45,6 +45,7 @@ public class machine_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread machine_thread;
+	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 
@@ -105,11 +106,13 @@ public class machine_sync extends Thread {
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				cpu_usage = excute_retruns.get(1);
+				int cpu_used_int = Integer.parseInt(cpu_usage);
+				cpu_usage = String.valueOf(cpu_used_int);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				INFO_LOGGER.warn("Cannot resolve Operation System name");
-				cpu_usage = "99";
+				cpu_usage = "NA";
 			}
 			return cpu_usage;
 		} else {
@@ -126,11 +129,13 @@ public class machine_sync extends Thread {
 			try {
 				ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 				mem_usage = excute_retruns.get(1);
+				int mem_used_int = Integer.parseInt(mem_usage);
+				mem_usage = String.valueOf(mem_used_int);				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				INFO_LOGGER.warn("Cannot resolve Operation System name");
-				mem_usage = "99";
+				mem_usage = "NA";
 			}
 			return mem_usage;
 		} else {
@@ -193,8 +198,11 @@ public class machine_sync extends Thread {
 			// type = "NA";
 			arch = "NA";
 		} else {
-			// type = os.split("_")[0];
-			arch = os.split("_")[1];
+			if(os.contains("_")){
+				arch = os.split("_")[1];
+			} else {
+				arch = "NA";
+			}
 		}
 		String terminal = get_host_name();
 		String ip = get_host_ip();
@@ -227,7 +235,7 @@ public class machine_sync extends Thread {
 		try {
 			monitor_run();
 		} catch (Exception run_exception) {
-			run_exception.printStackTrace();
+			run_exception.printStackTrace();	
 			System.exit(1);
 		}
 	}
@@ -291,7 +299,7 @@ public class machine_sync extends Thread {
 	public static void main(String[] args) {
 		machine_sync client_update = new machine_sync(1);
 		client_update.start();
-		System.out.println(client_update.get_host_ip());
+		System.out.println(client_update.get_cpu_usage());
 		System.exit(0);
 		INFO_LOGGER.warn("thread start...");
 		try {

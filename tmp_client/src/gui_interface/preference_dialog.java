@@ -55,7 +55,8 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		container.add(construct_preference_panel());
-		this.setLocation(800, 500);
+		//this.setLocation(800, 500);
+		//this.setLocationRelativeTo(main_view);
 		this.setSize(500, 300);
 	}
 	
@@ -227,6 +228,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			initial_link_default_value(preference_data.get("link_mode"));
 			initial_thread_default_value(preference_data.get("thread_mode"));
 			initial_task_default_value(preference_data.get("task_mode"));
+			thread_text.setText(preference_data.get("max_threads"));
 			jt_work_path.setText(preference_data.get("work_path"));
 			jt_save_path.setText(preference_data.get("save_path"));
 		}
@@ -270,7 +272,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				File work_dobj = new File(jt_work_path.getText().trim());
 				String message = new String("work path Not Exists.");
 				if(work_dobj.exists()){
-					preference_data.put("work_path", jt_work_path.getText().trim());
+					preference_data.put("work_path", jt_work_path.getText().trim().replaceAll("\\\\", "/"));
 				} else {
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;					
@@ -279,9 +281,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			// save path
 			String save_path = new String();
 			if (jt_save_path.getText().trim().equals("")) {
-				save_path = jt_work_path.getText().trim();
+				save_path = jt_work_path.getText().trim().replaceAll("\\\\", "/");
 			} else {
-				save_path = jt_save_path.getText().trim();
+				save_path = jt_save_path.getText().trim().replaceAll("\\\\", "/");
 			}
 			File save_dobj = new File(save_path);
 			String message = new String("save path Not Exists.");

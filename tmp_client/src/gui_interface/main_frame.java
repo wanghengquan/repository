@@ -12,6 +12,7 @@ package gui_interface;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.MenuItem;
@@ -66,11 +67,24 @@ public class main_frame extends JFrame {
 	}
 
 	public void gui_constructor() {
-		default_font_set();
+		set_size_location();
+		set_default_font();
+		set_system_look_feel();
 		initial_components();
 		launch_system_tray();
 	}
 
+	public void set_size_location(){
+		this.setSize(1200, 1000);
+		Toolkit kit = Toolkit.getDefaultToolkit();
+		Dimension screenSize = kit.getScreenSize();
+		int screenWidth = screenSize.width/2;
+		int screenHeight = screenSize.height/2;
+		int height = this.getHeight();
+		int width = this.getWidth();
+		this.setLocation(screenWidth-width/2, screenHeight-height/2);
+	}
+	
 	public void show_welcome_letter() {
 		// show welcome if need
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
@@ -78,11 +92,12 @@ public class main_frame extends JFrame {
 		HashMap<String, String> preference_data = client_data.get("preference");
 		if (preference_data != null && preference_data.get("show_welcome").equals("1")) {
 			welcome_dialog welcome_view = new welcome_dialog(this, switch_info, client_info);
+			welcome_view.setLocationRelativeTo(this);
 			welcome_view.setVisible(true);
 		}
 	}
 
-	public void default_font_set() {
+	private void set_default_font() {
 		// UIManager.put("Menu.font", new Font("Serif", Font.PLAIN, 20));
 		Font font = new Font("Serif", Font.PLAIN, 20);
 		Enumeration<Object> keys = UIManager.getDefaults().keys();
@@ -95,9 +110,18 @@ public class main_frame extends JFrame {
 		}
 	}
 
+	private void set_system_look_feel(){
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ex) {
+        	MAIN_FRAME_LOGGER.warn("GUI setting System look and feel failed.");
+        }
+	}
+	
 	private void initial_components() {
-		this.setLocation(300, 50);
-		this.setSize(1200, 1000);
+		//this.setLocation(300, 50);
+		//this.setLocationRelativeTo(null);
+		//this.setSize(1200, 1000);
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
@@ -137,7 +161,8 @@ public class main_frame extends JFrame {
 		MenuItem close = new MenuItem("Close");
 		close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
-				System.exit(0);
+				switch_info.set_house_keep_request();
+				switch_info.set_client_stop_request();
 			}
 		});
 		MenuItem open = new MenuItem("Open");

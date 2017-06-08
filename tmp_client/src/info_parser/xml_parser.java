@@ -141,7 +141,8 @@ public class xml_parser {
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			XML_PARSER_LOGGER.warn("get rmq xml data failed.");
+			XML_PARSER_LOGGER.warn("Wrong xml format received, skip.");
+			return level1_data;
 		}
 		Element root_node = xml_doc.getRootElement();
 		if (root_node.attribute("title") == null) {
@@ -169,8 +170,10 @@ public class xml_parser {
 	}
 
 	// admin queue
-	public Boolean dump_finished_admin_data(HashMap<String, HashMap<String, String>> admin_queue_data,
-			String queue_name, String xml_path) throws IOException {
+	public Boolean dump_admin_data(
+			HashMap<String, HashMap<String, String>> admin_queue_data,
+			String queue_name, 
+			String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
@@ -196,8 +199,9 @@ public class xml_parser {
 	}
 
 	// task queue
-	public Boolean dump_finished_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
-			String queue_name, String xml_path) throws IOException {
+	public Boolean dump_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
+			String queue_name, 
+			String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
@@ -234,13 +238,13 @@ public class xml_parser {
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
-		String time_modified = time_info.get_date_time(new Date(time));
+		String time_modified = time_info.get_date_hhmm(new Date(time));
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.equalsIgnoreCase(time_modified)) {
-			XML_PARSER_LOGGER.warn("xml modified outside, ignore this xml data.");
+		if (!time_create.contains(time_modified)) {
+			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
 			return admin_queue_data;
 		}
 		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
@@ -263,13 +267,13 @@ public class xml_parser {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
-		String time_modified = time_info.get_date_time(new Date(time));
+		String time_modified = time_info.get_date_hhmm(new Date(time));
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.equalsIgnoreCase(time_modified)) {
-			XML_PARSER_LOGGER.warn("xml modified outside, ignore this xml data.");
+		if (!time_create.contains(time_modified)) {
+			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
 			return task_queue_data;
 		}
 		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
@@ -295,15 +299,18 @@ public class xml_parser {
 
 	public static void main(String[] args) {
 		xml_parser xml_parser2 = new xml_parser();
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		try {
-			System.out.println(xml_parser2.get_xml_file_task_queue_data("D:/tmp_work_space/logs/finished/task/501@run_826_032217_191000.xml").toString());
+			queue_data = xml_parser2.get_xml_file_admin_queue_data("D:/tmp_work_space/logs/retrieve/received_admin/511@run_997_041817_141406.xml");
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println(queue_data.toString());
 	}
 	
 	public static void main2(String[] args) {
+		@SuppressWarnings("unused")
 		xml_parser xml_parser2 = new xml_parser();
 		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> result_data1 = new HashMap<String, String>();
@@ -316,14 +323,6 @@ public class xml_parser {
 		result_data2.put("result", "fail");
 		result_data.put("T123456", result_data1);
 		result_data.put("T654321", result_data2);
-		// System.out.println(result_data.toString());
-		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		try {
-			task_queue_data = xml_parser2.get_xml_file_task_queue_data("D:/java_dev/test.xml");
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println(task_queue_data.toString());
+		System.out.println(result_data.toString());
 	}
 }

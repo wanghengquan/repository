@@ -24,7 +24,7 @@ public class core_update {
 	private String core_addr = public_data.CORE_SCRIPT_ADDR;
 	private String svn_user = public_data.SVN_USER;
 	private String svn_pwd = public_data.SVN_PWD;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	public core_update(){
 		
@@ -46,7 +46,7 @@ public class core_update {
 				StringBuffer cmdout = new StringBuffer();
 				Boolean find_url = false;
 				for (String line : info_return) {
-					cmdout.append(line).append(line_seprator);
+					cmdout.append(line).append(line_separator);
 					if (line.matches(core_addr) || line.indexOf(core_addr) != -1)
 						find_url = true;
 				}

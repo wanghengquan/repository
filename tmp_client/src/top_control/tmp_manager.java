@@ -12,8 +12,8 @@ package top_control;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.net.URL;
-import java.net.URLDecoder;
+//import java.net.URL;
+//import java.net.URLDecoder;
 import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +35,8 @@ import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import self_update.app_update;
+import utility_funcs.file_action;
 
 
 public class tmp_manager extends Thread  {
@@ -50,10 +52,11 @@ public class tmp_manager extends Thread  {
 	private client_state maintain_state;
 	private client_state work_state;
 	private client_state tmp_state;
-	//private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
 	private switch_data switch_info;
 	private client_data client_info;
+	private int hall_idle_count = 0;
 	// public function
 	// protected function
 	// private function	
@@ -66,15 +69,53 @@ public class tmp_manager extends Thread  {
 		this.client_info = client_info;
 	}
 	
-	private Boolean implements_core_update(){
-		Boolean impl_status = new Boolean(true);
-		if(switch_info.impl_check_core_request()){
-			core_update my_core = new core_update();
-			my_core.update(client_info.get_client_data().get("preference").get("work_path"));
-		} else{
-			impl_status = false;
+	private void implements_self_quite_update(){
+		//self update only work in console mode
+		String unattended_mode = client_info.get_client_data().get("Machine").get("unattended");  
+		if (unattended_mode.equalsIgnoreCase("1")){ 
+			app_update update_obj = new app_update(switch_info, client_info);
+			update_obj.smart_update();
 		}
-		return impl_status;
+	}
+	
+	private void implements_core_script_update(){
+		core_update my_core = new core_update();
+		my_core.update(client_info.get_client_data().get("preference").get("work_path"));
+	}
+	
+	private Boolean run_maintenance_mode(){
+		String current_hall_status = switch_info.get_client_hall_status();
+		if(current_hall_status.equalsIgnoreCase("idle")){
+			hall_idle_count += 1;
+		} else {
+			hall_idle_count = 0;
+		}
+		if (hall_idle_count > 60){
+			//cycle is base_interval * 1 * 60 = 5 minutes
+			hall_idle_count = 0;
+			return true;
+		}
+		return false;
+	}
+	
+	private void client_stop_acknowledge(){
+		if(switch_info.get_client_stop_request() < 1){
+			return;
+		}
+		int count = 0;
+		while(switch_info.get_house_keep_request() > 0){
+			if (count > 20){
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			count++;
+		}
+		System.exit(0);
 	}
 	
 	public void run() {
@@ -82,6 +123,12 @@ public class tmp_manager extends Thread  {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}
@@ -89,7 +136,9 @@ public class tmp_manager extends Thread  {
 	private void monitor_run() {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
-		// initial 1 : 
+		// initial 1 : check app update
+		app_update update_obj = new app_update(switch_info, client_info);
+		update_obj.smart_update();
 		// initial 2 : 
 		// start loop:
 		while (!stop_request) {
@@ -106,13 +155,20 @@ public class tmp_manager extends Thread  {
 				TMP_MANAGER_LOGGER.debug("Client Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1 : update core script
-			implements_core_update();
-			// task 2 : 
+			// task 1 : run maintenance mode
+			if(run_maintenance_mode()){
+				TMP_MANAGER_LOGGER.warn("Client Going to maintenance mode...");
+				switch_info.set_client_maintenance_mode(true);
+				implements_self_quite_update();
+				implements_core_script_update();
+				switch_info.set_client_maintenance_mode(false);
+			}
+			// task 2 :
+			client_stop_acknowledge();
 			// task 3 : 
 			// task 4 : 
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -181,6 +237,10 @@ public class tmp_manager extends Thread  {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
+		System.out.println(">>>Info: Current Version:" + public_data.BASE_CURRENTVERSION);
+		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
+		System.out.println(">>>Info: Contact Us:" + public_data.BASE_CONTACT_MAIL);
+		System.out.println("");
 		initial_log_config();
 		TMP_MANAGER_LOGGER.debug("debug output test");
 		TMP_MANAGER_LOGGER.info("Info output test");
@@ -203,6 +263,8 @@ public class tmp_manager extends Thread  {
 		if(cmd_info.get("cmd_gui").equals("gui")){
 			view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);
 			view_runner.start();
+		} else {
+			switch_info.set_back_ground_power_up();
 		}
 		//launch data server
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);		
@@ -216,6 +278,7 @@ public class tmp_manager extends Thread  {
 		//core script prepare
 		core_update my_core = new core_update();
 		my_core.update(client_info.get_client_data().get("preference").get("work_path"));
+		System.out.println(">>>Core updated...");
 		//kill pop window launch
 		kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
 		my_kill.start();
@@ -226,6 +289,19 @@ public class tmp_manager extends Thread  {
 			if (switch_info.get_tube_server_power_up()){
 				System.out.println(">>>tube server power up");
 				break;
+			}
+		}
+		// wait for background power up
+		while(true){
+			if(switch_info.get_back_ground_power_up()){
+				System.out.println(">>>back_ground power up");
+				break;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		//launch hall manager

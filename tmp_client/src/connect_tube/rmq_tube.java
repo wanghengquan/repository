@@ -40,6 +40,9 @@ public class rmq_tube {
 	private static String rmq_pwd = public_data.RMQ_PWD;
 	private static String task_msg = new String();
 	private task_data task_info;
+	private Connection admin_connection;
+	private Channel admin_channel;
+	private Boolean admin_work = new Boolean(false);
 
 	// public function
 	public rmq_tube(task_data task_info) {
@@ -146,7 +149,8 @@ public class rmq_tube {
 					try {
 						channel.close();
 					} catch (TimeoutException e) {
-						e.printStackTrace();
+						//e.printStackTrace();
+						RMQ_TUBE_LOGGER.warn("close channel TimeoutException");
 					}
 				if (connection.isOpen())
 					connection.close();
@@ -167,38 +171,59 @@ public class rmq_tube {
 		return msg_hash;
 	}
 
-	public void read_admin_server(String queue_name, String current_terminal) throws Exception {
+	public synchronized void start_admin_tube(String current_terminal) throws Exception {
 		/*
 		 * This function used to read the admin queue and return the strings at
 		 * here we use Publish/Subscribe in rabbitmq
 		 */
+		if (admin_work){
+			return;
+		}
+		admin_work = true;
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
 		factory.setUsername(rmq_user);
 		factory.setPassword(rmq_pwd);
 		factory.setAutomaticRecoveryEnabled(true);
-		final Connection connection = factory.newConnection();
-		final Channel channel = connection.createChannel();
-		channel.exchangeDeclare(public_data.RMQ_ADMIN_NAME, "fanout");
-		String queueName = channel.queueDeclare().getQueue();
-		channel.queueBind(queueName, public_data.RMQ_ADMIN_NAME, "");
-		Consumer consumer = new DefaultConsumer(channel) {
+		admin_connection = factory.newConnection();
+		admin_channel = admin_connection.createChannel();
+		admin_channel.exchangeDeclare(public_data.RMQ_ADMIN_NAME, "fanout");
+		String queueName = admin_channel.queueDeclare().getQueue();
+		admin_channel.queueBind(queueName, public_data.RMQ_ADMIN_NAME, "");
+		Consumer consumer = new DefaultConsumer(admin_channel) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
 					byte[] body) throws IOException {
 				String message = new String(body, "UTF-8");
-				// remote_admin_queue_receive_treemap.putAll(update_admin_queue(message,
-				// current_terminal));
 				update_admin_queue(message, current_terminal);
+				//channel.basicAck(envelope.getDeliveryTag(), false);
 			}
 		};
-		channel.basicConsume(queueName, true, consumer);
+		admin_channel.basicConsume(queueName, true, consumer);
 	}
 
+
+	public synchronized void stop_admin_tube() throws Exception {
+		if (!admin_work){
+			return;
+		}
+		admin_work = false;
+		if (admin_channel.isOpen())
+			try {
+				admin_channel.close();
+			} catch (TimeoutException e) {
+				//e.printStackTrace();
+				RMQ_TUBE_LOGGER.warn("close channel TimeoutException");
+			}
+		if (admin_connection.isOpen())
+			admin_connection.close();		
+	}
+	
 	private Boolean update_admin_queue(String message, String current_terminal) {
 		Boolean update_status = new Boolean(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = xml_parser.get_rmq_xml_data(message);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_rmq_xml_data(message));
 		Set<String> msg_key_set = msg_hash.keySet();
 		if (msg_key_set.isEmpty()) {
 			return update_status;

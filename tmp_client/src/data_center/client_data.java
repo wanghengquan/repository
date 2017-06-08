@@ -67,6 +67,26 @@ public class client_data {
 		}
 	}
 
+	public void append_software_build(String section, HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> software_data =  client_hash.get(section);
+			software_data.putAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void delete_software_build(String section, String build) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> software_data =  client_hash.get(section);
+			software_data.remove(build);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
 	public HashMap<String, Integer> get_max_soft_insts() {
 		rw_lock.readLock().lock();
 		HashMap<String, Integer> temp = new HashMap<String, Integer>();
@@ -247,56 +267,6 @@ public class client_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
-	/*
-	 * public void set_thread_work_mode(String new_data) {
-	 * rw_lock.writeLock().lock(); try { this.thread_work_mode = new_data; }
-	 * finally { rw_lock.writeLock().unlock(); } }
-	 * 
-	 * public String get_thread_work_mode() { rw_lock.readLock().lock(); String
-	 * value = new String(); try { value = this.thread_work_mode; } finally {
-	 * rw_lock.readLock().unlock(); } return value; }
-	 * 
-	 * public void set_pool_current_size(int new_data) {
-	 * rw_lock.writeLock().lock(); try { this.pool_current_size = new_data; }
-	 * finally { rw_lock.writeLock().unlock(); } }
-	 * 
-	 * public int get_pool_current_size() { rw_lock.readLock().lock(); int value
-	 * = 0; try { value = this.pool_current_size; } finally {
-	 * rw_lock.readLock().unlock(); } return value; }
-	 * 
-	 * public void set_task_assign_mode(String new_data) {
-	 * rw_lock.writeLock().lock(); try { this.task_assign_mode = new_data; }
-	 * finally { rw_lock.writeLock().unlock(); } }
-	 * 
-	 * public String get_task_assign_mode() { rw_lock.readLock().lock(); String
-	 * value = new String(); try { value = this.task_assign_mode; } finally {
-	 * rw_lock.readLock().unlock(); } return value; }
-	 * 
-	 * public void set_client_link_mode(String new_data) {
-	 * rw_lock.writeLock().lock(); try { this.client_link_mode = new_data; }
-	 * finally { rw_lock.writeLock().unlock(); } }
-	 * 
-	 * public String get_client_link_mode() { rw_lock.readLock().lock(); String
-	 * value = new String(); try { value = this.client_link_mode; } finally {
-	 * rw_lock.readLock().unlock(); } return value; }
-	 * 
-	 * public void set_client_work_path(String new_data) {
-	 * rw_lock.writeLock().lock(); try { this.client_work_path = new_data; }
-	 * finally { rw_lock.writeLock().unlock(); } }
-	 * 
-	 * public String get_client_work_path() { rw_lock.readLock().lock(); String
-	 * value = new String(); try { value = this.client_work_path; } finally {
-	 * rw_lock.readLock().unlock(); } return value; }
-	 * 
-	 * public void set_client_save_path(String new_data) {
-	 * rw_lock.writeLock().lock(); try { this.client_save_path = new_data; }
-	 * finally { rw_lock.writeLock().unlock(); } }
-	 * 
-	 * public String get_client_save_path() { rw_lock.readLock().lock(); String
-	 * value = new String(); try { value = this.client_save_path; } finally {
-	 * rw_lock.readLock().unlock(); } return value; }
-	 */
 
 	/*
 	 * main entry for test

@@ -15,7 +15,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -50,7 +49,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem upload, key_gen;
 	JMenuItem client, software, preference;
 	JMenuItem usage, contact, about;
-	private String line_seprator = System.getProperty("line.separator");
+	private String line_separator = System.getProperty("line.separator");
 
 	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info,
 			pool_data pool_info) {
@@ -198,6 +197,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if (e.getSource().equals(imports)) {
+			String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+			if (link_mode.equals("remote")){
+				String title = new String("Link mode error");
+				String message = new String("Client run in remote mode, cannot import local suite file.");
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}			
 			JFileChooser import_file = new JFileChooser(work_path);
 			import_file.setDialogTitle("Select Test Suite file");
 			int return_value = import_file.showOpenDialog(null);
@@ -212,7 +218,9 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			MENU_BAR_LOGGER.warn("Export clicked");
 		}
 		if (e.getSource().equals(exit)) {
-			System.exit(0);
+			switch_info.set_house_keep_request();
+			switch_info.set_client_stop_request();
+			main_view.setVisible(false);
 		}
 		if (e.getSource().equals(view_all)) {
 			MENU_BAR_LOGGER.warn("view_all clicked");
@@ -280,25 +288,34 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.warn("upload clicked");
-			new upload_dialog(client_info).setVisible(true);
+			upload_dialog upload_view = new upload_dialog(client_info);
+			upload_view.setLocationRelativeTo(main_view);
+			upload_view.setVisible(true);
 		}
 		if (e.getSource().equals(key_gen)) {
-			new encode_dialog(main_view).setVisible(true);
+			encode_dialog encode_view = new encode_dialog(main_view);
+			encode_view.setLocationRelativeTo(main_view);
+			encode_view.setVisible(true);
 		}
 		if (e.getSource().equals(client)) {
-			new client_dialog(main_view, switch_info, client_info).setVisible(true);
+			client_dialog client_view = new client_dialog(main_view, switch_info, client_info);
+			client_view.setLocationRelativeTo(main_view);
+			client_view.setVisible(true);
 		}
 		if (e.getSource().equals(software)) {
-			new software_dialog(main_view, switch_info, client_info).setVisible(true);
+			software_dialog software_view = new software_dialog(main_view, switch_info, client_info);
+			software_view.setLocationRelativeTo(main_view);
+			software_view.setVisible(true);
 		}
 		if (e.getSource().equals(preference)) {
 			preference_dialog pref_view = new preference_dialog(main_view, switch_info, pool_info, client_info);
 			new Thread(pref_view).start();
+			pref_view.setLocationRelativeTo(main_view);
 			pref_view.setVisible(true);
 		}
 		if (e.getSource().equals(usage)) {
 			MENU_BAR_LOGGER.warn("usage clicked");
-			String message = new String("Cannot open usage file:" + line_seprator + public_data.DOC_USAGE);
+			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_USAGE);
 			String title = new String("Open usage file failed");
 			if (Desktop.isDesktopSupported()) {
 				Desktop desktop = Desktop.getDesktop();
@@ -316,27 +333,26 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		if (e.getSource().equals(contact)) {
 			MENU_BAR_LOGGER.warn("Contact clicked");
 			String title = "Open Mail Failed:";
-			String message = "Can not open system register mail." + line_seprator + "Please send mail to:"
+			String message = "Can not open system registered mail." + line_separator + "Please send mail to:"
 					+ public_data.BASE_CONTACT_MAIL;
 			if (Desktop.isDesktopSupported()) {
 				Desktop desktop = Desktop.getDesktop();
 				try {
 					desktop.mail(new URI("mailto:" + public_data.BASE_CONTACT_MAIL));
-				} catch (IOException contact_e) {
+				} catch (Exception contact_e) {
 					// TODO Auto-generated catch block
-					contact_e.printStackTrace();
+					// contact_e.printStackTrace();
 					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-				} catch (URISyntaxException contact_e) {
-					// TODO Auto-generated catch block
-					contact_e.printStackTrace();
-				}
+				} 
 			} else {
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
 		if (e.getSource().equals(about)) {
 			MENU_BAR_LOGGER.warn("about clicked");
-			new about_dialog(main_view).setVisible(true);
+			about_dialog about_view = new about_dialog(main_view, switch_info, client_info);
+			about_view.setLocationRelativeTo(main_view);
+			about_view.setVisible(true);
 		}
 	}
 }

@@ -48,8 +48,8 @@ public class upload_dialog extends JFrame{
 	private JButton open_button = new JButton("Select");
 	private JButton cancel_button = new JButton("Cancel");
 	private JButton upload_button = new JButton("Upload");
-	private String line_seprator = System.getProperty("line.separator");
-	private JTextArea output_area = new JTextArea("Upload Console Outputs:" + line_seprator);
+	private String line_separator = System.getProperty("line.separator");
+	private JTextArea output_area = new JTextArea("Upload Console Outputs:" + line_separator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
 	String work_path = new String();
@@ -86,7 +86,8 @@ public class upload_dialog extends JFrame{
 		upload_button.addActionListener(new upload_action());
 		my_container.setBackground(Color.white);
 		this.setSize(500, 400);
-		this.setLocation(600,600);
+		//this.setLocationRelativeTo(null);
+		//this.setLocation(600,600);
 		if(client_info.get_client_data().containsKey("preference")){
 			work_path = client_info.get_client_data().get("preference").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
 		} else {
@@ -159,7 +160,7 @@ public class upload_dialog extends JFrame{
 			cmd_args.add("-p");
 			cmd_args.add(pswd);
 			output_area.append(String.join(" ", cmd_args));
-			output_area.append(line_seprator);
+			output_area.append(line_separator);
 			ProcessBuilder pb = new ProcessBuilder(cmd_args);
 			pb.redirectErrorStream(true);
 			File work_dobj = new File(work_path);
@@ -190,7 +191,7 @@ public class upload_dialog extends JFrame{
 						try {
 							String line = null;
 							while ((line = br1.readLine()) != null) {
-								output_area.append(line + line_seprator);
+								output_area.append(line + line_separator);
 								output_area.setCaretPosition(output_area.getText().length()); 
 							}
 						} catch (IOException e) {

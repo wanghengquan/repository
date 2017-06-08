@@ -71,7 +71,11 @@ public class queue_panel extends JSplitPane implements Runnable {
 		capture_column.add("Captured Queue");
 		capture_column.add("Status");
 		reject_table = new panel_table(reject_data, reject_column);
+		reject_table.getColumn("Rejected Queue").setMinWidth(150);
+		reject_table.getColumn("Reason").setMinWidth(150);
 		capture_table = new panel_table(capture_data, capture_column);
+		capture_table.getColumn("Captured Queue").setMinWidth(150);
+		capture_table.getColumn("Status").setMinWidth(150);		
 		this.setDividerLocation(400);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
@@ -105,12 +109,46 @@ public class queue_panel extends JSplitPane implements Runnable {
 					QUEUE_PANEL_LOGGER.info("No line selected");
 				}
 			}
+			
+			public void mouseClicked(MouseEvent e) {
+				if (reject_table.getSelectedRows().length > 0) {
+					int i = e.getButton();
+					if(i != MouseEvent.BUTTON1){
+						QUEUE_PANEL_LOGGER.info("non Button1 clicked, skip.");
+						return;
+					}
+					int click_count = e.getClickCount();
+					if(click_count < 2){
+						QUEUE_PANEL_LOGGER.info("click count:" + String.valueOf(click_count) + ", skip.");
+						return;
+					}
+					String select_queue = (String) reject_table.getValueAt(reject_table.getSelectedRow(), 0);
+					QUEUE_PANEL_LOGGER.info("Enable queue:" + select_queue);
+					new detail_dialog(select_queue, client_info, task_info).setVisible(true);					
+				} else {
+					QUEUE_PANEL_LOGGER.error("No line selected");
+				}
+			}
 		});
 		JScrollPane scroll_panel = new JScrollPane(reject_table);
 		reject_panel.add(scroll_panel);
 		return reject_panel;
+	}	
+	
+	private Boolean is_selected_queue_deletable(){
+		Boolean run_status = new Boolean(false);
+		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
+		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
+		if(!status.equalsIgnoreCase("finished")){
+			return run_status;
+		}
+		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+			return run_status;
+		}
+		run_status = true;
+		return run_status;
 	}
-
+	
 	private Component panel_bottom_component() {
 		JPanel capture_panel = new JPanel(new BorderLayout());
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -120,6 +158,11 @@ public class queue_panel extends JSplitPane implements Runnable {
 			public void mouseReleased(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						if (is_selected_queue_deletable()){
+							capture_menu.enable_delete_item();
+						} else {
+							capture_menu.disable_delete_item();
+						}
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -130,10 +173,36 @@ public class queue_panel extends JSplitPane implements Runnable {
 			public void mousePressed(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						if (is_selected_queue_deletable()){
+							capture_menu.enable_delete_item();
+						} else {
+							capture_menu.disable_delete_item();
+						}						
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
 					QUEUE_PANEL_LOGGER.info("No line selected");
+				}
+			}
+			
+			public void mouseClicked(MouseEvent e) {
+				if (capture_table.getSelectedRows().length > 0) {
+					int i = e.getButton();
+					if(i != MouseEvent.BUTTON1){
+						QUEUE_PANEL_LOGGER.info("non Button1 clicked, skip.");
+						return;
+					}
+					int click_count = e.getClickCount();
+					if(click_count < 2){
+						QUEUE_PANEL_LOGGER.info("click count:" + String.valueOf(click_count) + ", skip.");
+						return;
+					}
+					String select_queue = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
+					QUEUE_PANEL_LOGGER.info("Double click and show queue:" + select_queue);
+					view_info.set_watching_queue(select_queue);
+					view_info.set_watching_queue_area("all");
+				} else {
+					QUEUE_PANEL_LOGGER.error("No line selected");
 				}
 			}
 		});
@@ -314,7 +383,8 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(details)) {
 			System.out.println("reject details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
-			new detail_dialog(select_queue, client_info, task_info).setVisible(true);
+			detail_dialog detail_view = new detail_dialog(select_queue, client_info, task_info);
+			detail_view.setVisible(true);
 		}
 	}
 }
@@ -327,6 +397,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private JMenuItem show;
 	private JMenuItem run_play, run_pause, run_stop;
+	private JMenuItem delete;
 	private view_data view_info;
 
 	public capture_pop_memu(JTable table, view_data view_info) {
@@ -347,12 +418,24 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		run.add(run_pause);
 		run.add(run_stop);
 		this.add(run);
+		this.addSeparator();
+		delete = new JMenuItem("Delete");
+		delete.addActionListener(this);
+		this.add(delete);
 	}
 
 	public capture_pop_memu get_capture_pop_menu() {
 		return this;
 	}
 
+	public void disable_delete_item() {
+		delete.setEnabled(false);
+	}
+
+	public void enable_delete_item() {
+		delete.setEnabled(true);
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -374,6 +457,15 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("run_stop clicked");
 			view_info.set_run_action_request("stop");
 		}
+		if (arg0.getSource().equals(delete)) {
+			System.out.println("delete clicked");
+			int select_index = table.getSelectedRow();
+			if (select_index < 0){
+				return;
+			}
+			String queue_name = (String) table.getValueAt(select_index, 0);
+			view_info.add_delete_finished_queue(queue_name);
+		}		
 	}
 
 }

@@ -23,8 +23,9 @@ public class public_data {
 
 	// ========================
 	// base
-	public final static String BASE_CURRENTVERSION = "2.05.02"; // External.Internal.DEV
-	public final static String BASE_BUILDDATE = "2017/4/12";
+	public final static String BASE_CURRENTVERSION = "2.6.2"; // External.Internal.DEV, 2.6.2
+	public final static int BASE_CURRENTVERSION_INT = 262; // version for code use
+	public final static String BASE_BUILDDATE = "2017/5/22";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -33,7 +34,7 @@ public class public_data {
 
 	// ========================
 	// Soft ware bin path
-	public final static String SW_BIN_PATH = get_bin_path();
+	public final static String SW_HOME_PATH = get_home_path();
 
 	// ========================
 	// log setting
@@ -42,14 +43,18 @@ public class public_data {
 
 	// ========================
 	// external configure based on software bin path
-	public final static String CONF_DEFAULT_INI = SW_BIN_PATH + "/conf/default.ini";
+	public final static String CONF_DEFAULT_INI = SW_HOME_PATH + "/conf/default.ini";
 
 	// ========================
 	// external configure based on software bin path
-	public final static String ICON_FRAME_PNG = SW_BIN_PATH + "/image/frame.png";
-	public final static String ICON_TRAY_PNG = SW_BIN_PATH + "/image/ico.png";
-	public final static String ICON_TAB_PNG = SW_BIN_PATH + "/image/tab.png";
+	public final static String ICON_FRAME_PNG = SW_HOME_PATH + "/image/frame.png";
+	public final static String ICON_TRAY_PNG = SW_HOME_PATH + "/image/ico.png";
+	public final static String ICON_TAB_PNG = SW_HOME_PATH + "/image/tab.png";
 
+	// ========================
+	// Remote update path
+	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";
+	
 	// ========================
 	// workspace folder configuration, real path = work_path + following folder
 	// name
@@ -60,20 +65,20 @@ public class public_data {
 
 	// ========================
 	// external tools based on software bin path
-	public final static String TOOLS_SSHPASS = SW_BIN_PATH + "/tools/sshpass/sshpass";
-	public final static String TOOLS_KILL_PROCESS = SW_BIN_PATH + "/tools/kill_process.py";
-	public final static String TOOLS_KILL_WINPOP = SW_BIN_PATH + "/tools/kill_winpop.py";
-	public final static String TOOLS_OS_NAME = SW_BIN_PATH + "/tools/os_name.py";
-	public final static String TOOLS_GET_CPU = SW_BIN_PATH + "/tools/get_cpu.py";
-	public final static String TOOLS_GET_MEM = SW_BIN_PATH + "/tools/get_mem.py";
-	public final static String TOOLS_PSCP = SW_BIN_PATH + "/tools/pscp.exe";
-	public final static String TOOLS_CP = SW_BIN_PATH + "/tools/cp.exe";
-	public final static String TOOLS_PUTTY = SW_BIN_PATH + "/tools/putty.exe";
-	public final static String TOOLS_UPLOAD = SW_BIN_PATH + "/tools/upload/excel2testrail.py";
+	public final static String TOOLS_SSHPASS = SW_HOME_PATH + "/tools/sshpass/sshpass";
+	public final static String TOOLS_KILL_PROCESS = SW_HOME_PATH + "/tools/kill_process.py";
+	public final static String TOOLS_KILL_WINPOP = SW_HOME_PATH + "/tools/kill_winpop.py";
+	public final static String TOOLS_OS_NAME = SW_HOME_PATH + "/tools/os_name.py";
+	public final static String TOOLS_GET_CPU = SW_HOME_PATH + "/tools/get_cpu.py";
+	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
+	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
+	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
+	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
+	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
 
 	// ========================
 	// external documents based on software bin path
-	public final static String DOC_USAGE = SW_BIN_PATH + "/doc/usage.pdf";
+	public final static String DOC_USAGE = SW_HOME_PATH + "/doc/usage.pdf";
 
 	// ========================
 	// link to RabbitMQ configuration data only shown here
@@ -111,7 +116,7 @@ public class public_data {
 	// ========================
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
-	public final static int PERF_POOL_MAXIMUM_SIZE = 20;
+	public final static int PERF_POOL_MAXIMUM_SIZE = 30;
 
 	// ========================
 	// >>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
@@ -124,6 +129,7 @@ public class public_data {
 	// Machine
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
+	public final static String DEF_UNATTENDED_MODE = "0"; // 1 UNATTENDED(no user), 0 ATTENDED(user there)
 	// preference
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial",
 																// "parallel",
@@ -140,7 +146,7 @@ public class public_data {
 	public public_data() {
 	}
 
-	private static String get_bin_path() {
+	private static String get_home_path() {
 		String bin_path = tmp_manager.get_bin_path();
 		File bin_dobj = new File(bin_path);
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");

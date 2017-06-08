@@ -156,7 +156,8 @@ public class system_cmd {
 		 * This function used to run command in another way: ProcessBuilder
 		 */
 		ArrayList<String> string_list = new ArrayList<String>();
-		string_list.add(Arrays.toString(cmds).replaceAll("[\\[\\]\\s,]", " "));
+		string_list.add("Environments :" + envs.toString());
+		string_list.add("LaunchCommand:" + String.join(" ", cmds));
 		ProcessBuilder pb = new ProcessBuilder(cmds);
 		pb.redirectErrorStream(true);
 		File run_dir = new File(directory);
@@ -182,7 +183,7 @@ public class system_cmd {
 				string_list.add("<status>TBD</status>");
 			}
 		} else {
-			SYSTEM_CMD_LOGGER.warn("Clean up, timeout task cleanup.");
+			SYSTEM_CMD_LOGGER.warn("Timeout task cleanup.");
 			string_list.add("<status>Timeout</status>");
 			string_list.add("<reason>Timeout</reason>");
 			p.destroyForcibly();
@@ -293,18 +294,26 @@ public class system_cmd {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String cmd = "conf/cp -r //lsh-prince/sw/SW_Validation/LSH_Results/GUI_Automation_Squish/regression3.9/Silicon/00_gui_silicon/D38_suite_device_feature/allviews/tst_cmos_to_dphy_dsi_rgb666_222 result/prj3/run366/T803147/tst_cmos_to_dphy_dsi_rgb666_222";
+		String cmd = " python  D:/tmp_work_space/DEV/bin/run_diamond.py    --synthesis-only    --synthesis=lse  --check-conf=designpool_lse.conf  --design=alm_intf_cpu_mem_dpram ";
+		System.out.println(cmd);
+		String cmd_trim = cmd.trim();
+		System.out.println(cmd_trim);
+		String[] cmd_list = cmd_trim.split("\\s+");
+		for (String item:cmd_list){
+			System.out.println("_" + item + "_");
+		}
 		// String cmd = "svn export
 		// http://lshlabd0001/diamond/trunk/FE_17_POJO2/pojo2_flow/ao4410
 		// result/prj3/run368/T807387/ao4410 --username=guest --password=welcome
-		// --no-auth-cache --force";
+		// run(String[] cmds, Map<String, String> envs, String directory, int timeout)
 		// String[] cmds = { "python", "try_python.py" };
 		HashMap<String, String> envs = new HashMap<String, String>();
-		envs.put("aa", "bb");
-		// envs.put("PYTHONUNBUFFERED", "1");
-		// String dir = new String("D:/project/lrf_prj/client_prj");
+		envs.put("EXTERNAL_DIAMOND_PATH", "C:/lscc/diamond/3.9_x64");
+		envs.put("PYTHONUNBUFFERED", "1");
+		String dir = new String("D:/tmp_work_space/T1680938");
 		// int timeout = 5;
-		ArrayList<String> list = run(cmd);
+		System.out.println("Environments:" + envs.toString());
+		ArrayList<String> list = run(cmd_list, envs, dir, 3600);
 		// ArrayList<String> list = run(cmd);
 		System.out.println(list.toString());
 	}

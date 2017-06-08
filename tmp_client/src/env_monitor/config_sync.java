@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -36,6 +37,7 @@ import data_center.switch_data;
  * 		tmp_machine:terminal=	xxx
  * 					group	=	xxx
  * 					private = 	0
+ * 					unattended = 1  unattended mode (no user there)
  * 
  * 		tmp_base:	thread_mode = auto, manual
  *tmp_preference:	task_mode = auto, parallel, serial
@@ -55,6 +57,7 @@ public class config_sync extends Thread {
 	private Thread conf_thread;
 	private client_data client_info;
 	private switch_data switch_info;
+	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 
 	// public function
@@ -99,6 +102,9 @@ public class config_sync extends Thread {
 				// e.printStackTrace();
 				CONFIG_SYNC_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
 				continue;
+			} catch (Exception e) {
+				CONFIG_SYNC_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
+				continue;				
 			}
 			if (!build_data.containsKey("root")) {
 				continue;
@@ -117,9 +123,9 @@ public class config_sync extends Thread {
 		if (scan_data.isEmpty()) {
 			return false;
 		}
-		HashMap<String, String> recording_data = config_hash.get(section);
-		Set<String> scan_options = scan_data.keySet();
-		Iterator<String> scan_options_it = scan_options.iterator();
+		HashMap<String, String> recording_data = new HashMap<String, String>();
+		recording_data.putAll(client_info.get_client_data().get(section));
+		Iterator<String> scan_options_it = scan_data.keySet().iterator();
 		while (scan_options_it.hasNext()) {
 			String scan_option = scan_options_it.next();
 			if (!recording_data.containsKey(scan_option)) {
@@ -181,44 +187,50 @@ public class config_sync extends Thread {
 	 * scan update
 	 */
 	private Boolean update_dynamic_data() {
-		int config_updated = 0;
-		Set<String> config_sections = config_hash.keySet();
-		Iterator<String> section_it = config_sections.iterator();
+		int client_updated = 0;
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
+		Iterator<String> section_it = client_data.keySet().iterator();
 		while (section_it.hasNext()) {
 			String section = section_it.next();
 			HashMap<String, String> section_data = new HashMap<String, String>();
-			section_data.putAll(config_hash.get(section));
-			if (section.contains("tmp_")) {
+			section_data.putAll(client_data.get(section));
+			if (section.equals("preference")) {
 				continue;
 			}
-			HashMap<String, String> update_data = new HashMap<String, String>();
-			Set<String> options_set = section_data.keySet();
-			Iterator<String> option_it = options_set.iterator();
+			if (section.equals("Machine")) {
+				continue;
+			}
+			if (section.equals("System")) {
+				continue;
+			}
+			Iterator<String> option_it = section_data.keySet().iterator();
 			while (option_it.hasNext()) {
 				String option = option_it.next();
 				String value = section_data.get(option);
 				if (option.equals("scan_dir")) {
-					update_data.put(option, value);
-					HashMap<String, String> scan_data = get_scan_dirs(value);
+					HashMap<String, String> scan_data = new HashMap<String, String>();
+					scan_data.putAll(get_scan_dirs(value));
 					Boolean new_update = get_build_diff(section, scan_data);
 					if (new_update) {
-						update_data.putAll(scan_data);
-						config_updated++; // internal config file save
+                        client_info.append_software_build(section, scan_data);
+                        client_updated++; // internal config file save
 					}
 				} else if (option.equals("max_insts")) {
-					update_data.put(option, value);
+					continue;
 				} else {
 					File sw_path = new File(value);
 					if (sw_path.exists()) {
-						update_data.put(option, value);
+						continue;
 					} else {
+						client_info.delete_software_build(section, option);
+						client_updated++;
 						CONFIG_SYNC_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
 					}
 				}
-			}
-			config_hash.put(section, update_data);
+			}	
 		}
-		if (config_updated > 0) {
+		if (client_updated > 0) {
 			return true;
 		} else {
 			return false;
@@ -228,8 +240,8 @@ public class config_sync extends Thread {
 	private Boolean dump_client_data(ini_parser ini_runner) {
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
-		write_data = deep_clone.clone(client_info.get_client_data());
-		CONFIG_SYNC_LOGGER.warn("Dumping ini data:" + write_data.toString());
+		write_data.putAll(deep_clone.clone(client_info.get_client_data()));
+		CONFIG_SYNC_LOGGER.info("Dumping ini data:" + client_info.get_client_data().toString());
 		if (!write_data.containsKey("preference")) {
 			dump_status = false;
 			return dump_status;
@@ -254,12 +266,13 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
+		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
 		write_data.put("tmp_preference", tmp_preference_data);
 		write_data.put("tmp_machine", tmp_machine_data);
-		CONFIG_SYNC_LOGGER.warn(write_data.toString());
+		CONFIG_SYNC_LOGGER.info(write_data.toString());
 		try {
 			ini_runner.write_ini_data(write_data);
 		} catch (ConfigurationException e) {
@@ -276,6 +289,12 @@ public class config_sync extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
 			System.exit(1);
 		}
 	}

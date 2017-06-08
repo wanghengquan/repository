@@ -26,7 +26,7 @@ public class pool_data {
 	// protected property
 	// private property
 	private static final Logger THREAD_POOL_LOGGER = LogManager.getLogger(pool_data.class.getName());
-	// private String line_seprator = System.getProperty("line.separator");
+	// private String line_separator = System.getProperty("line.separator");
 	// public function
 	// protected function
 	// private function
