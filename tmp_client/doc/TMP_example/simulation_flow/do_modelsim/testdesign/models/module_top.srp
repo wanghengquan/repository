@@ -1,0 +1,34 @@
+SCUBA, Version Diamond (64-bit) 3.5.0.91
+Tue May 12 10:07:30 2015
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2015 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : C:\lscc\diamond\3.5_x64\ispfpga\bin\nt64\scuba.exe -w -n module_top -lang verilog -synth lse -bus_exp 7 -bb -arch sn5w00 -dram -type ramdq -addr_width 5 -num_words 32 -data_width 8 -outData UNREGISTERED -fdc C:/Users/jwang1/Desktop/snow_module/spram/module_top/module_top.fdc 
+    Circuit name     : module_top
+    Module type      : sspram
+    Module Version   : 3.8
+    Address width    : 5
+    Ports            : 
+	Inputs       : Address[4:0], Data[7:0], Clock, WE, ClockEn
+	Outputs      : Q[7:0]
+    I/O buffer       : not inserted
+    Clock edge       : rising edge
+    EDIF output      : module_top.edn
+    Verilog output   : module_top.v
+    Verilog template : module_top_tmpl.v
+    Verilog testbench: tb_module_top_tmpl.v
+    Verilog purpose  : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : module_top.srp
+    Element Usage    :
+            INV : 1
+          MUX21 : 8
+       ROM16X1A : 2
+       SPR16X4C : 4
+    Estimated Resource Usage:
+            LUT : 10
+           DRAM : 4

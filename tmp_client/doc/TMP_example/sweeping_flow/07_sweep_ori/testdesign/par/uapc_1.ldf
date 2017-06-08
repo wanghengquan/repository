@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="uapc_1" device="LCMXO2-1200HC-4TG144I" default_implementation="uapc_1">
+    <Options/>
+    <Implementation title="uapc_1" dir="uapc_1" description="uapc_1" synthesis="synplify" default_strategy="Strategy1">
+        <Options/>
+        <Source name="../source/top.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="uapc_1.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="Strategy1.sty"/>
+</BaliProject>

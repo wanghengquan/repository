@@ -1,0 +1,1 @@
+ -o C:/Users/jwang1/Desktop/temp/memory_dis_spram_default/sim/compile -lc C:/Users/jwang1/Desktop/temp/memory_dis_spram_default/sim/library.cfg -fl C:/Users/jwang1/Desktop/temp/memory_dis_spram_default/sim/library.cfg -pli C:/Aldec/Riviera/bin/systf.dll -sv2k5 ./sim_tb.v

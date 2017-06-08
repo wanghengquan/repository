@@ -1,0 +1,2 @@
+--file2=real.csv --file1=fake.csv --output=102_88.csv --title=lattice_title --original-title=title2
+--file1=real.csv --file2=fake.csv --output=88_102.csv --title=lattice_title --original-title=title2

@@ -1,0 +1,2 @@
+VHDL_ENTITY_ONLY ddram_16x11_sap DEFIN ddram_16x11_sap.vhd
+MODULE ddram_16x11_sap DEFIN ddram_16x11_sap.vhd

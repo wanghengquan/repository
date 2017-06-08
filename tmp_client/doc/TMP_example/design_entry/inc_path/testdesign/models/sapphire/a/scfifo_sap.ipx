@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DiamondModule name="scfifo_sap" module="FIFO" VendorName="Lattice Semiconductor Corporation" generator="IPexpress" date="2013 04 22 10:13:40.392" version="4.9" type="Module" synthesis="" source_format="VHDL">
+  <Package>
+		<File name="scfifo_sap.lpc" type="lpc" modified="2013 04 22 10:13:39.409"/>
+		<File name="scfifo_sap.vhd" type="top_level_vhdl" modified="2013 04 22 10:13:39.456"/>
+		<File name="scfifo_sap_tmpl.vhd" type="template_vhdl" modified="2013 04 22 10:13:39.456"/>
+		<File name="tb_scfifo_sap_tmpl.vhd" type="testbench_vhdl" modified="2013 04 22 10:13:39.471"/>
+  </Package>
+</DiamondModule>

@@ -1,0 +1,12 @@
+----------------------------------------------------------------------
+Report for cell module_top.TECH
+Register bits:  4 of 6047 (0.066%)
+I/O cells:      0
+                                  Cell usage:
+                               cell     count   Res Usage(%)
+                              CCU2C         7          100.0
+                            FD1P3DX         4          100.0
+                                GSR         1          100.0
+                                INV         2          100.0
+                            PDPW8KE         1          100.0
+                              TOTAL        15

@@ -1,0 +1,14 @@
+[qa]
+;;;;;;;;;;;;;;;;;prj info:
+ldf_file = ./testdesign/par/cary.ldf
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;1 Use ; to make a comment, only support the whole line comment
+;2 NO SPACE before an option/value line!
+;3 You'd BETTER use "/" rather than "\" for future use on Linux
+;4 IF you want to include multi files please use "<>"
+;  example:  tb_file = <tb_file1.v>
+;                      <tb_file2.v>
+;                      <tb_file3.v>

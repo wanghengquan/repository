@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DiamondModule name="ddram_16x11_sap" module="Distributed_DPRAM" VendorName="Lattice Semiconductor Corporation" generator="IPexpress" date="2012 11 29 09:48:53.150" version="3.5" type="Module" synthesis="" source_format="VHDL">
+  <Package>
+		<File name="" type="mem" modified="2012 11 29 09:48:53.106"/>
+		<File name="ddram_16x11_sap.lpc" type="lpc" modified="2012 11 29 09:48:52.031"/>
+		<File name="ddram_16x11_sap.vhd" type="top_level_vhdl" modified="2012 11 29 09:48:52.069"/>
+		<File name="ddram_16x11_sap_tmpl.vhd" type="template_vhdl" modified="2012 11 29 09:48:52.069"/>
+		<File name="tb_ddram_16x11_sap_tmpl.vhd" type="testbench_vhdl" modified="2012 11 29 09:48:52.071"/>
+  </Package>
+</DiamondModule>

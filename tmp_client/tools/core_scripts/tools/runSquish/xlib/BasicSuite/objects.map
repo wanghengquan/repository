@@ -1,0 +1,141 @@
+:Device Selector_DeviceDialog	{type='DeviceDialog' unnamed='1' visible='1' windowTitle='Device Selector'}
+:Device.Cancel_QPushButton	{text='Cancel' type='QPushButton' unnamed='1' visible='1' window=':Device_QMessageBox'}
+:Device.Use Default_QPushButton	{text='Use Default' type='QPushButton' unnamed='1' visible='1' window=':Device_QMessageBox'}
+:Device_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Device'}
+:Error[*].qt_dockwidget_closebutton_QDockWidgetTitleButton	{container=':Lattice Diamond - Reports.Error[*]_PNInfoDockWidget' name='qt_dockwidget_closebutton' type='QDockWidgetTitleButton' visible='1'}
+:File List.qt_dockwidget_floatbutton_PNTreeView	{aboveWidget=':File List.qt_dockwidget_floatbutton_QDockWidgetTitleButton' container=':Lattice Diamond - Reports.File List_PNFileDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:File List.qt_dockwidget_floatbutton_QDockWidgetTitleButton	{container=':Lattice Diamond - Reports.File List_PNFileDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:File.Open_QMenu	{name='Open' title='Open' type='QMenu' visible='1' window=':Lattice Diamond - Start Page.File_QMenu'}
+:IP Express.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':IP Express_QMessageBox'}
+:IP Express_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='IP Express'}
+:Lattice Diamond - Device View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Device View_PNMainWindow'}
+:Lattice Diamond - Device View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Device View'}
+:Lattice Diamond - Floorplan View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Floorplan View'}
+:Lattice Diamond - IPexpress_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - IPexpress_PNMainWindow'}
+:Lattice Diamond - IPexpress_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - IPexpress'}
+:Lattice Diamond - Package View *.Save All_QToolButton	{text='Save All' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Package View *_PNMainWindow'}
+:Lattice Diamond - Package View *_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Package View *'}
+:Lattice Diamond - Package View.Design_QMenu	{title='Design' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Package View_PNMainWindow'}
+:Lattice Diamond - Package View.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Package View_PNMainWindow'}
+:Lattice Diamond - Package View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Package View_PNMainWindow'}
+:Lattice Diamond - Package View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Package View'}
+:Lattice Diamond - Package View_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Package View_PNMainWindow'}
+:Lattice Diamond - Power Calculator  - Untitled_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Power Calculator  - Untitled_PNMainWindow'}
+:Lattice Diamond - Power Calculator  - Untitled_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Power Calculator  - Untitled'}
+:Lattice Diamond - Preference Preview_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Preference Preview_PNMainWindow'}
+:Lattice Diamond - Preference Preview_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Preference Preview'}
+:Lattice Diamond - Reports.Device View_QToolButton	{text='Device View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Device_QToolButton	{text='Device' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Error[*]_PNInfoDockWidget	{name='PN Error[*] View' type='PNInfoDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='Error[*]'}
+:Lattice Diamond - Reports.File List_PNFileDockWidget	{name='PN File List View' type='PNFileDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='File List'}
+:Lattice Diamond - Reports.Floorplan View_QToolButton	{text='Floorplan View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.IPexpress_QToolButton	{text='IPexpress' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Info[*]_PNInfoDockWidget	{name='PN Info[*] View' type='PNInfoDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='Info[*]'}
+:Lattice Diamond - Reports.Info[*]_QTabBar	{aboveWidget=':Lattice Diamond - Reports.Output_PNInfoDockWidget' leftWidget=':Lattice Diamond - Reports.Info[*]_PNInfoDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Info[*]_QTabBar_2	{aboveWidget=':Lattice Diamond - Reports.Error[*]_PNInfoDockWidget' leftWidget=':Lattice Diamond - Reports.Info[*]_PNInfoDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Info[*]_QTabBar_3	{aboveWidget=':Lattice Diamond - Reports.Warning[*]_PNInfoDockWidget' leftWidget=':Lattice Diamond - Reports.Info[*]_PNInfoDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Netlist View_QToolButton	{text='Netlist View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.New_QToolButton	{text='New' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Open_QToolButton	{text='Open' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Output_PNInfoDockWidget	{name='PN Output View' type='PNInfoDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='Output'}
+:Lattice Diamond - Reports.Package View_QToolButton	{text='Package View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Power Calculator_QToolButton	{text='Power Calculator' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Preference Preview_QToolButton	{text='Preference Preview' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Print_QToolButton	{text='Print' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Process_PNProcDockWidget	{name='PN Process View' type='PNProcDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='Process'}
+:Lattice Diamond - Reports.Programmer_QToolButton	{text='Programmer' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Property Pages_QToolButton	{text='Property Pages' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Reports_QToolButton	{text='Reports' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Rerun All_QToolButton	{text='Rerun All' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Reveal Analyzer_QToolButton	{text='Reveal Analyzer' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Reveal Inserter_QToolButton	{text='Reveal Inserter' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Run Manager_QToolButton	{text='Run Manager' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Simulation Wizard_QToolButton	{text='Simulation Wizard' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Spreadsheet View_QToolButton	{text='Spreadsheet View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Start Page_QToolButton	{text='Start Page' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Warning[*]_PNInfoDockWidget	{name='PN Warning[*] View' type='PNInfoDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='Warning[*]'}
+:Lattice Diamond - Reports_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Reports'}
+:Lattice Diamond - Reports_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reveal Inserter - Untitled_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Reveal Inserter - Untitled_PNMainWindow'}
+:Lattice Diamond - Reveal Inserter - Untitled_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Reveal Inserter - Untitled'}
+:Lattice Diamond - Run Manager.Merge Tab Group_QToolButton	{text='Merge Tab Group' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Run Manager_PNMainWindow'}
+:Lattice Diamond - Run Manager.Move to Another Tab Group_QToolButton	{text='Move to Another Tab Group' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Run Manager_PNMainWindow'}
+:Lattice Diamond - Run Manager.Split Tab Group_QToolButton	{text='Split Tab Group' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Run Manager_PNMainWindow'}
+:Lattice Diamond - Run Manager.Switch Tab Group position_QToolButton	{text='Switch Tab Group position' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Run Manager_PNMainWindow'}
+:Lattice Diamond - Run Manager_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Run Manager_PNMainWindow'}
+:Lattice Diamond - Run Manager_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Run Manager'}
+:Lattice Diamond - Spreadsheet View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Spreadsheet View_PNMainWindow'}
+:Lattice Diamond - Spreadsheet View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Spreadsheet View'}
+:Lattice Diamond - Start Page.File_QMenu	{title='File' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.New_QToolButton	{text='New' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.Open_QToolButton	{text='Open' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.Process_PNProcDockWidget	{name='PN Process View' type='PNProcDockWidget' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow' windowTitle='Process'}
+:Lattice Diamond - Start Page.Window_QMenu	{title='Window' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page_CloseButton	{occurrence='2' type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page_CloseButton_2	{occurrence='3' type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Start Page'}
+:Lattice Diamond - Start Page_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond.Device_QToolButton	{text='Device' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond_PNMainWindow'}
+:Lattice Diamond.No_QPushButton	{text='No' type='QPushButton' unnamed='1' visible='1' window=':Lattice Diamond_QMessageBox'}
+:Lattice Diamond.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':Lattice Diamond_QMessageBox'}
+:Lattice Diamond.Preference Preview_QToolButton	{text='Preference Preview' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond_PNMainWindow'}
+:Lattice Diamond.Property Pages_QToolButton	{text='Property Pages' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond_PNMainWindow'}
+:Lattice Diamond.Yes_QPushButton	{text='Yes' type='QPushButton' unnamed='1' visible='1' window=':Lattice Diamond_QMessageBox'}
+:Lattice Diamond_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond'}
+:Lattice Diamond_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Lattice Diamond'}
+:New File_PNNewDesignDlg	{type='PNNewDesignDlg' unnamed='1' visible='1' windowTitle='New File'}
+:New Project_PNCreateProjWizard	{name='PN New Project QWizard' type='PNCreateProjWizard' visible='1' windowTitle='New Project'}
+:Open Example.splitter_QSplitter	{name='splitter' type='QSplitter' visible='1' window=':Open Example_QFileDialog'}
+:Open Example_QFileDialog	{name='QFileDialog' type='QFileDialog' visible='1' windowTitle='Open Example'}
+:Open File.Cancel_QPushButton	{text='Cancel' type='QPushButton' unnamed='1' visible='1' window=':Open File_QFileDialog'}
+:Open File_QFileDialog	{name='QFileDialog' type='QFileDialog' visible='1' windowTitle='Open File'}
+:Open Project.Cancel_QPushButton	{text='Cancel' type='QPushButton' unnamed='1' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.File name:_QLabel	{name='fileNameLabel' text='File name:' type='QLabel' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.Open_QPushButton	{text='Open' type='QPushButton' unnamed='1' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.lookInCombo_QComboBox	{name='lookInCombo' type='QComboBox' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.splitter_QSplitter	{name='splitter' type='QSplitter' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.toParentButton_QToolButton	{name='toParentButton' type='QToolButton' visible='1' window=':Open Project_QFileDialog'}
+:Open Project_QFileDialog	{name='QFileDialog' type='QFileDialog' visible='1' windowTitle='Open Project'}
+:Package View.OK_QPushButton	{container=':qt_tabwidget_stackedwidget.Package View_PkvToolView' text='OK' type='QPushButton' unnamed='1' visible='1'}
+:Print.Cancel_Button	{container=':Print_Dialog' text='Cancel' type='Button'}
+:Print_Dialog	{text='Print' type='Dialog'}
+:Print_ListView	{container=':Print_Dialog' type='ListView'}
+:Process.qt_dockwidget_floatbutton_PNTreeView	{aboveWidget=':Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton' container=':Lattice Diamond - Reports.Process_PNProcDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:Process.qt_dockwidget_floatbutton_PNTreeView_2	{aboveWidget=':Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_2' container=':Lattice Diamond - Start Page.Process_PNProcDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton	{container=':Lattice Diamond - Reports.Process_PNProcDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_2	{container=':Lattice Diamond - Start Page.Process_PNProcDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:Programmer: Getting Started.Close_QPushButton	{text='Close' type='QPushButton' unnamed='1' visible='1' window=':Programmer: Getting Started_tooldvm::DvmGettingStarted'}
+:Programmer: Getting Started_tooldvm::DvmGettingStarted	{type='tooldvm::DvmGettingStarted' unnamed='1' visible='1' windowTitle='Programmer: Getting Started'}
+:Project Properties_PNPropertyDlg	{type='PNPropertyDlg' unnamed='1' visible='1' windowTitle='Project Properties'}
+:Project.Yes_QPushButton	{text='Yes' type='QPushButton' unnamed='1' visible='1' window=':Project_QMessageBox'}
+:Project_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Project'}
+:Reveal Analyzer Startup Wizard.Cancel_QPushButton	{text='Cancel' type='QPushButton' unnamed='1' visible='1' window=':Reveal Analyzer Startup Wizard_bali::toolrva::StartupWizard'}
+:Reveal Analyzer Startup Wizard_bali::toolrva::StartupWizard	{type='bali::toolrva::StartupWizard' unnamed='1' visible='1' windowTitle='Reveal Analyzer Startup Wizard'}
+:Select Archived Project File.Cancel_QPushButton	{text='Cancel' type='QPushButton' unnamed='1' visible='1' window=':Select Archived Project File_QFileDialog'}
+:Select Archived Project File_QFileDialog	{name='QFileDialog' type='QFileDialog' visible='1' windowTitle='Select Archived Project File'}
+:Simulation Wizard.Cancel_QPushButton	{text='Cancel' type='QPushButton' unnamed='1' visible='1' window=':Simulation Wizard_bali::simwizard::SimWizard'}
+:Simulation Wizard_bali::simwizard::SimWizard	{type='bali::simwizard::SimWizard' unnamed='1' visible='1' windowTitle='Simulation Wizard'}
+:Start Page.Open..._QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='Open...' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.TEST_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='TEST' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.attributes_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='attributes' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.cnt_imp1_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='cnt_imp1' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.control_SoC_demo_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='control_SoC_demo' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.lm32_plata_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='lm32_plata' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.mixed_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='mixed' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.mixedcounter_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='mixedcounter' type='QPushButton' unnamed='1' visible='1'}
+:Warning[*].qt_dockwidget_closebutton_QDockWidgetTitleButton	{container=':Lattice Diamond - Reports.Warning[*]_PNInfoDockWidget' name='qt_dockwidget_closebutton' type='QDockWidgetTitleButton' visible='1'}
+:Window.Load Layout_QMenu	{title='Load Layout' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Start Page.Window_QMenu'}
+:_QMenu	{type='QMenu' unnamed='1' visible='1'}
+:fileNameEdit_QLineEdit	{buddy=':Open Project.File name:_QLabel' name='fileNameEdit' type='QLineEdit' visible='1'}
+:frame.stackedWidget_QStackedWidget	{container=':splitter.frame_QFrame' name='stackedWidget' type='QStackedWidget' visible='1'}
+:frame.stackedWidget_QStackedWidget_2	{container=':splitter.frame_QFrame_2' name='stackedWidget' type='QStackedWidget' visible='1'}
+:qt_dockwidget_floatbutton_QScrollBar	{container=':File List.qt_dockwidget_floatbutton_PNTreeView' type='QScrollBar' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget.Package View_PkvToolView	{container=':Lattice Diamond - Package View.qt_tabwidget_stackedwidget_QStackedWidget' type='PkvToolView' unnamed='1' visible='1' windowTitle='Package View'}
+:qt_tabwidget_stackedwidget.Start Page_PNToolFrame	{container=':Lattice Diamond - Start Page.qt_tabwidget_stackedwidget_QStackedWidget' name='PN Start Page Frame' type='PNToolFrame' visible='1' windowTitle='Start Page'}
+:splitter.frame_QFrame	{container=':Open Project.splitter_QSplitter' name='frame' type='QFrame' visible='1'}
+:splitter.frame_QFrame_2	{container=':Open Example.splitter_QSplitter' name='frame' type='QFrame' visible='1'}
+:stackedWidget.listView_QListView	{container=':frame.stackedWidget_QStackedWidget' name='listView' type='QListView' visible='1'}
+:stackedWidget.listView_QListView_2	{container=':frame.stackedWidget_QStackedWidget_2' name='listView' type='QListView' visible='1'}

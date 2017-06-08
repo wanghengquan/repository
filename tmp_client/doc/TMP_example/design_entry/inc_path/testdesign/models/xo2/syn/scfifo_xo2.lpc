@@ -1,0 +1,50 @@
+[Device]
+Family=machxo2
+PartType=LCMXO2-1200ZE
+PartName=LCMXO2-1200ZE-3TG100C
+SpeedGrade= -3
+Package= TQFP100	
+OperatingCondition= COM
+Status=	p
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=FIFO_DC
+CoreRevision=5.3
+ModuleName=scfifo_xo2
+SourceFormat=Schematic/VHDL
+ParameterFileVersion=1.0
+Date=01/27/2010
+Time=10:43:00
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+FIFOImp=EBR Only
+RDepth=16
+RWidth=8
+WDepth=16
+WWidth=8
+regout=0
+CtrlByRdEn=0
+ClockEn=0
+EmpFlg=1
+PeMode=Static - Single Threshold
+PeAssert=2
+PeDeassert=12
+FullFlg=1
+PfMode=Static - Single Threshold
+PfAssert=14
+PfDeassert=250
+Reset=Async
+Reset1=Sync
+RDataCount=0
+WDataCount=0
+EnECC=0

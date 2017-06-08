@@ -1,0 +1,77 @@
+#####################################do file#####################################
+#[version]:2.2 
+#.do config file
+#20160318 jason
+#usage:
+#dev_lib example: C:\\lscc\\diamond\\3.5_x64\\active-hdl\\Vlib\\ovi_machxo3l\\ovi_machxo3l.lib
+#execute this file in CMD:vsimsa -l sim_log.txt -do <do file name> <dev_lib> <pri_lib> <cmd or gui> <lsc_dir> <src_lib>
+#execute this file in GUI:do <do file name> <dev_lib> <pri_lib> <cmd or gui> <lsc_dir> <src_lib>
+##########config start##########
+if $3 = "cmd"
+    onbreak {resume}
+    onerror {quit}
+    set IgnoreError 1
+    set exitonerror 1
+endif
+#<START>
+
+##<cfg_start>
+set dev_lib $1
+set pri_lib $2
+set gui_cmd $3
+set lsc_dir $4
+##<cfg_end>
+
+##<preprocess_start>
+
+##<preprocess_end>
+
+##get device simulation module
+##<lib_start>
+##<step1>construct a work lib
+if $gui_cmd = "cmd"
+    vlib work
+else
+    design create work .
+    design open work
+    adel -all
+    cd ../../
+endif
+##<step2>connect some other lib
+vmap %(lib_name)s $dev_lib
+##<lib_end>
+
+##compile source files if you use VHDL please use vcom
+##<source_start>
+...........
+##<source_end>
+
+##<tb_start>
+...............
+##<tb_end>
+
+##prepare for simulation
+##<pre_start>
+radix -hex
+##<pre_end>
+
+##start to run simulation
+##<sim_start>
+vsim -novopt +access +r -asdb %(src_top_module)s.asdb -lib work %(sim_top)s  -L %(lib_name)s %(resolution)s
+if $gui_cmd = "cmd"
+    trace -ports %(uut_name)s/*
+    run %(sim_time)s
+    asdb2ctf -writenew off -strobe -time 5ns -deltacolumn off -radix hex %(src_top_module)s.asdb %(src_top_module)s.lst
+    quit
+else
+    wave -noreg %(uut_name)s/*
+    run %(sim_time)s
+endif
+##<sim_end>
+
+
+##<postprocess_start>
+
+##<postprocess_end>
+#<END>
+#####################################do end#####################################

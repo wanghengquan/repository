@@ -1,0 +1,32 @@
+SCUBA, Version ispLever_v8.1_PROD_Build (20)
+Thu Oct 21 10:40:55 2010
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2010 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : C:\ispTOOLS8_1\ispfpga\bin\nt\scuba.exe -w -n ddram_16x11_xo2 -lang vhdl -synth synplify -bus_exp 7 -bb -arch xo2c00 -dram -type ramdps -raddr_width 4 -rwidth 11 -waddr_width 4 -wwidth 11 -rnum_words 16 -wnum_words 16 -outData UNREGISTERED -e 
+    Circuit name     : ddram_16x11_xo2
+    Module type      : sdpram
+    Module Version   : 3.5
+    Address width    : 4
+    Ports            : 
+	Inputs       : WrAddress[3:0], Data[10:0], WrClock, WE, WrClockEn, RdAddress[3:0]
+	Outputs      : Q[10:0]
+    I/O buffer       : not inserted
+    Clock edge       : rising edge
+    EDIF output      : suppressed
+    VHDL output      : ddram_16x11_xo2.vhd
+    VHDL template    : ddram_16x11_xo2_tmpl.vhd
+    VHDL testbench    : tb_ddram_16x11_xo2_tmpl.vhd
+    VHDL purpose     : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : ddram_16x11_xo2.srp
+    Element Usage    :
+       ROM16X1A : 1
+       DPR16X4C : 3
+    Estimated Resource Usage:
+            LUT : 1
+           DRAM : 3

@@ -1,0 +1,24 @@
+[qa]
+fmax_range = 50,300,10
+inc_path = 
+  <./testdesign/source>
+others_path = ./testdesign/others/ecp3
+devkit = LFE3-150EA-8FN1156C
+base_lpf = ./testdesign/others/ecp3/lte_datapath_fpga.lpf
+seed_lpf = ./testdesign/others/ecp3/lte_datapath_fpga.lpf
+top_module = lte_datapath_fpga
+src_files = 
+  <./testdesign/source/null_filter_memory_ecp3_ram_dq.vhd>
+  <./testdesign/source/cfr_delay_ecp3_ram_dp.vhd>
+  <./testdesign/source/chf_shifter_ecp3_ram_dp.vhd>
+  <./testdesign/source/lte_datapath_enc.vhd>
+  <./testdesign/source/lte_datapath_fpga.vhd>
+ip_path = ./testdesign/source/encryption
+
+
+[command]
+edif2ngd = edif2ngd -l "@(family)s" -d @(pty)s "@(edf_file)s" "@(ngo_file)s" @(ip_path)s -ic lte_datapath  
+ngdbuild = ngdbuild -a "@(family)s" -d @(pty)s "@(ngo_file)s" "@(ngd_file)s"
+map = map -a "@(family)s" -p @(pty)s -t @(pkg)s -s @(spd)s "@(ngd_file)s" -o "@(project_name)s_map.ncd" -pr "@(project_name)s.prf"  -mp "@(project_name)s.mrp" "@(lpf_file)s"
+par = par -w -i 6 -l 5 -n 1 -t 1  -c 0 -e 0 -exp parCDP=1:parCDR=0:parPlcInLimit=0:parPlcInNeighborSize=1:parPathBased=ON:parHold=OFF "@(map_ncd)s" @(project_name)s.dir "@(prf_file)s"
+trce = trce -v 100 -fullname  -gt -sethld -sphld m -o "@(project_name)s.twr" "@(par_ncd)s" run_trce.prf

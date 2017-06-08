@@ -1,0 +1,108 @@
+For srr file:
+1.
+Performance Summary
+*******************
+
+
+Worst slack in design: -18.551
+
+                        Requested     Estimated     Requested     Estimated                 Clock        Clock
+Starting Clock          Frequency     Frequency     Period        Period        Slack       Type         Group
+----------------------------------------------------------------------------------------------------------------------------
+n_par_alu_io_v0|clk     100.0 MHz     35.0 MHz      10.000        28.551        -18.551     inferred     Inferred_clkgroup_0
+============================================================================================================================
+
+
+
+
+
+Clock Relationships
+*******************
+获取 Estimated Frequency 最小的
+
+2. placer.log:
+
+                     Clock Summary
+=====================================================================
+Number of clocks: 1
+Clock: n_par_alu_io_v0|clk | Frequency: 29.18 MHz | Target: 100.00 MHz
+
+=====================================================================
+
+get the smallest Frequency
+
+3. for _info.log under packer:
+
+Used Logic Cell: 3644/7680
+Used Logic Tile: 726/960
+Used IO Cell:    159/256
+Used Bram Cell For iCE40: 0/32
+get 3644,726,159
+4. for _timing.rpt:
+
+ =====================================================================
+Number of clocks: 1
+Clock: n_par_alu_io_v0|clk  | Frequency: 22.24 MHz  | Target: 100.00 MHz  |
+
+ =====================================================================
+                    End of Clock Frequency Summary
+获取最小的Frequency,以及对应的clock,target.
+
+5. scan run_log:
+
+
+Number of LUTs      	:	2857
+Number of DFFs      	:	1550
+Number of BRAMs\s*:\s*(\d+)
+Number of RAMs      	:	0
+Number of ROMs      	:	0
+Number of Carrys      	:	0
+Number of LUTs      	:	3197
+
+Design Statistics after Packing
+    Number of LUTs      	:	1767    totallut
+    Number of Carrys    	:	17      Post_Placer_Carrys_pattern
+
+EDF Parser run-time: 2 (sec)
+Placer run-time: 107.9 sec.
+Packer run-time: 3 (sec)
+Router run-time : 43 seconds
+Bitmap run-time: 5 (sec)
+Netlister run-time: 22 (sec)
+Timer run-time: 10 seconds
+PEAK\s*MEMORY\s*:\s*(\d+),  this is useless
+
+
+
+获取上面的va值.
+
+输出对应关系:
+ram             => #RAMs
+bitmap_runtime  => Bitmap Runtime
+synfmax         => #Post-Synth Fmax (Slowest Clock)
+router_runtime  => Router Runtime
+placer_runtime  => Placer Runtime
+netlister_runtime => Netlister Runtime
+logiccell       =>  #Logic Cells
+lut             => #LUTs
+iocell          =>  #IO Cells
+logictile       =>  #Logic Tiles
+totallut        => #Post-Placer LUTs
+tc              => Design Name
+fmax            =>  Post-Route Fmax (Slowest Clock)
+total_cputime   => Total CPU Time
+ff              => #FFs
+bramcell        =>  #BRAM cells
+packer_runtime  => Packer Runtime
+fmaxtarget      =>  Post-Route Fmax Target Freq (Mhz)
+ppfmax          => Post-Placer Fmax (Slowest Clock)
+timer_runtime   => Timer Runtime
+fmaxclock       => Post-route Fmax Clock(Slowest)
+comments        => Comments
+total_runtime   => Total Wall Clock Time
+parser_runtime  => Parser Runtime
+peak_mem        => Peak Memory
+
+Special for ram:
+
+it the summary from: ram and rom

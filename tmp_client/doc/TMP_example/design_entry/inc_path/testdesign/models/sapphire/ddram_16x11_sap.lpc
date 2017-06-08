@@ -1,0 +1,37 @@
+[Device]
+Family=latticeecp4um
+PartType=LAE4UM-85F
+PartName=LAE4UM-85F-6FG841E
+SpeedGrade=6
+Package=FPBGA841
+OperatingCondition=AUTO
+Status=C
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=Distributed_DPRAM
+CoreRevision=3.6
+ModuleName=ddram_16x11_sap
+SourceFormat=VHDL
+ParameterFileVersion=1.0
+Date=05/17/2013
+Time=09:46:14
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+Addresses=16
+Data=11
+LUT=0
+MemFile=
+MemFormat=orca
+
+[FilesGenerated]
+=mem

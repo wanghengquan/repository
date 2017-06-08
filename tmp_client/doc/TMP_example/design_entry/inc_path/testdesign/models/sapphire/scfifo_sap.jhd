@@ -1,0 +1,2 @@
+VHDL_ENTITY_ONLY scfifo_sap DEFIN scfifo_sap.vhd
+MODULE scfifo_sap DEFIN scfifo_sap.vhd

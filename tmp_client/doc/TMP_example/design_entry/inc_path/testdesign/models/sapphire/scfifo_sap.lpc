@@ -1,0 +1,47 @@
+[Device]
+Family=latticeecp4um
+PartType=LAE4UM-85F
+PartName=LAE4UM-85F-6FG841E
+SpeedGrade=6
+Package=FPBGA841
+OperatingCondition=AUTO
+Status=C
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=FIFO
+CoreRevision=4.9
+ModuleName=scfifo_sap
+SourceFormat=VHDL
+ParameterFileVersion=1.0
+Date=05/17/2013
+Time=09:58:12
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+FIFOImp=EBR Based
+Depth=16
+Width=8
+regout=0
+CtrlByRdEn=0
+EmpFlg=1
+PeMode=Static - Single Threshold
+PeAssert=2
+PeDeassert=12
+FullFlg=1
+PfMode=Static - Single Threshold
+PfAssert=14
+PfDeassert=506
+Reset=Sync
+Reset1=Sync
+RDataCount=0
+EnECC=0
+EnFWFT=0

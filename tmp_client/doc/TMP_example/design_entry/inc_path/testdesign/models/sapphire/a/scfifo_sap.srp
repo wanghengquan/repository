@@ -1,0 +1,38 @@
+SCUBA, Version Diamond_3.0_Production (63)
+Thu Jul 04 10:14:12 2013
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2013 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : C:\diamond3.0.0.63\diamond\3.0_x64\ispfpga\bin\nt64\scuba.exe -w -n scfifo_sap -lang vhdl -synth synplify -bus_exp 7 -bb -arch sa5p00 -type ebfifo -sync_mode -depth 16 -width 8 -no_enable -pe 2 -pf 14 -sync_reset -e 
+    Circuit name     : scfifo_sap
+    Module type      : fifoblk
+    Module Version   : 4.9
+    Ports            : 
+	Inputs       : Data[7:0], Clock, WrEn, RdEn, Reset
+	Outputs      : Q[7:0], Empty, Full, AlmostEmpty, AlmostFull
+    I/O buffer       : not inserted
+    EDIF output      : suppressed
+    VHDL output      : scfifo_sap.vhd
+    VHDL template    : scfifo_sap_tmpl.vhd
+    VHDL testbench    : tb_scfifo_sap_tmpl.vhd
+    VHDL purpose     : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : scfifo_sap.srp
+    Element Usage    :
+          CCU2C : 32
+           AND2 : 4
+        FD1P3DX : 15
+        FD1S3BX : 2
+        FD1S3DX : 2
+            INV : 9
+       ROM16X1A : 2
+           XOR2 : 1
+         DP16KD : 1
+    Estimated Resource Usage:
+            LUT : 71
+            EBR : 1
+            Reg : 19

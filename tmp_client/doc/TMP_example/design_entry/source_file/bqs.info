@@ -1,0 +1,11 @@
+[qa]
+devkit = LIF-MD6000-6MG81I
+src_files = <./testdesign/source/romblk_64x9_1111_vlog.v>
+top_module = romblk_64x9_1111_vlog
+
+[sim]
+tb_file = ./testdesign/sim/stim.v
+tb_vector = ./testdesign/sim/romblk_64x9_1111_vlog.in
+sim_top   = test_lattice_sim
+uut_name  = post
+sim_time  = -all

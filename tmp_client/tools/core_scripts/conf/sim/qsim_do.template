@@ -1,0 +1,71 @@
+#####################################do file#####################################
+#[version]:2.2 
+#.do config file
+#20160318 jason
+#usage: 
+#dev_lib example: D:\diamond_lib\msim_lib\ovi_machxo3l
+#execute this file in CMD:vsim -l sim_log.txt -c -do "do <do file name> <dev_lib> <pri_lib> <cmd or gui> <lsc_dir> <src_lib>"
+#execute this file in GUI:do <do file name> <dev_lib> <pri_lib> <cmd or gui> <lsc_dir> <src_lib>
+##########config start##########
+if {$3 == "cmd"} {
+    onbreak {resume}
+    onerror {quit -f}
+}
+#<START>
+
+##<cfg_start>
+set IgnoreError 1
+set dev_lib $1
+set pri_lib $2
+set gui_cmd $3
+set lsc_dir $4
+##<cfg_end>
+
+##<preprocess_start>
+
+##<preprocess_end>
+
+##get device simulation module
+##<lib_start>
+##<step1>construct a work lib
+vlib work
+##<step2>connect some other lib
+vmap %(lib_name)s $dev_lib
+##<lib_end>
+
+##compile source files if you use VHDL please use vcom
+##<source_start>
+.......
+##<source_end>
+
+##<tb_start>
+.......
+##<tb_end>
+
+##prepare for simulation
+##<pre_start>
+radix -hex
+##<pre_end>
+
+##start to run simulation
+##<sim_start>
+vsim -novopt -lib work %(sim_top)s  -L %(lib_name)s  %(resolution)s
+if {$gui_cmd == "cmd"} {
+    add list -nodelta -hex -notrigger *
+    configure list -usestrobe 1
+    configure list -strobestart {50000 ps} -strobeperiod {5 ns}
+    run %(sim_time)s
+    write list %(src_top_module)s.lst
+    quit -f
+} else {
+    add wave *
+    run %(sim_time)s
+}
+##<sim_end>
+
+
+##<postprocess_start>
+
+##<postprocess_end>
+#<END>
+#####################################do end#####################################

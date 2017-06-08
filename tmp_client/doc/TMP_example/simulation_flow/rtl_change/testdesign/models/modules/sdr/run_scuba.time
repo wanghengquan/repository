@@ -1,0 +1,56 @@
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1 -fdc //d27550/test_dir/BE_Validation/TRTS/01_Projects/04_snow/04_sysIO_Logic/01_SDR/01_RX_B16_F200_normal/models/modules/sdr/sdr.fdc
+rem Elapsed Time: 1.49 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 1.59 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.08 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.26 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+D:\diamond3.6.0.23\diamond\3.6_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.07 seconds
+c:\lscc\diamond\3.5_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.25 seconds
+c:\lscc\diamond\3.5_x64\ispfpga\bin\nt64\scuba.exe -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.08 seconds
+c:\lscc\diamond\3.6_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.16 seconds
+c:\lscc\diamond\3.6_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.16 seconds
+c:\lscc\diamond\3.6_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.16 seconds
+c:\lscc\diamond\3.6_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.16 seconds
+c:\lscc\diamond\3.6_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.15 seconds
+c:\lscc\diamond\3.6_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.16 seconds
+c:\lscc\diamond\3.8_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.09 seconds
+c:\lscc\diamond\3.8_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.11 seconds
+c:\lscc\diamond\3.9_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.32 seconds
+c:\lscc\diamond\3.9_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.11 seconds
+c:\lscc\diamond\3.9_x64\ispfpga\bin\nt64\scuba  -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1
+rem Elapsed Time: 0.10 seconds

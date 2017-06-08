@@ -1,0 +1,1 @@
+scuba -w -arch BASE -synth spectrum -dram -lang verilog -bus_exp 7 -bb -n romblk_64x9_1111_vlog -type romblk -addr_width 6 -data_width 9 -num_words 64 -gsr enable -resetmode async -outData REGISTERED -memfile ini_mem -memformat bin

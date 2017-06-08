@@ -1,0 +1,304 @@
+(edif ddram_16x11_xo3l
+  (edifVersion 2 0 0)
+  (edifLevel 0)
+  (keywordMap (keywordLevel 0))
+  (status
+    (written
+      (timestamp 2013 10 28 15 45 14)
+      (program "SCUBA" (version "Diamond_3.1_Beta (48)"))))
+      (comment "C:\diamond3.1.0.48\diamond\3.1\ispfpga\bin\nt\scuba.exe -w -n ddram_16x11_xo3l -lang vhdl -synth synplify -bus_exp 7 -bb -arch xo3c00a -type sdpram -rdata_width 11 -data_width 11 -num_rows 16 -outData UNREGISTERED ")
+  (library ORCLIB
+    (edifLevel 0)
+    (technology
+      (numberDefinition))
+    (cell ROM16X1A
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port AD3
+            (direction INPUT))
+          (port AD2
+            (direction INPUT))
+          (port AD1
+            (direction INPUT))
+          (port AD0
+            (direction INPUT))
+          (port DO0
+            (direction OUTPUT)))))
+    (cell DPR16X4C
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port DI0
+            (direction INPUT))
+          (port DI1
+            (direction INPUT))
+          (port DI2
+            (direction INPUT))
+          (port DI3
+            (direction INPUT))
+          (port WCK
+            (direction INPUT))
+          (port WRE
+            (direction INPUT))
+          (port RAD0
+            (direction INPUT))
+          (port RAD1
+            (direction INPUT))
+          (port RAD2
+            (direction INPUT))
+          (port RAD3
+            (direction INPUT))
+          (port WAD0
+            (direction INPUT))
+          (port WAD1
+            (direction INPUT))
+          (port WAD2
+            (direction INPUT))
+          (port WAD3
+            (direction INPUT))
+          (port DO0
+            (direction OUTPUT))
+          (port DO1
+            (direction OUTPUT))
+          (port DO2
+            (direction OUTPUT))
+          (port DO3
+            (direction OUTPUT)))))
+    (cell VHI
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port Z
+            (direction OUTPUT)))))
+    (cell ddram_16x11_xo3l
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port (array (rename WrAddress "WrAddress(3:0)") 4)
+            (direction INPUT))
+          (port (array (rename Data "Data(10:0)") 11)
+            (direction INPUT))
+          (port WrClock
+            (direction INPUT))
+          (port WE
+            (direction INPUT))
+          (port WrClockEn
+            (direction INPUT))
+          (port (array (rename RdAddress "RdAddress(3:0)") 4)
+            (direction INPUT))
+          (port (array (rename Q "Q(10:0)") 11)
+            (direction OUTPUT)))
+        (property NGD_DRC_MASK (integer 1))
+        (contents
+          (instance LUT4_0
+            (viewRef view1 
+              (cellRef ROM16X1A))
+            (property initval
+              (string "0x8000")))
+          (instance scuba_vhi_inst
+            (viewRef view1 
+              (cellRef VHI)))
+          (instance mem_0_0
+            (viewRef view1 
+              (cellRef DPR16X4C))
+            (property MEM_INIT_FILE
+              (string "(0-15)(0-3)"))
+            (property MEM_LPC_FILE
+              (string "ddram_16x11_xo3l.lpc"))
+            (property COMP
+              (string "mem_0_0"))
+            (property initval
+              (string "0x0000000000000000")))
+          (instance mem_0_1
+            (viewRef view1 
+              (cellRef DPR16X4C))
+            (property MEM_INIT_FILE
+              (string "(0-15)(4-7)"))
+            (property MEM_LPC_FILE
+              (string "ddram_16x11_xo3l.lpc"))
+            (property COMP
+              (string "mem_0_1"))
+            (property initval
+              (string "0x0000000000000000")))
+          (instance mem_0_2
+            (viewRef view1 
+              (cellRef DPR16X4C))
+            (property MEM_INIT_FILE
+              (string "(0-15)(8-11)"))
+            (property MEM_LPC_FILE
+              (string "ddram_16x11_xo3l.lpc"))
+            (property COMP
+              (string "mem_0_2"))
+            (property initval
+              (string "0x0000000000000000")))
+          (net scuba_vhi
+            (joined
+              (portRef Z (instanceRef scuba_vhi_inst))
+              (portRef AD0 (instanceRef LUT4_0))
+              (portRef AD1 (instanceRef LUT4_0))
+              (portRef DI3 (instanceRef mem_0_0))))
+          (net dec0_wre3
+            (joined
+              (portRef WRE (instanceRef mem_0_2))
+              (portRef DO0 (instanceRef LUT4_0))
+              (portRef WRE (instanceRef mem_0_0))
+              (portRef WRE (instanceRef mem_0_1))))
+          (net dataout10
+            (joined
+              (portRef (member Q 0))
+              (portRef DO2 (instanceRef mem_0_0))))
+          (net dataout9
+            (joined
+              (portRef (member Q 1))
+              (portRef DO1 (instanceRef mem_0_0))))
+          (net dataout8
+            (joined
+              (portRef (member Q 2))
+              (portRef DO0 (instanceRef mem_0_0))))
+          (net dataout7
+            (joined
+              (portRef (member Q 3))
+              (portRef DO3 (instanceRef mem_0_1))))
+          (net dataout6
+            (joined
+              (portRef (member Q 4))
+              (portRef DO2 (instanceRef mem_0_1))))
+          (net dataout5
+            (joined
+              (portRef (member Q 5))
+              (portRef DO1 (instanceRef mem_0_1))))
+          (net dataout4
+            (joined
+              (portRef (member Q 6))
+              (portRef DO0 (instanceRef mem_0_1))))
+          (net dataout3
+            (joined
+              (portRef (member Q 7))
+              (portRef DO3 (instanceRef mem_0_2))))
+          (net dataout2
+            (joined
+              (portRef (member Q 8))
+              (portRef DO2 (instanceRef mem_0_2))))
+          (net dataout1
+            (joined
+              (portRef (member Q 9))
+              (portRef DO1 (instanceRef mem_0_2))))
+          (net dataout0
+            (joined
+              (portRef (member Q 10))
+              (portRef DO0 (instanceRef mem_0_2))))
+          (net raddr3
+            (joined
+              (portRef (member RdAddress 0))
+              (portRef RAD3 (instanceRef mem_0_0))
+              (portRef RAD3 (instanceRef mem_0_1))
+              (portRef RAD3 (instanceRef mem_0_2))))
+          (net raddr2
+            (joined
+              (portRef (member RdAddress 1))
+              (portRef RAD2 (instanceRef mem_0_0))
+              (portRef RAD2 (instanceRef mem_0_1))
+              (portRef RAD2 (instanceRef mem_0_2))))
+          (net raddr1
+            (joined
+              (portRef (member RdAddress 2))
+              (portRef RAD1 (instanceRef mem_0_0))
+              (portRef RAD1 (instanceRef mem_0_1))
+              (portRef RAD1 (instanceRef mem_0_2))))
+          (net raddr0
+            (joined
+              (portRef (member RdAddress 3))
+              (portRef RAD0 (instanceRef mem_0_0))
+              (portRef RAD0 (instanceRef mem_0_1))
+              (portRef RAD0 (instanceRef mem_0_2))))
+          (net cken
+            (joined
+              (portRef WrClockEn)
+              (portRef AD2 (instanceRef LUT4_0))))
+          (net wren
+            (joined
+              (portRef WE)
+              (portRef AD3 (instanceRef LUT4_0))))
+          (net clk
+            (joined
+              (portRef WrClock)
+              (portRef WCK (instanceRef mem_0_0))
+              (portRef WCK (instanceRef mem_0_1))
+              (portRef WCK (instanceRef mem_0_2))))
+          (net datain10
+            (joined
+              (portRef (member Data 0))
+              (portRef DI2 (instanceRef mem_0_0))))
+          (net datain9
+            (joined
+              (portRef (member Data 1))
+              (portRef DI1 (instanceRef mem_0_0))))
+          (net datain8
+            (joined
+              (portRef (member Data 2))
+              (portRef DI0 (instanceRef mem_0_0))))
+          (net datain7
+            (joined
+              (portRef (member Data 3))
+              (portRef DI3 (instanceRef mem_0_1))))
+          (net datain6
+            (joined
+              (portRef (member Data 4))
+              (portRef DI2 (instanceRef mem_0_1))))
+          (net datain5
+            (joined
+              (portRef (member Data 5))
+              (portRef DI1 (instanceRef mem_0_1))))
+          (net datain4
+            (joined
+              (portRef (member Data 6))
+              (portRef DI0 (instanceRef mem_0_1))))
+          (net datain3
+            (joined
+              (portRef (member Data 7))
+              (portRef DI3 (instanceRef mem_0_2))))
+          (net datain2
+            (joined
+              (portRef (member Data 8))
+              (portRef DI2 (instanceRef mem_0_2))))
+          (net datain1
+            (joined
+              (portRef (member Data 9))
+              (portRef DI1 (instanceRef mem_0_2))))
+          (net datain0
+            (joined
+              (portRef (member Data 10))
+              (portRef DI0 (instanceRef mem_0_2))))
+          (net waddr3
+            (joined
+              (portRef (member WrAddress 0))
+              (portRef WAD3 (instanceRef mem_0_0))
+              (portRef WAD3 (instanceRef mem_0_1))
+              (portRef WAD3 (instanceRef mem_0_2))))
+          (net waddr2
+            (joined
+              (portRef (member WrAddress 1))
+              (portRef WAD2 (instanceRef mem_0_0))
+              (portRef WAD2 (instanceRef mem_0_1))
+              (portRef WAD2 (instanceRef mem_0_2))))
+          (net waddr1
+            (joined
+              (portRef (member WrAddress 2))
+              (portRef WAD1 (instanceRef mem_0_0))
+              (portRef WAD1 (instanceRef mem_0_1))
+              (portRef WAD1 (instanceRef mem_0_2))))
+          (net waddr0
+            (joined
+              (portRef (member WrAddress 3))
+              (portRef WAD0 (instanceRef mem_0_0))
+              (portRef WAD0 (instanceRef mem_0_1))
+              (portRef WAD0 (instanceRef mem_0_2))))))))
+  (design ddram_16x11_xo3l
+    (cellRef ddram_16x11_xo3l
+      (libraryRef ORCLIB)))
+)

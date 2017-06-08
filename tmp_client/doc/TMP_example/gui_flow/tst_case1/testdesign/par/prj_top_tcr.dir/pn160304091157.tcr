@@ -1,0 +1,5 @@
+#Start recording tcl command: 3/4/2016 09:11:54
+#Project Location: C:/Users/jwang1/Desktop/suite_squish/tst_case1/testdesign/par; Project name: prj_top
+prj_project open "C:/Users/jwang1/Desktop/suite_squish/tst_case1/testdesign/par/prj_top.ldf"
+prj_project close
+#Stop recording: 3/4/2016 09:11:57

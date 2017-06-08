@@ -1,0 +1,40 @@
+[Device]
+Family=machxo3l
+PartType=LCMXO3L-2100C
+PartName=LCMXO3L-2100C-5BG256C
+SpeedGrade=5
+Package=CABGA256
+OperatingCondition=COM
+Status=S
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=Distributed_DPRAM
+CoreRevision=3.6
+ModuleName=ddram_16x11_xo3l
+SourceFormat=VHDL
+ParameterFileVersion=1.0
+Date=10/28/2013
+Time=15:45:14
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+Addresses=16
+Data=11
+LUT=0
+MemFile=
+MemFormat=orca
+
+[FilesGenerated]
+=mem
+
+[Command]
+cmd_line= -w -n ddram_16x11_xo3l -lang vhdl -synth synplify -bus_exp 7 -bb -arch xo3c00a -dram -type ramdps -raddr_width 4 -rwidth 11 -waddr_width 4 -wwidth 11 -rnum_words 16 -wnum_words 16 -outData UNREGISTERED

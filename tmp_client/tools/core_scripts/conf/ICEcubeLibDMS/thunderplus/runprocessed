@@ -1,0 +1,48 @@
+#Full-Chip Netlist Compilation Script for ThunderPlus
+#Mani Subramanian
+#Last Updated 07/17/2015
+#rm -rf ../LIB_thunderbolt
+#echo 'library removed'
+vlib ../LIB_thunderplus
+vlog -64 -work ../LIB_thunderplus -l logprossed -modelsim +include+/lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/chip_thunderPlus.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/netlist.verilog \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/2prf_4kip_u40.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ABIWUBN2_Lattice.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/UMC40LP_GPIO_sbt.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/UMC40LP_GPIO_sbt_m.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/chipbev_ice1p_additon_4ice384.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/chipbev_ice1p_4ice384.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/chipbev_ice4r.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/um40npkhdst.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2c_ip_gates.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ice384extra.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/more_ice4r.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/nvcm_defines.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/nvcm_model.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/nvcm_top_gate_20111213.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/rgbdrive24max3.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/smc_and_jtag_id_u40_gate_cdonefix_20111216.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/smc_defines.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/spi_ip_gates.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/thunder_50nsdelay.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ledd_ip_rtl/ledd_defines.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ledd_ip_rtl/ledd_ip.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ledd_ip_rtl/ledd_sci.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ledd_ip_rtl/ledd_ctrl.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/ledd_ip_rtl/ledd_pwmc.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2cfifo_rtl/i2cfifo_defines.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2cfifo_rtl/i2cfifo_ip.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2cfifo_rtl/i2cfifo_sci.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2cfifo_rtl/i2c_port.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2cfifo_rtl/fifo.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/i2cfifo_rtl/SYNCP_STD.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/sadslspk4s1p16384x16m16b4w1c0p1d0t0/sadslspk4s1p16384x16m16b4w1c0p1d0t0_func.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/sadslspk4s1p16384x16m16b4w1c0p1d0t0/sadslspk4s1p16384x16m16b4w1c0p1d0t0_fast_func.v \
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/sadslspk4s1p16384x16m16b4w1c0p1d0t0/sadslspk4s1p16384x16m16b4w1c0p1d0t0.v \ 
+  /lsc/projects/thunder40/$user/workarea/amber/tm4p5k/custom_design/verification/thunderPlus/thunder_ams.v 
+echo 'vlog complete'
+
+  vmap work ../LIB_thunderplus
+  vsim -64 +nowarnTFMPC -modelsim chip_thunderPlus
+

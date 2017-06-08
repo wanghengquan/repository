@@ -1,0 +1,28 @@
+[qa]
+;;;;;;;;;;;;;;;;;prj info:
+ldf_file = testdesign/par/SDR.ldf
+
+
+;;;;;;;;;;;;;;;;;sim info:
+[sim]
+;dev_lib   = 
+;pri_lib   =  
+;style1
+;tb_file   = testdesign/sim/sim_tb.v
+;tb_vector = testdesign/sim/test_vector.in
+;sim_top   = sim_top
+;if runtime not specified, will run all
+;sim_time  = 100 us
+
+;style2
+do_msim = testdesign/sim/msim.do
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;1 Use ; to make a comment, only support the whole line comment
+;2 NO SPACE before an option/value line!
+;3 You'd BETTER use "/" rather than "\" for future use on Linux
+;4 IF you want to include multi files please use "<>"
+;  example:  tb_file = <tb_file1.v>
+;                      <tb_file2.v>
+;                      <tb_file3.v>

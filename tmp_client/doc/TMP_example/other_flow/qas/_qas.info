@@ -1,0 +1,18 @@
+[QAS Information]
+Owner = XiaoQiu
+QOR Level = 1
+ID = mac8x8_114
+Keyword = LST
+QAS Type = LST
+[Case Information]
+Family = LatticeECP3
+Package = FPBGA1156
+Module = mac8x8
+Project = mac8x8
+File List = mac8x8.v,mac8x8_tb.v
+Design = mac8x8
+Device = LFE3-150EA
+Entry = Verilog HDL
+Speed = 9
+[QAS Description]
+; Test case for Synthesis Project

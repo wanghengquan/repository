@@ -1,0 +1,2 @@
+#! /bin/csh
+genFC.pl /lsc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/thunder/chip_thunder_struct_busfix.v > chip_thunder_struct_fc.v

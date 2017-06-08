@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DiamondModule name="scfifo_xo3l" module="FIFO_DC" VendorName="Lattice Semiconductor Corporation" generator="IPexpress" date="2013 10 28 15:48:01.176" version="5.5" type="Module" synthesis="synplify" source_format="VHDL">
+  <Package>
+		<File name="scfifo_xo3l.lpc" type="lpc" modified="2013 10 28 15:48:00.147"/>
+		<File name="scfifo_xo3l.vhd" type="top_level_vhdl" modified="2013 10 28 15:48:00.209"/>
+		<File name="scfifo_xo3l_tmpl.vhd" type="template_vhdl" modified="2013 10 28 15:48:00.209"/>
+		<File name="tb_scfifo_xo3l_tmpl.vhd" type="testbench_vhdl" modified="2013 10 28 15:48:00.225"/>
+  </Package>
+</DiamondModule>

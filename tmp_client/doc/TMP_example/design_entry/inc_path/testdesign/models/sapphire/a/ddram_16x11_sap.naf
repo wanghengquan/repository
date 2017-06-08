@@ -1,0 +1,7 @@
+WrAddress i
+Data i
+WrClock  i
+WE  i
+WrClockEn  i
+RdAddress i
+Q o
