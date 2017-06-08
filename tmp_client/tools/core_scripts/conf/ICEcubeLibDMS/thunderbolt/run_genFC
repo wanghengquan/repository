@@ -1,0 +1,3 @@
+#! /bin/csh
+genFC.pl /lsc/projects/thunder40/$user/amber/tm4k/custom_design/verification/bolt/chip_1_45x1_45.v > ./modified_netlist_files/chip_1_45x1_45_processed.v
+#genFC.pl /home/jwang2/chip_1_45x1_45j.v > ./modified_netlist_files/chip_1_45x1_45_processed.v

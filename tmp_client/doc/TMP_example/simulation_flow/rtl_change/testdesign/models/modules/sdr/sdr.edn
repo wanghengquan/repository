@@ -1,0 +1,271 @@
+(edif sdr
+  (edifVersion 2 0 0)
+  (edifLevel 0)
+  (keywordMap (keywordLevel 0))
+  (status
+    (written
+      (timestamp 2016 12 7 16 53 23)
+      (program "SCUBA" (version "Diamond (64-bit) 3.9.0.201.0"))))
+      (comment "c:\lscc\diamond\3.9_x64\ispfpga\bin\nt64\scuba -w -n sdr -lang vhdl -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1 ")
+  (library ORCLIB
+    (edifLevel 0)
+    (technology
+      (numberDefinition))
+    (cell IFS1P3DX
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port D
+            (direction INPUT))
+          (port SP
+            (direction INPUT))
+          (port SCLK
+            (direction INPUT))
+          (port CD
+            (direction INPUT))
+          (port Q
+            (direction OUTPUT)))))
+    (cell VHI
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port Z
+            (direction OUTPUT)))))
+    (cell IB
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port I
+            (direction INPUT))
+          (port O
+            (direction OUTPUT)))))
+    (cell sdr
+      (cellType GENERIC)
+      (view view1
+        (viewType NETLIST)
+        (interface
+          (port clkin
+            (direction INPUT))
+          (port reset
+            (direction INPUT))
+          (port sclk
+            (direction OUTPUT))
+          (port (array (rename datain "datain(7:0)") 8)
+            (direction INPUT))
+          (port (array (rename q "q(7:0)") 8)
+            (direction OUTPUT)))
+        (property NGD_DRC_MASK (integer 1))
+        (contents
+          (instance Inst3_IB
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst2_IFS1P3DX7
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst2_IFS1P3DX6
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst2_IFS1P3DX5
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst2_IFS1P3DX4
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst2_IFS1P3DX3
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst2_IFS1P3DX2
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst2_IFS1P3DX1
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance scuba_vhi_inst
+            (viewRef view1 
+              (cellRef VHI)))
+          (instance Inst2_IFS1P3DX0
+            (viewRef view1 
+              (cellRef IFS1P3DX)))
+          (instance Inst1_IB7
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB6
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB5
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB4
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB3
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB2
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB1
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (instance Inst1_IB0
+            (viewRef view1 
+              (cellRef IB))
+            (property IO_TYPE
+              (string "LVCMOS25")))
+          (net scuba_vhi
+            (joined
+              (portRef Z (instanceRef scuba_vhi_inst))
+              (portRef SP (instanceRef Inst2_IFS1P3DX7))
+              (portRef SP (instanceRef Inst2_IFS1P3DX6))
+              (portRef SP (instanceRef Inst2_IFS1P3DX5))
+              (portRef SP (instanceRef Inst2_IFS1P3DX4))
+              (portRef SP (instanceRef Inst2_IFS1P3DX3))
+              (portRef SP (instanceRef Inst2_IFS1P3DX2))
+              (portRef SP (instanceRef Inst2_IFS1P3DX1))
+              (portRef SP (instanceRef Inst2_IFS1P3DX0))))
+          (net dataini_t7
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX7))
+              (portRef O (instanceRef Inst1_IB7))))
+          (net dataini_t6
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX6))
+              (portRef O (instanceRef Inst1_IB6))))
+          (net dataini_t5
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX5))
+              (portRef O (instanceRef Inst1_IB5))))
+          (net dataini_t4
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX4))
+              (portRef O (instanceRef Inst1_IB4))))
+          (net dataini_t3
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX3))
+              (portRef O (instanceRef Inst1_IB3))))
+          (net dataini_t2
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX2))
+              (portRef O (instanceRef Inst1_IB2))))
+          (net dataini_t1
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX1))
+              (portRef O (instanceRef Inst1_IB1))))
+          (net dataini_t0
+            (joined
+              (portRef D (instanceRef Inst2_IFS1P3DX0))
+              (portRef O (instanceRef Inst1_IB0))))
+          (net q7
+            (joined
+              (portRef (member q 0))
+              (portRef Q (instanceRef Inst2_IFS1P3DX7))))
+          (net q6
+            (joined
+              (portRef (member q 1))
+              (portRef Q (instanceRef Inst2_IFS1P3DX6))))
+          (net q5
+            (joined
+              (portRef (member q 2))
+              (portRef Q (instanceRef Inst2_IFS1P3DX5))))
+          (net q4
+            (joined
+              (portRef (member q 3))
+              (portRef Q (instanceRef Inst2_IFS1P3DX4))))
+          (net q3
+            (joined
+              (portRef (member q 4))
+              (portRef Q (instanceRef Inst2_IFS1P3DX3))))
+          (net q2
+            (joined
+              (portRef (member q 5))
+              (portRef Q (instanceRef Inst2_IFS1P3DX2))))
+          (net q1
+            (joined
+              (portRef (member q 6))
+              (portRef Q (instanceRef Inst2_IFS1P3DX1))))
+          (net q0
+            (joined
+              (portRef (member q 7))
+              (portRef Q (instanceRef Inst2_IFS1P3DX0))))
+          (net datain7
+            (joined
+              (portRef (member datain 0))
+              (portRef I (instanceRef Inst1_IB7))))
+          (net datain6
+            (joined
+              (portRef (member datain 1))
+              (portRef I (instanceRef Inst1_IB6))))
+          (net datain5
+            (joined
+              (portRef (member datain 2))
+              (portRef I (instanceRef Inst1_IB5))))
+          (net datain4
+            (joined
+              (portRef (member datain 3))
+              (portRef I (instanceRef Inst1_IB4))))
+          (net datain3
+            (joined
+              (portRef (member datain 4))
+              (portRef I (instanceRef Inst1_IB3))))
+          (net datain2
+            (joined
+              (portRef (member datain 5))
+              (portRef I (instanceRef Inst1_IB2))))
+          (net datain1
+            (joined
+              (portRef (member datain 6))
+              (portRef I (instanceRef Inst1_IB1))))
+          (net datain0
+            (joined
+              (portRef (member datain 7))
+              (portRef I (instanceRef Inst1_IB0))))
+          (net sclk
+            (joined
+              (portRef sclk)
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX0))
+              (portRef O (instanceRef Inst3_IB))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX7))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX6))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX5))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX4))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX3))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX2))
+              (portRef SCLK (instanceRef Inst2_IFS1P3DX1))))
+          (net reset
+            (joined
+              (portRef reset)
+              (portRef CD (instanceRef Inst2_IFS1P3DX7))
+              (portRef CD (instanceRef Inst2_IFS1P3DX6))
+              (portRef CD (instanceRef Inst2_IFS1P3DX5))
+              (portRef CD (instanceRef Inst2_IFS1P3DX4))
+              (portRef CD (instanceRef Inst2_IFS1P3DX3))
+              (portRef CD (instanceRef Inst2_IFS1P3DX2))
+              (portRef CD (instanceRef Inst2_IFS1P3DX1))
+              (portRef CD (instanceRef Inst2_IFS1P3DX0))))
+          (net clkin
+            (joined
+              (portRef clkin)
+              (portRef I (instanceRef Inst3_IB))))))))
+  (design sdr
+    (cellRef sdr
+      (libraryRef ORCLIB)))
+)

@@ -1,0 +1,11 @@
+[qa]
+devkit = LFE3-150EA-6FN1156C
+src_files = ./source/maddsub_10x17_dynamic_vlog.v
+top_module = maddsub_10x17_dynamic_vlog
+
+[sim]
+sim_top   = test_lattice_sim
+uut_name  = post
+sim_time  = -all
+tb_file   = ./sim/stim.v
+tb_vector = ./sim/maddsub_10x17_dynamic_vlog.in

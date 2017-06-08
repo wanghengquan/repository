@@ -1,0 +1,44 @@
+[Device]
+Family=latticexp2
+PartType=LFXP2-5E
+PartName=LFXP2-5E-5M132CES
+SpeedGrade=-5
+Package=CSBGA132
+OperatingCondition=COM
+Status=P
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=FIFO
+CoreRevision=4.2
+ModuleName=scfifo_xp2
+SourceFormat=Schematic/VHDL
+ParameterFileVersion=1.0
+Date=06/18/2007
+Time=17:08:25
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+FIFOImp=EBR Based
+Depth=16
+Width=8
+regout=0
+CtrlByRdEn=0
+EmpFlg=1
+PeMode=Static - Single Threshold
+PeAssert=2
+PeDeassert=12
+FullFlg=1
+PfMode=Static - Single Threshold
+PfAssert=14
+PfDeassert=506
+RDataCount=0
+EnECC=0

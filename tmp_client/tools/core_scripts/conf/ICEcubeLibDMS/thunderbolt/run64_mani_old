@@ -1,0 +1,48 @@
+#Full-Chip Netlist Compilation Script
+#Mani Subramanian
+#Last Updated 03/21/2014
+rm -rf ../LIB_thunderbolt
+echo 'library removed'
+vlib ../LIB_thunderbolt
+vlog -64 -work ../LIB_thunderbolt -l log64 -modelsim +include+/lsc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt \
+  ./modified_netlist_files/chip_1_45x1_45_processed.v \
+  #/lsc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/chip_1_45x1_45.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/2prf_4kip_u40.v \
+  #/ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/ABIWUBN2_Lattice.v \
+  ./modified_netlist_files/ABIWUBN2_Lattice.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/FCLA16_n40.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/REG_BYPASS_MUX.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/SB_HSOSC.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/SB_LSOSC.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/UMC40LP_GPIO_sbt.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/UMC40LP_GPIO_sbt_m.v \
+  #./modified_netlist_files/chipbev_ice1p_additon_4ice384.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/chipbev_ice1p_additon_4ice384.v \
+  #./modified_netlist_files/chipbev_ice1p_4ice384.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/chipbev_ice1p_4ice384.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/chipbev_ice4r.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/um40npkhdst.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/i2c_ip_gates.v  \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/ice384extra.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/irled500ma.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/ledd_ip_gate.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/ml_cram_logic_ice8p_orig.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/ml_rowdrv2.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/more_ice4r.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/nvcm_defines.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/nvcm_model.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/nvcm_top_gate_20111213.v \
+ # /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/rgbdrive24max3.v \
+  ./modified_netlist_files/rgbdrive24max3.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/smc_and_jtag_id_u40_gate_cdonefix_20111216.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/smc_defines.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/spi_ip_gates.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/thunder_50nsdelay.v \
+  ./via.v \
+  /ldc/projects/thunder40/msubrama/amber/tm4k/custom_design/verification/bolt/thunder_ams.v 
+echo 'vlog complete'
+
+  vmap work ../LIB_thunderbolt
+#  vsim -64 +nowarnTFMPC -modelsim chip_tm1k1_4x1_4
+  vsim -64 +nowarnTFMPC -modelsim chip_1_45x1_45
+

@@ -1,0 +1,3 @@
+[D25970]
+system = pc
+corenum = 2

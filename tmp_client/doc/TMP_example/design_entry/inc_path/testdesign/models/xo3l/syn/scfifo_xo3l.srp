@@ -1,0 +1,28 @@
+SCUBA, Version Diamond_3.1_Beta (48)
+Mon Oct 28 15:48:00 2013
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2013 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : C:\diamond3.1.0.48\diamond\3.1\ispfpga\bin\nt\scuba.exe -w -n scfifo_xo3l -lang vhdl -synth synplify -bus_exp 7 -bb -arch xo3c00a -type ebfifo -depth 16 -width 8 -rwidth 8 -no_enable -pe 2 -pf 14 
+    Circuit name     : scfifo_xo3l
+    Module type      : ebfifo
+    Module Version   : 5.5
+    Ports            : 
+	Inputs       : Data[7:0], WrClock, RdClock, WrEn, RdEn, Reset, RPReset
+	Outputs      : Q[7:0], Empty, Full, AlmostEmpty, AlmostFull
+    I/O buffer       : not inserted
+    EDIF output      : scfifo_xo3l.edn
+    VHDL output      : scfifo_xo3l.vhd
+    VHDL template    : scfifo_xo3l_tmpl.vhd
+    VHDL testbench    : tb_scfifo_xo3l_tmpl.vhd
+    VHDL purpose     : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : scfifo_xo3l.srp
+    Element Usage    :
+        FIFO8KB : 1
+    Estimated Resource Usage:
+            EBR : 1

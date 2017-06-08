@@ -1,0 +1,104 @@
+# awk script to convert SiliconBlue software bit file to Modelsim force format
+# Usage : awk -f cbit_conv2mti.txt bit_file_name > modelsim_force_file_name
+# Example : awk -f cbit_conv2mti.txt nand3_new.txt > nand3_new.do
+#  
+BEGIN {
+ bl = 0;
+ wl = 0;
+ quad = 0;
+ quad_x4 = 0;
+ printf("force -freeze {sim:/tb/test_start} 0 0 \n");
+ printf("force -freeze {sim:/tb/chip/gint_hz} 1 0 \n");
+ printf("force -freeze {sim:/tb/chip/Ismc_chip_rout_right/I_smc_and_jtag/gio_hz} 0 0 \n");
+ printf("force -freeze {sim:/tb/chip/Ismc_chip_rout_right/I_smc_and_jtag/gsr} 0 0 \n");
+ printf("force -freeze {sim:/tb/chip/Ismc_chip_rout_right/I_smc_and_jtag/bm_init} 0 0 \n");
+ printf("force -freeze {sim:/tb/chip/Ismc_chip_rout_right/I_smc_and_jtag/end_of_startup} 1 0 \n");
+ printf("force -freeze {sim:/tb/chip/trstb} 0 0 \n");
+ printf("force -freeze {sim:/tb/chip/wl_r} 352'h000000000000000000000000000000000000000000");
+ printf("0000000000000000000000000000000000000000000000 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/wl_l} 352'h000000000000000000000000000000000000000000");
+ printf("0000000000000000000000000000000000000000000000 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/pgate_r} 352'h000000000000000000000000000000000000000");
+ printf("0000000000000000000000000000000000000000000000000 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/pgate_l} 352'h000000000000000000000000000000000000000");
+ printf("0000000000000000000000000000000000000000000000000 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/reset_b_r} 352'hfffffffffffffffffffffffffffffffffffff");
+ printf("fffffffffffffffffffffffffffffffffffffffffffffffffff 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/reset_l} 352'hfffffffffffffffffffffffffffffffffffffff");
+ printf("fffffffffffffffffffffffffffffffffffffffffffffffff 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/vdd_cntl_r} 352'hffffffffffffffffffffffffffffffffffff");
+ printf("ffffffffffffffffffffffffffffffffffffffffffffffffffff 0 -cancel 1 ns \n"); 
+ printf("force -freeze {sim:/tb/chip/vdd_cntl_l} 352'hffffffffffffffffffffffffffffffffffff");
+ printf("ffffffffffffffffffffffffffffffffffffffffffffffffffff 0 -cancel 1 ns \n"); 
+ printf("run 2ns\n");
+}
+
+{
+ if (substr($1,1,9)=="LogicTile") { printf ("#%s \n", $1); quad = 1; quad_x4 = 0;}
+ else if (substr($1,1,7)=="IO_Tile") { printf ("#%s \n", $1); quad = 1; quad_x4 = 0;}
+ else if (substr($1,1,3)=="RAM") { printf ("#%s \n", $1); quad = 1; quad_x4 = 0;}
+ else if (substr($1,1,13)=="GlobalNetwork") { printf ("#%s \n", $1); quad = 0; quad_x4 = 1;}
+
+ else if (substr($3,1,1)=="(") {
+   bl = int(substr($3,2,length($3)));
+   wl = int(substr($4,1,(length($4)-1))); 
+
+    if (quad == 1) {
+      if ((bl >= 658) && (wl >= 176)) {
+        printf ("force -freeze {sim:/tb/chip/I445/I_TR/wl[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TR/pgate[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TR/reset_b[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TR/vdd_cntl[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TR/bl[%d]} 0 %d -cancel 0.1 ns \n ",  bl, t); 
+        }
+      else if ((bl <= 653) && (wl >= 176)) {    
+        printf ("force -freeze {sim:/tb/chip/I445/I_TL/wl[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TL/pgate[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TL/reset_b[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TL/vdd_cntl[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_TL/bl[%d]} 0 %d -cancel 0.1 ns \n ",  bl, t); 
+        }
+     else if ((bl >= 658) && (wl <= 175)) {    
+        printf ("force -freeze {sim:/tb/chip/I445/I_BR/wl[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BR/pgate[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BR/reset_b[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BR/vdd_cntl[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BR/bl[%d]} 0 %d -cancel 0.1 ns \n ",  bl, t); 
+        }        
+      else {   
+        printf ("force -freeze {sim:/tb/chip/I445/I_BL/wl[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BL/pgate[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BL/reset_b[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BL/vdd_cntl[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/I_BL/bl[%d]} 0 %d -cancel 0.1 ns \n ",  bl, t); 
+          }
+       }
+    
+    else if (quad_x4 ==1 ) {
+        printf ("force -freeze {sim:/tb/chip/I445/wl_l[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/pgate_l[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/reset_b_l[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/vdd_cntl_l[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/wl_r[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/pgate_r[%s]} 1 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/reset_b_r[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/vdd_cntl_r[%s]} 0 %d -cancel 0.1 ns \n ", wl, t); 
+        printf ("force -freeze {sim:/tb/chip/I445/bl_top[%d]} 0 %d -cancel 0.1 ns \n ",  bl, t);     
+        printf ("force -freeze {sim:/tb/chip/I445/bl_bot[%d]} 0 %d -cancel 0.1 ns \n ",  bl, t);         
+       }
+ 
+    printf ("run 0.2ns \n"); 
+    
+
+   }
+  
+}
+
+END {
+ printf("force -freeze {sim:/tb/chip/gint_hz} 0 0 \n");
+ printf("run 1ns \n");
+ printf("force -freeze {sim:/tb/test_start} 1 0 \n");
+ printf("echo 'INFO>> Forcing cbits Completed' \n");
+
+}
+

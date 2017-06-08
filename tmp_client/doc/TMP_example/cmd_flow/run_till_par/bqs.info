@@ -1,0 +1,33 @@
+[qa]
+;;;;;;;;;;;;;;;;;prj info:
+project_name	=	prj_test
+impl_name		=	impl1
+devkit			=	LCMXO2-2000HE-5TG144C
+edf_file		=	./testdesign/source/prj_top_impl1.edi
+lpf_file		=	./testdesign/par/prj_top.lpf
+
+[cmd_flow]
+run_scuba		=	0
+run_synthesis	=	0
+synthesis		=	0
+synp_goal		=	0
+run_translate	=	1
+run_map			=	1
+run_map_trce	=	0
+run_par			=	1
+run_par_trce 	=	0	
+
+[command]
+#edif2ngd	=	edif2ngd -l "@(family)s" -d @(pty)s "@(edf_file)s" "@(ngo_file)s"
+#ngdbuild	=	ngdbuild -a "@(family)s" -d @(pty)s "@(ngo_file)s" "@(ngd_file)s"
+run_map     =   map -a "@(family)s" -p @(pty)s -t @(pkg)s -s @(spd)s -oc @(opt)s "@(ngd_file)s" -o "@(map_ncd)s" -pr "@(prf_file)s" -mp "@(mrp_file)s" -lpf "@(lpf_file)s"
+run_par		=	par -w -l 5 -i 6 -t 2 -c 0 -e 0 -exp parUseNBR=1:parCDP=auto:parCDR=1:parPathBased=OFF "@(map_ncd)s" "@(par_ncd)s" @(prf_file)s
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;1 Use ; to make a comment, only support the whole line comment
+;2 NO SPACE before an option/value line!
+;3 You'd BETTER use "/" rather than "\" for future use on Linux
+;4 IF you want to include multi files please use "<>"
+;  example:  tb_file = <tb_file1.v>
+;                      <tb_file2.v>
+;                      <tb_file3.v>

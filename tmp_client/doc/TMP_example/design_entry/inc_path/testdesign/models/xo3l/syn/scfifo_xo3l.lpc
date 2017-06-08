@@ -1,0 +1,53 @@
+[Device]
+Family=machxo3l
+PartType=LCMXO3L-2100C
+PartName=LCMXO3L-2100C-5BG256C
+SpeedGrade=5
+Package=CABGA256
+OperatingCondition=COM
+Status=S
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=FIFO_DC
+CoreRevision=5.5
+ModuleName=scfifo_xo3l
+SourceFormat=VHDL
+ParameterFileVersion=1.0
+Date=10/28/2013
+Time=15:48:00
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+FIFOImp=EBR Only
+RDepth=16
+RWidth=8
+WDepth=16
+WWidth=8
+regout=0
+CtrlByRdEn=0
+ClockEn=0
+EmpFlg=1
+PeMode=Static - Single Threshold
+PeAssert=2
+PeDeassert=12
+FullFlg=1
+PfMode=Static - Single Threshold
+PfAssert=14
+PfDeassert=506
+Reset=Async
+Reset1=Sync
+RDataCount=0
+WDataCount=0
+EnECC=0
+
+[Command]
+cmd_line= -w -n scfifo_xo3l -lang vhdl -synth synplify -bus_exp 7 -bb -arch xo3c00a -type ebfifo -depth 16 -width 8 -rwidth 8 -no_enable -pe 2 -pf 14

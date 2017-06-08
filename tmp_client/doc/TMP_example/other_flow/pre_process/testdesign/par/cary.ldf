@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="cary" device="LIF-MD5600-6MG81I" default_implementation="cary">
+    <Options/>
+    <Implementation title="cary" dir="cary" description="cary" synthesis="lse" default_strategy="Strategy1">
+        <Options/>
+        <Source name="../source/base_add_params.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="../source/comp_add.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+        <Source name="cary.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="cary1.sty"/>
+</BaliProject>

@@ -1,0 +1,62 @@
+
+#####################################do file#####################################
+#.do config file
+#20140210 jason
+#usage:
+#dev_lib example: C:\lscc\diamond\3.1\active-hdl\Vlib\ovi_machxo3l\ovi_machxo3l.lib
+#execute this file in CMD:vsimsa -l sim_log.txt -do <do file name> <dev_lib> <pri_lib> <cmd or gui>
+#execute this file in GUI:do <do file name> <dev_lib> <pri_lib> [cmd or gui]
+
+##########config start##########
+#<START>
+
+##<cfg_start>
+set IgnoreError 1
+set dev_lib $1
+set pri_lib $2
+set gui_cmd $3
+##<cfg_end>
+
+##<lib_start>
+##<step1>construct a work lib
+if $gui_cmd = 'cmd'
+    vlib work
+else
+    design create work .
+    design open work
+    adel -all
+    cd ../../
+endif
+##<step2>connect some other lib
+vmap %(lib_name)s $dev_lib
+vmap pmi_work  %(diamond)s/active-hdl/vlib/pmi_work/pmi_work.lib
+vmap pcsd_work %(diamond)s/active-hdl/vlib/pcsd_aldec_work/pcsd_aldec_work.lib
+##<lib_end>
+
+##compile source files if you use VHDL please use vcom
+##<source_start>
+...........
+##<source_end>
+
+##<tb_start>
+...............
+##<tb_end>
+
+##prepare for simulation
+##<pre_start>
+radix -hex
+##<pre_end>
+
+##start to run simulation
+##<sim_start>
+vsim -novopt +access +r -asdb %(sim_top)s.asdb -lib work %(sim_top)s -L %(lib_name)s -PL pmi_work -L pcsd_work
+if $gui_cmd = 'cmd'
+    run %(sim_time)s
+    quit
+else
+    run %(sim_time)s
+endif
+##<sim_end>
+
+#<END>
+#####################################do end#####################################

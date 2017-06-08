@@ -1,0 +1,40 @@
+[Device]
+Family=lifdb1
+PartType=LIFDB1-5000E
+PartName=LIFDB1-5000E-6MG81C
+SpeedGrade=6
+Package=CSFBGA81
+OperatingCondition=COM
+Status=C
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=Distributed_SPRAM
+CoreRevision=3.8
+ModuleName=module_top
+SourceFormat=verilog
+ParameterFileVersion=1.0
+Date=05/12/2015
+Time=10:07:28
+
+[Parameters]
+Verilog=1
+VHDL=0
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+Addresses=32
+Data=8
+LUT=0
+MemFile=
+MemFormat=orca
+
+[FilesGenerated]
+=mem
+
+[Command]
+cmd_line= -w -n module_top -lang verilog -synth lse -bus_exp 7 -bb -arch sn5w00 -dram -type ramdq -addr_width 5 -num_words 32 -data_width 8 -outData UNREGISTERED

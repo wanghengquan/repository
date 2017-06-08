@@ -1,0 +1,11 @@
+[qa]
+devkit = 
+src_files = <./testdesign/source/pmi_def.vhd> 
+			<./testdesign/source/add_16_UNSIGNED.vhd>
+
+[sim]
+tb_file=./testdesign/sim/add_16_UNSIGNED_tb.vhd
+tb_vector=./testdesign/sim/test.in
+sim_top = tb_b
+sim_time =  4 us
+uut_name = DUT

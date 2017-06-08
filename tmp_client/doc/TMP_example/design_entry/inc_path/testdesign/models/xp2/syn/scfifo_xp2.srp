@@ -1,0 +1,42 @@
+SCUBA, Version ispLever_v70_Prod_Build (36)
+Mon Jun 18 17:08:25 2007
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2007 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : C:\ispTOOLS7_0\ispfpga\bin\nt\scuba.exe -w -n scfifo_xp2 -lang vhdl -synth synplify -bus_exp 7 -bb -arch mg5a00 -type fifoblk -addr_width 4 -data_width 8 -num_words 16 -no_enable -pe 2 -pf 14 -e 
+    Circuit name     : scfifo_xp2
+    Module type      : fifoblk
+    Module Version   : 4.2
+    Ports            : 
+	Inputs       : Data[7:0], Clock, WrEn, RdEn, Reset
+	Outputs      : Q[7:0], Empty, Full, AlmostEmpty, AlmostFull
+    I/O buffer       : not inserted
+    EDIF output      : suppressed
+    VHDL output      : scfifo_xp2.vhd
+    VHDL template    : scfifo_xp2_tmpl.vhd
+    VHDL testbench    : tb_scfifo_xp2_tmpl.vhd
+    VHDL purpose     : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : scfifo_xp2.srp
+    Element Usage    :
+          AGEB2 : 6
+          ALEB2 : 6
+           AND2 : 4
+            CU2 : 6
+            CB2 : 3
+         FADD2B : 11
+        FD1P3DX : 15
+        FD1S3BX : 2
+        FD1S3DX : 2
+            INV : 9
+        ROM16X1 : 2
+           XOR2 : 1
+         DP16KB : 1
+    Estimated Resource Usage:
+            LUT : 71
+            EBR : 1
+            Reg : 19

@@ -1,0 +1,1 @@
+python generate_xml.py C:\lscc\diamond\3.4_x64 nt64  

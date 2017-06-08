@@ -1,0 +1,42 @@
+[Device]
+Family=lifdb1
+PartType=LIFDB1-5000E
+PartName=LIFDB1-5000E-6MG81C
+SpeedGrade=6
+Package=CSFBGA81
+OperatingCondition=COM
+Status=C
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=SDR
+CoreRevision=5.8
+ModuleName=sdr
+SourceFormat=verilog
+ParameterFileVersion=1.0
+Date=05/11/2015
+Time=16:17:52
+
+[Parameters]
+Verilog=1
+VHDL=0
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+mode=Receive
+trioddr=0
+io_type=LVCMOS25
+width=8
+freq_in=100
+bandwidth=800
+interface=GIREG_RX.SCLK
+negedge=DISABLED
+del=Bypass
+fdel=
+
+[Command]
+cmd_line= -w -n sdr -lang verilog -synth lse -bus_exp 7 -bb -arch sn5w00 -type iol -mode Receive -io_type LVCMOS25 -width 8 -freq_in 100 -aligned -del -1 -gear 1

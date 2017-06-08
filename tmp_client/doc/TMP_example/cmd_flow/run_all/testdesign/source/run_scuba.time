@@ -1,0 +1,6 @@
+scuba  -w -n equation_check -lang verilog -synth synplify -arch xo3c00a -type pll -fin 20 -fclkop 100 -fclkop_tol 0.0 -trimp 0 -phasep 0 -trimp_r -phase_cntl STATIC -fb_mode 1
+rem Elapsed Time: 0.09 seconds
+c:\lscc\diamond\3.8_x64\ispfpga\bin\nt64\scuba  -w -n equation_check -lang verilog -synth synplify -arch xo3c00a -type pll -fin 20 -fclkop 100 -fclkop_tol 0.0 -trimp 0 -phasep 0 -trimp_r -phase_cntl STATIC -fb_mode 1
+rem Elapsed Time: 0.09 seconds
+c:\lscc\diamond\3.9_x64\ispfpga\bin\nt64\scuba  -w -n equation_check -lang verilog -synth synplify -arch xo3c00a -type pll -fin 20 -fclkop 100 -fclkop_tol 0.0 -trimp 0 -phasep 0 -trimp_r -phase_cntl STATIC -fb_mode 1
+rem Elapsed Time: 0.12 seconds

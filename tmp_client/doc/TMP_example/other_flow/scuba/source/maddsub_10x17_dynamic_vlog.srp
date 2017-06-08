@@ -1,0 +1,30 @@
+SCUBA, Version Diamond (64-bit) 3.9.0.201.0
+Wed Dec 07 16:14:31 2016
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2016 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : scuba -w -n maddsub_10x17_dynamic_vlog -lang verilog -synth synplify -bus_exp 7 -bb -arch ep5c00 -type dspmadd -widtha 10 -widthb 17 -widthsum 28 -gsr ENABLED -area -maddsub -signeda -signedb -rega0 -rega0clk CLK0 -rega0ce CE0 -rega0rst RST0 -rega1 -rega1clk CLK0 -rega1ce CE0 -rega1rst RST0 -regb0 -regb0clk CLK0 -regb0ce CE0 -regb0rst RST0 -regb1 -regb1clk CLK0 -regb1ce CE0 -regb1rst RST0 -regsa0 -regsa0clk CLK0 -regsa0ce CE0 -regsa0rst RST0 -regsb0 -regsb0clk CLK0 -regsb0ce CE0 -regsb0rst RST0 -regsa1 -regsa1clk CLK0 -regsa1ce CE0 -regsa1rst RST0 -regsb1 -regsb1clk CLK0 -regsb1ce CE0 -regsb1rst RST0 -regas0 -regas0clk CLK0 -regas0ce CE0 -regas0rst RST0 -regas1 -regas1clk CLK0 -regas1ce CE0 -regas1rst RST0 -regp0 -regp0clk CLK0 -regp0ce CE0 -regp0rst RST0 -regp1 -regp1clk CLK0 -regp1ce CE0 -regp1rst RST0 -rego -regoclk CLK0 -regoce CE0 -regorst RST0 -clk0 -ce0 -rst0 -e 
+    Circuit name     : maddsub_10x17_dynamic_vlog
+    Module type      : dspmadd
+    Module Version   : 4.2
+    Ports            : 
+	Inputs       : CLK0, CE0, RST0, SignA, SignB, ADDNSUB, A0[9:0], A1[9:0], B0[16:0], B1[16:0]
+	Outputs      : SUM[27:0]
+    I/O buffer       : not inserted
+    EDIF output      : suppressed
+    Verilog output   : maddsub_10x17_dynamic_vlog.v
+    Verilog template : maddsub_10x17_dynamic_vlog_tmpl.v
+    Verilog testbench: tb_maddsub_10x17_dynamic_vlog_tmpl.v
+    Verilog purpose  : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : maddsub_10x17_dynamic_vlog.srp
+    Element Usage    :
+            INV : 1
+     MULT18X18C : 2
+         ALU54A : 1
+    Estimated Resource Usage:
+      DSP_SLICE : 1

@@ -1,0 +1,637 @@
+:About Bali Main Window.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':About Bali Main Window_AboutDialog'}
+:About Bali Main Window.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':About Bali Main Window_AboutDialog'}
+:About Bali Main Window_AboutDialog	{type='AboutDialog' unnamed='1' visible='1' windowTitle='About Bali Main Window'}
+:About Floorplan View.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':About Floorplan View_AboutDialog'}
+:About Floorplan View.qt_tabwidget_tabbar_QTabBar	{name='qt_tabwidget_tabbar' type='QTabBar' visible='1' window=':About Floorplan View_AboutDialog'}
+:About Floorplan View_AboutDialog	{type='AboutDialog' unnamed='1' visible='1' windowTitle='About Floorplan View'}
+:About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1	About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1
+:About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1.*Version*	About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1.*Version*
+:About Lattice Diamond.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':About Lattice Diamond_AboutDialog'}
+:About Lattice Diamond_AboutDialog	{type='AboutDialog' unnamed='1' visible='1' windowTitle='About Lattice Diamond'}
+:Back Annotate Assignments.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':Back Annotate Assignments_BackAnnoDlg'}
+:Back Annotate Assignments_BackAnnoDlg	{type='BackAnnoDlg' unnamed='1' visible='1' windowTitle='Back Annotate Assignments'}
+:Bali Main Window - ECO Editor.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Bali Main Window - ECO Editor_MainWindow'}
+:Bali Main Window - ECO Editor.pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Bali Main Window - ECO Editor.pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Bali Main Window - ECO Editor_MainWindow'}
+:Bali Main Window - ECO Editor.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Bali Main Window - ECO Editor_MainWindow'}
+:Bali Main Window - ECO Editor_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - ECO Editor'}
+:Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView	{leftWidget=':Bali Main Window - Floorplan View.My ToolBar_QToolBar' type='FpvGraphicsView' unnamed='1' visible='1' window=':Bali Main Window - Floorplan View_MainWindow'}
+:Bali Main Window - Floorplan View.My ToolBar_QToolBar	{name='tool_mainwindow_FLOORPLANNER_my_toolbar' type='QToolBar' visible='1' window=':Bali Main Window - Floorplan View_MainWindow' windowTitle='My ToolBar'}
+:Bali Main Window - Floorplan View_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - Floorplan View'}
+:Bali Main Window - HDL Explorer.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Bali Main Window - HDL Explorer_MainWindow'}
+:Bali Main Window - HDL Explorer_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - HDL Explorer'}
+:Bali Main Window - Report Browser.Tools_QMenu	{title='Tools' type='QMenu' unnamed='1' visible='1' window=':Bali Main Window - Report Browser_MainWindow'}
+:Bali Main Window - Report Browser.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Bali Main Window - Report Browser_MainWindow'}
+:Bali Main Window - Report Browser_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - Report Browser'}
+:Bali Main Window - Report Browser_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Bali Main Window - Report Browser_MainWindow'}
+:Bali Main Window - Reports.Tools_QMenu	{title='Tools' type='QMenu' unnamed='1' visible='1' window=':Bali Main Window - Reports_MainWindow'}
+:Bali Main Window - Reports_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - Reports'}
+:Bali Main Window - Reports_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Bali Main Window - Reports_MainWindow'}
+:Bali Main Window - Spreadsheet View.File_QMenu	{title='File' type='QMenu' unnamed='1' visible='1' window=':Bali Main Window - Spreadsheet View_MainWindow'}
+:Bali Main Window - Spreadsheet View.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Bali Main Window - Spreadsheet View_MainWindow'}
+:Bali Main Window - Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Bali Main Window - Spreadsheet View_MainWindow'}
+:Bali Main Window - Spreadsheet View_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - Spreadsheet View'}
+:Bali Main Window - Spreadsheet View_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Bali Main Window - Spreadsheet View_MainWindow'}
+:Bali Main Window - Start Page.File_QMenu	{title='File' type='QMenu' unnamed='1' visible='1' window=':Bali Main Window - Start Page_MainWindow'}
+:Bali Main Window - Start Page.Help_QMenu	{title='Help' type='QMenu' unnamed='1' visible='1' window=':Bali Main Window - Start Page_MainWindow'}
+:Bali Main Window - Start Page.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Bali Main Window - Start Page_MainWindow'}
+:Bali Main Window - Start Page_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Bali Main Window - Start Page'}
+:Bali Main Window - Start Page_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Bali Main Window - Start Page_MainWindow'}
+:Basic colors_QWellArray	{buddy=':Floorplan View *.Basic colors_QLabel' type='QWellArray' unnamed='1' visible='1'}
+:Basic colors_QWellArray_2	{buddy=':Floorplan View.Basic colors_QLabel' type='QWellArray' unnamed='1' visible='1'}
+:Create New Region_RegionDlg	{type='RegionDlg' unnamed='1' visible='1' windowTitle='Create New Region'}
+:Create_QMenu	{title='Create' type='QMenu' unnamed='1' visible='1'}
+:Debug	Debug
+:Design View - Entity 'genie'_QGraphicsItem	{acceptDrops='no' container=':Lattice Diamond - HDL Diagram - [Design View - Entity \\'genie\\'].Design View - Entity \\'genie\\'_CDesignView' enabled='yes' focusable='no' lineColor='#000000' movable='no' selectable='no' type='QGraphicsItem' userType='0' visible='yes'}
+:Device View_DevGUI	{type='DevGUI' unnamed='1' visible='1' windowTitle='Device View'}
+:Diamond_Version	{container=':About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1' text?='Lattice Diamond*Version*' type='QLabel' unnamed='1' visible='1'}
+:ECO Editor.File_QMenu	{title='File' type='QMenu' unnamed='1' visible='1' window=':ECO Editor_DecGUI'}
+:ECO Editor_DecGUI	{type='DecGUI' unnamed='1' visible='1' windowTitle='ECO Editor'}
+:ECO Editor_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':ECO Editor_DecGUI'}
+:File List.qt_dockwidget_floatbutton_PNTreeView	{aboveWidget=':File List.qt_dockwidget_floatbutton_QDockWidgetTitleButton' container=':Lattice Diamond - Reports.File List_FileDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:File List.qt_dockwidget_floatbutton_PNTreeView_2	{aboveWidget=':File List.qt_dockwidget_floatbutton_QDockWidgetTitleButton_2' container=':Lattice Diamond - Floorplan View.File List_PNFileDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:File List.qt_dockwidget_floatbutton_QDockWidgetTitleButton	{container=':Lattice Diamond - Reports.File List_FileDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:File List.qt_dockwidget_floatbutton_QDockWidgetTitleButton_2	{container=':Lattice Diamond - Floorplan View.File List_PNFileDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:File List_QScrollBar	{container=':Lattice Diamond - Reports.File List_FileDockWidget' type='QScrollBar' unnamed='1' visible='1'}
+:Find Type_QComboBox	{buddy=':Floorplan View.Find Type_QLabel' type='QComboBox' unnamed='1' visible='1'}
+:Find Type_QComboBox_2	{buddy=':Floorplan View *.Find Type_QLabel' type='QComboBox' unnamed='1' visible='1'}
+:Find What_QComboBox	{buddy=':Floorplan View.Find What_QLabel' type='QComboBox' unnamed='1' visible='1'}
+:Find What_QComboBox_2	{buddy=':Floorplan View *.Find What_QLabel' type='QComboBox' unnamed='1' visible='1'}
+:Find What_QLineEdit	{parentWidget=':Find What_QComboBox' type='QLineEdit' unnamed='1' visible='1'}
+:Find What_QLineEdit_2	{parentWidget=':Find What_QComboBox_2' type='QLineEdit' unnamed='1' visible='1'}
+:Find_fpvgui::FPVFindDialog	{type='fpvgui::FPVFindDialog' unnamed='1' visible='1' windowTitle='Find'}
+:Floorplan View	Floorplan View
+:Floorplan View * - Color Legend_ComClrDlgGui	{type='ComClrDlgGui' unnamed='1' visible='1' windowTitle='Floorplan View * - Color Legend'}
+:Floorplan View *.>_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='>' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Add_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Add' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Anchor:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Anchor:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Anchor:_QLineEdit	{aboveWidget=':Floorplan View *.Row: (2 - 52)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.Anchor:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Apply_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Apply' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Available Instances:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Available Instances:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Available Instances:_QListView	{aboveWidget=':Floorplan View *.Available Instances:_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QListView' unnamed='1' visible='1'}
+:Floorplan View *.BBox:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='BBox:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.BBox:_QLineEdit	{aboveWidget=':Floorplan View *.Height: (1 - 48)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.BBox:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.BBox:_QLineEdit_2	{aboveWidget=':Floorplan View *.Height: (1 - 49)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.BBox:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.BBox_QCheckBox	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='BBox' type='QCheckBox' unnamed='1' visible='1'}
+:Floorplan View *.BBox_QLineEdit	{aboveWidget=':Floorplan View *.Height: (1 - 49)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.BBox_QCheckBox' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Basic colors_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Basic colors' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Cancel_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Cancel' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Close_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Close' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Color:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Color:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Color:_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.Color:_QLabel' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Column: (2 - 55)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Column: (2 - 55)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Column: (2 - 55)_QLineEdit	{aboveWidget=':Floorplan View *.Column: (2 - 55)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Find Next_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Find Next' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Find Type_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Find Type' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Find What_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Find What' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Height: (1 - 48)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Height: (1 - 48)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Height: (1 - 49)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text?='Height: *' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.My ToolBar_FpvGraphicsView	{aboveWidget=':Floorplan View *.Standard_QToolBar' leftWidget=':Floorplan View *.My ToolBar_QToolBar' type='FpvGraphicsView' unnamed='1' visible='1' window=':Floorplan View *_FpvToolView'}
+:Floorplan View *.My ToolBar_QToolBar	{name='tool_mainwindow_FLOORPLANNER_my_toolbar' type='QToolBar' visible='1' window=':Floorplan View *_FpvToolView' windowTitle='My ToolBar'}
+:Floorplan View *.My ToolBar_QToolBar_2	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' name='tool_mainwindow_FLOORPLANNER_my_toolbar' type='QToolBar' visible='1' windowTitle='My ToolBar'}
+:Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.My ToolBar_QToolBar_2' type='fpvgui::FpvGraphicsView' unnamed='1' visible='1'}
+:Floorplan View *.OK_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='OK' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Region Name:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Region Name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Region Name:_QLineEdit	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.Region Name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Region_QRadioButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Region' type='QRadioButton' unnamed='1' visible='1'}
+:Floorplan View *.Restore Defaults_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Restore Defaults' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Row: (2 - 52)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Row: (2 - 52)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Select_QToolButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Select' type='QToolButton' unnamed='1' visible='1'}
+:Floorplan View *.Site Type_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Site Type' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Site_QLineEdit	{aboveWidget=':Floorplan View *.Row: (2 - 52)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.Site_QRadioButton' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Site_QRadioButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Site' type='QRadioButton' unnamed='1' visible='1'}
+:Floorplan View *.Standard_QToolBar	{name='tool_mainwindow_FLOORPLANNER_standard_toolbar' type='QToolBar' visible='1' window=':Floorplan View *_FpvToolView' windowTitle='Standard'}
+:Floorplan View *.UGROUP Name:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='UGROUP Name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.UGROUP Name:_QLineEdit	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.UGROUP Name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.UGROUP name:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='UGROUP name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.UGROUP name:_QLineEdit	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' leftWidget=':Floorplan View *.UGROUP name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Update_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Update' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 11)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 11)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 13)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 13)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 13)_QLineEdit	{aboveWidget=':Floorplan View *.Width: (1 - 13)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 14)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 14)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 14)_QLineEdit	{aboveWidget=':Floorplan View *.Width: (1 - 14)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 18)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 18)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 18)_QLineEdit	{aboveWidget=':Floorplan View *.Width: (1 - 18)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 3)_QLineEdit	{aboveWidget=':Floorplan View *.Width: (1 - 3)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 37)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 37)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 37)_QSpinBox	{aboveWidget=':Floorplan View *.Width: (1 - 37)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 45)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 45)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 45)_QLineEdit	{aboveWidget=':Floorplan View *.Width: (1 - 45)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 51)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' text='Width: (1 - 51)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View *.Width: (1 - 51)_QLineEdit	{aboveWidget=':Floorplan View *.Width: (1 - 51)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View *.qt_spinbox_lineedit_QLineEdit	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' name='qt_spinbox_lineedit' occurrence='4' type='QLineEdit' visible='1'}
+:Floorplan View *_FpvToolView	{type='FpvToolView' unnamed='1' visible='1' windowTitle='Floorplan View *'}
+:Floorplan View *_QGroupBox	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' occurrence='2' type='QGroupBox' unnamed='1' visible='1'}
+:Floorplan View *_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView' occurrence='2' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.>_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='>' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Add_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Add' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Anchor_QCheckBox	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Anchor' type='QCheckBox' unnamed='1' visible='1'}
+:Floorplan View.Anchor_QSpinBox	{aboveWidget=':Floorplan View.Row: (2 - 52)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.Anchor_QCheckBox' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.Apply_QPushButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Apply' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Attach Window_QToolButton	{text='Attach Window' type='QToolButton' unnamed='1' visible='1' window=':Floorplan View_fpvgui::FpvToolView'}
+:Floorplan View.Available Instances:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Available Instances:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Available Instances:_QListView	{aboveWidget=':Floorplan View.Available Instances:_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' type='QListView' unnamed='1' visible='1'}
+:Floorplan View.BBox:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='BBox:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.BBox:_QLineEdit	{aboveWidget=':Floorplan View.Height: (1 - 32)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.BBox:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View.BBox_QCheckBox	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='BBox' type='QCheckBox' unnamed='1' visible='1'}
+:Floorplan View.BBox_QSpinBox	{aboveWidget=':Floorplan View.Height: (1 - 43)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.BBox_QCheckBox' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.BBox_QSpinBox_2	{aboveWidget=':Floorplan View.Height: (1 - 28)_QLabel' container=':Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.BBox_QCheckBox' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.BBox_QSpinBox_3	{aboveWidget=':Floorplan View.Height: (1 - 34)_QLabel' container=':Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.BBox_QCheckBox' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.Back Annotate Assignments_QToolButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Back Annotate Assignments' type='QToolButton' unnamed='1' visible='1'}
+:Floorplan View.Basic colors_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Basic colors' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Close_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Close' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Column: (2 - 55)_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Column: (2 - 55)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Column: (2 - 55)_QSpinBox	{aboveWidget=':Floorplan View.Column: (2 - 55)_QLabel' container=':Floorplan View_fpvgui::FpvToolView' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.Display Placement_QToolButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Display Placement' type='QToolButton' unnamed='1' visible='1'}
+:Floorplan View.File	Floorplan View.File
+:Floorplan View.Find Next_QPushButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Find Next' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Find Previous_QPushButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Find Previous' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Find Type_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Find Type' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Find What_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Find What' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.FpvGraphicsView1	Floorplan View.FpvGraphicsView1
+:Floorplan View.FpvGraphicsView1.QWidget1	Floorplan View.FpvGraphicsView1.QWidget1
+:Floorplan View.FpvGraphicsView1.Select Color.QDialogButtonBox1.Cancel	Floorplan View.FpvGraphicsView1.Select Color.QDialogButtonBox1.Cancel
+:Floorplan View.FpvGraphicsView1.qt_scrollarea_hcontainer.QScrollBar1	Floorplan View.FpvGraphicsView1.qt_scrollarea_hcontainer.QScrollBar1
+:Floorplan View.FpvGraphicsView1.qt_scrollarea_vcontainer.QScrollBar1	Floorplan View.FpvGraphicsView1.qt_scrollarea_vcontainer.QScrollBar1
+:Floorplan View.Height: (1 - 28)_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Height: (1 - 28)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Height: (1 - 32)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Height: (1 - 32)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Height: (1 - 34)_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Height: (1 - 34)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Height: (1 - 43)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Height: (1 - 43)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Match Case_QCheckBox	{container=':Floorplan View_fpvgui::FpvToolView' text='Match Case' type='QCheckBox' unnamed='1' visible='1'}
+:Floorplan View.Match Whole Word_QCheckBox	{container=':Floorplan View_fpvgui::FpvToolView' text='Match Whole Word' type='QCheckBox' unnamed='1' visible='1'}
+:Floorplan View.My ToolBar_FpvGraphicsView	{aboveWidget=':Floorplan View.Standard_QToolBar' leftWidget=':Floorplan View.My ToolBar_QToolBar' type='FpvGraphicsView' unnamed='1' visible='1' window=':Floorplan View_FpvToolView'}
+:Floorplan View.My ToolBar_QToolBar	{name='tool_mainwindow_FLOORPLANNER_my_toolbar' type='QToolBar' visible='1' window=':Floorplan View_FpvToolView' windowTitle='My ToolBar'}
+:Floorplan View.My ToolBar_QToolBar_2	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' name='tool_mainwindow_FLOORPLANNER_my_toolbar' type='QToolBar' visible='1' windowTitle='My ToolBar'}
+:Floorplan View.My ToolBar_QToolBar_3	{name='tool_mainwindow_FLOORPLANNER_my_toolbar' type='QToolBar' visible='1' window=':Floorplan View_fpvgui::FpvToolView' windowTitle='My ToolBar'}
+:Floorplan View.My ToolBar_fpvgui::FpvGraphicsView	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.My ToolBar_QToolBar_2' type='fpvgui::FpvGraphicsView' unnamed='1' visible='1'}
+:Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_2	{aboveWidget=':Floorplan View.Standard_QToolBar_2' leftWidget=':Floorplan View.My ToolBar_QToolBar_3' type='fpvgui::FpvGraphicsView' unnamed='1' visible='1' window=':Floorplan View_fpvgui::FpvToolView'}
+:Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3	{container=':Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.My ToolBar_QToolBar_2' type='fpvgui::FpvGraphicsView' unnamed='1' visible='1'}
+:Floorplan View.OK_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='OK' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Pan_QToolButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Pan' type='QToolButton' unnamed='1' visible='1'}
+:Floorplan View.QMenuBar1	Floorplan View.QMenuBar1
+:Floorplan View.QStatusBar1.QSizeGrip1	Floorplan View.QStatusBar1.QSizeGrip1
+:Floorplan View.Region Name:_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Region Name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Region Name:_QLineEdit	{container=':Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.Region Name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View.Region name:_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Region name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Region name:_QLineEdit	{container=':Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.Region name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View.Restore Defaults_QPushButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Restore Defaults' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Row: (2 - 52)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Row: (2 - 52)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Save_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Save' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Select All_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Select All' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Select_QToolButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Select' type='QToolButton' unnamed='1' visible='1'}
+:Floorplan View.Select_QToolButton_2	{text='Select' type='QToolButton' unnamed='1' visible='1' window=':Floorplan View_fpvgui::FpvToolView'}
+:Floorplan View.Site Type_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Site Type' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Standard_QToolBar	{name='tool_mainwindow_FLOORPLANNER_standard_toolbar' type='QToolBar' visible='1' window=':Floorplan View_FpvToolView' windowTitle='Standard'}
+:Floorplan View.Standard_QToolBar_2	{name='tool_mainwindow_FLOORPLANNER_standard_toolbar' type='QToolBar' visible='1' window=':Floorplan View_fpvgui::FpvToolView' windowTitle='Standard'}
+:Floorplan View.UGROUP Name:_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='UGROUP Name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.UGROUP Name:_QLineEdit	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.UGROUP Name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View.UGROUP name:_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='UGROUP name:' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.UGROUP name:_QLineEdit	{container=':Floorplan View_fpvgui::FpvToolView' leftWidget=':Floorplan View.UGROUP name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Floorplan View.Update_QPushButton	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Update' type='QPushButton' unnamed='1' visible='1'}
+:Floorplan View.Width: (1 - 21)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Width: (1 - 21)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Width: (1 - 21)_QSpinBox	{aboveWidget=':Floorplan View.Width: (1 - 21)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.Width: (1 - 25)_QLabel	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' text='Width: (1 - 25)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Width: (1 - 25)_QSpinBox	{aboveWidget=':Floorplan View.Width: (1 - 25)_QLabel' container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.Width: (1 - 40)_QLabel	{container=':Floorplan View_fpvgui::FpvToolView' text='Width: (1 - 40)' type='QLabel' unnamed='1' visible='1'}
+:Floorplan View.Width: (1 - 40)_QSpinBox	{aboveWidget=':Floorplan View.Width: (1 - 40)_QLabel' container=':Floorplan View_fpvgui::FpvToolView' type='QSpinBox' unnamed='1' visible='1'}
+:Floorplan View.Zoom Area_QToolButton	{container=':Floorplan View_fpvgui::FpvToolView' text='Zoom Area' type='QToolButton' unnamed='1' visible='1'}
+:Floorplan View.Zoom Fit_QToolButton	{text='Zoom Fit' type='QToolButton' unnamed='1' visible='1' window=':Floorplan View_fpvgui::FpvToolView'}
+:Floorplan View.qt_spinbox_lineedit_QLineEdit	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' name='qt_spinbox_lineedit' occurrence='4' type='QLineEdit' visible='1'}
+:Floorplan View.qt_spinbox_lineedit_QLineEdit_2	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' name='qt_spinbox_lineedit' type='QLineEdit' visible='1'}
+:Floorplan View.qt_spinbox_lineedit_QLineEdit_3	{container=':qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView' name='qt_spinbox_lineedit' occurrence='3' type='QLineEdit' visible='1'}
+:Floorplan View.qt_spinbox_lineedit_QLineEdit_4	{container=':Floorplan View_fpvgui::FpvToolView' name='qt_spinbox_lineedit' occurrence='2' type='QLineEdit' visible='1'}
+:Floorplan View.tool_mainwindow_FLOORPLANNER_standard_toolbar.Area Zooming	Floorplan View.tool_mainwindow_FLOORPLANNER_standard_toolbar.Area Zooming
+:Floorplan View.tool_mainwindow_FLOORPLANNER_standard_toolbar.Zoom Fit	Floorplan View.tool_mainwindow_FLOORPLANNER_standard_toolbar.Zoom Fit
+:Floorplan View.tool_mainwindow_FLOORPLANNER_standard_toolbar.Zoom In	Floorplan View.tool_mainwindow_FLOORPLANNER_standard_toolbar.Zoom In
+:Floorplan View_FpvToolView	{type='FpvToolView' unnamed='1' visible='1' windowTitle='Floorplan View'}
+:Floorplan View_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Floorplan View_fpvgui::FpvToolView'}
+:Floorplan View_QScrollBar	{container=':Floorplan View_fpvgui::FpvToolView' type='QScrollBar' unnamed='1' visible='1'}
+:Floorplan View_fpvgui::FpvToolView	{type='fpvgui::FpvToolView' unnamed='1' visible='1' windowTitle='Floorplan View'}
+:Help	Help
+:IPexpress_IPXToolGUI	{type='IPXToolGUI' unnamed='1' visible='1' windowTitle='IPexpress'}
+:Lattice Diamond - ASIC View: pll1c/pll_inst/PLLInst_0_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - ASIC View: pll1c/pll_inst/PLLInst_0_PNMainWindow'}
+:Lattice Diamond - ASIC View: pll1c/pll_inst/PLLInst_0_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - ASIC View: pll1c/pll_inst/PLLInst_0'}
+:Lattice Diamond - Device View *_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Device View *_PNMainWindow'}
+:Lattice Diamond - Device View *_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Device View *'}
+:Lattice Diamond - Device View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Device View_PNMainWindow'}
+:Lattice Diamond - Device View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Device View'}
+:Lattice Diamond - ECO Editor.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - ECO Editor_MainWindow'}
+:Lattice Diamond - ECO Editor.pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Lattice Diamond - ECO Editor.pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - ECO Editor_MainWindow'}
+:Lattice Diamond - ECO Editor_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - ECO Editor'}
+:Lattice Diamond - Floorplan View *.Spreadsheet View_QToolButton	{text='Spreadsheet View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *.Zoom Fit_QToolButton	{text='Zoom Fit' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *.Zoom In_QToolButton	{text='Zoom In' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *.Zoom Out_QToolButton	{text='Zoom Out' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *.Zoom To_QToolButton	{text='Zoom To' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View *_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Floorplan View *'}
+:Lattice Diamond - Floorplan View *_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View *_PNMainWindow'}
+:Lattice Diamond - Floorplan View.File List_PNFileDockWidget	{name='PN File List View' type='PNFileDockWidget' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow' windowTitle='File List'}
+:Lattice Diamond - Floorplan View.Info[*]_PNInfoDockWidget	{name='PN Info[*] View' type='PNInfoDockWidget' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow' windowTitle='Info[*]'}
+:Lattice Diamond - Floorplan View.Info[*]_QTabBar	{aboveWidget=':Lattice Diamond - Floorplan View.Info[*]_PNInfoDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Partition Manager_QToolButton	{text='Partition Manager' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Physical View_QToolButton	{text='Physical View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Process_PNProcDockWidget	{name='PN Process View' type='PNProcDockWidget' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow' windowTitle='Process'}
+:Lattice Diamond - Floorplan View.Spreadsheet View_QToolButton	{text='Spreadsheet View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Tcl Console_PNInfoDockWidget	{name='PN Tcl Console View' type='PNInfoDockWidget' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow' windowTitle='Tcl Console'}
+:Lattice Diamond - Floorplan View.Tcl Console_QTabBar	{aboveWidget=':Lattice Diamond - Floorplan View.Tcl Console_PNInfoDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Zoom Fit_QToolButton	{text='Zoom Fit' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Zoom In_QToolButton	{text='Zoom In' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Zoom Out_QToolButton	{text='Zoom Out' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.Zoom To_QToolButton	{text='Zoom To' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Lattice Diamond - Floorplan View.pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View_CloseButton	{occurrence='2' type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View_CloseButton_2	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - Floorplan View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Floorplan View'}
+:Lattice Diamond - Floorplan View_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Floorplan View_PNMainWindow'}
+:Lattice Diamond - HDL Diagram - [Design View - Design Top].pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - HDL Diagram - [Design View - Design Top]_MainWindow'}
+:Lattice Diamond - HDL Diagram - [Design View - Design Top].pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Lattice Diamond - HDL Diagram - [Design View - Design Top].pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - HDL Diagram - [Design View - Design Top]_MainWindow'}
+:Lattice Diamond - HDL Diagram - [Design View - Design Top]_HleGUI	{name='HDL Diagram' type='HleGUI' visible='1' windowTitle='Lattice Diamond - HDL Diagram - [Design View - Design Top]'}
+:Lattice Diamond - HDL Diagram - [Design View - Design Top]_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - HDL Diagram - [Design View - Design Top]'}
+:Lattice Diamond - HDL Diagram - [Design View - Entity 'genie'].Design View - Entity 'genie'_CDesignView	{name='Design View - Entity \\'genie\\'' type='CDesignView' visible='1' window=':Lattice Diamond - HDL Diagram - [Design View - Entity \\'genie\\']_PNMainWindow' windowTitle='Design View - Entity \\'genie\\''}
+:Lattice Diamond - HDL Diagram - [Design View - Entity 'genie']_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - HDL Diagram - [Design View - Entity \\'genie\\']'}
+:Lattice Diamond - HDL Diagram_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - HDL Diagram'}
+:Lattice Diamond - HDL Diagram_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - HDL Diagram_MainWindow'}
+:Lattice Diamond - Logic Block View: DataOut[3]_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Logic Block View: DataOut[3]_PNMainWindow'}
+:Lattice Diamond - Logic Block View: DataOut[3]_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Logic Block View: DataOut[3]'}
+:Lattice Diamond - NCD View *_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - NCD View *_PNMainWindow'}
+:Lattice Diamond - NCD View *_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - NCD View *'}
+:Lattice Diamond - NCD View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - NCD View_PNMainWindow'}
+:Lattice Diamond - NCD View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - NCD View'}
+:Lattice Diamond - Netlist View *_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Netlist View *_PNMainWindow'}
+:Lattice Diamond - Netlist View *_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Netlist View *'}
+:Lattice Diamond - Netlist View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Netlist View_PNMainWindow'}
+:Lattice Diamond - Netlist View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Netlist View'}
+:Lattice Diamond - Package View.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Package View_MainWindow'}
+:Lattice Diamond - Package View.pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Lattice Diamond - Package View.pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - Package View_MainWindow'}
+:Lattice Diamond - Package View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Package View_PNMainWindow'}
+:Lattice Diamond - Package View_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - Package View'}
+:Lattice Diamond - Package View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Package View'}
+:Lattice Diamond - Partition Manager.Show In_QMenu	{title='Show In' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Partition Manager_PNMainWindow'}
+:Lattice Diamond - Partition Manager.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Partition Manager_PNMainWindow'}
+:Lattice Diamond - Partition Manager_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Partition Manager_PNMainWindow'}
+:Lattice Diamond - Partition Manager_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Partition Manager'}
+:Lattice Diamond - Physical View.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Physical View_MainWindow'}
+:Lattice Diamond - Physical View.pn_tabwidget_tabbar_PNTabBar_2	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Physical View_PNMainWindow'}
+:Lattice Diamond - Physical View.pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Lattice Diamond - Physical View.pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - Physical View_MainWindow'}
+:Lattice Diamond - Physical View.pn_tabwidget_tabbar_PNTabCornerWidget_2	{leftWidget=':Lattice Diamond - Physical View.pn_tabwidget_tabbar_PNTabBar_2' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - Physical View_PNMainWindow'}
+:Lattice Diamond - Physical View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Physical View_PNMainWindow'}
+:Lattice Diamond - Physical View_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - Physical View'}
+:Lattice Diamond - Physical View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Physical View'}
+:Lattice Diamond - Power Calculator  - Untitled.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Power Calculator  - Untitled_MainWindow'}
+:Lattice Diamond - Power Calculator  - Untitled.pn_tabwidget_tabbar_PNTabCornerWidget	{leftWidget=':Lattice Diamond - Power Calculator  - Untitled.pn_tabwidget_tabbar_PNTabBar' type='PNTabCornerWidget' unnamed='1' visible='1' window=':Lattice Diamond - Power Calculator  - Untitled_MainWindow'}
+:Lattice Diamond - Power Calculator  - Untitled_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - Power Calculator  - Untitled'}
+:Lattice Diamond - Reports. Mem Usage:  369,436 K _QLabel	{text=' Mem Usage:  369,436 K ' type='QLabel' unnamed='1' visible='1' window=':Lattice Diamond - Reports_MainWindow'}
+:Lattice Diamond - Reports. Mem Usage:  369,552 K _QLabel	{text=' Mem Usage:  369,552 K ' type='QLabel' unnamed='1' visible='1' window=':Lattice Diamond - Reports_MainWindow'}
+:Lattice Diamond - Reports. Mem Usage:  369,584 K _QLabel	{text?=' Mem Usage:*' type='QLabel' unnamed='1' visible='1' window=':Lattice Diamond - Reports_MainWindow'}
+:Lattice Diamond - Reports.File List_FileDockWidget	{name='PN File List View' type='FileDockWidget' visible='1' window=':Lattice Diamond - Reports_MainWindow' windowTitle='File List'}
+:Lattice Diamond - Reports.File List_PNFileDockWidget	{name='PN File List View' type='PNFileDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='File List'}
+:Lattice Diamond - Reports.File List_QTabBar	{aboveWidget=':Lattice Diamond - Reports.File List_PNFileDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.File_QMenu	{title='File' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Reports_MainWindow'}
+:Lattice Diamond - Reports.Floorplan View_QToolButton	{text='Floorplan View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Partition Manager_QToolButton	{text='Partition Manager' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Physical View_QToolButton	{text='Physical View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Process_PNProcDockWidget	{name='PN Process View' type='PNProcDockWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow' windowTitle='Process'}
+:Lattice Diamond - Reports.Process_ProcDockWidget	{name='PN Process View' type='ProcDockWidget' visible='1' window=':Lattice Diamond - Reports_MainWindow' windowTitle='Process'}
+:Lattice Diamond - Reports.Process_QTabBar	{aboveWidget=':Lattice Diamond - Reports.Process_PNProcDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Rerun All_QToolButton	{text='Rerun All' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Rerun_QToolButton	{text='Rerun' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Run_QToolButton	{text='Run' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Spreadsheet View_QToolButton	{text='Spreadsheet View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Stop_QToolButton	{text='Stop' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.Tools_QMenu	{title='Tools' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Reports_MainWindow'}
+:Lattice Diamond - Reports.Window_QMenu	{title='Window' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Reports_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - Reports'}
+:Lattice Diamond - Reports_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Reports'}
+:Lattice Diamond - Reports_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_MainWindow'}
+:Lattice Diamond - Reports_QMenuBar_2	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Reports_PNMainWindow'}
+:Lattice Diamond - Spreadsheet View *.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Spreadsheet View *_PNMainWindow'}
+:Lattice Diamond - Spreadsheet View *_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Spreadsheet View *_PNMainWindow'}
+:Lattice Diamond - Spreadsheet View *_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Spreadsheet View *'}
+:Lattice Diamond - Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Spreadsheet View_PNMainWindow'}
+:Lattice Diamond - Spreadsheet View_CloseButton	{type='CloseButton' unnamed='1' visible='1' window=':Lattice Diamond - Spreadsheet View_PNMainWindow'}
+:Lattice Diamond - Spreadsheet View_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Spreadsheet View'}
+:Lattice Diamond - Start Page.File List_PNFileDockWidget	{name='PN File List View' type='PNFileDockWidget' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow' windowTitle='File List'}
+:Lattice Diamond - Start Page.File List_QTabBar	{aboveWidget=':Lattice Diamond - Start Page.File List_PNFileDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.Floorplan View_QToolButton	{text='Floorplan View' type='QToolButton' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.Process_PNProcDockWidget	{name='PN Process View' type='PNProcDockWidget' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow' windowTitle='Process'}
+:Lattice Diamond - Start Page.Process_QTabBar	{aboveWidget=':Lattice Diamond - Start Page.Process_PNProcDockWidget' type='QTabBar' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.View_QToolBar	{name='View' type='QToolBar' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow' windowTitle='View'}
+:Lattice Diamond - Start Page.Window_QMenu	{title='Window' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.pn_tabwidget_tabbar_PNTabBar	{name='pn_tabwidget_tabbar' type='PNTabBar' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Start Page_MainWindow'}
+:Lattice Diamond - Start Page.qt_tabwidget_stackedwidget_QStackedWidget_2	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond - Start Page_MainWindow	{name='MainWindow' type='MainWindow' visible='1' windowTitle='Lattice Diamond - Start Page'}
+:Lattice Diamond - Start Page_PNMainWindow	{name='MainWindow' type='PNMainWindow' visible='1' windowTitle='Lattice Diamond - Start Page'}
+:Lattice Diamond - Start Page_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':Lattice Diamond - Start Page_PNMainWindow'}
+:Lattice Diamond install path	{container=':qt_tabwidget_stackedwidget_AboutTab_2' text?='Lattice Diamond install path*' type='QLabel' unnamed='1' visible='1'}
+:Lattice Diamond.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':Lattice Diamond_QMessageBox'}
+:Lattice Diamond_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Lattice Diamond'}
+:Load Layout_QMenu	{title='Load Layout' type='QMenu' unnamed='1' visible='1' window=':_QMenu'}
+:MainWindow	MainWindow
+:MainWindow.About Bali Main Window.QDialogButtonBox1.OK	MainWindow.About Bali Main Window.QDialogButtonBox1.OK
+:MainWindow.About Lattice Diamond.QDialogButtonBox1.OK	MainWindow.About Lattice Diamond.QDialogButtonBox1.OK
+:MainWindow.About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1.Lattice Diamond  Version (64-bit) *	MainWindow.About Lattice Diamond.QTabWidget1.qt_tabwidget_stackedwidget.AboutTab1.Lattice Diamond  Version (64-bit) *
+:MainWindow.Design.Generate Hierarchy	MainWindow.Design.Generate Hierarchy
+:MainWindow.File List.PNTreeView1	MainWindow.File List.PNTreeView1
+:MainWindow.File List.PNTreeView1.item_0/0	MainWindow.File List.PNTreeView1.item_0/0
+:MainWindow.File List.PNTreeView1.item_0/0.item_0/0	MainWindow.File List.PNTreeView1.item_0/0.item_0/0
+:MainWindow.File List.PNTreeView1.item_0/0.item_1/0	MainWindow.File List.PNTreeView1.item_0/0.item_1/0
+:MainWindow.File List.PNTreeView1.item_0/0.item_2/0	MainWindow.File List.PNTreeView1.item_0/0.item_2/0
+:MainWindow.File List.PNTreeView1.qt_scrollarea_vcontainer.QScrollBar1	MainWindow.File List.PNTreeView1.qt_scrollarea_vcontainer.QScrollBar1
+:MainWindow.Output.PNOutputWindow1.PNLogWindow1	MainWindow.Output.PNOutputWindow1.PNLogWindow1
+:MainWindow.PN File List View.PNTreeView1	MainWindow.PN File List View.PNTreeView1
+:MainWindow.PN Process View.PNTreeView1	MainWindow.PN Process View.PNTreeView1
+:MainWindow.ProcDockWidget1.PNTreeView1	MainWindow.ProcDockWidget1.PNTreeView1
+:MainWindow.ProcDockWidget1.PNTreeView1.qt_scrollarea_vcontainer.QScrollBar1	MainWindow.ProcDockWidget1.PNTreeView1.qt_scrollarea_vcontainer.QScrollBar1
+:MainWindow.QFileDialog.buttonBox.Open	MainWindow.QFileDialog.buttonBox.Open
+:MainWindow.QFileDialog.fileNameEdit	MainWindow.QFileDialog.fileNameEdit
+:MainWindow.QFileDialog.fileNameEdit.qt_edit_menu	MainWindow.QFileDialog.fileNameEdit.qt_edit_menu
+:MainWindow.QFileDialog.splitter.frame.stackedWidget.page.listView	MainWindow.QFileDialog.splitter.frame.stackedWidget.page.listView
+:MainWindow.QMenuBar1	MainWindow.QMenuBar1
+:MainWindow.QMenuBar1.Design	MainWindow.QMenuBar1.Design
+:MainWindow.QMenuBar1.Edit	MainWindow.QMenuBar1.Edit
+:MainWindow.QMenuBar1.File	MainWindow.QMenuBar1.File
+:MainWindow.QMenuBar1.File.Open	MainWindow.QMenuBar1.File.Open
+:MainWindow.QMenuBar1.File.QAction1	MainWindow.QMenuBar1.File.QAction1
+:MainWindow.QMenuBar1.Help	MainWindow.QMenuBar1.Help
+:MainWindow.QMenuBar1.Project	MainWindow.QMenuBar1.Project
+:MainWindow.QMenuBar1.Tools	MainWindow.QMenuBar1.Tools
+:MainWindow.QMenuBar1.Window	MainWindow.QMenuBar1.Window
+:MainWindow.QMessageBox1.qt_msgbox_buttonbox.Yes	MainWindow.QMessageBox1.qt_msgbox_buttonbox.Yes
+:MainWindow.QSplitter1.PNTabWidget1.pn_tabwidget_tabbar	MainWindow.QSplitter1.PNTabWidget1.pn_tabwidget_tabbar
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.Floorplan View *.qt_msgbox_buttonbox.OK	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.Floorplan View *.qt_msgbox_buttonbox.OK
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.fpvgui::FpvGraphicsView1.Partition Anchor and BBox.OK	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.fpvgui::FpvGraphicsView1.Partition Anchor and BBox.OK
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.fpvgui::FpvGraphicsView1.Partition Anchor and BBox.QGroupBox2.QSpinBox4	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.fpvgui::FpvGraphicsView1.Partition Anchor and BBox.QGroupBox2.QSpinBox4
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.fpvgui::FpvGraphicsView1.Partition Anchor and BBox.QGroupBox2.QSpinBox4.qt_spinbox_lineedit	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View *.fpvgui::FpvGraphicsView1.Partition Anchor and BBox.QGroupBox2.QSpinBox4.qt_spinbox_lineedit
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1.QWidget1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1.QWidget1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1.qt_scrollarea_hcontainer.QScrollBar1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1.qt_scrollarea_hcontainer.QScrollBar1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1.qt_scrollarea_vcontainer.QScrollBar1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.FpvGraphicsView1.qt_scrollarea_vcontainer.QScrollBar1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.tool_mainwindow_FLOORPLANNER_my_toolbar	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Floorplan View.tool_mainwindow_FLOORPLANNER_my_toolbar
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.HDL Diagram.QSplitter1.QSplitter1.CWorkspace1.QWorkspace1.qt_workspacechild.Design View - Entity 'genie'	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.HDL Diagram.QSplitter1.QSplitter1.CWorkspace1.QWorkspace1.qt_workspacechild.Design View - Entity 'genie'
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.HDL Diagram.QSplitter1.QSplitter1.CWorkspace1.QWorkspace1.qt_workspacechild.Design View - Entity 'genie'.qt_scrollarea_vcontainer.QScrollBar1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.HDL Diagram.QSplitter1.QSplitter1.CWorkspace1.QWorkspace1.qt_workspacechild.Design View - Entity 'genie'.qt_scrollarea_vcontainer.QScrollBar1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.HDL Explorer.QSplitter1.QSplitter1.CWorkspace1.QWorkspace1.qt_workspacechild.Design View - Entity 'ip_rom'	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.HDL Explorer.QSplitter1.QSplitter1.CWorkspace1.QWorkspace1.qt_workspacechild.Design View - Entity 'ip_rom'
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.Open\\.\\.\\.	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.Open\\.\\.\\.
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.64_lattice	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.64_lattice
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.Encard	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.Encard
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.add8	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.add8
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.attributes	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.attributes
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.cnt_imp1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.cnt_imp1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.ldimxp	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.ldimxp
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.mem_ecp2m	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.mem_ecp2m
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.vhdlio_count	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.PN Start Page Frame.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.PNProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.QWidget1.vhdlio_count
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Reveal Inserter - Untitled.Insert Debug to Design.QDialogButtonBox1.OK	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Reveal Inserter - Untitled.Insert Debug to Design.QDialogButtonBox1.OK
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Spreadsheet View.Assign Pins	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Spreadsheet View.Assign Pins
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Spreadsheet View.Assign Pins.QDialogButtonBox1.Close	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Spreadsheet View.Assign Pins.QDialogButtonBox1.Close
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Spreadsheet View.QTabWidget1.qt_tabwidget_stackedwidget.bali::sshview::SSViewGridView5.bali::sshview::SSViewDataView1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Spreadsheet View.QTabWidget1.qt_tabwidget_stackedwidget.bali::sshview::SSViewGridView5.bali::sshview::SSViewDataView1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox1.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.verilog_hier	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox1.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.verilog_hier
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.cnt_Imp1	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.cnt_Imp1
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.ip_rom	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.ip_rom
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.mac_18x18_signed_ver_synp	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.mac_18x18_signed_ver_synp
+:MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.rom_vhdl	MainWindow.QSplitter1.PNTabWidget1.qt_tabwidget_stackedwidget.Start Page.PNStartPage1.QSplitter1.QSplitter1.QGroupBox2.ProjectWidget1.QScrollArea1.qt_scrollarea_viewport.QFrame1.rom_vhdl
+:MainWindow.QToolBar1.Read Design	MainWindow.QToolBar1.Read Design
+:MainWindow.QToolBar1.Rerun	MainWindow.QToolBar1.Rerun
+:MainWindow.QToolBar1.Rerun All	MainWindow.QToolBar1.Rerun All
+:MainWindow.QToolBar1.Stop	MainWindow.QToolBar1.Stop
+:MainWindow.Save Modified Files.OK	MainWindow.Save Modified Files.OK
+:MainWindow.Save Modified Files.Select files to save.Deselect All	MainWindow.Save Modified Files.Select files to save.Deselect All
+:MainWindow.Save Modified Files.Select the files to save.Deselect All	MainWindow.Save Modified Files.Select the files to save.Deselect All
+:MainWindow.Select Synthesis Tool.OK	MainWindow.Select Synthesis Tool.OK
+:MainWindow.Select Synthesis Tool.Synthesis Tools:.Synplify Pro	MainWindow.Select Synthesis Tool.Synthesis Tools:.Synplify Pro
+:MainWindow.Tools.HDL Diagram	MainWindow.Tools.HDL Diagram
+:MainWindow.Tools.Spreadsheet View	MainWindow.Tools.Spreadsheet View
+:MainWindow.View.Zoom Fit	MainWindow.View.Zoom Fit
+:MainWindow.View.Zoom In	MainWindow.View.Zoom In
+:MainWindow.View.Zoom Out	MainWindow.View.Zoom Out
+:MainWindow.View.Zoom To	MainWindow.View.Zoom To
+:Mouse Tools_QMenu	{title='Mouse Tools' type='QMenu' unnamed='1' visible='1'}
+:My ToolBar.CLOCK REGION clock_region	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*clock_region*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar.PARTITION CGROUP_M2decc	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*PARTITION CGROUP_M2decc*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar.PARTITION CGROUP_M2encc	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*CGROUP_M2encc*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar.R11C26_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R11C26' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R12C16_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R12C16' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R12C39_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R12C39' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R12C42_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R12C42' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R13C16_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R13C16' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R14C18_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R14C18' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R15C16_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R15C16' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R16C42_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R16C42' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R18C11_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R18C11' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R19C19_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R19C19' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R19C22_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R19C22' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R19C33_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R19C33' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R20C13_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*R20C13*' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R20C18_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R20C18' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R20C8_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R20C8' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R21C16_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R21C16' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R21C21_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R21C21' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R21C22	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*R21C22*' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R22C34_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R22C34' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R22C50_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R22C50' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R22C7_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R22C7' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R23C15	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='R23C15*' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R23C20_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R23C20' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R28C15_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R28C15' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R29C16_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R29C16' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R29C40_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R29C40' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R30C9_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R30C9' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R31C17_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R31C17' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R31C37_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R31C37' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R31C7_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R31C7' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R31C9_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R31C9' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R33C21_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R33C21' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R34C13_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R34C13' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R36C14_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R36C14' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.R4C42_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='R4C42' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar.REGION test_region	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip?='*REGION test*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar.REGION test_region_crossprobing	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*test_region*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar.Site EBR_R17C2, Comp &lt;mem_mem_0_0&gt; - LOCATE_QGraphicsItem	{acceptDrops='yes' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='Site EBR_R17C2, Comp &lt;mem_mem_0_0&gt; - LOCATE' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site EBR_R17C2, Comp &lt;mem_mem_0_0&gt; - LOCATE_QGraphicsItem_2	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar.Site EBR_R17C2, Comp &lt;mem_mem_0_0&gt; - LOCATE_QGraphicsItem' selectable='yes' toolTip='Site EBR_R17C2, Comp &lt;mem_mem_0_0&gt; - LOCATE' type='QGraphicsItem' userType='12' visible='yes'}
+:My ToolBar.Site L4, Comp &lt;enet_aen&gt; - LOCATE_QGraphicsItem	{acceptDrops='yes' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='Site L4, Comp &lt;enet_aen&gt; - LOCATE' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site L4, Comp &lt;enet_aen&gt; - LOCATE_QGraphicsItem_2	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar.Site L4, Comp &lt;enet_aen&gt; - LOCATE_QGraphicsItem' selectable='yes' toolTip?='Site L4*' type='QGraphicsItem' userType='12' visible='yes'}
+:My ToolBar.Site PLL_R26C5_all	{acceptDrops='yes' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip?='*Site PLL_R26C5*' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site R20C21A_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='Site R20C21A' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site R21C21B_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='Site R21C21B' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site R24C21C_QGraphicsItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip='Site R24C21C' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site R29C41B, Comp &lt;busintc/SLICE_1&gt; - PROHIBIT_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='Site R29C41B, Comp &lt;busintc/SLICE_1&gt; - PROHIBIT' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site R52C2B - PROHIBIT_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='Site R52C2B - PROHIBIT' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.Site R52C2C_QGraphicsItem	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='Site R52C2C' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar.UGROUP test_ugroup	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_6' selectable='yes' toolTip?='*test_ugroup*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem	{acceptDrops='yes' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='Site IOL_T2A' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_10	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='no' toolTip='R2C2' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_11	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsItem_10' selectable='yes' toolTip='Site R2C2A' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_12	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsItem_10' selectable='yes' toolTip='Site R2C2B' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_13	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='no' toolTip='R15C3' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_14	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsItem_13' selectable='yes' toolTip='Site R15C3A' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_15	{acceptDrops='yes' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='yes' toolTip='Site EBR_R16C2, Comp <ip_rom_0_0_0>' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_16	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R2C3' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_17	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R3C3' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_18	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R4C3' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_19	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R5C2' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_2	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R2C2' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_20	{acceptDrops='yes' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='Site EBR_R16C5' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_21	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R24C8' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_22	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R18C3' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_23	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R18C4' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_24	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='Site R18C4B' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar_QGraphicsItem_25	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='REGION zzzz - BBox:[2, 3] @ Row: 17, Col: 3 (Resources: 0/24 SLICEs, 0/0 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_26	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R21C14' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_27	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='REGION test_region - BBox:[17, 11] @ Row: 21, Col: 14 (Resources: 0/704 SLICEs, 0/4 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_28	{acceptDrops='yes' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='Site EBR_R29C56, Comp &lt;test_ebr_1/test_ebr_0_0_0&gt;' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar_QGraphicsItem_29	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R21C51' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_3	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='R9C13' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_30	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='UGROUP test_ugroup - BBox:[16, 11] @ Row: 21, Col: 51 (Resources: 0/660 SLICEs, 1/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_31	{acceptDrops='yes' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='Site EBR_R29C56, Comp &lt;test_ebr_1/test_ebr_0_0_0&gt;' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar_QGraphicsItem_32	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='REGION test_region - BBox:[6, 5] @ Row: 6, Col: 11 (Resources: 0/100 SLICEs, 0/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_33	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R5C38' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_34	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='UGROUP test_ugroup - BBox:[7, 6] @ Row: 5, Col: 38 (Resources: 0/144 SLICEs, 0/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_35	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='PARTITION CGROUP_M2decc - BBox:[7, 11] @ Row: 25, Col: 19 (Resources: 126/264 SLICEs, 0/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_36	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='PARTITION CGROUP_M2decc - BBox:[7, 11] @ Row: 25, Col: 19 (Resources: 126/264 SLICEs, 0/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_37	{acceptDrops='yes' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='Site EBR_R8C5' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar_QGraphicsItem_38	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R27C26' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_39	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R10C6' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_4	{acceptDrops='yes' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem' selectable='yes' toolTip='Site IOL_L10A' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_40	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='PARTITION CGROUP_M7enc - BBox:[9, 5] @ Row: 23, Col: 31 (Resources: 61/160 SLICEs, 0/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_41	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='PARTITION CGROUP_M7enc - BBox:[9, 5] @ Row: 23, Col: 31 (Resources: 61/160 SLICEs, 0/2 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_42	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='PARTITION CGROUP_M5enc - BBox:[9, 7] @ Row: 13, Col: 35 (Resources: 125/224 SLICEs, 0/3 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_43	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R4C3' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_44	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R5C22' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_45	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='REGION test_region - BBox:[7, 9] @ Row: 5, Col: 22 (Resources: 0/216 SLICEs, 0/3 BlkRAMs, 0/0 MULTs, 0/0 ALUs)' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_46	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R4C34' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_47	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip?='*test_region*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_48	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip='R4C45' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_49	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_5' selectable='yes' toolTip?='*test_ugroup*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_5	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='yes' toolTip='R69C112' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_50	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip?='*PARTITION CGROUP_M5enc*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_51	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip='R30C54 - 4 sites used' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_52	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip?='*R23C10*' type='QGraphicsItem' userType='1' visible='yes'}
+:My ToolBar_QGraphicsItem_53	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip?='*R23C10*' type='QGraphicsItem' userType='2' visible='yes'}
+:My ToolBar_QGraphicsItem_54	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_4' selectable='yes' toolTip?='*REGION test_region*' type='QGraphicsItem' userType='8' visible='yes'}
+:My ToolBar_QGraphicsItem_6	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='yes' toolTip='R75C125' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_7	{acceptDrops='yes' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='yes' toolTip='Site EBR_R79C128' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_8	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsRectItem_2' selectable='no' toolTip='R2C3' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsItem_9	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' movable='no' parentItem=':My ToolBar_QGraphicsItem_8' selectable='yes' toolTip='Site R2C3A' type='QGraphicsItem' visible='yes'}
+:My ToolBar_QGraphicsRectItem	{acceptDrops='no' container=':Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' lineWidth='0' movable='no' selectable='no' type='QGraphicsRectItem' visible='yes'}
+:My ToolBar_QGraphicsRectItem_2	{acceptDrops='no' container=':Bali Main Window - Floorplan View.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' lineWidth='0' movable='no' selectable='no' type='QGraphicsRectItem' visible='yes'}
+:My ToolBar_QGraphicsRectItem_3	{acceptDrops='no' container=':Floorplan View *.My ToolBar_FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' lineWidth='0' movable='no' selectable='no' type='QGraphicsRectItem' visible='yes'}
+:My ToolBar_QGraphicsRectItem_4	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' lineWidth='0' movable='no' selectable='no' type='QGraphicsRectItem' visible='yes'}
+:My ToolBar_QGraphicsRectItem_5	{acceptDrops='no' container=':Floorplan View *.My ToolBar_fpvgui::FpvGraphicsView' enabled='yes' focusable='no' lineColor='#000000' lineWidth='0' movable='no' selectable='no' type='QGraphicsRectItem' visible='yes'}
+:My ToolBar_QGraphicsRectItem_6	{acceptDrops='no' container=':Floorplan View.My ToolBar_fpvgui::FpvGraphicsView_3' enabled='yes' focusable='no' lineColor='#000000' lineWidth='0' movable='no' selectable='no' type='QGraphicsRectItem' visible='yes'}
+:NCD View_NdvGUI	{type='NdvGUI' unnamed='1' visible='1' windowTitle='NCD View'}
+:Netlist View_NlsGUI	{type='NlsGUI' unnamed='1' visible='1' windowTitle='Netlist View'}
+:New Project_PNCreateProjWizard	{name='PN New Project QWizard' type='PNCreateProjWizard' visible='1' windowTitle='New Project'}
+:Open Project.File name:_QLabel	{name='fileNameLabel' text='File name:' type='QLabel' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.Open_QPushButton	{text='Open' type='QPushButton' unnamed='1' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.lookInCombo_QComboBox	{name='lookInCombo' type='QComboBox' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.splitter_QSplitter	{name='splitter' type='QSplitter' visible='1' window=':Open Project_QFileDialog'}
+:Open Project.toParentButton_QToolButton	{name='toParentButton' type='QToolButton' visible='1' window=':Open Project_QFileDialog'}
+:Open Project_QFileDialog	{name='QFileDialog' type='QFileDialog' visible='1' windowTitle='Open Project'}
+:Open_QMenu	{name='Open' title='Open' type='QMenu' visible='1' window=':_QMenu'}
+:Package View_PkvToolView	{type='PkvToolView' unnamed='1' visible='1' windowTitle='Package View'}
+:Partition	Partition
+:Partition Anchor and BBox_ComPartitionAnchorDialog	{type='ComPartitionAnchorDialog' unnamed='1' visible='1' windowTitle='Partition Anchor and BBox'}
+:Partition Manager_bali::toolprt::PartitionView	{container=':qt_tabwidget_stackedwidget.Partition Manager_bali::toolprt::PrtGUI' type='bali::toolprt::PartitionView' unnamed='1' visible='1'}
+:Partition_QMenu	{title='Partition' type='QMenu' unnamed='1' visible='1'}
+:Physical View_PHV_FRAME	{type='PHV_FRAME' unnamed='1' visible='1' windowTitle='Physical View'}
+:Placement Display_QMenu	{title='Placement Display' type='QMenu' unnamed='1' visible='1'}
+:Power Calculator  - Untitled_PwcGUI	{type='PwcGUI' unnamed='1' visible='1' windowTitle='Power Calculator  - Untitled'}
+:Preference Placement Display_QMenu	{title='Preference Placement Display' type='QMenu' unnamed='1' visible='1'}
+:Print Preview: document1_QPrintPreviewDialog	{type='QPrintPreviewDialog' unnamed='1' visible='1' windowTitle='Print Preview: document1'}
+:Process.qt_dockwidget_floatbutton_PNTreeView	{aboveWidget=':Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_2' container=':Lattice Diamond - Reports.Process_PNProcDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:Process.qt_dockwidget_floatbutton_PNTreeView_2	{aboveWidget=':Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_3' container=':Lattice Diamond - Floorplan View.Process_PNProcDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:Process.qt_dockwidget_floatbutton_PNTreeView_3	{aboveWidget=':Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_4' container=':Lattice Diamond - Start Page.Process_PNProcDockWidget' type='PNTreeView' unnamed='1' visible='1'}
+:Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton	{container=':Lattice Diamond - Reports.Process_ProcDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_2	{container=':Lattice Diamond - Reports.Process_PNProcDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_3	{container=':Lattice Diamond - Floorplan View.Process_PNProcDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:Process.qt_dockwidget_floatbutton_QDockWidgetTitleButton_4	{container=':Lattice Diamond - Start Page.Process_PNProcDockWidget' name='qt_dockwidget_floatbutton' type='QDockWidgetTitleButton' visible='1'}
+:Project.Yes_QPushButton	{text='Yes' type='QPushButton' unnamed='1' visible='1' window=':Project_QMessageBox'}
+:Project_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Project'}
+:QListView1	QListView1
+:QMenu14	QMenu14
+:QMenu31	QMenu31
+:QMenu35	QMenu35
+:REGION_QMenu	{title='REGION' type='QMenu' unnamed='1' visible='1'}
+:Reports.dsp_test_bali::report::ReportDockWidget	{container=':qt_tabwidget_stackedwidget.Reports_PNToolFrame' type='bali::report::ReportDockWidget' unnamed='1' visible='1' windowTitle='dsp_test'}
+:Reveal Inserter - Untitled.OK_QPushButton	{container=':qt_tabwidget_stackedwidget.Reveal Inserter - Untitled_bali::reveal::IstGUI' text='OK' type='QPushButton' unnamed='1' visible='1'}
+:Save Modified Files.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':Save Modified Files_PNSavePrjFileDlg'}
+:Save Modified Files.Select the files to save_QGroupBox	{title='Select the files to save' type='QGroupBox' unnamed='1' visible='1' window=':Save Modified Files_PNSavePrjFileDlg'}
+:Save Modified Files_PNSavePrjFileDlg	{type='PNSavePrjFileDlg' unnamed='1' visible='1' windowTitle='Save Modified Files'}
+:Select the files to save.Deselect All_QPushButton	{container=':Save Modified Files.Select the files to save_QGroupBox' text='Deselect All' type='QPushButton' unnamed='1' visible='1'}
+:Show in _QMenu	{title='Show in ' type='QMenu' unnamed='1' visible='1'}
+:Site Type_QComboBox	{buddy=':Floorplan View.Site Type_QLabel' type='QComboBox' unnamed='1' visible='1'}
+:Site Type_QComboBox_2	{buddy=':Floorplan View *.Site Type_QLabel' type='QComboBox' unnamed='1' visible='1'}
+:Site_QMenu	{title='Site' type='QMenu' unnamed='1' visible='1'}
+:Spreadsheet View	Spreadsheet View
+:Spreadsheet View *.qt_tabwidget_stackedwidget_QStackedWidget	{container=':qt_tabwidget_stackedwidget.Spreadsheet View *_bali::sshview::SshGUI' name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1'}
+:Spreadsheet View *.qt_tabwidget_tabbar_QTabBar	{container=':qt_tabwidget_stackedwidget.Spreadsheet View *_bali::sshview::SshGUI' name='qt_tabwidget_tabbar' type='QTabBar' visible='1'}
+:Spreadsheet View.Attach Window_QToolButton	{text='Attach Window' type='QToolButton' unnamed='1' visible='1' window=':Spreadsheet View_SshGUI'}
+:Spreadsheet View.Close_QPushButton	{container=':qt_tabwidget_stackedwidget.Spreadsheet View_bali::sshview::SshGUI' text='Close' type='QPushButton' unnamed='1' visible='1'}
+:Spreadsheet View.QStatusBar1.QSizeGrip1	Spreadsheet View.QStatusBar1.QSizeGrip1
+:Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget	{name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1' window=':Spreadsheet View_SshGUI'}
+:Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget_2	{container=':qt_tabwidget_stackedwidget.Spreadsheet View_SshGUI' name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1'}
+:Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget_3	{container=':qt_tabwidget_stackedwidget.Spreadsheet View_bali::sshview::SshGUI' name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1'}
+:Spreadsheet View.qt_tabwidget_tabbar_QTabBar	{name='qt_tabwidget_tabbar' type='QTabBar' visible='1' window=':Spreadsheet View_SshGUI'}
+:Spreadsheet View.qt_tabwidget_tabbar_QTabBar_2	{container=':qt_tabwidget_stackedwidget.Spreadsheet View_SshGUI' name='qt_tabwidget_tabbar' type='QTabBar' visible='1'}
+:Spreadsheet View.qt_tabwidget_tabbar_QTabBar_3	{container=':qt_tabwidget_stackedwidget.Spreadsheet View_bali::sshview::SshGUI' name='qt_tabwidget_tabbar' type='QTabBar' visible='1'}
+:Spreadsheet View_SshGUI	{type='SshGUI' unnamed='1' visible='1' windowTitle='Spreadsheet View'}
+:Start Page.New..._QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='New...' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.Open..._QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='Open...' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.Small_Cell_Appleton_rev2_LVDS_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='Small_Cell_Appleton_rev2_LVDS' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.add8_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='add8' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.attributes_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_2' text='attributes' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.case3_IDF1_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='case3_IDF1' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.cnt_Imp1_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_2' text='cnt_Imp1' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.cnt_Imp1_QPushButton_2	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='cnt_Imp1' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.dist_mem_ecp3_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='dist_mem_ecp3' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.dist_mem_ecp3_QPushButton_2	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_2' text='dist_mem_ecp3' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.dist_mem_ecp3_QPushButton_3	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='dist_mem_ecp3' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.ebr_test_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='ebr_test' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.ip_fifo_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' text='ip_fifo' type='QPushButton' unnamed='1' visible='1'}
+:Start Page.verilog_hier_QPushButton	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame' text='verilog_hier' type='QPushButton' unnamed='1' visible='1'}
+:Start Page_QGroupBox	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' occurrence='3' type='QGroupBox' unnamed='1' visible='1'}
+:Start Page_QScrollArea	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' type='QScrollArea' unnamed='1' visible='1'}
+:Start Page_QTextBrowser	{container=':qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3' type='QTextBrowser' unnamed='1' visible='1'}
+:Timing Analysis View - Untitled_TavGUI	{type='TavGUI' unnamed='1' visible='1' windowTitle='Timing Analysis View - Untitled'}
+:Transcript Window_CTranscriptWindow	{type='CTranscriptWindow' unnamed='1' visible='0' windowTitle='Transcript Window'}
+:UGROUP_QMenu	{title='UGROUP' type='QMenu' unnamed='1' visible='1'}
+:Window.Load Layout_QMenu	{title='Load Layout' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Reports.Window_QMenu'}
+:Window.Load Layout_QMenu_2	{title='Load Layout' type='QMenu' unnamed='1' visible='1' window=':Lattice Diamond - Start Page.Window_QMenu'}
+:Zoom Tools_QMenu	{title='Zoom Tools' type='QMenu' unnamed='1' visible='1'}
+:_DataView	{container=':qt_tabwidget_stackedwidget_GridView' type='DataView' unnamed='1' visible='1'}
+:_HeadView	{container=':qt_tabwidget_stackedwidget_GridView' type='HeadView' unnamed='1' visible='1'}
+:_QMenu	{type='QMenu' unnamed='1' visible='1'}
+:_bali::sshview::SSViewDataView	{container=':qt_tabwidget_stackedwidget_bali::sshview::SSViewGridView' type='bali::sshview::SSViewDataView' unnamed='1' visible='1'}
+:dsp_test.splitter_QSplitter	{container=':Reports.dsp_test_bali::report::ReportDockWidget' name='splitter' type='QSplitter' visible='1'}
+:fileNameEdit_QLineEdit	{buddy=':Open Project.File name:_QLabel' name='fileNameEdit' type='QLineEdit' visible='1'}
+:frame.stackedWidget_QStackedWidget	{container=':splitter.frame_QFrame' name='stackedWidget' type='QStackedWidget' visible='1'}
+:qt_tabwidget_stackedwidget.ECO Editor_DecGUI	{container=':Bali Main Window - ECO Editor.qt_tabwidget_stackedwidget_QStackedWidget' type='DecGUI' unnamed='1' visible='1' windowTitle='ECO Editor'}
+:qt_tabwidget_stackedwidget.Floorplan View *_fpvgui::FpvToolView	{container=':Lattice Diamond - Floorplan View *.qt_tabwidget_stackedwidget_QStackedWidget' type='fpvgui::FpvToolView' unnamed='1' visible='1' windowTitle='Floorplan View *'}
+:qt_tabwidget_stackedwidget.Floorplan View_fpvgui::FpvToolView	{container=':Lattice Diamond - Floorplan View.qt_tabwidget_stackedwidget_QStackedWidget' type='fpvgui::FpvToolView' unnamed='1' visible='1' windowTitle='Floorplan View'}
+:qt_tabwidget_stackedwidget.Partition Manager_bali::toolprt::PrtGUI	{container=':Lattice Diamond - Partition Manager.qt_tabwidget_stackedwidget_QStackedWidget' type='bali::toolprt::PrtGUI' unnamed='1' visible='1' windowTitle='Partition Manager'}
+:qt_tabwidget_stackedwidget.Reports_PNToolFrame	{container=':Lattice Diamond - Reports.qt_tabwidget_stackedwidget_QStackedWidget' type='PNToolFrame' unnamed='1' visible='1' windowTitle='Reports'}
+:qt_tabwidget_stackedwidget.Reveal Inserter - Untitled_bali::reveal::IstGUI	{container=':Lattice Diamond - Reveal Inserter - Untitled.qt_tabwidget_stackedwidget_QStackedWidget' type='bali::reveal::IstGUI' unnamed='1' visible='1' windowTitle='Reveal Inserter - Untitled'}
+:qt_tabwidget_stackedwidget.Spreadsheet View *_bali::sshview::SshGUI	{container=':Lattice Diamond - Spreadsheet View *.qt_tabwidget_stackedwidget_QStackedWidget' type='bali::sshview::SshGUI' unnamed='1' visible='1' windowTitle='Spreadsheet View *'}
+:qt_tabwidget_stackedwidget.Spreadsheet View_SshGUI	{container=':Bali Main Window - Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget' type='SshGUI' unnamed='1' visible='1' windowTitle='Spreadsheet View'}
+:qt_tabwidget_stackedwidget.Spreadsheet View_bali::sshview::SshGUI	{container=':Lattice Diamond - Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget' type='bali::sshview::SshGUI' unnamed='1' visible='1' windowTitle='Spreadsheet View'}
+:qt_tabwidget_stackedwidget.Start Page_PNToolFrame	{container=':Bali Main Window - Start Page.qt_tabwidget_stackedwidget_QStackedWidget' type='PNToolFrame' unnamed='1' visible='1' windowTitle='Start Page'}
+:qt_tabwidget_stackedwidget.Start Page_PNToolFrame_2	{container=':Lattice Diamond - Start Page.qt_tabwidget_stackedwidget_QStackedWidget' type='PNToolFrame' unnamed='1' visible='1' windowTitle='Start Page'}
+:qt_tabwidget_stackedwidget.Start Page_PNToolFrame_3	{container=':Lattice Diamond - Start Page.qt_tabwidget_stackedwidget_QStackedWidget_2' name='PN Start Page Frame' type='PNToolFrame' visible='1' windowTitle='Start Page'}
+:qt_tabwidget_stackedwidget_AboutTab	{container=':About Bali Main Window.qt_tabwidget_stackedwidget_QStackedWidget' type='AboutTab' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_AboutTab_2	{container=':About Lattice Diamond.qt_tabwidget_stackedwidget_QStackedWidget' type='AboutTab' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_GridView	{container=':Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget_2' type='GridView' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_TreeView	{container=':Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget' type='TreeView' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_bali::sshview::SSViewGridView	{container=':Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget_3' type='bali::sshview::SSViewGridView' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_bali::sshview::SSViewTreeView	{container=':Spreadsheet View *.qt_tabwidget_stackedwidget_QStackedWidget' type='bali::sshview::SSViewTreeView' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_bali::sshview::SSViewTreeView_2	{container=':Spreadsheet View.qt_tabwidget_stackedwidget_QStackedWidget_3' type='bali::sshview::SSViewTreeView' unnamed='1' visible='1'}
+:splitter.frame_QFrame	{container=':Open Project.splitter_QSplitter' name='frame' type='QFrame' visible='1'}
+:splitter.report_summary.left_pane_bali::report::TreeView	{container=':dsp_test.splitter_QSplitter' name='report_summary.left_pane' type='bali::report::TreeView' visible='1'}
+:splitter.sidebar_QSidebar	{container=':Open Project.splitter_QSplitter' name='sidebar' type='QSidebar' visible='1'}
+:stackedWidget.listView_QListView	{container=':frame.stackedWidget_QStackedWidget' name='listView' type='QListView' visible='1'}
+:{container={container={container={container={container=':Lattice Diamond - Reports.qt_tabwidget_stackedwidget_QStackedWidget' type='PNToolFrame' unnamed='1' visible='1' windowTitle='Reports'} type='bali::report::ReportDockWidget' unnamed='1' visible='1' windowTitle='case3_IDF1'} name='splitter' type='QSplitter' visible='1'} name='report_summary.right_pane' type='QStackedWidget' visible='1'} name='webView' type='bali::report::ReportWebView' visible='1'}.DOCUMENT.HTML1.BODY1.PRE1	{container={container={container={container={container=':Lattice Diamond - Reports.qt_tabwidget_stackedwidget_QStackedWidget' type='PNToolFrame' unnamed='1' visible='1' windowTitle='Reports'} type='bali::report::ReportDockWidget' unnamed='1' visible='1' windowTitle='case3_IDF1'} name='splitter' type='QSplitter' visible='1'} name='report_summary.right_pane' type='QStackedWidget' visible='1'} name='webView' type='bali::report::ReportWebView' visible='1'}.DOCUMENT.HTML1.BODY1.PRE1

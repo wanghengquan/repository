@@ -1,0 +1,7 @@
+--src=9_synXO2_86_full_synp_timing_sorted.csv --cmp=3p109XO2_86_full_lse_area_sorted.csv --output=aa.csv --Comp_Title=non_l25 --Original_Title=original_default 
+--src=9_synXO2_86_full_synp_timing_sorted2.csv --cmp=3p109XO2_86_full_lse_area_sorted.csv --output=aa2.csv --Comp_Title=non_l25 --Original_Title=original_default 
+
+#--src=9_synXO2_86_full_synp_sorted.csv --cmp=3p109XO2_86_full_lse_area_sorted.csv --output=aa2.csv --Comp_Title=non_l25 --Original_Title=original_default 
+
+#--src=E60_ecp2_Diamond2.2.0.36_synpG201209L1_standard01.csv --cmp=E60_ecp3_Diamond2.2.0.36_synpG201209LSP1_standard01.csv --output=E60_ecp322.csv --Comp_Title=non_l25 --Original_Title=original_default
+#--src=E60_ecp2_Diamond2.2.0.36_synpG201209L1_standard01.csv --cmp=E60_ecp3_Diamond2.2.0.36_synpG201209LSP1_standard01.csv --output=E60_ecp3222.csv --Comp_Title=non_l25 --Original_Title=original_default

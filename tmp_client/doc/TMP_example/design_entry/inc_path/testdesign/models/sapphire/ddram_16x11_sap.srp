@@ -1,0 +1,32 @@
+SCUBA, Version Diamond_3.0_Production (63)
+Thu Jul 04 10:14:12 2013
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2013 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : C:\diamond3.0.0.63\diamond\3.0_x64\ispfpga\bin\nt64\scuba.exe -w -n ddram_16x11_sap -lang vhdl -synth synplify -bus_exp 7 -bb -arch sa5p00m -dram -type ramdps -raddr_width 4 -rwidth 11 -waddr_width 4 -wwidth 11 -rnum_words 16 -wnum_words 16 -outData UNREGISTERED -e 
+    Circuit name     : ddram_16x11_sap
+    Module type      : sdpram
+    Module Version   : 3.6
+    Address width    : 4
+    Ports            : 
+	Inputs       : WrAddress[3:0], Data[10:0], WrClock, WE, WrClockEn, RdAddress[3:0]
+	Outputs      : Q[10:0]
+    I/O buffer       : not inserted
+    Clock edge       : rising edge
+    EDIF output      : suppressed
+    VHDL output      : ddram_16x11_sap.vhd
+    VHDL template    : ddram_16x11_sap_tmpl.vhd
+    VHDL testbench    : tb_ddram_16x11_sap_tmpl.vhd
+    VHDL purpose     : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : ddram_16x11_sap.srp
+    Element Usage    :
+       ROM16X1A : 1
+       DPR16X4C : 3
+    Estimated Resource Usage:
+            LUT : 1
+           DRAM : 3

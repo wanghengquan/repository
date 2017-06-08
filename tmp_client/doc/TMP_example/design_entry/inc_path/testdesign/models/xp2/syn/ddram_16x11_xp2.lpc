@@ -1,0 +1,34 @@
+[Device]
+Family=latticexp2
+PartType=LFXP2-5E
+PartName=LFXP2-5E-5M132CES
+SpeedGrade=-5
+Package=CSBGA132
+OperatingCondition=COM
+Status=P
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=Distributed_DPRAM
+CoreRevision=3.1
+ModuleName=ddram_16x11_xp2
+SourceFormat=Schematic/VHDL
+ParameterFileVersion=1.0
+Date=06/18/2007
+Time=17:08:12
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+Addresses=16
+Data=11
+LUT=0
+MemFile=
+MemFormat=bin

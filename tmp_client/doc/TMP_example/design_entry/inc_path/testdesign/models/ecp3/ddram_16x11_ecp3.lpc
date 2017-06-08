@@ -1,0 +1,34 @@
+[Device]
+Family=latticeecp3
+PartType=LFE3-95E
+PartName=LFE3-95E-6FN484CES
+SpeedGrade=-6
+Package=FPBGA484
+OperatingCondition=COM
+Status=C
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=Distributed_DPRAM
+CoreRevision=3.2
+ModuleName=ddram_16x11_ecp3
+SourceFormat=VHDL
+ParameterFileVersion=1.0
+Date=01/14/2008
+Time=14:11:13
+
+[Parameters]
+Verilog=0
+VHDL=1
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+Addresses=16
+Data=11
+LUT=0
+MemFile=
+MemFormat=bin

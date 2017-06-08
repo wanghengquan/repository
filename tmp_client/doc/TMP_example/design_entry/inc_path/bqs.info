@@ -1,0 +1,29 @@
+[qa]
+fmax_range = 50,60,10
+top_module = vj1kfpga1
+devkit = LCMXO2-2000HC-6BG256C
+inc_path = 
+  <./testdesign/source>
+src_files = 
+  <./testdesign/models/xo2/syn/scfifo_xo2.vhd>
+  <./testdesign/models/xo2/syn/scfifo_xo2_wrap.vhd>
+  <./testdesign/models/xo2/syn/lpm_ram_dp.vhd>
+  <./testdesign/models/xo2/syn/ddram_16x11_xo2.vhd>
+  <./testdesign/models/xo2/syn/ddram_16x11_xo2_wrap.vhd>
+  <./testdesign/source/ALTUSR1out.VHD>
+  <./testdesign/source/CCOMP10.VHD>
+  <./testdesign/source/DIV12.VHD>
+  <./testdesign/source/DIV20.VHD>
+  <./testdesign/source/Dmasyso.vhd>
+  <./testdesign/source/ENCODR9.VHD>
+  <./testdesign/source/fifo16x8b_ec.vhd>
+  <./testdesign/source/GENINT8.VHD>
+  <./testdesign/source/Intctrl9.vhd>
+  <./testdesign/source/IOLOGIC10.VHD>
+  <./testdesign/source/KBD7_ec.vhd>
+  <./testdesign/source/NID8.VHD>
+  <./testdesign/source/PROD11.VHD>
+  <./testdesign/source/Smdmak.vhd>
+  <./testdesign/source/SPEED8.VHD>
+  <./testdesign/source/ADDRDCDM.VHD>
+  <./testdesign/source/VJ1KFPGA5.vhd>

@@ -1,0 +1,11 @@
+COMMERCIAL;
+BLOCK RESETPATHS;
+BLOCK ASYNCPATHS;
+FREQUENCY PORT i_clk 180.000 MHz ;
+FREQUENCY PORT i_clk_reg 100.000 MHz ;
+
+#BLOCK PATH TO ASIC "*table_*_table_*" PIN "*";
+#BLOCK PATH FROM ASIC "*table_*_table_*" PIN "*";
+
+#BLOCK PATH FROM CELL "*table_*_table_*";
+#BLOCK PATH TO CELL "*table_*_table_*";

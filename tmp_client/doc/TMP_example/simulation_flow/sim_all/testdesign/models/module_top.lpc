@@ -1,0 +1,44 @@
+[Device]
+Family=lifdb1
+PartType=LIFDB1-5000E
+PartName=LIFDB1-5000E-6MG81C
+SpeedGrade=6
+Package=CSFBGA81
+OperatingCondition=COM
+Status=C
+
+[IP]
+VendorName=Lattice Semiconductor Corporation
+CoreType=LPM
+CoreStatus=Demo
+CoreName=RAM_Based_Shift_Register
+CoreRevision=5.1
+ModuleName=module_top
+SourceFormat=verilog
+ParameterFileVersion=1.0
+Date=06/24/2015
+Time=17:24:17
+
+[Parameters]
+Verilog=1
+VHDL=0
+EDIF=1
+Destination=Synplicity
+Expression=BusA(0 to 7)
+Order=Big Endian [MSB:LSB]
+IO=0
+DataWidth=12
+Type=VarLossless
+NoOfShifts=16
+MaxLossyShifts=16
+MaxLosslessShifts=16
+EOR=1
+MemFile=
+MemFormat=orca
+RamType=bram
+
+[FilesGenerated]
+=mem
+
+[Command]
+cmd_line= -w -n module_top -lang verilog -synth lse -bus_exp 7 -bb -arch sn5w00 -type shiftreg -width 12 -depth 16 -mode 10 -pipe_final_output

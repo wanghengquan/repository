@@ -1,0 +1,1 @@
+ -o C:/Users/jwang1/Desktop/macro_file/stand_case/sim/compile -lc C:/Users/jwang1/Desktop/macro_file/stand_case/sim/library.cfg -fl C:/Users/jwang1/Desktop/macro_file/stand_case/sim/library.cfg -pli C:/Aldec/Riviera/bin/systf.dll ./sim_tb.v

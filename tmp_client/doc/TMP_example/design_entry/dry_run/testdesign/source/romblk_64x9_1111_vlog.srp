@@ -1,0 +1,32 @@
+SCUBA, Version Diamond (64-bit) 3.5.0.98
+Thu May 28 17:04:31 2015
+
+Copyright (c) 1991-1994 by NeoCAD Inc. All rights reserved.
+Copyright (c) 1995 AT&T Corp.   All rights reserved.
+Copyright (c) 1995-2001 Lucent Technologies Inc.  All rights reserved.
+Copyright (c) 2001 Agere Systems   All rights reserved.
+Copyright (c) 2002-2015 Lattice Semiconductor Corporation,  All rights reserved.
+
+    Issued command   : scuba -w -arch sn5w00 -synth spectrum -dram -lang verilog -bus_exp 7 -bb -n romblk_64x9_1111_vlog -type romblk -addr_width 6 -data_width 9 -num_words 64 -gsr enable -resetmode async -outData REGISTERED -memfile ini_mem -memformat bin 
+    Circuit name     : romblk_64x9_1111_vlog
+    Module type      : rom
+    Module Version   : 2.8
+    Address width    : 6
+    Ports            : 
+	Inputs       : Address[5:0], OutClock, OutClockEn, Reset
+	Outputs      : Q[8:0]
+    I/O buffer       : not inserted
+    Memory file      : ini_mem
+    EDIF output      : romblk_64x9_1111_vlog.edn
+    Verilog output   : romblk_64x9_1111_vlog.v
+    Verilog template : romblk_64x9_1111_vlog_tmpl.v
+    Verilog testbench: tb_romblk_64x9_1111_vlog_tmpl.v
+    Verilog purpose  : for synthesis and simulation
+    Bus notation     : big endian
+    Report output    : romblk_64x9_1111_vlog.srp
+    Element Usage    :
+        FD1P3DX : 9
+       ROM64X1A : 9
+    Estimated Resource Usage:
+            LUT : 18
+            Reg : 9
