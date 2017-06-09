@@ -322,6 +322,33 @@ public class tube_server extends Thread {
 		}
 	}
 	
+	private void run_received_admin_sorting(){
+		String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+		if (link_mode.equalsIgnoreCase("both")){
+			return;
+		}
+		TreeMap<String, HashMap<String, HashMap<String, String>>> sorting_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		sorting_admin_queues_treemap.putAll(deep_clone.clone(task_info.get_received_admin_queues_treemap()));
+		Iterator<String> queue_iterator = sorting_admin_queues_treemap.keySet().iterator();
+		if (link_mode.equalsIgnoreCase("local")){
+			while(queue_iterator.hasNext()){
+				String queue_name = queue_iterator.next();
+				if (queue_name.contains("1@")){
+					task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
+				}
+			}
+		} else if (link_mode.equalsIgnoreCase("remote")) {
+			while(queue_iterator.hasNext()){
+				String queue_name = queue_iterator.next();
+				if (queue_name.contains("0@")){
+					task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
+				}
+			}			
+		} else {
+			return;
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -363,9 +390,11 @@ public class tube_server extends Thread {
 			run_import_remote_admin();
 			// task 2: update local admin (local file, import)
 			run_import_local_admin();
-			// task 3: flash tube output: captured and rejected treemap
+			// task 3 flash tube input:
+			run_received_admin_sorting();
+			// task 4: flash tube output: captured and rejected treemap
 			flash_tube_output();
-			// task 4: send client info to Remote server
+			// task 5: send client info to Remote server
 			if (send_count < 10) {
 				send_count++;
 				send_client_info("simple");

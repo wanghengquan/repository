@@ -99,7 +99,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 					QUEUE_PANEL_LOGGER.info("No line selected");
 				}
 			}
-			//for linux popmenu
+			//for Linux popmenu
 			public void mousePressed(MouseEvent e1) {
 				if (reject_table.getSelectedRows().length > 0) {
 					if (e1.isPopupTrigger()) {
