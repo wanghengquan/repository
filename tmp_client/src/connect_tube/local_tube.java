@@ -476,15 +476,16 @@ public class local_tube {
 	}
 
 	private Map<String, HashMap<String, HashMap<String, String>>> get_merge_suite_case_data(
-			Map<String, String> suite_data, Map<String, Map<String, String>> case_data) {
+			Map<String, String> suite_data, 
+			Map<String, Map<String, String>> case_data,
+			String xlsx_dest) {
 		Map<String, HashMap<String, HashMap<String, String>>> cross_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> sorted_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
-		Set<String> case_set = case_data.keySet();
-		Iterator<String> case_iterator = case_set.iterator();
+		Iterator<String> case_iterator = case_data.keySet().iterator();
 		while (case_iterator.hasNext()) {
 			String case_id = case_iterator.next();
 			Map<String, String> one_case_data = case_data.get(case_id);
-			HashMap<String, HashMap<String, String>> merge_data = merge_suite_case_data(suite_data, one_case_data);
+			HashMap<String, HashMap<String, String>> merge_data = merge_suite_case_data(suite_data, one_case_data, xlsx_dest);
 			cross_data.put(case_id, merge_data);
 		}
 		sorted_data = sortMapByKey(cross_data);
@@ -547,8 +548,10 @@ public class local_tube {
 
 	// merge suite data and case data(already merged with macro) to an final
 	// case data.
-	public HashMap<String, HashMap<String, String>> merge_suite_case_data(Map<String, String> suite_data,
-			Map<String, String> case_data) {
+	public HashMap<String, HashMap<String, String>> merge_suite_case_data(
+			Map<String, String> suite_data,
+			Map<String, String> case_data,
+			String xlsx_dest) {
 		HashMap<String, HashMap<String, String>> merge_data = new HashMap<String, HashMap<String, String>>();
 		// insert id data
 		String project_id = suite_data.get("project_id").trim();
@@ -581,6 +584,8 @@ public class local_tube {
 		if (!case_map.containsKey("design_name")) {
 			case_map.put("design_name", design_info);
 		}
+		//xlsx_dest is for local suite only
+		case_map.put("xlsx_dest", xlsx_dest);
 		merge_data.put("CaseInfo", case_map);
 		// insert Environment data
 		String suite_environ = suite_data.get("Environment").trim();
@@ -771,12 +776,16 @@ public class local_tube {
 
 	// generate different admin and task queue hash
 	public void generate_local_admin_task_queues(String local_file, String current_terminal) {
+		//record local suite file destination path
+		File xlsx_fobj = new File(local_file);
+		String xlsx_dest = xlsx_fobj.getParent().replaceAll("\\\\", "/");
+		//get excel data
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		ExcelData.putAll(get_excel_data(local_file));
 		Map<String, String> suite_data = get_suite_data(ExcelData);
 		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);
 		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_data,
-				case_data);
+				case_data, xlsx_dest);
 		// TreeMap<String, HashMap<String, HashMap<String, String>>>
 		// current_admin_queue_treemap = new TreeMap<String, HashMap<String,
 		// HashMap<String, String>>>();
@@ -785,8 +794,7 @@ public class local_tube {
 		if (suite_data.containsKey("suite_name")) {
 			admin_queue_base = suite_data.get("suite_name");
 		} else {
-			File xls_file = new File(local_file);
-			admin_queue_base = xls_file.getName().split("\\.")[0];
+			admin_queue_base = xlsx_fobj.getName().split("\\.")[0];
 		}
 		Iterator<String> case_it = merge_data.keySet().iterator();
 		while (case_it.hasNext()) {

@@ -199,11 +199,11 @@ public class tmp_manager extends Thread  {
 	}
 	
 	public static String get_bin_path(){
-		String class_path = System.getProperty("java.class.path"); 
+		String class_path = System.getProperty("java.class.path");
 		String path_split = System.getProperty("path.separator");
-		String bin_path = class_path.split(path_split)[0];
+		String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
 		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")  || bin_path.endsWith(".so")){
-			bin_path = bin_path.substring(0, bin_path.lastIndexOf(File.separator) + 1);  
+			bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);  
 		}
 		File file = new File(bin_path);
 		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");

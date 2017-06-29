@@ -23,9 +23,9 @@ public class public_data {
 
 	// ========================
 	// base
-	public final static String BASE_CURRENTVERSION = "2.6.5"; // External.Internal.DEV
-	public final static int BASE_CURRENTVERSION_INT = 265; // version for code use
-	public final static String BASE_BUILDDATE = "2017/6/9";
+	public final static String BASE_CURRENTVERSION = "2.6.4"; // External.Internal.DEV
+	public final static int BASE_CURRENTVERSION_INT = 264; // version for code use
+	public final static String BASE_BUILDDATE = "2017/6/29";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -66,6 +66,7 @@ public class public_data {
 
 	// ========================
 	// external tools based on software bin path
+	public final static String TOOLS_ROOT = SW_HOME_PATH + "/tools";
 	public final static String TOOLS_SSHPASS = SW_HOME_PATH + "/tools/sshpass/sshpass";
 	public final static String TOOLS_KILL_PROCESS = SW_HOME_PATH + "/tools/kill_process.py";
 	public final static String TOOLS_KILL_WINPOP = SW_HOME_PATH + "/tools/kill_winpop.py";

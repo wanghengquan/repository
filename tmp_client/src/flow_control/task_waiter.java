@@ -569,10 +569,12 @@ public class task_waiter extends Thread {
 		formated_data.put("ID", id_hash);
 		// CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
+		String xlsx_dest = new String("");//local xlsx file containing folded/path
 		String repository = new String("");
 		String suite_path = new String("");
 		String design_name = new String("");
 		String script_address = new String("");
+		caseinfo_hash.put("xlsx_dest", xlsx_dest);
 		caseinfo_hash.put("repository", repository);
 		caseinfo_hash.put("suite_path", suite_path);
 		caseinfo_hash.put("design_name", design_name);

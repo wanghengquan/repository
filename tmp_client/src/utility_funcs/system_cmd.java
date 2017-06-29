@@ -40,30 +40,26 @@ public class system_cmd {
 		 * a command line will be execute.
 		 */
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
+		ArrayList<String> string_list = new ArrayList<String>();
+		string_list.add(cmd);
 		String[] cmd_list = cmd.split("\\s+");
 		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
 		proce_build.redirectErrorStream(true);
 		Process process = proce_build.start();
-		ArrayList<String> string_list = new ArrayList<String>();
-		InputStream fis = process.getInputStream();
-		BufferedReader bri = new BufferedReader(new InputStreamReader(fis));
-		string_list.add(cmd);
-		String line = null;
-		while ((line = bri.readLine()) != null) {
-			string_list.add(line);
-		}
-		bri.close();
+		
+		InputStream out_str = process.getInputStream();
+		StreamGobbler read_out = new StreamGobbler(out_str, "OUTPUT", false);
+		read_out.start();
 		try {
-			process.waitFor();
+			process.waitFor((long) 10*60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			SYSTEM_CMD_LOGGER.error("Run cmd Interrupted: " + cmd);
-		} catch (Exception e2) {
-			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e2.toString());
+			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e.toString());
 		}
+		read_out.stopGobbling();		
+		string_list.addAll(read_out.getOutputList());
 		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
-		SYSTEM_CMD_LOGGER.debug("Exit Code:" + string_list);
+		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
 		process.destroy();
 		return string_list;
 	}

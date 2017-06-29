@@ -70,7 +70,12 @@ public class case_prepare {
 			String case_work_path) throws IOException, Exception {
 		ArrayList<String> export_msg = new ArrayList<String>();
 		// generate source URL
+		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest");
+		System.out.println(">>>>>>>>>>>>>>>>>>>>");
+		System.out.println(xlsx_dest);
 		String repository = task_data.get("CaseInfo").get("repository");
+		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
+		System.out.println(repository);
 		String suite_path = task_data.get("CaseInfo").get("suite_path");
 		String design_name = task_data.get("CaseInfo").get("design_name");
 		String design_src_url = repository + "/" + suite_path + "/" + design_name;
@@ -83,6 +88,15 @@ public class case_prepare {
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// clean local existing case
+		File design_path_fobj = new File(design_des_url);
+		if (design_path_fobj.exists()){
+			if(FileUtils.deleteQuietly(design_path_fobj)){
+				CASE_PREPARE_LOGGER.debug("Previously run design deleted pass:" + design_des_url);
+			} else {
+				CASE_PREPARE_LOGGER.info("Previously run design deleted pass:" + design_des_url);
+			}
+		}
 		// get export command
 		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, user_name, pass_word, design_des_url);
 		// export design
@@ -133,6 +147,8 @@ public class case_prepare {
 	protected String[] get_run_command(HashMap<String, HashMap<String, String>> task_data, String work_path) {
 		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
 		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
+		script_addr = script_addr.replaceAll("\\$work_path", work_path);
+		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT);
 		// user command used
 		if (script_addr.length() > 1) {
 			return launch_cmd.split("\\s+");
@@ -140,8 +156,14 @@ public class case_prepare {
 		// internal script cmd used
 		// core script will be export to work space
 		Pattern patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe))", Pattern.CASE_INSENSITIVE);
-		Matcher match = patt.matcher(launch_cmd);
-		launch_cmd = match.replaceFirst(" " + work_path + "/$1");
+		if (launch_cmd.contains("$work_path")){
+			launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_path);
+		} else if (launch_cmd.contains("$tool_path")){
+			launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT);
+		} else {
+			Matcher match = patt.matcher(launch_cmd);
+			launch_cmd = match.replaceFirst(" " + work_path + "/$1");
+		}
 		// add default --deisgn option
 		String design_name = task_data.get("CaseInfo").get("design_name");
 		File design_name_fobj = new File(design_name);
