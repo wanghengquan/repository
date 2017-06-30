@@ -66,7 +66,7 @@ public class start_progress extends JFrame implements Runnable, status_value{
 	
 	public JPanel construct_bottom_panel(){
 		JPanel jp_info = new JPanel(new BorderLayout());
-		jl_info = new JLabel();
+		jl_info = new JLabel("");
 		jp_info.add(jl_info, BorderLayout.CENTER);
 		return jp_info;
 	}

@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
@@ -229,41 +230,7 @@ public class view_server extends Thread{
 		}
 	}
 	
-	public void run() {
-		try {
-			monitor_run();
-		} catch (Exception run_exception) {
-			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
-					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
-			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for(Object item: run_exception.getStackTrace()){
-				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}			
-			System.exit(1);
-		}
-	}
-	
-	private void monitor_run() {
-		// ============== All static job start from here ==============
-		// initial 1 : start progress
-		start_progress start_prepare = new start_progress(switch_info);
-		start_prepare.setVisible(true);
-		new Thread(start_prepare).start();
-		while(true){
-			if(switch_info.get_back_ground_power_up()){
-				break;
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		start_prepare.setVisible(false);
-		start_prepare.dispose();
-		// initial 2 : start GUI
+	private void start_main_gui(){
 		while(true){
 			if(switch_info.get_data_server_power_up()){
 				break;
@@ -290,7 +257,65 @@ public class view_server extends Thread{
 					top_view.show_welcome_letter();
 				}
 			});
+		}		
+	}
+	
+	private void start_progress_show(){
+		start_progress start_prepare = new start_progress(switch_info);
+		start_prepare.setVisible(true);
+		new Thread(start_prepare).start();
+		while(true){
+			if(switch_info.get_back_ground_power_up()){
+				break;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		start_prepare.setVisible(false);
+		start_prepare.dispose();		
+	}
+	
+	private void run_system_client_insts_check(){
+		int start_insts = switch_info.get_system_client_insts();
+		String message = new String("Info: " + String.valueOf(start_insts) + " TMP Client(s) launched already. Do you want to launch a new one?");
+		String title = new String("TMP Client launch number confirmation.");
+		if(start_insts > 0) {
+			//0:yes , 1:no
+			int user_select = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+			if (user_select == 1){
+				System.exit(1);
+			}
+		}
+		switch_info.increase_system_client_insts();
+	}
+	
+	public void run() {
+		try {
+			monitor_run();
+		} catch (Exception run_exception) {
+			run_exception.printStackTrace();
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, run_exception.toString() + line_separator);
+			for(Object item: run_exception.getStackTrace()){
+				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
+			}			
+			System.exit(1);
+		}
+	}
+	
+	private void monitor_run() {
+		// ============== All static job start from here ==============
+		// initial 0 : TMP client software instances check
+		run_system_client_insts_check();
+		// initial 1 : start progress
+		start_progress_show();
+		// initial 2 : start GUI
+		start_main_gui();
 		//======================================
 		current_thread = Thread.currentThread();
 		while (!stop_request) {
@@ -321,7 +346,6 @@ public class view_server extends Thread{
 			}
 		}
 	}
-
 	
 	public void soft_stop() {
 		stop_request = true;

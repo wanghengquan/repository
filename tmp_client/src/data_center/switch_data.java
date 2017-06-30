@@ -11,6 +11,7 @@ package data_center;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.prefs.Preferences;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +22,10 @@ public class switch_data {
 	// private property
 	@SuppressWarnings("unused")
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
+	private static final Preferences sys_pref = Preferences.systemRoot().node("TMP_CLIENT_NUM");
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
+	// System start client record
+	private int system_client_insts = sys_pref.getInt("", 0);
 	// client update
 	private int send_admin_request = 1; // for client start up 
 	private int dump_config_request = 0;
@@ -46,6 +50,38 @@ public class switch_data {
 
 	}
 
+	public int get_system_client_insts(){
+		rw_lock.writeLock().lock();
+		try {
+			system_client_insts = sys_pref.getInt("run_num", 0);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return system_client_insts;
+	}
+	
+	public void increase_system_client_insts(){
+		rw_lock.writeLock().lock();
+		try {
+			system_client_insts = system_client_insts + 1;
+			sys_pref.putInt("run_num", system_client_insts);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void decrease_system_client_insts(){
+		rw_lock.writeLock().lock();
+		try {
+			if(system_client_insts > 0){
+				system_client_insts = system_client_insts - 1;
+			}
+			sys_pref.putInt("run_num", system_client_insts);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {

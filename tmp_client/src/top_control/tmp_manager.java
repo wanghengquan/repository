@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 //import java.net.URL;
 //import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -115,6 +116,7 @@ public class tmp_manager extends Thread  {
 			}
 			count++;
 		}
+		switch_info.decrease_system_client_insts();
 		System.exit(0);
 	}
 	
@@ -233,6 +235,30 @@ public class tmp_manager extends Thread  {
 		return my_check.do_self_check();
 	}
 	
+	private static void run_system_client_insts_check(switch_data switch_info){
+		int start_insts = switch_info.get_system_client_insts();
+		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched already.");
+		if (start_insts > 0){
+			Scanner user_input = new Scanner(System.in);
+			int input_count = 0;
+			while(true){
+				System.out.println(">>>Info: Do you want to launch a new one? y/n");
+				String user_choice = user_input.nextLine();
+				if (user_choice.equals("y")){
+					break;
+				}
+				if (user_choice.equals("n")){
+					System.exit(1);
+				}
+				input_count++;
+				if(input_count > 9){
+					System.exit(1);
+				}
+			}
+			user_input.close(); 
+		}
+		switch_info.increase_system_client_insts();
+	}
 	/*
 	 * main entry for test
 	 */
@@ -243,7 +269,7 @@ public class tmp_manager extends Thread  {
 		System.out.println("");
 		initial_log_config();
 		TMP_MANAGER_LOGGER.debug("debug output test");
-		TMP_MANAGER_LOGGER.info("Info output test");
+		TMP_MANAGER_LOGGER.info("Info output ntest");
 		TMP_MANAGER_LOGGER.warn("Warn output test");
 		TMP_MANAGER_LOGGER.error("Error output test");
 		TMP_MANAGER_LOGGER.fatal("Fatal output test");	
@@ -257,8 +283,10 @@ public class tmp_manager extends Thread  {
 		//run self check
 		if(!run_self_check(switch_info)){
 			System.out.println(">>>Self check failed.");
-			System.exit(0);
+			System.exit(1);
 		}
+		//run launched client instances check
+		//run_system_client_insts_check(switch_info);
 		//launch GUI
 		if(cmd_info.get("cmd_gui").equals("gui")){
 			view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);

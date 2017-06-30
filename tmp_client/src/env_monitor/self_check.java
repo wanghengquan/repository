@@ -35,7 +35,7 @@ public class self_check {
 	public self_check(switch_data switch_info) {
 		this.switch_info = switch_info;
 	}
-
+	
 	private String get_python_version() {
 		String cmd = "python --version ";
 		// Python 2.7.2
