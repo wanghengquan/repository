@@ -59,7 +59,7 @@ public class system_cmd {
 		read_out.stopGobbling();		
 		string_list.addAll(read_out.getOutputList());
 		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
-		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
+		SYSTEM_CMD_LOGGER.warn("Exit String:" + string_list);
 		process.destroy();
 		return string_list;
 	}
@@ -290,27 +290,12 @@ public class system_cmd {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String cmd = " python  D:/tmp_work_space/DEV/bin/run_diamond.py    --synthesis-only    --synthesis=lse  --check-conf=designpool_lse.conf  --design=alm_intf_cpu_mem_dpram ";
+		String cmd = "svn --version ";
 		System.out.println(cmd);
-		String cmd_trim = cmd.trim();
-		System.out.println(cmd_trim);
-		String[] cmd_list = cmd_trim.split("\\s+");
-		for (String item:cmd_list){
-			System.out.println("_" + item + "_");
-		}
-		// String cmd = "svn export
-		// http://lshlabd0001/diamond/trunk/FE_17_POJO2/pojo2_flow/ao4410
-		// result/prj3/run368/T807387/ao4410 --username=guest --password=welcome
-		// run(String[] cmds, Map<String, String> envs, String directory, int timeout)
-		// String[] cmds = { "python", "try_python.py" };
 		HashMap<String, String> envs = new HashMap<String, String>();
 		envs.put("EXTERNAL_DIAMOND_PATH", "C:/lscc/diamond/3.9_x64");
 		envs.put("PYTHONUNBUFFERED", "1");
-		String dir = new String("D:/tmp_work_space/T1680938");
-		// int timeout = 5;
-		System.out.println("Environments:" + envs.toString());
-		ArrayList<String> list = run(cmd_list, envs, dir, 3600);
-		// ArrayList<String> list = run(cmd);
+		ArrayList<String> list = run(cmd);
 		System.out.println(list.toString());
 	}
 }
