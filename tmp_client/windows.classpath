@@ -74,5 +74,6 @@
 			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/apache-log4j-2.8.1-bin/log4j-core-2.8.1-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="D:/java_dev/lib/Jupdater-1.0.0/Jupdater.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
