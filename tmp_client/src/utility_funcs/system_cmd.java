@@ -35,7 +35,7 @@ public class system_cmd {
 	}
 
 	// run0 command single string
-	public static ArrayList<String> run(String cmd) throws IOException {
+	public static ArrayList<String> run(String cmd) throws IOException, InterruptedException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -46,20 +46,15 @@ public class system_cmd {
 		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
 		proce_build.redirectErrorStream(true);
 		Process process = proce_build.start();
-		
 		InputStream out_str = process.getInputStream();
 		StreamGobbler read_out = new StreamGobbler(out_str, "OUTPUT", false);
 		read_out.start();
-		try {
-			process.waitFor((long) 10*60, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e.toString());
-		}
-		read_out.stopGobbling();		
+		process.waitFor((long) 10*60, TimeUnit.SECONDS);
+		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
+		read_out.stopGobbling();
 		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
-		SYSTEM_CMD_LOGGER.warn("Exit String:" + string_list);
+		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
 		process.destroy();
 		return string_list;
 	}
@@ -167,8 +162,9 @@ public class system_cmd {
 		StreamGobbler read_out = new StreamGobbler(out_str, "OUTPUT", false);
 		read_out.start();
 		boolean exit_status = p.waitFor((long) timeout, TimeUnit.SECONDS);
-		read_out.stopGobbling();
+		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
+		read_out.stopGobbling();
 		if (exit_status) {
 			int exit_value = p.exitValue();
 			if (exit_value == 0) {
@@ -292,9 +288,9 @@ public class system_cmd {
 	public static void main(String[] args) throws Exception {
 		String cmd = "svn --version ";
 		System.out.println(cmd);
-		HashMap<String, String> envs = new HashMap<String, String>();
-		envs.put("EXTERNAL_DIAMOND_PATH", "C:/lscc/diamond/3.9_x64");
-		envs.put("PYTHONUNBUFFERED", "1");
+		//HashMap<String, String> envs = new HashMap<String, String>();
+		//envs.put("EXTERNAL_DIAMOND_PATH", "C:/lscc/diamond/3.9_x64");
+		//envs.put("PYTHONUNBUFFERED", "1");
 		ArrayList<String> list = run(cmd);
 		System.out.println(list.toString());
 	}

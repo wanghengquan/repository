@@ -647,7 +647,7 @@ public class result_waiter extends Thread {
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
 			excute_retruns = system_cmd.run(cmd);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;

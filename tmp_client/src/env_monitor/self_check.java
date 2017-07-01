@@ -9,7 +9,6 @@
  */
 package env_monitor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +43,7 @@ public class self_check {
 		try {
 			ArrayList<String> excute_retruns = system_cmd.run(cmd);
 			raw_input = excute_retruns.get(1);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 		}
@@ -69,7 +68,7 @@ public class self_check {
 		try {
 			ArrayList<String> excute_retruns = system_cmd.run(cmd);
 			raw_input = excute_retruns.get(1);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 		}

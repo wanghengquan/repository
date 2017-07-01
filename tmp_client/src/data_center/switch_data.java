@@ -22,7 +22,7 @@ public class switch_data {
 	// private property
 	@SuppressWarnings("unused")
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
-	private static final Preferences sys_pref = Preferences.systemRoot().node("tmp_client_num");
+	private static final Preferences sys_pref = Preferences.userRoot().node("tmp_client_num");
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// System start client record
 	private int system_client_insts = sys_pref.getInt("", 0);

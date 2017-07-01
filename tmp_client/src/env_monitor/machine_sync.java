@@ -11,7 +11,6 @@
 package env_monitor;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -79,7 +78,7 @@ public class machine_sync extends Thread {
 		try {
 			ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
 			os_name = excute_retruns.get(1);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 			INFO_LOGGER.warn("Cannot resolve Operation System name");
