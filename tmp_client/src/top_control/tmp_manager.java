@@ -116,12 +116,12 @@ public class tmp_manager extends Thread  {
 			}
 			count++;
 		}
-		switch_info.decrease_system_client_insts();
 		System.exit(0);
 	}
 	
 	public void run() {
 		try {
+			shut_down_server();
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
@@ -135,6 +135,11 @@ public class tmp_manager extends Thread  {
 		}
 	}
 
+	private void shut_down_server(){
+		shut_down sh_server = new shut_down(switch_info);
+		Runtime.getRuntime().addShutdownHook(sh_server);
+	}
+	
 	private void monitor_run() {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
@@ -235,10 +240,12 @@ public class tmp_manager extends Thread  {
 		return my_check.do_self_check();
 	}
 	
-	private static void run_system_client_insts_check(switch_data switch_info){
+	private static void run_system_client_insts_check(
+			switch_data switch_info,
+			String run_mode){
 		int start_insts = switch_info.get_system_client_insts();
 		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched already.");
-		if (start_insts > 0){
+		if (start_insts > 0 && run_mode.equals("cmd")){
 			Scanner user_input = new Scanner(System.in);
 			int input_count = 0;
 			while(true){
@@ -256,8 +263,8 @@ public class tmp_manager extends Thread  {
 				}
 			}
 			user_input.close(); 
+			switch_info.increase_system_client_insts();
 		}
-		switch_info.increase_system_client_insts();
 	}
 	/*
 	 * main entry for test
@@ -286,7 +293,7 @@ public class tmp_manager extends Thread  {
 			System.exit(1);
 		}
 		//run launched client instances check
-		//run_system_client_insts_check(switch_info);
+		run_system_client_insts_check(switch_info, cmd_info.get("cmd_gui"));
 		//launch GUI
 		if(cmd_info.get("cmd_gui").equals("gui")){
 			view_server view_runner = new view_server(switch_info, client_info, task_info, view_info, pool_info);

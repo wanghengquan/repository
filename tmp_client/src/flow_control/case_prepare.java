@@ -71,11 +71,8 @@ public class case_prepare {
 		ArrayList<String> export_msg = new ArrayList<String>();
 		// generate source URL
 		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest");
-		System.out.println(">>>>>>>>>>>>>>>>>>>>");
-		System.out.println(xlsx_dest);
 		String repository = task_data.get("CaseInfo").get("repository");
 		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
-		System.out.println(repository);
 		String suite_path = task_data.get("CaseInfo").get("suite_path");
 		String design_name = task_data.get("CaseInfo").get("design_name");
 		String design_src_url = repository + "/" + suite_path + "/" + design_name;
