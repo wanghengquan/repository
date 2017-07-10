@@ -95,7 +95,7 @@ public class case_prepare {
 			}
 		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, user_name, pass_word, design_des_url);
+		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, user_name, pass_word, design_des_url, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
@@ -127,7 +127,7 @@ public class case_prepare {
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, user_name, pass_word, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, user_name, pass_word, case_work_path, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
@@ -217,7 +217,12 @@ public class case_prepare {
 	 * <host>:M:/test_dir + test_suite + test_case \\lsh-smb01\test_dir +
 	 * test_suite + test_case /lsh/sw/test_test + test_suite + test_case
 	 */
-	private ArrayList<String> get_export_cmd(String case_url, String user_name, String pass_word, String case_dir) {
+	private ArrayList<String> get_export_cmd(
+			String case_url, 
+			String user_name, 
+			String pass_word, 
+			String case_dir,
+			String case_work_path) {
 		String host_run = System.getProperty("os.name").toLowerCase();
 		String[] url_array = case_url.split(":", 2);
 		String host_src = url_array[0];
@@ -227,6 +232,21 @@ public class case_prepare {
 				// svn path
 				cmd_array.add("svn export " + case_url + " " + case_dir + " --username=" + user_name + " --password="
 						+ pass_word + " --no-auth-cache" + " --force");
+			} else if (host_src.equalsIgnoreCase("ftp")){
+				String account_str = new String();
+				if (user_name.equals(public_data.FTP_USER)){
+					account_str = ""; //default user means login with anonymous account (public_data.FTP_USER == anonymous)
+				} else {
+					account_str = " --ftp-user=" + user_name + "  --ftp-password=" + pass_word + " ";
+				}
+				String wget_str = new String();
+				if (host_run.startsWith("windows")) {
+					wget_str = public_data.TOOLS_WGET + " ";
+				} else {
+					wget_str = "wget ";
+				}
+				int cut_depth = case_url.split("/").length - 3 -1; // 3 remove the depth for ftp://shitl0012, 1 remove keep folder
+				cmd_array.add(wget_str + case_url + " -r -q -nH --cut-dirs=" + String.valueOf(cut_depth) + " -P " + case_work_path + account_str); 
 			} else {
 				// client path
 				if (host_run.startsWith("windows")) {
@@ -275,7 +295,9 @@ public class case_prepare {
 		ArrayList<String> export_list = new ArrayList<String>();
 		ArrayList<String> export_design = this.get_design_export(task_data, working_dir);
 		ArrayList<String> export_script = this.get_script_export(task_data, working_dir);
+		export_list.add(">>>Design export:");
 		export_list.addAll(export_design);
+		export_list.add(">>>Script export:");
 		export_list.addAll(export_script);
 		return export_list;
 	}

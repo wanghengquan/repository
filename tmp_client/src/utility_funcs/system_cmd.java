@@ -51,6 +51,7 @@ public class system_cmd {
 		process.waitFor((long) 10*60, TimeUnit.SECONDS);
 		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
+		string_list.add("Exit Code:" + process.exitValue());
 		read_out.stopGobbling();
 		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
 		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);

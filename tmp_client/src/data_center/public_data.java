@@ -75,6 +75,7 @@ public class public_data {
 	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
 	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
+	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
 
@@ -103,10 +104,15 @@ public class public_data {
 	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/f0c3/eaa3otw==";
 
 	// ========================
-	// link to SVN configuration data only shown here
+	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
 	public final static String SVN_PWD = "welcome";
 
+	// ========================
+	// link to FTP default user shown here
+	public final static String FTP_USER = "guest";
+	public final static String FTP_PWD = "welcome";
+	
 	// ========================
 	// Link to core script
 	public final static String CORE_SCRIPT_NAME = "DEV";
