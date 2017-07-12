@@ -165,10 +165,8 @@ public class tmp_manager extends Thread  {
 			// task 1 : run maintenance mode
 			if(run_maintenance_mode()){
 				TMP_MANAGER_LOGGER.warn("Client Going to maintenance mode...");
-				switch_info.set_client_maintenance_mode(true);
 				implements_self_quiet_update();
 				implements_core_script_update();
-				switch_info.set_client_maintenance_mode(false);
 			}
 			// task 2 :
 			client_stop_acknowledge();

@@ -326,26 +326,6 @@ public class switch_data {
 		return status;
 	}
 	
-	public void set_client_maintenance_mode(Boolean current_status) {
-		rw_lock.writeLock().lock();
-		try {
-			this.client_maintenance_mode = current_status;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-
-	public Boolean get_client_maintenance_mode() {
-		Boolean status = new Boolean(false);
-		rw_lock.readLock().lock();
-		try {
-			status = this.client_maintenance_mode;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return status;
-	}
-	
 	public void set_suite_file(String new_data) {
 		rw_lock.writeLock().lock();
 		try {

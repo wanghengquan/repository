@@ -180,9 +180,7 @@ public class hall_manager extends Thread {
 			// task 1 : update running task waiters
 			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
 			// task 2 : make general report
-			if(!switch_info.get_client_maintenance_mode()){
-				generate_console_report(pool_info);
-			}
+			generate_console_report(pool_info);
 			// task 3 : Status report
 			hall_status_report(pool_info);
 			try {
