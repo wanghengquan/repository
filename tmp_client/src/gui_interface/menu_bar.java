@@ -226,7 +226,6 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			MENU_BAR_LOGGER.warn("Export clicked");
 		}
 		if (e.getSource().equals(exit)) {
-			switch_info.set_house_keep_request();
 			switch_info.set_client_stop_request();
 			main_view.setVisible(false);
 		}

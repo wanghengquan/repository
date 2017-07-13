@@ -45,7 +45,6 @@ public class task_waiter extends Thread {
 	private pool_data pool_info;
 	private task_data task_info;
 	private client_data client_info;
-	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private String line_separator = System.getProperty("line.separator");
 	// private String file_seprator = System.getProperty("file.separator");

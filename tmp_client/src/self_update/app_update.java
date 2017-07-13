@@ -29,6 +29,7 @@ public class app_update implements UpdatedApplication  {
 	//private static final Logger TMP_MANAGER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
 	private static final Logger APP_UPDATE_LOGGER = LogManager.getLogger(app_update.class.getName()); 
 	//private String line_separator = System.getProperty("line.separator");	
+	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private client_data client_info;	
 	// public function
@@ -101,21 +102,7 @@ public class app_update implements UpdatedApplication  {
 	}
 
 	@Override
-	public boolean requestRestart() {
-		// TODO Auto-generated method stub
-		int count = 0;
-		while(switch_info.get_house_keep_request() > 0){
-			if (count > 20){
-				break;
-			}
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			count++;
-		}		
+	public boolean requestRestart() {		
 		return true;
 	}
 	

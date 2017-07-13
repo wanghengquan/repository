@@ -143,6 +143,7 @@ public class switch_data {
 		}
 	}
 	
+	/*
 	public void decrease_house_keep_request() {
 		rw_lock.writeLock().lock();
 		try {
@@ -164,6 +165,7 @@ public class switch_data {
 		}
 		return result;
 	}
+	*/
 	
 	public void set_client_stop_request() {
 		rw_lock.writeLock().lock();

@@ -615,19 +615,6 @@ public class result_waiter extends Thread {
 		}
 		return copy_status;
 	}
-
-	private void house_keeping_acknowledge(){
-		if (switch_info.get_house_keep_request() < 1){
-			return;
-		}
-		//run house keeping
-		export_data.dump_disk_received_admin_data(client_info, task_info);
-		export_data.dump_disk_processed_admin_data(client_info, task_info);
-		export_data.dump_disk_received_task_data(client_info, task_info);
-		export_data.dump_disk_processed_task_data(client_info, task_info);
-		//finish house keeping
-		switch_info.decrease_house_keep_request();
-	}
 	
 	public void run() {
 		try {
@@ -677,32 +664,28 @@ public class result_waiter extends Thread {
 			update_thread_pool_running_queue(call_status);
 			// task 3 : dump finished queue
 			Boolean dump_status = dump_finished_data(call_status);
-			// task 4 : house keeping acknowledge
-			house_keeping_acknowledge();
-			//
-			//
 			// following actions based on a non-empty call back.
 			if (call_status.size() < 1) {
 				RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
 				continue;
 			}
-			// task 5 : cancel running call:1. time out, 2. user terminate
+			// task 4 : cancel running call:1. time out, 2. user terminate
 			Boolean cancel_status = cancel_timeout_call(call_status);
 			cancel_gui_request_call(call_status);
-			// task 6 : general case report
+			// task 5 : general case report
 			HashMap<String, HashMap<String, String>> case_report_data = generate_case_report_data(call_status);
 			Boolean send_case_status = send_case_report(case_report_data);
-			// task 7 : detail case runtime log report
+			// task 6 : detail case runtime log report
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
 					call_status);
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
-			// task 8 : update processed task data info
+			// task 7 : update processed task data info
 			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
-			// task 9 : release occupied pool thread
+			// task 8 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
-			// task 10 : release occupied resource usage
+			// task 9 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
-			// task 11 : post process
+			// task 10 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status && dump_status) {

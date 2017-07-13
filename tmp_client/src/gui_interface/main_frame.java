@@ -161,7 +161,6 @@ public class main_frame extends JFrame {
 		MenuItem close = new MenuItem("Close");
 		close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
-				switch_info.set_house_keep_request();
 				switch_info.set_client_stop_request();
 			}
 		});
