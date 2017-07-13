@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import data_center.switch_data;
 import utility_funcs.system_cmd;
 import utility_funcs.linux_info;
 
@@ -47,6 +48,7 @@ public class machine_sync extends Thread {
 	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
+	private switch_data switch_info;
 
 	// public function update data every interval seconds
 	public machine_sync(int base_interval) {
@@ -54,7 +56,8 @@ public class machine_sync extends Thread {
 	}
 
 	// public function default update data every 5 seconds
-	public machine_sync() {
+	public machine_sync(switch_data switch_info) {
+		this.switch_info = switch_info;
 	}
 
 	// protected function
@@ -235,7 +238,7 @@ public class machine_sync extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();	
-			System.exit(1);
+			switch_info.set_client_stop_request();
 		}
 	}
 

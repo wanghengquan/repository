@@ -360,7 +360,7 @@ public class tube_server extends Thread {
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			System.exit(1);
+			switch_info.set_client_stop_request();
 		}
 	}
 

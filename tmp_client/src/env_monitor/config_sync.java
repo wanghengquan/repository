@@ -295,7 +295,7 @@ public class config_sync extends Thread {
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			System.exit(1);
+			switch_info.set_client_stop_request();
 		}
 	}
 
@@ -311,7 +311,7 @@ public class config_sync extends Thread {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
 			CONFIG_SYNC_LOGGER.warn("config sync get initial config data failed");
-			System.exit(1);
+			switch_info.set_client_stop_request();
 		}
 		// initial 2 : update initial(static) data
 		update_static_data(ini_data);

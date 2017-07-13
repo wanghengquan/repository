@@ -11,7 +11,7 @@ package data_center;
 
 import java.io.File;
 
-import top_control.tmp_manager;
+import top_runner.top_launcher;
 
 public class public_data {
 	// private static final Logger PUB_LOGGER =
@@ -157,7 +157,7 @@ public class public_data {
 	}
 
 	private static String get_home_path() {
-		String bin_path = tmp_manager.get_bin_path();
+		String bin_path = top_launcher.get_bin_path();
 		File bin_dobj = new File(bin_path);
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 		System.out.println(">>>Info: SW root path:" + install_path);

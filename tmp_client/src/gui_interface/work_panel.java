@@ -40,13 +40,11 @@ import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.DocumentException;
 
 import connect_tube.task_data;
 import connect_tube.taskid_compare;
 import data_center.client_data;
-import data_center.public_data;
-import info_parser.xml_parser;
+import flow_control.import_data;
 import utility_funcs.deep_clone;
 import utility_funcs.time_info;
 
@@ -268,8 +266,8 @@ public class work_panel extends JSplitPane implements Runnable{
 		// try import non exists queue data
 		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue)) {
 			//both admin and task should be successfully import otherwise skip import
-			import_admin_data_to_processed_data(watching_queue);
-			Boolean task_import_status = import_task_data_to_processed_data(watching_queue);
+			import_disk_admin_data_to_processed_data(watching_queue);
+			Boolean task_import_status = import_disk_task_data_to_processed_data(watching_queue);
 			if (!task_import_status){
 				WORK_PANEl_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_queue_area);
 				work_data.clear();
@@ -305,65 +303,29 @@ public class work_panel extends JSplitPane implements Runnable{
 		return show_update;
 	}	
 	
-	private Boolean import_admin_data_to_processed_data(String import_queue) {
+	private Boolean import_disk_admin_data_to_processed_data(String queue_name) {
 		Boolean import_status = new Boolean(false);
-		String work_path = new String();
-		if (client_info.get_client_data().containsKey("preference")) {
-			work_path = client_info.get_client_data().get("preference").get("work_path");
-		} else {
-			work_path = public_data.DEF_WORK_PATH;
-		}
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/finished/admin/" + import_queue + ".xml");
-		if (!log_path.exists()) {
-			return import_status;
-		}
-		xml_parser file_parser = new xml_parser();
 		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
-		try {
-			import_admin_data.putAll(file_parser.get_xml_file_admin_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			WORK_PANEl_LOGGER.warn("Import xml admin data failed:" + log_path.getAbsolutePath());
-			return import_status;
-		}
+		import_admin_data.putAll(
+				import_data.import_disk_finished_admin_data(queue_name, client_info));
 		if (import_admin_data.isEmpty()){
 			import_status = false;
 		} else {
-			task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+			task_info.update_queue_to_processed_admin_queues_treemap(queue_name, import_admin_data);
 			import_status = true;
 		}
 		return import_status;
 	}
 	
-	private Boolean import_task_data_to_processed_data(String import_queue) {
+	private Boolean import_disk_task_data_to_processed_data(String queue_name) {
 		Boolean import_status = new Boolean(false);
-		String work_path = new String();
-		if (client_info.get_client_data().containsKey("preference")) {
-			work_path = client_info.get_client_data().get("preference").get("work_path");
-		} else {
-			work_path = public_data.DEF_WORK_PATH;
-		}
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + import_queue + ".xml");
-		if (!log_path.exists()) {
-			return import_status;
-		}
-		xml_parser file_parser = new xml_parser();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		try {
-			import_task_data.putAll(file_parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			WORK_PANEl_LOGGER.warn("Import xml task data failed:" + log_path.getAbsolutePath());
-			return import_status;
-		}
+		import_task_data.putAll(
+				import_data.import_disk_finished_task_data(queue_name, client_info));
 		if (import_task_data.isEmpty()){
 			import_status = false;
 		} else {
-			task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+			task_info.update_queue_to_processed_task_queues_map(queue_name, import_task_data);
 			import_status = true;
 		}
 		return import_status;

@@ -129,11 +129,11 @@ public class task_data {
 	}
 	
 	public Boolean update_received_admin_queues_treemap(
-			TreeMap<String, HashMap<String, HashMap<String, String>>> update_queue) {
+			TreeMap<String, HashMap<String, HashMap<String, String>>> update_queues) {
 		Boolean update_status = new Boolean(true);
 		rw_lock.writeLock().lock();
 		try {
-			this.received_admin_queues_treemap.putAll(update_queue);
+			this.received_admin_queues_treemap.putAll(update_queues);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -210,6 +210,18 @@ public class task_data {
 		}
 		return queue_data;
 	}
+	
+	public Boolean update_processed_admin_queues_treemap(
+			TreeMap<String, HashMap<String, HashMap<String, String>>> update_queues) {
+		Boolean update_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			this.processed_admin_queues_treemap.putAll(update_queues);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}	
 	
 	public Boolean update_queue_to_processed_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
@@ -334,11 +346,11 @@ public class task_data {
 	}
 
 	public Boolean update_received_task_queues_map(
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queue) {
+			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues) {
 		Boolean update_status = new Boolean(true);
 		rw_lock.writeLock().lock();
 		try {
-			this.received_task_queues_map.putAll(update_queue);
+			this.received_task_queues_map.putAll(update_queues);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -583,6 +595,16 @@ public class task_data {
 		return mark_status;
 	}
 
+	public void update_processed_task_queues_map(
+			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues) {
+		rw_lock.writeLock().lock();
+		try {
+			processed_task_queues_map.putAll(update_queues);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public void update_queue_to_processed_task_queues_map(String queue_name,
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data) {
 		rw_lock.writeLock().lock();

@@ -80,7 +80,7 @@ public class data_server extends Thread {
 		this.switch_info = switch_info;
 		this.pool_info = pool_info;
 		this.config_runner = new config_sync(switch_info, client_info);
-		this.machine_runner = new machine_sync();
+		this.machine_runner = new machine_sync(switch_info);
 	}
 
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
@@ -186,7 +186,7 @@ public class data_server extends Thread {
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			System.exit(1);
+			switch_info.set_client_stop_request();;
 		}
 	}
 

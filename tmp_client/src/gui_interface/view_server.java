@@ -21,14 +21,13 @@ import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.DocumentException;
 
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.import_data;
 import flow_control.pool_data;
-import info_parser.xml_parser;
 import utility_funcs.file_action;
 
 public class view_server extends Thread{
@@ -120,8 +119,8 @@ public class view_server extends Thread{
 		}
 		if(task_info.get_finished_admin_queue_list().contains(queue_name)){
 			if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
-				Boolean import_admin_status = import_admin_data_to_processed_data(queue_name);
-				Boolean import_task_status = import_task_data_to_processed_data(queue_name);
+				Boolean import_admin_status = import_disk_admin_data_to_processed_data(queue_name);
+				Boolean import_task_status = import_disk_task_data_to_processed_data(queue_name);
 				if (!import_admin_status || !import_task_status){
 					VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action);
 					return action_status;
@@ -137,66 +136,30 @@ public class view_server extends Thread{
 	}	
 	
 	//dup function in work panel
-	private Boolean import_admin_data_to_processed_data(String import_queue) {
+	private Boolean import_disk_admin_data_to_processed_data(String queue_name) {
 		Boolean import_status = new Boolean(false);
-		String work_path = new String();
-		if (client_info.get_client_data().containsKey("preference")) {
-			work_path = client_info.get_client_data().get("preference").get("work_path");
-		} else {
-			work_path = public_data.DEF_WORK_PATH;
-		}
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/finished/admin/" + import_queue + ".xml");
-		if (!log_path.exists()) {
-			return import_status;
-		}
-		xml_parser file_parser = new xml_parser();
 		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
-		try {
-			import_admin_data.putAll(file_parser.get_xml_file_admin_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
-			return import_status;
-		}
+		import_admin_data.putAll(
+				import_data.import_disk_finished_admin_data(queue_name, client_info));
 		if (import_admin_data.isEmpty()){
 			import_status = false;
 		} else {
-			task_info.update_queue_to_processed_admin_queues_treemap(import_queue, import_admin_data);
+			task_info.update_queue_to_processed_admin_queues_treemap(queue_name, import_admin_data);
 			import_status = true;
 		}
 		return import_status;
 	}
 	
 	//dup function in work panel
-	private Boolean import_task_data_to_processed_data(String import_queue) {
+	private Boolean import_disk_task_data_to_processed_data(String queue_name) {
 		Boolean import_status = new Boolean(false);
-		String work_path = new String();
-		if (client_info.get_client_data().containsKey("preference")) {
-			work_path = client_info.get_client_data().get("preference").get("work_path");
-		} else {
-			work_path = public_data.DEF_WORK_PATH;
-		}
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/finished/task/" + import_queue + ".xml");
-		if (!log_path.exists()) {
-			return import_status;
-		}
-		xml_parser file_parser = new xml_parser();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		try {
-			import_task_data.putAll(file_parser.get_xml_file_task_queue_data(log_path.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			VIEW_SERVER_LOGGER.warn("Import xml data failed:" + log_path.getAbsolutePath());
-			return import_status;
-		}
+		import_task_data.putAll(
+				import_data.import_disk_finished_task_data(queue_name, client_info));
 		if (import_task_data.isEmpty()){
 			import_status = false;
 		} else {
-			task_info.update_queue_to_processed_task_queues_map(import_queue, import_task_data);
+			task_info.update_queue_to_processed_task_queues_map(queue_name, import_task_data);
 			import_status = true;
 		}
 		return import_status;
@@ -304,7 +267,7 @@ public class view_server extends Thread{
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			System.exit(1);
+			switch_info.set_client_stop_request();
 		}
 	}
 	

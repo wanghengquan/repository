@@ -9,11 +9,7 @@
  */
 package top_runner.run_manager;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,16 +20,10 @@ import data_center.client_data;
 import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
-import env_monitor.core_update;
-import env_monitor.kill_winpop;
-import env_monitor.self_check;
 import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
-import info_parser.cmd_parser;
-import self_update.app_update;
-import top_control.shut_down;
 import top_runner.run_status.client_status;
 import utility_funcs.file_action;
 
@@ -43,7 +33,7 @@ public class client_manager extends Thread  {
 	// protected property
 	// private property
 	//private static final Logger CLIENT_MANAGER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
-	private static Logger CLIENT_MANAGER_LOGGER = null; 
+	private static Logger CLIENT_MANAGER_LOGGER = LogManager.getLogger(client_manager.class.getName());; 
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread current_thread;
@@ -88,26 +78,6 @@ public class client_manager extends Thread  {
 			return true;
 		}
 		return false;
-	}
-	
-	private void client_stop_acknowledge(){
-		if(switch_info.get_client_stop_request() < 1){
-			return;
-		}
-		int count = 0;
-		while(switch_info.get_house_keep_request() > 0){
-			if (count > 20){
-				break;
-			}
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			count++;
-		}
-		System.exit(0);
 	}
 	
 	public void run() {

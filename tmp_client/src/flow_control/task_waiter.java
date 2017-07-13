@@ -9,20 +9,17 @@
  */
 package flow_control;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.DocumentException;
 
 import connect_tube.local_tube;
 import connect_tube.rmq_tube;
@@ -30,7 +27,6 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
-import info_parser.xml_parser;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.system_call;
@@ -80,177 +76,28 @@ public class task_waiter extends Thread {
 		return waiter_thread;
 	}
 
-	private Boolean import_history_finished_admin_queue_into_memory() {
-		Boolean import_status = new Boolean(false);
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		ArrayList<String> history_admin_queue_list = new ArrayList<String>();
-		File log_path = new File(work_path + "/" + log_folder + "/finished/admin");
-		if (!log_path.exists() || !log_path.canRead()) {
-			return import_status;
+	private void retrieve_queues_into_memory() {
+		synchronized (this.getClass()) {
+			task_info.update_received_admin_queues_treemap(
+					import_data.retrieve_disk_dumped_received_admin_data(client_info));
+			task_info.update_processed_admin_queues_treemap(
+					import_data.retrieve_disk_dumped_processed_admin_data(client_info));
+			task_info.update_received_task_queues_map(
+					import_data.retrieve_disk_dumped_received_task_data(client_info));
+			task_info.update_processed_task_queues_map(
+					import_data.retrieve_disk_dumped_processed_task_data(client_info));
 		}
-		File[] file_list = log_path.listFiles();
-		for (File file : file_list) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			if (!file.getName().contains(".xml")) {
-				continue;
-			}
-			if (!file.getName().contains("@")) {
-				continue;
-			}
-			String file_name = file.getName();
-			history_admin_queue_list.add(file_name.replace(".xml", ""));
-		}
-		if (history_admin_queue_list.size() > 0) {
-			task_info.update_finished_admin_queue_list(history_admin_queue_list);
-			import_status = true;
-		}
-		return import_status;
 	}
 
-	private void retrieve_queues_into_memory(){
-		synchronized (this.getClass()) {	
-			retrieve_received_admin_data();
-			retrieve_processed_admin_data();
-			retrieve_received_task_data();
-			retrieve_processed_task_data();
-		}
-	}
-	
-	private void retrieve_received_admin_data(){
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/retrieve/received_admin");
-		if (!log_path.exists() || !log_path.canRead()) {
-			return;
-		}
-		File[] file_list = log_path.listFiles();
-		for (File file : file_list) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			if (!file.getName().contains(".xml")) {
-				continue;
-			}
-			if (!file.getName().contains("@")) {
-				continue;
-			}
-			String queue_name = file.getName().split("\\.")[0];
-			if(queue_name.equals("511@run_990_041417_150416")){
-				System.out.println("start");
-			}
-			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
-			if (queue_data.isEmpty()){
-				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
-				continue;
-			}
-			file.delete();
-			task_info.update_queue_to_received_admin_queues_treemap(queue_name, queue_data);
-		}
-	}
-	
-	private void retrieve_processed_admin_data(){
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/retrieve/processed_admin");
-		if (!log_path.exists() || !log_path.canRead()) {
-			return;
-		}
-		File[] file_list = log_path.listFiles();
-		for (File file : file_list) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			if (!file.getName().contains(".xml")) {
-				continue;
-			}
-			if (!file.getName().contains("@")) {
-				continue;
-			}
-			String queue_name = file.getName().split("\\.")[0];
-			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
-			if (queue_data.isEmpty()){
-				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
-				continue;
-			}
-			file.delete();
-			task_info.update_queue_to_processed_admin_queues_treemap(queue_name, queue_data);
-		}		
-	}
-	
-	private void retrieve_received_task_data(){
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/retrieve/received_task");
-		if (!log_path.exists() || !log_path.canRead()) {
-			return;
-		}
-		File[] file_list = log_path.listFiles();
-		for (File file : file_list) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			if (!file.getName().contains(".xml")) {
-				continue;
-			}
-			if (!file.getName().contains("@")) {
-				continue;
-			}
-			String queue_name = file.getName().split("\\.")[0];
-			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			queue_data.putAll(import_task_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
-			if (queue_data.isEmpty()){
-				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
-				continue;
-			}
-			file.delete();
-			task_info.update_queue_to_received_task_queues_map(queue_name, queue_data);
-		}	
-	}
-	
-	private void retrieve_processed_task_data(){
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		File log_path = new File(work_path + "/" + log_folder + "/retrieve/processed_task");
-		if (!log_path.exists() || !log_path.canRead()) {
-			return;
-		}
-		File[] file_list = log_path.listFiles();
-		for (File file : file_list) {
-			if (file.isDirectory()) {
-				continue;
-			}
-			if (!file.getName().contains(".xml")) {
-				continue;
-			}
-			if (!file.getName().contains("@")) {
-				continue;
-			}
-			String queue_name = file.getName().split("\\.")[0];
-			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			queue_data.putAll(import_task_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
-			if (queue_data.isEmpty()){
-				TASK_WAITER_LOGGER.warn("Retrieve data failed:" + file.getAbsolutePath().replaceAll("\\\\", "/"));
-				continue;
-			}
-			file.delete();
-			task_info.update_queue_to_processed_task_queues_map(queue_name, queue_data);
-		}		
-	}
-	
 	private void update_processing_queue_list() {
 		Set<String> captured_admin_queue_set = new HashSet<String>();
-		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());	
+		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));			
+			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
 			if (queue_data.isEmpty()) {
 				continue; // some one delete this queue already
 			}
@@ -277,79 +124,28 @@ public class task_waiter extends Thread {
 	}
 
 	private void reload_finished_queue_data() {
-		ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
-		ArrayList<String> finished_queue_list = task_info.get_finished_admin_queue_list();
-		for (String queue_name : processing_queue_list) {
-			if (!finished_queue_list.contains(queue_name)) {
-				continue;
+		synchronized (this.getClass()) {
+			ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
+			ArrayList<String> finished_queue_list = task_info.get_finished_admin_queue_list();
+			for (String queue_name : processing_queue_list) {
+				if (!finished_queue_list.contains(queue_name)) {
+					continue;
+				}
+				if (!task_info.remove_finished_admin_queue_list(queue_name)) {
+					continue;// some one else remove queue form finished list
+								// already
+				}
+				// action need to do after remove queue form finished list
+				if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
+					continue;// task_data already in memory, no import need.
+				}
+				task_info.update_queue_to_processed_task_queues_map(queue_name,
+						import_data.import_disk_finished_task_data(queue_name, client_info));
+				// don't import admin queue since it maybe changed remotely
 			}
-			if (!task_info.remove_finished_admin_queue_list(queue_name)) {
-				continue;// some one else remove queue form finished list
-							// already return
-			}
-			// action need to do after remove queue form finished list
-			if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
-				continue;// task_data already in memory, no import need.
-			}
-			import_history_finished_task_queue_into_memory(queue_name);
-			// don't import admin queue since it maybe changed remotely
 		}
 	}
 
-	private synchronized Boolean import_history_finished_task_queue_into_memory(String queue_name) {
-		Boolean import_status = new Boolean(false);
-		if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
-			return import_status;// task_data already in memory, no import need.
-		}		
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String xml_path = work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml";
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		queue_data.putAll(import_task_data(xml_path));
-		if(queue_data.isEmpty()){
-			return import_status;
-		}
-		task_info.update_queue_to_processed_task_queues_map(queue_name, queue_data);
-		import_status = true;
-		return import_status;
-	}
-
-	private HashMap<String, HashMap<String, String>> import_admin_data(String xml_path) {
-		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-		File xml_frh = new File(xml_path);
-		if (!xml_frh.exists() || !xml_frh.canRead()) {
-			return queue_data;
-		}
-		xml_parser parser = new xml_parser();
-		try {
-			queue_data.putAll(parser.get_xml_file_admin_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + xml_path);
-			return queue_data;
-		}
-		return queue_data;
-	}
-	
-	private TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data(String xml_path) {
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		File xml_frh = new File(xml_path);
-		if (!xml_frh.exists() || !xml_frh.canRead()) {
-			return queue_data;
-		}
-		xml_parser parser = new xml_parser();
-		try {
-			queue_data.putAll(parser.get_xml_file_task_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			TASK_WAITER_LOGGER.warn(waiter_name + ":Import history task data failed:" + xml_path);
-			return queue_data;
-		}
-		return queue_data;
-	}
-	
 	private String get_right_task_queue() {
 		String queue_name = new String();
 		// pending_queue_list = total processing_admin_queue -
@@ -493,7 +289,8 @@ public class task_waiter extends Thread {
 		// local is done)
 		formated_case_data.putAll(get_formated_case_data(raw_case_data));
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
-			raw_task_data.putAll(formated_case_data);// local data no need to merge
+			raw_task_data.putAll(formated_case_data);// local data no need to
+														// merge
 		} else {
 			// remote data, initial merge, rerun remote task will use local
 			// model(no merge need) (consider cmd option)
@@ -569,7 +366,8 @@ public class task_waiter extends Thread {
 		formated_data.put("ID", id_hash);
 		// CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
-		String xlsx_dest = new String("");//local xlsx file containing folded/path
+		String xlsx_dest = new String("");// local xlsx file containing
+											// folded/path
 		String repository = new String("");
 		String suite_path = new String("");
 		String design_name = new String("");
@@ -656,7 +454,7 @@ public class task_waiter extends Thread {
 		if (case_data.containsKey("ID")) {
 			id_hash.putAll(case_data.get("ID"));
 		}
-		default_data.put("ID", id_hash);		
+		default_data.put("ID", id_hash);
 		// CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
 		String auth_key = public_data.ENCRY_DEF_STRING;
@@ -674,25 +472,25 @@ public class task_waiter extends Thread {
 		if (case_data.containsKey("Environment")) {
 			envinfo_hash.putAll(case_data.get("Environment"));
 		}
-		default_data.put("Environment", envinfo_hash);		
+		default_data.put("Environment", envinfo_hash);
 		// LaunchCommand NA
 		HashMap<String, String> command_hash = new HashMap<String, String>();
 		if (case_data.containsKey("LaunchCommand")) {
 			command_hash.putAll(case_data.get("LaunchCommand"));
 		}
-		default_data.put("LaunchCommand", command_hash);		
+		default_data.put("LaunchCommand", command_hash);
 		// Machine format NA
 		HashMap<String, String> machine_hash = new HashMap<String, String>();
 		if (case_data.containsKey("Machine")) {
 			machine_hash.putAll(case_data.get("Machine"));
 		}
-		default_data.put("Machine", machine_hash);		
+		default_data.put("Machine", machine_hash);
 		// System format NA
 		HashMap<String, String> system_hash = new HashMap<String, String>();
 		if (case_data.containsKey("System")) {
 			system_hash.putAll(case_data.get("System"));
 		}
-		default_data.put("System", system_hash);		
+		default_data.put("System", system_hash);
 		// Software NA
 		HashMap<String, String> software_hash = new HashMap<String, String>();
 		if (case_data.containsKey("Software")) {
@@ -707,10 +505,9 @@ public class task_waiter extends Thread {
 		default_data.put("Status", status_hash);
 		return default_data;
 	}
-	
+
 	private HashMap<String, HashMap<String, String>> get_merged_remote_task_info(
-			HashMap<String, HashMap<String, String>> admin_hash, 
-			HashMap<String, HashMap<String, String>> case_hash) {
+			HashMap<String, HashMap<String, String>> admin_hash, HashMap<String, HashMap<String, String>> case_hash) {
 		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
 		// case_hash is formated
 		Set<String> case_hash_set = case_hash.keySet();
@@ -748,20 +545,20 @@ public class task_waiter extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
-					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") + "/"
+					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for(Object item: run_exception.getStackTrace()){
+			for (Object item : run_exception.getStackTrace()) {
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}			
-			System.exit(1);
+			}
+			switch_info.set_client_stop_request();
 		}
 	}
 
 	private void monitor_run() {
 		// ============== All static job start from here ==============
 		// initial 1 : import_history_finished_admin_queue
-		import_history_finished_admin_queue_into_memory();
+		task_info.update_finished_admin_queue_list(import_data.import_disk_finished_admin_queue_list(client_info));
 		// initial 2 : retrieve previously dumping working queues
 		retrieve_queues_into_memory();
 		// initial end
@@ -799,7 +596,7 @@ public class task_waiter extends Thread {
 			// task 1 : check available task queue and thread
 			if (pool_info.get_available_thread() < 1) {
 				continue;
-			}			
+			}
 			if (task_info.get_processing_admin_queue_list().size() < 1) {
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
 				continue;
@@ -896,7 +693,8 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			String local_case_report = case_work_path + "/" + public_data.WORKSPACE_CASE_REPORT_NAME;
-			file_action.append_file(local_case_report, "Client Version:" + public_data.BASE_CURRENTVERSION + line_separator);
+			file_action.append_file(local_case_report,
+					"Client Version:" + public_data.BASE_CURRENTVERSION + line_separator);
 			file_action.append_file(local_case_report, "[Export]" + line_separator);
 			file_action.append_file(local_case_report, String.join(line_separator, case_prepare_list) + line_separator);
 			// task 8 : launch cmd

@@ -12,6 +12,7 @@ package top_runner.run_status;
 import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
+import self_update.app_update;
 
 class initial_status extends abstract_status {
 	
@@ -35,14 +36,16 @@ class initial_status extends abstract_status {
 		// task 2: get and wait client data ready 
 		get_client_data_ready();
 		// task 3: core script update
+		get_client_self_update();
+		// task 4: core script update
 		get_core_script_update();
-		// task 4: get daemon process ready
+		// task 5: get daemon process ready
 		get_daemon_process_ready();
-		// task 5: get tube server ready
+		// task 6: get tube server ready
 		get_tube_server_ready();
-		// task 6: wait for all background ready
+		// task 7: wait for all background ready
 		wait_background_ready();
-		// task 7: get hall manager ready
+		// task 8: get hall manager ready
 		get_hall_manager_reay();
 		client.set_current_status(client.WORK);
 	}
@@ -72,6 +75,13 @@ class initial_status extends abstract_status {
 				break;
 			}
 		}		
+	}
+	
+	//core script update
+	private void get_client_self_update(){ 
+		app_update update_obj = new app_update(client.switch_info, client.client_info);
+		update_obj.smart_update();
+		System.out.println(">>>Client updated...");
 	}
 	
 	//core script update

@@ -44,7 +44,6 @@ public class switch_data {
 	private String suite_file = new String();
 	// client hall status(idle or busy) : thread pool not empty == busy
     private String client_hall_status = new String("busy");
-    private Boolean client_maintenance_mode = new Boolean(false);
 	// public function
 	public switch_data() {
 

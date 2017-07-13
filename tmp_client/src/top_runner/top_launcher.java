@@ -28,7 +28,6 @@ import env_monitor.self_check;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
-import self_update.app_update;
 import top_runner.run_manager.client_manager;
 
 public class top_launcher  {
@@ -134,10 +133,7 @@ public class top_launcher  {
 		}
 		// initial 3 : run client instances check
 		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"));
-		// initial 4 : run client update 
-		app_update update_obj = new app_update(switch_info, client_info);
-		update_obj.smart_update();
-		// initial 5 : client manager launch
+		// initial 4 : client manager launch
 		client_manager manager = new client_manager(switch_info, client_info, task_info, view_info, pool_info, cmd_info);
 		manager.start();
 	}	
