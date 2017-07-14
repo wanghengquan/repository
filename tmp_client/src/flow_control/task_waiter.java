@@ -459,9 +459,11 @@ public class task_waiter extends Thread {
 		String auth_key = public_data.ENCRY_DEF_STRING;
 		String priority = public_data.TASK_DEF_PRIORITY;
 		String timeout = public_data.TASK_DEF_TIMEOUT;
+		String result_keep = public_data.TASK_DEF_RESULT_KEEP;
 		caseinfo_hash.put("auth_key", auth_key);
 		caseinfo_hash.put("priority", priority);
 		caseinfo_hash.put("timeout", timeout);
+		caseinfo_hash.put("result_keep", result_keep);
 		if (case_data.containsKey("CaseInfo")) {
 			caseinfo_hash.putAll(case_data.get("CaseInfo"));
 		}
@@ -534,7 +536,7 @@ public class task_waiter extends Thread {
 		if (m.find())
 			time_out = "3600";
 		if (time_out.equals("0")) {
-			time_out = "18000";
+			time_out = "36000";
 		}
 		return Integer.parseInt(time_out);
 	}
@@ -703,8 +705,9 @@ public class task_waiter extends Thread {
 			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.get_client_data());
 			// task 10 : launch (add case info to task data)
 			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
+			String result_keep = task_data.get("CaseInfo").get("result_keep");
 			system_call sys_call = new system_call(run_cmd, run_env, case_work_path, case_time_out);
-			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out, result_keep);
 		}
 	}
 

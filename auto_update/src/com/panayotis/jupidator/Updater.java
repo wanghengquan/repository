@@ -201,7 +201,7 @@ public class Updater {
             gui.setInformation(this, curVersion.getAppElements(), curInfo);
             gui.startDialog();
         } else {
-        	System.out.println("Skip update.");
+        	System.out.println(">>>Skip update.");
         	update_skipped = true;
         }
     }

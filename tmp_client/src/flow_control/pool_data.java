@@ -88,8 +88,13 @@ public class pool_data {
 		return release_result;
 	}
 
-	public synchronized void add_sys_call(Callable<?> sys_call, String queue_name, String case_id, String case_work_dir,
-			int time_out) {
+	public synchronized void add_sys_call(
+			Callable<?> sys_call, 
+			String queue_name, 
+			String case_id, 
+			String case_work_dir,
+			int time_out,
+			String result_keep) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
 		HashMap<String, Object> sys_call_value = new HashMap<String, Object>();
@@ -100,6 +105,7 @@ public class pool_data {
 		long start_time = System.currentTimeMillis() / 1000;
 		sys_call_value.put("start_time", start_time);
 		sys_call_value.put("time_out", time_out);
+		sys_call_value.put("result_keep", result_keep);
 		call_map.put(sys_call_key, sys_call_value);
 	}
 

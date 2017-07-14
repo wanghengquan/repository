@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
-import data_center.switch_data;
 import utility_funcs.system_cmd;
 
 public class self_check {
@@ -26,13 +25,12 @@ public class self_check {
 	// private property
 	private static final Logger SELF_CHECK_LOGGER = LogManager.getLogger(self_check.class.getName());
 	// private String line_separator = System.getProperty("line.separator");
-	private switch_data switch_info;
 	// public function
 	// protected function
 	// private function
 
-	public self_check(switch_data switch_info) {
-		this.switch_info = switch_info;
+	public self_check() {
+		
 	}
 	
 	private String get_python_version() {
@@ -134,7 +132,6 @@ public class self_check {
 		Boolean python_pass = python_version_check();
 		Boolean svn_pass = svn_version_check();
 		if (java_pass && python_pass && svn_pass) {
-			switch_info.set_client_self_check(true);
 			check_result = true;
 		} else {
 			SELF_CHECK_LOGGER.error("Self Check failed, System error out.");
@@ -149,8 +146,7 @@ public class self_check {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		switch_data switch_info = new switch_data();
-		self_check my_check = new self_check(switch_info);
+		self_check my_check = new self_check();
 		my_check.do_self_check();
 	}
 }

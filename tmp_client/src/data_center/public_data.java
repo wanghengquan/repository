@@ -23,9 +23,9 @@ public class public_data {
 
 	// ========================
 	// base
-	public final static String BASE_CURRENTVERSION = "2.6.4"; // External.Internal.DEV
+	public final static String BASE_CURRENTVERSION = "2.6.4"; //264 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 264; // version for code use
-	public final static String BASE_BUILDDATE = "2017/7/13";
+	public final static String BASE_BUILDDATE = "2017/7/14";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -38,8 +38,8 @@ public class public_data {
 
 	// ========================
 	// log setting
-	public final static String LOG_HOME = "D:/logs123";
-	public final static String FILE_NAME = "123.log";
+	public final static String LOG_HOME = SW_HOME_PATH;
+	public final static String FILE_NAME = "client.log";
 
 	// ========================
 	// external configure based on software bin path
@@ -122,6 +122,7 @@ public class public_data {
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
+	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped 
 
 	// ========================
 	// performance calibration
@@ -160,7 +161,6 @@ public class public_data {
 		String bin_path = top_launcher.get_bin_path();
 		File bin_dobj = new File(bin_path);
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-		System.out.println(">>>Info: SW root path:" + install_path);
 		return install_path.replaceAll("\\\\", "/");
 	}
 

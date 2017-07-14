@@ -110,6 +110,7 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = final_cleanup(case_work_path);
 			// task 2 : zip case to save path
+			String result_keep = (String) one_call_data.get("result_keep");
 			if (case_work_path.contains(save_path)) {
 				// case save path same with work path no need to copy
 				continue;
@@ -118,10 +119,19 @@ public class result_waiter extends Thread {
 				// no save path, skip copy
 				continue;
 			}
-			if (cmd_status.equalsIgnoreCase("failed")) {
-				run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
-			} else {
-				run_status = copy_case_to_save_path(case_work_path, case_save_path, "archive");
+			switch (result_keep.toLowerCase()){
+				case "zipped":
+					run_status = copy_case_to_save_path(case_work_path, case_save_path, "archive");
+					break;
+				case "unzipped":
+					run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
+					break;
+				default:// auto and any other inputs  treated as auto
+					if (cmd_status.equalsIgnoreCase("failed")) {
+						run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
+					} else {
+						run_status = copy_case_to_save_path(case_work_path, case_save_path, "archive");
+					}
 			}
 		}
 		return run_status;
@@ -497,7 +507,9 @@ public class result_waiter extends Thread {
 	/*
 	 * call status map: {case_id@queue_name:{"call_back":call_back,
 	 * "queue_name":queue_name, "case_id":case_id, "case_dir":case_dir,
-	 * "start_time":start_time, "time_out":time_out, "cmd_output":cmd_output,
+	 * "start_time":start_time, "time_out":time_out, 
+	 * "result_keep", result_keep,
+	 * "cmd_output":cmd_output,  //new added
 	 * "call_status": call_status //new added: done, timeout, processing } }
 	 */
 	private HashMap<String, HashMap<String, Object>> get_call_status_map() {

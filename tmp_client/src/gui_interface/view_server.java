@@ -228,7 +228,7 @@ public class view_server extends Thread{
 		start_prepare.setVisible(true);
 		new Thread(start_prepare).start();
 		while(true){
-			if(switch_info.get_back_ground_power_up()){
+			if(switch_info.get_start_progress_power_up()){
 				break;
 			}
 			try {
@@ -279,6 +279,8 @@ public class view_server extends Thread{
 		start_progress_show();
 		// initial 2 : start GUI
 		start_main_gui();
+		// initial 3 : Announce main GUI ready
+		switch_info.set_main_gui_power_up();
 		//======================================
 		current_thread = Thread.currentThread();
 		while (!stop_request) {

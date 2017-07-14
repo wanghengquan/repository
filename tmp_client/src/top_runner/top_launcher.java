@@ -51,13 +51,13 @@ public class top_launcher  {
 		}
 		File file = new File(bin_path);
 		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
-		System.out.println(">>>Info: SW bin path:" + bin_path);
 		return bin_path;
 	}
 	
 	private static void initial_log_config(){
 		ConfigurationSource source;
 		String bin_path = get_bin_path();
+		System.out.println(">>>Info: SW bin path:" + bin_path);
 		File bin_dobj = new File(bin_path);
 		String conf_path = bin_dobj.getParentFile().toString().replaceAll("\\\\", "/") + "/conf/log4j2.xml";
 		System.out.println(">>>Info: SW log config path:" + conf_path);
@@ -72,8 +72,8 @@ public class top_launcher  {
 		}
 	}
 	
-	private static Boolean run_self_check(switch_data switch_info){
-		self_check my_check = new self_check(switch_info);
+	private static Boolean run_self_check(){
+		self_check my_check = new self_check();
 		return my_check.do_self_check();
 	}
 	
@@ -102,7 +102,7 @@ public class top_launcher  {
 			user_input.close(); 
 			switch_info.increase_system_client_insts();
 		}
-	}	
+	}		
 	
 	/*
 	 * main entry for test
@@ -127,7 +127,7 @@ public class top_launcher  {
 		cmd_parser cmd_run = new cmd_parser(args);
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		// initial 2 : run self check
-		if(!run_self_check(switch_info)){
+		if(!run_self_check()){
 			TOP_LAUNCHER_LOGGER.error(">>>Self check failed.");
 			System.exit(1);
 		}

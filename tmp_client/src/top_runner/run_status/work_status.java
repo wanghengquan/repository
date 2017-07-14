@@ -20,9 +20,6 @@ public class work_status extends abstract_status {
 	}
 
 	public void to_stop() {
-		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to stop");
-		System.out.println("");	
 		export_data.dump_disk_received_admin_data(client.client_info, client.task_info);
 		export_data.dump_disk_processed_admin_data(client.client_info, client.task_info);
 		export_data.dump_disk_received_task_data(client.client_info, client.task_info);
@@ -31,6 +28,9 @@ public class work_status extends abstract_status {
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();
 		client.switch_info.decrease_system_client_insts();
+		System.out.println(">>>####################");
+		System.out.println(">>>Info:Go to stop");
+		System.out.println("");		
 		client.set_current_status(client.STOP);
 		System.exit(0);
 	}
@@ -43,17 +43,17 @@ public class work_status extends abstract_status {
 	}
 
 	public void to_maintain() {
-		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to maintain");
-		System.out.println("");
 		// task 1: stop runner
-		client.hall_runner.soft_stop();
-		client.tube_runner.soft_stop();
-		client.data_runner.soft_stop();
+		client.hall_runner.wait_request();
+		client.tube_runner.wait_request();
+		client.data_runner.wait_request();
 		// task 2: implements_self_quiet_update
 		implements_self_quiet_update();
 		// task 3: implements_core_script_update
 		implements_core_script_update();
+		System.out.println(">>>####################");
+		System.out.println(">>>Info:Go to maintain");
+		System.out.println("");		
 		client.set_current_status(client.MAINTAIN);
 	}
 	
@@ -62,12 +62,22 @@ public class work_status extends abstract_status {
 	//methods for locals
 	
 	private void implements_self_quiet_update(){
-		//self update only work in console mode
+		//self update only work in unattended mode
 		String unattended_mode = client.client_info.get_client_data().get("Machine").get("unattended");  
-		if (unattended_mode.equalsIgnoreCase("1")){ 
-			app_update update_obj = new app_update(client.switch_info, client.client_info);
-			update_obj.smart_update();
+		if (!unattended_mode.equalsIgnoreCase("1")){ 
+			return;
 		}
+		app_update update_obj = new app_update(client.client_info, client.switch_info);
+		update_obj.smart_update();
+		while(client.switch_info.get_client_console_updating()){
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		System.out.println(">>>Client updated...");		
 	}
 	
 	private void implements_core_script_update(){

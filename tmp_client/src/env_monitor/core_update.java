@@ -83,6 +83,7 @@ public class core_update {
 		core_update updater = new core_update();
 		String work_path = new String("D:/tmp_work_space");
 		updater.update(work_path);
+		System.out.println(">>>update done");
 		System.exit(0);
 	}
 }

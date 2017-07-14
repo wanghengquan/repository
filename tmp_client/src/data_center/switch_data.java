@@ -27,29 +27,32 @@ public class switch_data {
 	// System start client record
 	private int system_client_insts = sys_pref.getInt("", 0);
 	// client update
-	private int send_admin_request = 1; // for client start up 
+	private int send_admin_request = 1; // for client start up
 	private int dump_config_request = 0;
 	private int check_core_request = 0;
 	// client house keep request
 	private int house_keep_request = 0;
 	private int client_stop_request = 0;
 	// Thread start sequence
-	private Boolean client_self_check = new Boolean(false);
-	private Boolean core_script_update = new Boolean(false);
+	private Boolean start_progress_power_up = new Boolean(false);
+	private Boolean main_gui_power_up = new Boolean(false);
 	private Boolean data_server_power_up = new Boolean(false);
 	private Boolean tube_server_power_up = new Boolean(false);
 	private Boolean hall_server_power_up = new Boolean(false);
-	private Boolean back_ground_power_up = new Boolean(false);
+	// Client run state
+	private Boolean client_console_updating = new Boolean(false);
+
 	// suite file updating
 	private String suite_file = new String();
 	// client hall status(idle or busy) : thread pool not empty == busy
-    private String client_hall_status = new String("busy");
+	private String client_hall_status = new String("busy");
+
 	// public function
 	public switch_data() {
 
 	}
 
-	public int get_system_client_insts(){
+	public int get_system_client_insts() {
 		rw_lock.writeLock().lock();
 		try {
 			system_client_insts = sys_pref.getInt("run_num", 0);
@@ -58,8 +61,8 @@ public class switch_data {
 		}
 		return system_client_insts;
 	}
-	
-	public void increase_system_client_insts(){
+
+	public void increase_system_client_insts() {
 		rw_lock.writeLock().lock();
 		try {
 			system_client_insts = system_client_insts + 1;
@@ -68,19 +71,19 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-	
-	public void decrease_system_client_insts(){
+
+	public void decrease_system_client_insts() {
 		rw_lock.writeLock().lock();
 		try {
-			if(system_client_insts > 0){
+			if (system_client_insts > 0) {
 				system_client_insts = system_client_insts - 1;
 			}
 			sys_pref.putInt("run_num", system_client_insts);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
+	}
+
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
@@ -133,7 +136,7 @@ public class switch_data {
 		}
 		return action_need;
 	}
-	
+
 	public void set_house_keep_request() {
 		rw_lock.writeLock().lock();
 		try {
@@ -142,31 +145,17 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-	
+
 	/*
-	public void decrease_house_keep_request() {
-		rw_lock.writeLock().lock();
-		try {
-			if (house_keep_request > 0) {
-				house_keep_request = house_keep_request - 1;
-			}
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public int get_house_keep_request() {
-		int result = 0;
-		rw_lock.readLock().lock();		
-		try {
-			result = this.house_keep_request;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return result;
-	}
-	*/
-	
+	 * public void decrease_house_keep_request() { rw_lock.writeLock().lock();
+	 * try { if (house_keep_request > 0) { house_keep_request =
+	 * house_keep_request - 1; } } finally { rw_lock.writeLock().unlock(); } }
+	 * 
+	 * public int get_house_keep_request() { int result = 0;
+	 * rw_lock.readLock().lock(); try { result = this.house_keep_request; }
+	 * finally { rw_lock.readLock().unlock(); } return result; }
+	 */
+
 	public void set_client_stop_request() {
 		rw_lock.writeLock().lock();
 		try {
@@ -175,10 +164,10 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-	
+
 	public int get_client_stop_request() {
 		int result = 0;
-		rw_lock.readLock().lock();		
+		rw_lock.readLock().lock();
 		try {
 			result = this.client_stop_request;
 		} finally {
@@ -186,41 +175,41 @@ public class switch_data {
 		}
 		return result;
 	}
-	
-	public void set_client_self_check(Boolean check_status) {
+
+	public void set_main_gui_power_up() {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_self_check = check_status;
+			this.main_gui_power_up = true;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public Boolean get_client_self_check() {
+	public Boolean get_main_gui_power_up() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
 		try {
-			status = this.client_self_check;
+			status = this.main_gui_power_up;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return status;
 	}
 
-	public void set_core_script_update(Boolean update_status) {
+	public void set_start_progress_power_up() {
 		rw_lock.writeLock().lock();
 		try {
-			this.core_script_update = update_status;
+			this.start_progress_power_up = true;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public Boolean get_core_script_update() {
+	public Boolean get_start_progress_power_up() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
 		try {
-			status = this.core_script_update;
+			status = this.start_progress_power_up;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -286,21 +275,21 @@ public class switch_data {
 		}
 		return status;
 	}
-
-	public void set_back_ground_power_up() {
+	//app_update_running
+	public void set_client_console_updating(Boolean new_status) {
 		rw_lock.writeLock().lock();
 		try {
-			this.back_ground_power_up = true;
+			this.client_console_updating = new_status;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public Boolean get_back_ground_power_up() {
+	public Boolean get_client_console_updating() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
 		try {
-			status = this.back_ground_power_up;
+			status = this.client_console_updating;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -326,7 +315,7 @@ public class switch_data {
 		}
 		return status;
 	}
-	
+
 	public void set_suite_file(String new_data) {
 		rw_lock.writeLock().lock();
 		try {

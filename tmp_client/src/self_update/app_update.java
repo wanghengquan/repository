@@ -29,16 +29,15 @@ public class app_update implements UpdatedApplication  {
 	//private static final Logger TMP_MANAGER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
 	private static final Logger APP_UPDATE_LOGGER = LogManager.getLogger(app_update.class.getName()); 
 	//private String line_separator = System.getProperty("line.separator");	
-	@SuppressWarnings("unused")
 	private switch_data switch_info;
 	private client_data client_info;	
 	// public function
 	// protected function
 	// private function	
 	
-	public app_update(switch_data switch_info, client_data client_info){
-		this.switch_info = switch_info;
+	public app_update (client_data client_info, switch_data switch_info){
 		this.client_info = client_info;
+		this.switch_info = switch_info;
 	}
 	
 	public Boolean gui_manual_update(){
@@ -74,6 +73,7 @@ public class app_update implements UpdatedApplication  {
 		Boolean console_update = new Boolean(false); 
 		if (user_interface.equalsIgnoreCase("cmd")){ 
 			console_update = true; 
+			switch_info.set_client_console_updating(true);
 		} 
 		Boolean unattended_update = new Boolean(false);
 		if (unattended_mode.equalsIgnoreCase("1")){ 
@@ -91,6 +91,7 @@ public class app_update implements UpdatedApplication  {
         	app_update.actionDisplay();
         } catch (UpdaterException ex) {
             ex.printStackTrace();
+            switch_info.set_client_console_updating(false);
             APP_UPDATE_LOGGER.warn("TMP client self update failed.");
         }
 	}
@@ -102,7 +103,8 @@ public class app_update implements UpdatedApplication  {
 	}
 
 	@Override
-	public boolean requestRestart() {		
+	public boolean requestRestart() {
+		switch_info.set_client_console_updating(false);
 		return true;
 	}
 	

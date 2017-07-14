@@ -38,11 +38,11 @@ public class about_dialog extends JDialog implements ActionListener {
 	private Vector<String> version = new Vector<String>();
 	private Vector<String> date = new Vector<String>();
 	private Vector<String> support_suite = new Vector<String>();
-	private switch_data switch_info;
 	private client_data client_info;
+	private switch_data switch_info;
 	private JButton close, update;
 
-	public about_dialog(main_frame main_view, switch_data switch_info, client_data client_info) {
+	public about_dialog(main_frame main_view, client_data client_info, switch_data switch_info) {
 		super(main_view, "About TestRail Client", true);
 		this.client_info = client_info;
 		this.switch_info = switch_info;
@@ -88,7 +88,7 @@ public class about_dialog extends JDialog implements ActionListener {
 		if(arg0.getSource().equals(update)){
 			//this.setVisible(false);
 			this.dispose();
-			app_update update_obj = new app_update(switch_info, client_info);
+			app_update update_obj = new app_update(client_info, switch_info);
 			if(!update_obj.gui_manual_update()){
 				String message = new String("TMP Client new version not available...");
 				String title = new String("Update message");
@@ -100,7 +100,7 @@ public class about_dialog extends JDialog implements ActionListener {
 	public static void main(String[] args) {
 		client_data client_info = new client_data();
 		switch_data switch_info = new switch_data();
-		about_dialog about_info = new about_dialog(null, switch_info, client_info);
+		about_dialog about_info = new about_dialog(null, client_info, switch_info);
 		about_info.setVisible(true);
 	}
 }

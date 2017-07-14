@@ -256,10 +256,14 @@ public class data_server extends Thread {
 	}
 
 	public void wait_request() {
+		config_runner.wait_request();
+		machine_runner.wait_request();
 		wait_request = true;
 	}
 
 	public void wake_request() {
+		config_runner.wake_request();
+		machine_runner.wake_request();
 		wait_request = false;
 		synchronized (this) {
 			this.notify();

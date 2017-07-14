@@ -43,7 +43,7 @@ public class hall_manager extends Thread {
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
-	HashMap<String, task_waiter> waiters_task;
+	HashMap<String, task_waiter> task_waiters;
 	result_waiter waiter_result;
 	// public function
 	// protected function
@@ -58,7 +58,7 @@ public class hall_manager extends Thread {
 		this.view_info = view_info;
 	}
 
-	private HashMap<String, task_waiter> get_waiter_ready(pool_data pool_info) {
+	private HashMap<String, task_waiter> get_task_waiter_ready(pool_data pool_info) {
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
 		int max_pool_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 		for (int i = 0; i < max_pool_size; i++) {
@@ -93,7 +93,7 @@ public class hall_manager extends Thread {
 		}
 	}
 
-	private result_waiter start_right_result_waiter(pool_data pool_info) {
+	private result_waiter get_result_waiter_ready(pool_data pool_info) {
 		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info);
 		waiter.start();
 		return waiter;
@@ -133,14 +133,29 @@ public class hall_manager extends Thread {
 	
 	private void stop_sub_threads() {
 		waiter_result.soft_stop();
-		Iterator<String> waiters_it = waiters_task.keySet().iterator();
+		Iterator<String> waiters_it = task_waiters.keySet().iterator();
 		while (waiters_it.hasNext()) {
 			String waiter_name = waiters_it.next();
-			task_waiter waiter = waiters_task.get(waiter_name);
+			task_waiter waiter = task_waiters.get(waiter_name);
 			waiter.soft_stop();
 		}
 	}
 
+	private void wait_sub_threads(){
+		waiter_result.wait_request();
+		Iterator<String> waiters_it = task_waiters.keySet().iterator();
+		while (waiters_it.hasNext()) {
+			String waiter_name = waiters_it.next();
+			task_waiter waiter = task_waiters.get(waiter_name);
+			waiter.wait_request();
+		}		
+	}
+	
+	private void wake_sub_threads(){
+		waiter_result.wake_request();
+		start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -160,9 +175,11 @@ public class hall_manager extends Thread {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : start task waiters
-		waiters_task = get_waiter_ready(pool_info);
+		task_waiters = get_task_waiter_ready(pool_info);
 		// initial 2 : start result waiter
-		waiter_result = start_right_result_waiter(pool_info);
+		waiter_result = get_result_waiter_ready(pool_info);
+		// initial 3 : Announce hall server ready
+		switch_info.set_hall_server_power_up();
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -178,7 +195,7 @@ public class hall_manager extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
-			start_right_task_waiter(waiters_task, pool_info.get_pool_current_size());
+			start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
 			// task 2 : make general report
 			generate_console_report(pool_info);
 			// task 3 : Status report
@@ -206,10 +223,12 @@ public class hall_manager extends Thread {
 	}
 
 	public void wait_request() {
+		wait_sub_threads();
 		wait_request = true;
 	}
 
 	public void wake_request() {
+		wake_sub_threads();
 		wait_request = false;
 		synchronized (this) {
 			this.notify();

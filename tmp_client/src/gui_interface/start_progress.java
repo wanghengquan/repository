@@ -78,7 +78,7 @@ public class start_progress extends JFrame implements Runnable, status_value{
 			if (SwingUtilities.isEventDispatchThread()) {
 				jpb_progress.setValue(progress_count);
 				if(progress_count.equals(100)){
-					switch_info.set_back_ground_power_up();
+					switch_info.set_start_progress_power_up();
 				}
 			} else {
 				SwingUtilities.invokeLater(new Runnable(){
@@ -87,7 +87,7 @@ public class start_progress extends JFrame implements Runnable, status_value{
 						// TODO Auto-generated method stub
 						jpb_progress.setValue(progress_count);
 						if(progress_count.equals(100)){
-							switch_info.set_back_ground_power_up();
+							switch_info.set_start_progress_power_up();
 						}						
 					}
 				});

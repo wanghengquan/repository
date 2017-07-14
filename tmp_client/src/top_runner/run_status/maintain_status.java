@@ -18,14 +18,14 @@ public class maintain_status extends abstract_status {
 	}
 
 	public void to_stop() {
-		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to stop");
-		System.out.println("");
 		export_data.dump_disk_received_admin_data(client.client_info, client.task_info);
 		export_data.dump_disk_processed_admin_data(client.client_info, client.task_info);
 		export_data.dump_disk_received_task_data(client.client_info, client.task_info);
 		export_data.dump_disk_processed_task_data(client.client_info, client.task_info);
 		client.switch_info.decrease_system_client_insts();
+		System.out.println(">>>####################");
+		System.out.println(">>>Info:Go to stop");
+		System.out.println("");		
 		client.set_current_status(client.STOP);
 		System.exit(0);
 	}
@@ -34,9 +34,9 @@ public class maintain_status extends abstract_status {
 		System.out.println(">>>####################");
 		System.out.println(">>>Info:Go to work");
 		System.out.println("");	
-		client.data_runner.start();
-		client.tube_runner.start();
-		client.hall_runner.start();
+		client.data_runner.wake_request();
+		client.tube_runner.wake_request();
+		client.hall_runner.wake_request();
 		client.set_current_status(client.WORK);
 	}
 

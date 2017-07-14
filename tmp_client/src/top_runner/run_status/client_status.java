@@ -78,7 +78,7 @@ public class client_status extends Observable  {
     } 
 
     public void to_work_status() {  
-    	current_status.to_work();  
+    	current_status.to_work(); 
     }  
 
     public void to_maintain_status() {  
