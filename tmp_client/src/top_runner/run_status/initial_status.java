@@ -68,7 +68,7 @@ class initial_status extends abstract_status {
 		client.data_runner.start();
 		while(true){
 			if (client.switch_info.get_data_server_power_up()){
-				System.out.println(">>>data server power up");
+				System.out.println(">>>data server power up.");
 				break;
 			}
 		}		
@@ -78,7 +78,7 @@ class initial_status extends abstract_status {
 	private void get_core_script_update(){
 		core_update my_core = new core_update();
 		my_core.update(client.client_info.get_client_data().get("preference").get("work_path"));
-		System.out.println(">>>Core updated...");
+		System.out.println(">>>Core updated.");
 	}	
 	//self update
 	private void get_client_self_update(){ 
@@ -104,7 +104,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>Client updated...");
+		System.out.println(">>>Client updated.");
 	}
 	
 	//get daemon process ready
@@ -118,7 +118,7 @@ class initial_status extends abstract_status {
 		client.tube_runner.start();
 		while(true){
 			if (client.switch_info.get_tube_server_power_up()){
-				System.out.println(">>>tube server power up");
+				System.out.println(">>>tube server power up.");
 				break;
 			}
 		}		

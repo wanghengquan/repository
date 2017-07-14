@@ -171,7 +171,7 @@ public class result_waiter extends Thread {
 			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
 				continue;// no queue data to dump (already dumped)
 			}
-			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 10) {
+			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 2) {
 				continue;// no need to dump to increase the performance > don't
 							// forget dump when shutdown client
 			}

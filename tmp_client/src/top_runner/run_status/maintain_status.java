@@ -9,7 +9,6 @@
  */
 package top_runner.run_status;
 
-import flow_control.export_data;
 
 public class maintain_status extends abstract_status {
 	
@@ -18,10 +17,7 @@ public class maintain_status extends abstract_status {
 	}
 
 	public void to_stop() {
-		export_data.dump_disk_received_admin_data(client.client_info, client.task_info);
-		export_data.dump_disk_processed_admin_data(client.client_info, client.task_info);
-		export_data.dump_disk_received_task_data(client.client_info, client.task_info);
-		export_data.dump_disk_processed_task_data(client.client_info, client.task_info);
+		client.dump_memory_data();
 		client.switch_info.decrease_system_client_insts();
 		System.out.println(">>>####################");
 		System.out.println(">>>Info:Go to stop");

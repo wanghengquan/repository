@@ -17,6 +17,7 @@ import connect_tube.tube_server;
 import data_center.client_data;
 import data_center.data_server;
 import data_center.switch_data;
+import flow_control.export_data;
 import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
@@ -91,6 +92,13 @@ public class client_status extends Observable  {
     
     public String get_current_status() {  
     	return current_status.get_current_status();  
+    }
+    
+    public void dump_memory_data(){
+		export_data.dump_disk_received_admin_data(client_info, task_info);
+		export_data.dump_disk_processed_admin_data(client_info, task_info);
+		export_data.dump_disk_received_task_data(client_info, task_info);
+		export_data.dump_disk_processed_task_data(client_info, task_info);	
     }
     
     public static void main(String[] args){  

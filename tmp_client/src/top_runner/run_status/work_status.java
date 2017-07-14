@@ -10,7 +10,6 @@
 package top_runner.run_status;
 
 import env_monitor.core_update;
-import flow_control.export_data;
 import self_update.app_update;
 
 public class work_status extends abstract_status {
@@ -20,10 +19,7 @@ public class work_status extends abstract_status {
 	}
 
 	public void to_stop() {
-		export_data.dump_disk_received_admin_data(client.client_info, client.task_info);
-		export_data.dump_disk_processed_admin_data(client.client_info, client.task_info);
-		export_data.dump_disk_received_task_data(client.client_info, client.task_info);
-		export_data.dump_disk_processed_task_data(client.client_info, client.task_info);
+		client.dump_memory_data();
 		client.hall_runner.soft_stop();
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();
