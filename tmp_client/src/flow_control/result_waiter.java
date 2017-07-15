@@ -160,7 +160,8 @@ public class result_waiter extends Thread {
 			running_queue_in_pool.add(queue_name);
 		}
 		// task 3 : dump finished task queue data to xml file, save memory
-		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
+    	ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
+    	finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		for (String dump_queue : finished_admin_queue_list) {
 			if (running_queue_in_pool.contains(dump_queue)) {
 				continue;// queue not finished
@@ -171,7 +172,7 @@ public class result_waiter extends Thread {
 			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
 				continue;// no queue data to dump (already dumped)
 			}
-			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 2) {
+			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 20) {
 				continue;// no need to dump to increase the performance > don't
 							// forget dump when shutdown client
 			}

@@ -198,7 +198,7 @@ public class import_data {
 			client_data client_info) {		
 		String work_path = client_info.get_client_data().get("preference").get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String xml_path = work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml";
+		String xml_path = work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml";
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		queue_data.putAll(import_admin_data(xml_path));
 		return queue_data;

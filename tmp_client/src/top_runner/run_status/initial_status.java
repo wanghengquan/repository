@@ -33,10 +33,10 @@ class initial_status extends abstract_status {
 		System.out.println("");
 		// task 1: launch GUI if in GUI mode
 		launch_main_gui();
-		// task 2: get and wait client data ready 
+		// task 2 : core script update 
+		get_core_script_update();
+		// task 3: get and wait client data ready 
 		get_client_data_ready();
-		// task 3 : core script update 
-		get_core_script_update();		
 		// task 4: get daemon process ready
 		get_daemon_process_ready();
 		// task 5: get tube server ready
@@ -78,7 +78,7 @@ class initial_status extends abstract_status {
 	private void get_core_script_update(){
 		core_update my_core = new core_update();
 		my_core.update(client.client_info.get_client_data().get("preference").get("work_path"));
-		System.out.println(">>>Core updated.");
+		System.out.println(">>>Default Core Script updated.");
 	}	
 	//self update
 	private void get_client_self_update(){ 
@@ -104,7 +104,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>Client updated.");
+		System.out.println(">>>APP self updated.");
 	}
 	
 	//get daemon process ready

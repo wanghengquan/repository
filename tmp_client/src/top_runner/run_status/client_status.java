@@ -9,6 +9,7 @@
  */
 package top_runner.run_status;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
 
@@ -92,6 +93,27 @@ public class client_status extends Observable  {
     
     public String get_current_status() {  
     	return current_status.get_current_status();  
+    }
+    
+    public void dump_finished_data(){
+    	//by default result waiter will dump finished data except:
+    	//1) case number less than 20
+    	//2) suite is watching
+    	//so when client stopped we need dump these finished suite
+    	ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
+    	finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
+		for (String dump_queue : finished_admin_queue_list) {
+			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
+				continue;// no queue data to dump (already dumped)
+			}
+			// dumping task queue
+			Boolean admin_dump = export_data.export_disk_finished_admin_queue_data(dump_queue, client_info, task_info);
+			Boolean task_dump = export_data.export_disk_finished_task_queue_data(dump_queue, client_info, task_info);
+			if (admin_dump && task_dump) {
+				task_info.remove_queue_from_processed_admin_queues_treemap(dump_queue);
+				task_info.remove_queue_from_processed_task_queues_map(dump_queue);
+			}
+		}
     }
     
     public void dump_memory_data(){

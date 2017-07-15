@@ -205,6 +205,12 @@ public class tube_server extends Thread {
 		Boolean send_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		client_hash = deep_clone.clone(client_info.get_client_data());
+		//bypass the client data sending in local model
+		String link_mode = client_hash.get("preference").get("link_mode").toLowerCase();
+		if (link_mode.equals("local")){
+			TUBE_SERVER_LOGGER.debug("Client run in Local mode, bypass client info sending.");
+			return send_status;
+		}
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		processing_admin_queue_list.addAll(task_info.get_processing_admin_queue_list());
 		HashMap<String, String> simple_data = new HashMap<String, String>();
