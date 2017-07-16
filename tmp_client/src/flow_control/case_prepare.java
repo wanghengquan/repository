@@ -117,7 +117,7 @@ public class case_prepare {
 		// generate source URL
 		String script_addr = task_data.get("CaseInfo").get("script_address");
 		if (script_addr.equals("") || script_addr == null) {
-			CASE_PREPARE_LOGGER.info("Internal script used, no export need.");
+			CASE_PREPARE_LOGGER.debug("Internal script used, no export need.");
 			export_msg.add("Internal script used, no export need.");
 			return export_msg;
 		}
