@@ -149,7 +149,38 @@ public class result_waiter extends Thread {
 		task_info.set_thread_pool_admin_queue_list(running_queue_in_pool);
 	}
 	
-	private Boolean dump_finished_data(HashMap<String, HashMap<String, Object>> call_status_map) {
+	private Boolean report_finished_queue_data(HashMap<String, HashMap<String, Object>> call_status_map) {
+		Boolean report_status = new Boolean(true);
+		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			String queue_name = (String) one_call_data.get("queue_name");
+			running_queue_in_pool.add(queue_name);
+		}
+		// task 3 : dump finished task queue data to csv file, save memory
+    	ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
+    	finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
+    	ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
+    	reported_admin_queue_list.addAll(task_info.get_reported_admin_queue_list());
+		for (String queue_name : finished_admin_queue_list) {
+			if (running_queue_in_pool.contains(queue_name)) {
+				continue;// queue not finished
+			}
+			if (!task_info.get_processed_task_queues_map().containsKey(queue_name)) {
+				continue;// no queue data to dump (already dumped)
+			}
+			if (reported_admin_queue_list.contains(queue_name)){
+				continue;// finished queue already reported.
+			}
+			// report task queue
+			report_status = export_data.export_disk_finished_task_queue_report(queue_name, client_info, task_info);
+		}
+		return report_status;
+	}
+	
+	private Boolean dump_finished_queue_data(HashMap<String, HashMap<String, Object>> call_status_map) {
 		Boolean dump_status = new Boolean(true);
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
@@ -675,8 +706,9 @@ public class result_waiter extends Thread {
 			call_status = get_call_status_map();
 			// task 2 : update running queue in thread pool
 			update_thread_pool_running_queue(call_status);
-			// task 3 : dump finished queue
-			Boolean dump_status = dump_finished_data(call_status);
+			// task 3 : dump finished queue:report and data
+			report_finished_queue_data(call_status);
+			dump_finished_queue_data(call_status);
 			// following actions based on a non-empty call back.
 			if (call_status.size() < 1) {
 				RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
@@ -701,7 +733,7 @@ public class result_waiter extends Thread {
 			// task 10 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
-					&& release_pool_thread_status && release_resource_status && post_status && dump_status) {
+					&& release_pool_thread_status && release_resource_status && post_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": work fine.");
 			} else {
 				RESULT_WAITER_LOGGER.info(waiter_name + ": Get some warning process. please check.");

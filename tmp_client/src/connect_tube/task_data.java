@@ -63,6 +63,8 @@ public class task_data {
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
 	// finished: finished queue updated by task waiter
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
+	// reported: reported queue updated by task waiter
+	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
 	// ====updated by result waiter====
@@ -395,7 +397,7 @@ public class task_data {
 		return queues_data;
 	}
 
-	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_queue_from_processed_task_queues_map(
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_queue_data_from_processed_task_queues_map(
 			String queue_name) {
 		rw_lock.readLock().lock();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
@@ -468,7 +470,9 @@ public class task_data {
 		}
 	}
 
-	public Boolean register_case_to_processed_task_queues_map(String queue_name, String case_id,
+	public Boolean register_case_to_processed_task_queues_map(
+			String queue_name, 
+			String case_id,
 			HashMap<String, HashMap<String, String>> case_data) {
 		rw_lock.writeLock().lock();
 		Boolean register_status = new Boolean(false);
@@ -488,6 +492,8 @@ public class task_data {
 					queue_data.putAll(processed_task_queues_map.get(queue_name));
 					queue_data.put(case_id, case_data);
 					register_status = true;
+				} else {
+					TASK_DATA_LOGGER.info("Some one finished this case already.");
 				}
 			}
 			if (register_status) {
@@ -854,7 +860,33 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	
+	public ArrayList<String> get_reported_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(reported_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public Boolean update_reported_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		Boolean update_status = new Boolean(true);
+		try {
+			if (reported_admin_queue_list.contains(queue_name)) {
+				update_status = false;
+			} else {
+				reported_admin_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+	
 	public ArrayList<String> get_watching_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();

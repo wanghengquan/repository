@@ -288,8 +288,8 @@ public class task_waiter extends Thread {
 		// local is done)
 		formated_case_data.putAll(get_formated_case_data(raw_case_data));
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
-			raw_task_data.putAll(formated_case_data);// local data no need to
-														// merge
+			// local data only need to merge ID run info
+			raw_task_data.putAll(get_merged_local_task_info(admin_data,formated_case_data));						
 		} else {
 			// remote data, initial merge, rerun remote task will use local
 			// model(no merge need) (consider cmd option)
@@ -365,8 +365,8 @@ public class task_waiter extends Thread {
 		formated_data.put("ID", id_hash);
 		// CaseInfo format
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
-		String xlsx_dest = new String("");// local xlsx file containing
-											// folded/path
+		// local xlsx file containing folded/path
+		String xlsx_dest = new String("");
 		String repository = new String("");
 		String suite_path = new String("");
 		String design_name = new String("");
@@ -507,8 +507,21 @@ public class task_waiter extends Thread {
 		return default_data;
 	}
 
+	private HashMap<String, HashMap<String, String>> get_merged_local_task_info(
+			HashMap<String, HashMap<String, String>> admin_hash, 
+			HashMap<String, HashMap<String, String>> case_hash) {
+		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
+		// case_hash is formated
+		String admin_id_run = admin_hash.get("ID").get("run"); 
+		HashMap<String, String> id_data = case_hash.get("ID");
+		id_data.put("run", admin_id_run);
+		merged_data.putAll(case_hash);
+		return merged_data;
+	}
+	
 	private HashMap<String, HashMap<String, String>> get_merged_remote_task_info(
-			HashMap<String, HashMap<String, String>> admin_hash, HashMap<String, HashMap<String, String>> case_hash) {
+			HashMap<String, HashMap<String, String>> admin_hash, 
+			HashMap<String, HashMap<String, String>> case_hash) {
 		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
 		// case_hash is formated
 		Set<String> case_hash_set = case_hash.keySet();
@@ -599,7 +612,10 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			if (task_info.get_processing_admin_queue_list().size() < 1) {
-				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+				if (waiter_name.equalsIgnoreCase("tw_0")){
+					TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+				}
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
 				continue;
 			}
 			// task 2 : get working queue ======================>key variable 1:
@@ -607,10 +623,14 @@ public class task_waiter extends Thread {
 			String queue_name = new String();
 			queue_name = get_right_task_queue();
 			if (queue_name.equals("") || queue_name == null) {
-				TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
+				//only TW_0 can report out when there is no work queue finid.
+				if (waiter_name.equalsIgnoreCase("tw_0")){
+					TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
+				}
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No matched queue found.");
 				continue;
 			} else {
-				TASK_WAITER_LOGGER.info(waiter_name + ":Focus on " + queue_name);
+				TASK_WAITER_LOGGER.debug(waiter_name + ":Focus on " + queue_name);
 			}
 			// task 3 : get admin data ======================>key variable 2:
 			// admin_data OK now
@@ -666,10 +686,8 @@ public class task_waiter extends Thread {
 					task_data);
 			if (register_status) {
 				TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
-				task_info.increase_running_admin_queue_list(queue_name);// start
-																		// running
-																		// this
-																		// queue.
+				// start running this queue.
+				task_info.increase_running_admin_queue_list(queue_name);
 			} else {
 				TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
 				client_info.release_use_soft_insts(software_cost);

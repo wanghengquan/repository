@@ -65,7 +65,7 @@ public class view_server extends Thread{
 	private List<String> get_retest_case_list(String retest_queue){
 		List<String> case_list = new ArrayList<String>();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		queue_data.putAll(task_info.get_queue_from_processed_task_queues_map(retest_queue));
+		queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(retest_queue));
 		String retest_area = view_info.impl_retest_queue_area();
 		if (retest_area.equals("")){
 			return case_list;

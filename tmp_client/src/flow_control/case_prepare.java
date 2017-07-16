@@ -62,7 +62,9 @@ public class case_prepare {
 			}
 		}
 		//Create new case path if not have
-		FileUtils.forceMkdir(case_work_path_fobj);
+		synchronized (this.getClass()) {
+			FileUtils.forceMkdir(case_work_path_fobj);
+		}
 		return case_work_path;
 	}
 

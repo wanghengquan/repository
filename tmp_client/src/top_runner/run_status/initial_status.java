@@ -33,14 +33,14 @@ class initial_status extends abstract_status {
 		System.out.println("");
 		// task 1: launch GUI if in GUI mode
 		launch_main_gui();
-		// task 2 : core script update 
-		get_core_script_update();
-		// task 3: get and wait client data ready 
+		// task 2: get and wait client data ready 
 		get_client_data_ready();
-		// task 4: get daemon process ready
+		// task 3: get daemon process ready
 		get_daemon_process_ready();
-		// task 5: get tube server ready
+		// task 4: get tube server ready
 		get_tube_server_ready();
+		// task 5 : core script update 
+		get_core_script_update();
 		// task 6: client self update
 		get_client_self_update();
 		// task 7: get hall manager ready
@@ -68,7 +68,7 @@ class initial_status extends abstract_status {
 		client.data_runner.start();
 		while(true){
 			if (client.switch_info.get_data_server_power_up()){
-				System.out.println(">>>data server power up.");
+				System.out.println(">>>Data server power up.");
 				break;
 			}
 		}		
@@ -104,7 +104,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>APP self updated.");
+		System.out.println(">>>TMP client updated.");
 	}
 	
 	//get daemon process ready
@@ -118,7 +118,7 @@ class initial_status extends abstract_status {
 		client.tube_runner.start();
 		while(true){
 			if (client.switch_info.get_tube_server_power_up()){
-				System.out.println(">>>tube server power up.");
+				System.out.println(">>>Tube server power up.");
 				break;
 			}
 		}		
@@ -127,6 +127,7 @@ class initial_status extends abstract_status {
 	//get_hall_manager_reay
 	private void get_hall_manager_reay(){
 		client.hall_runner.start();
+		System.out.println(">>>Hall manager power up.");
 	}
 	
 }

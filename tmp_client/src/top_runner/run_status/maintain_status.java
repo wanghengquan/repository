@@ -17,6 +17,7 @@ public class maintain_status extends abstract_status {
 	}
 
 	public void to_stop() {
+		client.report_processed_data();
 		client.dump_finished_data();
 		client.dump_memory_data();
 		client.switch_info.decrease_system_client_insts();

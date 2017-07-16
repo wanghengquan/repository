@@ -51,6 +51,32 @@ public class file_action {
 		}
 	}
 
+	public static int force_write_file(String file_path, String file_content) {
+		/*
+		 * this function used to write the Contents to filename if the write
+		 * action operated smoothly, 0 will be returned if the file exists, 1 will be returned
+		 */
+		File file = new File(file_path);
+		if (file.exists())
+			file.delete();
+		File file_parent = file.getParentFile();
+		if (!(file_parent.isDirectory() && file_parent.exists())) {
+			file_parent.mkdirs();
+		}
+		PrintWriter output;
+		try {
+			output = new PrintWriter(file);
+			output.print(file_content);
+			output.close();
+			return 0;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			FILE_ACTION_LOGGER.warn("Write file exception");
+			return 1;
+		}
+	}	
+	
 	public static void copy_file(String src_file, String dest_file) {
 		File src = new File(src_file);
 		File dest = new File(dest_file);

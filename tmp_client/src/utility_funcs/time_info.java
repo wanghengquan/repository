@@ -33,6 +33,11 @@ public class time_info {
 		return formatter.format(new Date());
 	}
 
+	public static String get_time_hhmm() {
+		SimpleDateFormat formatter = new SimpleDateFormat("HHmm");
+		return formatter.format(new Date());
+	}
+	
 	public static String get_date_time() {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
 		return formatter.format(new Date());
@@ -47,7 +52,7 @@ public class time_info {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
 		return formatter.format(date);
 	}
-
+	
 	public static String get_date_hhmm(Date date) {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmm");
 		return formatter.format(date);
@@ -58,8 +63,8 @@ public class time_info {
 	}
 
 	public static void main(String[] argv) {
-		System.out.println(get_date_hhmm(new Date()));
-		System.out.println(System.currentTimeMillis()); 
+		System.out.println(get_time_hhmm());
+		System.out.println(System.currentTimeMillis() / 1000); 
 		System.out.println(get_time_stamp().toString());	
 	}
 

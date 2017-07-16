@@ -706,7 +706,11 @@ public class local_tube {
 		return is_match;
 	}
 
-	private String get_one_queue_name(String admin_queue_base, String queue_pre_fix, String current_terminal,
+	private String get_one_queue_name(
+			String admin_queue_base, 
+			String create_time,
+			String sub_task_number,
+			String current_terminal,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// generate queue name
 		String queue_name = new String();
@@ -724,16 +728,16 @@ public class local_tube {
 				priority = "5";
 			}
 		}
-		// task belong to this client: 0, assign task > 1, match task
+		// task belong to this client: 0, assign task(0) > match task(1)
 		String attribute = new String();
 		String request_terminal = new String();
-		String available_terminal = current_terminal;
+		String available_terminal = current_terminal.toLowerCase();
 		if (!design_data.containsKey("Machine")) {
 			attribute = "1";
 		} else if (!design_data.get("Machine").containsKey("terminal")) {
 			attribute = "1";
 		} else {
-			request_terminal = design_data.get("Machine").get("terminal");
+			request_terminal = design_data.get("Machine").get("terminal").toLowerCase();
 			if (request_terminal.contains(available_terminal)) {
 				attribute = "0"; // assign task
 			} else {
@@ -741,12 +745,12 @@ public class local_tube {
 			}
 		}
 		// receive time
-		String time = time_info.get_date_time();
+		String mark_time = time_info.get_time_hhmm();
 		// pack data
-		// xx0@runxxx_suite_time :
+		// xx0@run_xxx_suite_time :
 		// priority:match/assign task:job_from_local@run_number
-		// generate queue data
-		queue_name = priority + attribute + "0" + "@" + "run_" + queue_pre_fix + "_" + admin_queue_base + "_" + time;
+		queue_name = priority + attribute + "0" + "@" 
+				+ "run_" + mark_time + "_" + sub_task_number + "_" + admin_queue_base + "_" + create_time;
 		return queue_name;
 	}
 
@@ -759,8 +763,9 @@ public class local_tube {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> one_queue_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		// generate queue name
 		String queue_name = new String();
+		String detail_time = time_info.get_date_time();//time for create queue
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-		queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
+		queue_name = get_one_queue_name(admin_queue_base, detail_time, queue_pre_fix, current_terminal, design_data);
 		queue_data.put("ID", design_data.get("ID"));
 		queue_data.put("CaseInfo", design_data.get("CaseInfo"));
 		queue_data.put("Environment", design_data.get("Environment"));
@@ -776,75 +781,77 @@ public class local_tube {
 
 	// generate different admin and task queue hash
 	public void generate_local_admin_task_queues(String local_file, String current_terminal) {
+		TreeMap<String, HashMap<String, HashMap<String, String>>> xlsx_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		//record local suite file destination path
 		File xlsx_fobj = new File(local_file);
 		String xlsx_dest = xlsx_fobj.getParent().replaceAll("\\\\", "/");
 		//get excel data
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		ExcelData.putAll(get_excel_data(local_file));
-		Map<String, String> suite_data = get_suite_data(ExcelData);
-		Map<String, Map<String, String>> case_data = get_merge_macro_case_data(ExcelData);
-		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_data,
-				case_data, xlsx_dest);
-		// TreeMap<String, HashMap<String, HashMap<String, String>>>
-		// current_admin_queue_treemap = new TreeMap<String, HashMap<String,
-		// HashMap<String, String>>>();
-		// current_admin_queue_treemap.putAll(task_info.get_received_admin_queues_treemap());
+		Map<String, String> suite_sheet_data = get_suite_data(ExcelData);
+		Map<String, Map<String, String>> case_sheet_data = get_merge_macro_case_data(ExcelData);
+		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_sheet_data,
+				case_sheet_data, xlsx_dest);
+		//base queue name generate
 		String admin_queue_base = new String();
-		if (suite_data.containsKey("suite_name")) {
-			admin_queue_base = suite_data.get("suite_name");
+		if (suite_sheet_data.containsKey("suite_name")) {
+			admin_queue_base = suite_sheet_data.get("suite_name");
 		} else {
 			admin_queue_base = xlsx_fobj.getName().split("\\.")[0];
 		}
 		Iterator<String> case_it = merge_data.keySet().iterator();
 		while (case_it.hasNext()) {
-			String case_name = case_it.next();
-			TreeMap<String, HashMap<String, HashMap<String, String>>> current_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			current_received_admin_queues_treemap.putAll(task_info.get_received_admin_queues_treemap());
-			HashMap<String, HashMap<String, String>> design_data = new HashMap<String, HashMap<String, String>>();
-			design_data.putAll(merge_data.get(case_name));
 			// check current admin queue cover this requirements
-			Boolean is_admin_queue_exists = new Boolean(false);
-			String admin_queue_name = new String();
-			Iterator<String> admin_queues_it = current_received_admin_queues_treemap.keySet().iterator();
-			while (admin_queues_it.hasNext()) {
-				admin_queue_name = admin_queues_it.next();
-				HashMap<String, HashMap<String, String>> current_admin_queue_data = current_received_admin_queues_treemap
-						.get(admin_queue_name);
-				if (is_request_match(current_admin_queue_data, design_data)) {
-					is_admin_queue_exists = true;
+			String case_name = case_it.next();
+			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+			case_data.putAll(merge_data.get(case_name));
+			Boolean admin_queue_exists = new Boolean(false);
+			String queue_name = new String();
+			Iterator<String> queues_it = xlsx_received_admin_queues_treemap.keySet().iterator();
+			while (queues_it.hasNext()) {
+				queue_name = queues_it.next();
+				HashMap<String, HashMap<String, String>> admin_queue_data = xlsx_received_admin_queues_treemap
+						.get(queue_name);
+				if (is_request_match(admin_queue_data, case_data)) {
+					admin_queue_exists = true;
 					break;
 				}
 			}
-			// if admin queue note exists, create one
-			// xxx@runxxx_suite_time
-			if (!is_admin_queue_exists) {
+			// if admin queue note exists, create one xxx@runxxx_suite_time
+			if (!admin_queue_exists) {
 				// get admin queue name
 				// make the new admin queue name use total received admin queues
 				// number + 1
-				String queue_pre_fix = String.valueOf(current_received_admin_queues_treemap.keySet().size() + 1);
-				admin_queue_name = get_one_queue_name(admin_queue_base, queue_pre_fix, current_terminal, design_data);
+				String detail_time = time_info.get_date_time();//time for create queue
+				String sub_task_number = String.valueOf(xlsx_received_admin_queues_treemap.keySet().size() + 1);
+				queue_name = get_one_queue_name(admin_queue_base, detail_time, sub_task_number, current_terminal, case_data);
 				// get admin queue data
 				HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
-				admin_queue_data.putAll(design_data);
+				admin_queue_data.putAll(case_data);
+				HashMap<String, String> admin_id_data = admin_queue_data.get("ID");
+				admin_id_data.put("run", admin_queue_base + "_" + detail_time);
 				HashMap<String, String> admin_status_data = new HashMap<String, String>();
 				admin_status_data.put("admin_status", "processing");
 				admin_queue_data.put("Status", admin_status_data);
-				task_info.add_queue_data_to_received_admin_queues_treemap(admin_queue_name, admin_queue_data);
+				xlsx_received_admin_queues_treemap.put(queue_name, admin_queue_data);
 			}
-			// insert design into received task queue : admin_queue_name
-			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = task_info
-					.get_received_task_queues_map();
+			// insert design into xlsx received task queue : admin_queue_name
+			//Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = task_info
+					//.get_received_task_queues_map();
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-			if (received_task_queues_map.containsKey(admin_queue_name)) {
-				task_queue_data.putAll(received_task_queues_map.get(admin_queue_name));
+			if (xlsx_received_task_queues_map.containsKey(queue_name)) {
+				task_queue_data.putAll(xlsx_received_task_queues_map.get(queue_name));
 			}
 			HashMap<String, String> case_status_data = new HashMap<String, String>();
 			case_status_data.put("cmd_status", "waiting");
-			design_data.put("Status", case_status_data);
-			task_queue_data.put(case_name, design_data);
-			task_info.update_queue_to_received_task_queues_map(admin_queue_name, task_queue_data);
+			case_data.put("Status", case_status_data);
+			task_queue_data.put(case_name, case_data);
+			xlsx_received_task_queues_map.put(queue_name, task_queue_data);
 		}
+		//return data to task data
+		task_info.update_received_task_queues_map(xlsx_received_task_queues_map);
+		task_info.update_received_admin_queues_treemap(xlsx_received_admin_queues_treemap);
 	}
 
 	public static void main(String[] argv) {

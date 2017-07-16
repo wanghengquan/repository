@@ -11,6 +11,7 @@ package flow_control;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -21,9 +22,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
+import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
 import info_parser.xml_parser;
+import utility_funcs.file_action;
 
 public class export_data {
 	// public property
@@ -149,7 +152,7 @@ public class export_data {
 		Boolean dump_status = new Boolean(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
-			task_data.putAll(task_info.get_queue_from_processed_task_queues_map(queue_name));
+			task_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(queue_name));
 		} else {
 			return dump_status;
 		}
@@ -158,6 +161,61 @@ public class export_data {
 		String dump_path = work_path + "/" + log_folder + "/finished/task";
 		dump_status = export_task_data(queue_name, task_data, dump_path);
 		return dump_status;
+	}
+	
+	public static Boolean export_disk_finished_task_queue_report(
+		String queue_name,
+		client_data client_info,
+		task_data task_info){
+		Boolean export_status = new Boolean(false);	
+		String work_dir = new String(client_info.get_client_data().get("preference").get("work_path"));
+		File work_dir_fobj = new File(work_dir);
+		if (!work_dir_fobj.exists()) {
+			EXPORT_DATA_LOGGER.warn("Work space do not exists:" + work_dir);
+			return export_status;
+		}
+		//get report file path
+		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+		admin_data.putAll(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
+		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
+		String run_dir_name = "run" + admin_data.get("ID").get("run");
+		String report_name = run_dir_name + ".csv";
+		String[] path_array = new String[] { work_dir, tmp_result_dir, prj_dir_name, run_dir_name, report_name};
+		String report_file_path = String.join(System.getProperty("file.separator"), path_array);
+		report_file_path = report_file_path.replaceAll("\\\\", "/");
+		//get report file content
+		ArrayList<String> report_list = new ArrayList<String>();
+		report_list.add("ID, Location, Status, Reason, run_time");
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		task_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(queue_name));
+		Iterator<String> case_it = task_data.keySet().iterator();
+		while(case_it.hasNext()){
+			String case_name = case_it.next();
+			HashMap<String, HashMap<String, String>> case_data = task_data.get(case_name);
+			if (!case_data.containsKey("Status")){
+				break;
+			}
+			ArrayList<String> line_list = new ArrayList<String>();
+			String run_time = case_data.get("Status").getOrDefault("run_time", "NA");
+			String cmd_status = case_data.get("Status").getOrDefault("cmd_status", "NA");
+			String location = case_data.get("Status").getOrDefault("location", "NA");
+			String cmd_reason = case_data.get("Status").getOrDefault("cmd_reason", "NA");
+			line_list.add(case_name);
+			line_list.add(location);
+			line_list.add(cmd_status);
+			line_list.add(cmd_reason);
+			line_list.add(run_time);
+			String report_line = new String(String.join(",", line_list));
+			report_list.add(report_line);
+		}
+		String report_contents = String.join(System.getProperty("line.separator"), report_list);
+		int write_sts = file_action.force_write_file(report_file_path, report_contents);
+		if (write_sts == 0){
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public static Boolean export_admin_data(

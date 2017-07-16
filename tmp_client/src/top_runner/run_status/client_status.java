@@ -11,7 +11,10 @@ package top_runner.run_status;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Observable;
+import java.util.TreeMap;
 
 import connect_tube.task_data;
 import connect_tube.tube_server;
@@ -93,6 +96,25 @@ public class client_status extends Observable  {
     
     public String get_current_status() {  
     	return current_status.get_current_status();  
+    }
+    
+    public void report_processed_data(){
+    	//by default result waiter will dump finished data except:
+    	//1) task not finished
+    	ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
+    	reported_admin_queue_list.addAll(task_info.get_reported_admin_queue_list()); 
+    	Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+    	processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
+    	Iterator<String> queue_it = processed_task_queues_map.keySet().iterator();
+    	while(queue_it.hasNext()){
+    		String queue_name = queue_it.next();
+    		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+    		queue_data.putAll(processed_task_queues_map.get(queue_name));
+    		if (reported_admin_queue_list.contains(queue_name)){
+    			continue;
+    		}
+    		export_data.export_disk_finished_task_queue_report(queue_name, client_info, task_info);
+    	}
     }
     
     public void dump_finished_data(){
