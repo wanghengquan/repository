@@ -97,6 +97,10 @@ class initial_status extends abstract_status {
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
 		while(client.switch_info.get_client_console_updating()){
+			if(update_obj.update_skipped){
+				client.switch_info.set_client_console_updating(false);
+				break;
+			}
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {

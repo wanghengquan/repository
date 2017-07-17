@@ -127,7 +127,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "java -jar tmp_client.jar -c [-l -f <file_path>] [-w <work path>] [-s <save path>]";
+		String usage = "java -jar tmp_client.jar -c [-l -f <file_path1,file_path2>] [-w <work path>] [-s <save path>]";
 		String header = "Here is details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

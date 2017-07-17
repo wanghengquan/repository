@@ -9,6 +9,7 @@
  */
 package data_center;
 
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.prefs.Preferences;
@@ -43,7 +44,7 @@ public class switch_data {
 	private Boolean client_console_updating = new Boolean(false);
 
 	// suite file updating
-	private String suite_file = new String();
+	private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
 	private String client_hall_status = new String("busy");
 
@@ -316,32 +317,43 @@ public class switch_data {
 		return status;
 	}
 
-	public void set_suite_file(String new_data) {
+	public void add_suite_file_list(ArrayList<String> file_list) {
 		rw_lock.writeLock().lock();
 		try {
-			this.suite_file = new_data;
+			this.suite_file_list.addAll(file_list);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public String get_suite_file() {
-		rw_lock.readLock().lock();
-		String value = new String();
+	public void add_suite_file_list(String suite_file) {
+		rw_lock.writeLock().lock();
 		try {
-			value = this.suite_file;
+			this.suite_file_list.add(suite_file);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public ArrayList<String> get_suite_file_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> value = new ArrayList<String>();
+		try {
+			value = this.suite_file_list;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return value;
 	}
 
-	public String impl_suite_file() {
+	public String get_one_suite_file() {
 		rw_lock.writeLock().lock();
-		String value = new String();
+		String value = new String(); 
 		try {
-			value = this.suite_file;
-			suite_file = "";
+			if (!suite_file_list.isEmpty()){
+				value = suite_file_list.get(0);
+				suite_file_list.remove(0);
+			}
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

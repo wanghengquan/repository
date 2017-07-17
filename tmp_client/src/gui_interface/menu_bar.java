@@ -218,8 +218,8 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			if (return_value == JFileChooser.APPROVE_OPTION) {
 				File local_suite_file = import_file.getSelectedFile();
 				String path = local_suite_file.getAbsolutePath().replaceAll("\\\\", "/");
-				switch_info.set_suite_file(path);
-				MENU_BAR_LOGGER.warn("Importing suite file:" + switch_info.get_suite_file());
+				switch_info.add_suite_file_list(path);
+				MENU_BAR_LOGGER.warn("Importing suite file:" + switch_info.get_suite_file_list().toString());
 			}
 		}
 		if (e.getSource().equals(exports)) {

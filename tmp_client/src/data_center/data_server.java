@@ -43,6 +43,7 @@ import utility_funcs.file_action;
  * 					group	=	xxx
  * 					private	=	0/1
  * 					unattended = 0/1
+ * 					start_time = xxxxx
  * 
  * 	 preference :	thread_mode = xx
  * 					task_mode = xx
@@ -83,6 +84,11 @@ public class data_server extends Thread {
 		this.machine_runner = new machine_sync(switch_info);
 	}
 
+	private void update_suite_file_to_switch_data(HashMap<String, String> cmd_info){
+		String suite_files = cmd_info.get("suite_file");
+		123
+	}
+	
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> machine_hash = new HashMap<String, HashMap<String, String>>();
@@ -201,7 +207,9 @@ public class data_server extends Thread {
 				break;
 			}
 		}
-		// initial 2 : generate initial client data
+		// initial 2 : put suite file data into switch info
+		update_suite_file_to_switch_data(cmd_info);
+ 		// initial 2 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 3 : update default current size into Pool Data
 		String current_max_threads = client_info.get_client_data().get("preference").get("max_threads");

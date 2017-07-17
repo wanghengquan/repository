@@ -62,6 +62,22 @@ public class time_info {
 		return new Timestamp(new Date().getTime());
 	}
 
+	public static String get_runtime_string(String from_time_secs, String to_time_secs){
+		StringBuilder runtime_string = new StringBuilder();
+		long begin_time = Long.valueOf(from_time_secs).longValue();
+		long end_time = Long.valueOf(to_time_secs).longValue();
+		long runtime = end_time - begin_time;
+		long days_number = runtime / (3600 * 24);
+		long hours_number = runtime % (3600 * 24) / 3600;
+		long minutes_munber = runtime % (3600 * 24) % 3600 / 60;
+		long seconds_munber = runtime % (3600 * 24) % 3600 % 60;
+		runtime_string.append(String.valueOf(days_number) + "d ");
+		runtime_string.append(String.valueOf(hours_number) + "h ");
+		runtime_string.append(String.valueOf(minutes_munber) + "m ");
+		runtime_string.append(String.valueOf(seconds_munber) + "s");
+		return runtime_string.toString();
+	}
+	
 	public static void main(String[] argv) {
 		System.out.println(get_time_hhmm());
 		System.out.println(System.currentTimeMillis() / 1000); 

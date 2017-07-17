@@ -30,7 +30,8 @@ public class app_update implements UpdatedApplication  {
 	private static final Logger APP_UPDATE_LOGGER = LogManager.getLogger(app_update.class.getName()); 
 	//private String line_separator = System.getProperty("line.separator");	
 	private switch_data switch_info;
-	private client_data client_info;	
+	private client_data client_info;
+	public Boolean update_skipped = new Boolean(false);
 	// public function
 	// protected function
 	// private function	
@@ -40,7 +41,7 @@ public class app_update implements UpdatedApplication  {
 		this.switch_info = switch_info;
 	}
 	
-	public Boolean gui_manual_update(){
+	public void gui_manual_update(){
         try {
         	Updater app_update =  new Updater(
                     public_data.UPDATE_URL,
@@ -57,14 +58,14 @@ public class app_update implements UpdatedApplication  {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-        	if(app_update.isUpdateSkip()){
-        		return false;
-        	}
+        	update_skipped = app_update.isUpdateSkip();
+        	if(update_skipped){
+        		switch_info.set_client_console_updating(false);
+        	}        	
         } catch (UpdaterException ex) {
             //ex.printStackTrace();
             APP_UPDATE_LOGGER.warn("TMP client self update failed.");
         }
-        return true;
 	}
 	
 	public void smart_update(){
@@ -89,6 +90,16 @@ public class app_update implements UpdatedApplication  {
                     unattended_update,
                     console_update);
         	app_update.actionDisplay();
+        	try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}        	
+        	update_skipped = app_update.isUpdateSkip();
+        	if(update_skipped){
+        		switch_info.set_client_console_updating(false);
+        	}
         } catch (UpdaterException ex) {
             //ex.printStackTrace();
             switch_info.set_client_console_updating(false);

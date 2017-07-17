@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.result_enum;
 import utility_funcs.deep_clone;
 
 public class task_data {
@@ -63,12 +64,12 @@ public class task_data {
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
 	// finished: finished queue updated by task waiter
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
-	// reported: reported queue updated by task waiter
-	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
 	// ====updated by result waiter====
 	private ArrayList<String> thread_pool_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
+	private HashMap<String, HashMap<result_enum, Integer>> client_run_case_summary_data_map = new HashMap<String, HashMap<result_enum, Integer>>();
 	// =============================================member
 	// end=====================================
 
@@ -936,6 +937,41 @@ public class task_data {
 		try {
 			thread_pool_admin_queue_list.clear();
 			thread_pool_admin_queue_list.addAll(queue_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public HashMap<String, HashMap<result_enum, Integer>> get_client_run_case_summary_data_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<result_enum, Integer>> temp = new HashMap<String, HashMap<result_enum, Integer>>();
+		try {
+			temp.putAll(client_run_case_summary_data_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void reset_client_run_case_summary_data_map() {
+		rw_lock.writeLock().lock();
+		try {
+			client_run_case_summary_data_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void increase_client_run_case_summary_data_map(String queue_name, result_enum result_type, Integer pass_num) {
+		rw_lock.writeLock().lock();
+		HashMap<result_enum, Integer> queue_data = new HashMap<result_enum, Integer>();
+		try {
+			if (client_run_case_summary_data_map.containsKey(queue_name)){
+				queue_data.putAll(client_run_case_summary_data_map.get(queue_name));
+			}
+			Integer new_pass_num = queue_data.getOrDefault(result_type, 0) + pass_num;
+			queue_data.put(result_type, new_pass_num);
+			client_run_case_summary_data_map.put(queue_name, queue_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

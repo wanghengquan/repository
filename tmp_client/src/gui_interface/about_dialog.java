@@ -27,6 +27,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import self_update.app_update;
+import utility_funcs.time_info;
 
 public class about_dialog extends JDialog implements ActionListener {
 	/**
@@ -38,6 +39,7 @@ public class about_dialog extends JDialog implements ActionListener {
 	private Vector<String> version = new Vector<String>();
 	private Vector<String> date = new Vector<String>();
 	private Vector<String> support_suite = new Vector<String>();
+	private Vector<String> rumtime = new Vector<String>();
 	private client_data client_info;
 	private switch_data switch_info;
 	private JButton close, update;
@@ -58,6 +60,9 @@ public class about_dialog extends JDialog implements ActionListener {
 		support_suite.add("Support Suite File:");
 		support_suite.add(public_data.BASE_SUITEFILEVERSION);
 		about_data.add(support_suite);
+		rumtime.add("Client Run Time:");
+		rumtime.add(this.get_client_runtime());
+		about_data.add(rumtime);
 		JTable about_table = new info_table(about_data, about_column);
 		about_table.setRowHeight(24);
 		container.add(about_table, BorderLayout.CENTER);
@@ -79,6 +84,17 @@ public class about_dialog extends JDialog implements ActionListener {
 		return action;
 	}
 	
+	private String get_client_runtime(){
+		String start_time = new String("0");
+		try{
+			start_time = client_info.get_client_data().get("Machine").get("start_time");
+		} catch (Exception e){
+			return "NA";
+		}
+		String current_time = String.valueOf(System.currentTimeMillis() / 1000);
+		return time_info.get_runtime_string(start_time, current_time);	
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -89,7 +105,14 @@ public class about_dialog extends JDialog implements ActionListener {
 			//this.setVisible(false);
 			this.dispose();
 			app_update update_obj = new app_update(client_info, switch_info);
-			if(!update_obj.gui_manual_update()){
+			update_obj.gui_manual_update();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(update_obj.update_skipped){
 				String message = new String("TMP Client new version not available...");
 				String title = new String("Update message");
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);

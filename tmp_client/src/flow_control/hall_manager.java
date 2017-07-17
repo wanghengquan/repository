@@ -25,7 +25,9 @@ import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
 import utility_funcs.file_action;
+import utility_funcs.time_info;
 import data_center.public_data;
+import data_center.result_enum;
 
 public class hall_manager extends Thread {
 	// public property
@@ -99,9 +101,53 @@ public class hall_manager extends Thread {
 		return waiter;
 	}
 
+	private String get_client_runtime(){
+		String start_time = new String("0");
+		try{
+			start_time = client_info.get_client_data().get("Machine").get("start_time");
+		} catch (Exception e){
+			HALL_MANAGER_LOGGER.info("Get client start time failed.");
+			return "NA";
+		}
+		String current_time = String.valueOf(System.currentTimeMillis() / 1000);
+		return time_info.get_runtime_string(start_time, current_time);	
+	}
+	
+	private String get_client_run_case_summary_data_map(){
+		StringBuilder run_summary = new StringBuilder();
+		Integer pass_num = new Integer(0);
+		Integer fail_num = new Integer(0);
+		Integer tbd_num = new Integer(0);
+		Integer timeout_num = new Integer(0);
+		Integer others_num = new Integer(0);
+		Integer total_num = new Integer(0);
+		HashMap<String, HashMap<result_enum, Integer>> summary_map = new HashMap<String, HashMap<result_enum, Integer>>();
+		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		Iterator<String> queue_it = summary_map.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			HashMap<result_enum, Integer> queue_data = new HashMap<result_enum, Integer>();
+			queue_data.putAll(summary_map.get(queue_name));
+			pass_num = pass_num + queue_data.getOrDefault(result_enum.PASS, 0);
+			fail_num = fail_num + queue_data.getOrDefault(result_enum.FAIL, 0);
+			tbd_num = tbd_num + queue_data.getOrDefault(result_enum.TBD, 0);
+			timeout_num = timeout_num + queue_data.getOrDefault(result_enum.TIMEOUT, 0);
+			others_num = others_num + queue_data.getOrDefault(result_enum.OTHERS, 0);
+			total_num = total_num + queue_data.getOrDefault(result_enum.TOTAL, 0);
+		}
+		run_summary.append(result_enum.TOTAL.toString() + ":" + total_num.toString() + " ");
+		run_summary.append(result_enum.PASS.toString() + ":" + pass_num.toString() + " ");
+		run_summary.append(result_enum.FAIL.toString() + ":" + fail_num.toString() + " ");
+		run_summary.append(result_enum.TBD.toString() + ":" + tbd_num.toString() + " ");
+		run_summary.append(result_enum.TIMEOUT.toString() + ":" + timeout_num.toString() + " ");
+		run_summary.append(result_enum.OTHERS.toString() + ":" + others_num.toString() + " ");
+		return run_summary.toString();
+	}
+	
 	private void generate_console_report(pool_data pool_info) {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
+		HALL_MANAGER_LOGGER.info(">>>Run time:" + get_client_runtime());
 		HALL_MANAGER_LOGGER
 				.info(">>>Captured queue:" + task_info.get_captured_admin_queues_treemap().keySet().toString());
 		// report processing queue list
@@ -114,6 +160,7 @@ public class hall_manager extends Thread {
 		String max_thread = String.valueOf(pool_info.get_pool_current_size());
 		String used_thread = String.valueOf(pool_info.get_pool_used_threads());
 		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread);
+		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary_data_map());
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.debug(client_info.get_use_soft_insts());

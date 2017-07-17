@@ -62,6 +62,12 @@ public class machine_sync extends Thread {
 
 	// protected function
 	// private function
+	private String get_start_time(){
+		String start_time = new String();
+		start_time = String.valueOf(System.currentTimeMillis() / 1000);
+		return start_time;
+	}
+	
 	public String get_os_type() {
 		String os = System.getProperty("os.name").toLowerCase();
 		String os_type = new String();
@@ -193,7 +199,6 @@ public class machine_sync extends Thread {
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		String type = get_os_type();
-		;
 		String arch = new String();
 		String os = get_os();
 		if (os.equalsIgnoreCase("unknown")) {
@@ -208,11 +213,13 @@ public class machine_sync extends Thread {
 		}
 		String terminal = get_host_name();
 		String ip = get_host_ip();
+		String start_time = get_start_time();
 		system_data.put("os", os);
 		system_data.put("os_type", type);
 		system_data.put("os_arch", arch);
 		machine_data.put("terminal", terminal);
 		machine_data.put("ip", ip);
+		machine_data.put("start_time", start_time);
 		machine_hash.put("System", system_data);
 		machine_hash.put("Machine", machine_data);
 	}
@@ -301,7 +308,7 @@ public class machine_sync extends Thread {
 	public static void main(String[] args) {
 		machine_sync client_update = new machine_sync(1);
 		client_update.start();
-		System.out.println(client_update.get_cpu_usage());
+		System.out.println(client_update.get_start_time());
 		System.exit(0);
 		INFO_LOGGER.warn("thread start...");
 		try {

@@ -31,6 +31,7 @@ import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
+import data_center.result_enum;
 import data_center.switch_data;
 import gui_interface.view_data;
 import info_parser.xml_parser;
@@ -243,6 +244,43 @@ public class result_waiter extends Thread {
 		return release_status;
 	}
 
+	private Boolean update_client_run_case_summary(
+			HashMap<String, HashMap<String, Object>> call_status_map,
+			HashMap<String, HashMap<String, String>> case_report_map) {
+		Boolean update_status = new Boolean(true);
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			String call_status = (String) one_call_data.get("call_status");
+			// only done call will be release. timeout call will be get in
+			// the next cycle(at that time status will be done)
+			if (!call_status.equals("done")) {
+				continue;
+			}
+			String queue_name = (String) one_call_data.get("queue_name");
+			String case_result = case_report_map.get(call_index).get("status");
+			switch (case_result.toLowerCase()){
+			case "passed":
+				task_info.increase_client_run_case_summary_data_map(queue_name, result_enum.PASS, 1);
+				break;
+			case "failed":
+				task_info.increase_client_run_case_summary_data_map(queue_name, result_enum.FAIL, 1);
+				break;
+			case "timeout":
+				task_info.increase_client_run_case_summary_data_map(queue_name, result_enum.TIMEOUT, 1);
+				break;
+			case "tbd":
+				task_info.increase_client_run_case_summary_data_map(queue_name, result_enum.TBD, 1);
+				break;
+			default:
+				task_info.increase_client_run_case_summary_data_map(queue_name, result_enum.OTHERS, 1);
+			}
+			task_info.increase_client_run_case_summary_data_map(queue_name, result_enum.TOTAL, 1);
+		}
+		return update_status;
+	}
+	
 	private Boolean release_pool_thread(HashMap<String, HashMap<String, Object>> call_status_map) {
 		Boolean release_status = new Boolean(true);
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
@@ -263,7 +301,8 @@ public class result_waiter extends Thread {
 		return release_status;
 	}
 
-	private Boolean update_processed_task_data(HashMap<String, HashMap<String, Object>> call_status_map,
+	private Boolean update_processed_task_data(
+			HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, String>> case_report_map) {
 		Boolean update_status = new Boolean(true);
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
@@ -724,13 +763,15 @@ public class result_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
 					call_status);
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
-			// task 7 : update processed task data info
+			// task 7 : update memory case run summary
+			update_client_run_case_summary(call_status, case_report_data);
+			// task 8 : update processed task data info
 			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
-			// task 8 : release occupied pool thread
+			// task 9 : release occupied pool thread
 			Boolean release_pool_thread_status = release_pool_thread(call_status);
-			// task 9 : release occupied resource usage
+			// task 10 : release occupied resource usage
 			Boolean release_resource_status = release_resource_usage(call_status);
-			// task 10 : post process
+			// task 11 : post process
 			Boolean post_status = run_post_process(call_status, case_report_data);
 			if (cancel_status && send_case_status && send_runtime_status && update_task_data_status
 					&& release_pool_thread_status && release_resource_status && post_status) {
