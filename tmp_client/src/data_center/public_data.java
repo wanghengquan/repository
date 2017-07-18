@@ -50,6 +50,7 @@ public class public_data {
 	public final static String ICON_FRAME_PNG = SW_HOME_PATH + "/image/frame.png";
 	public final static String ICON_TRAY_PNG = SW_HOME_PATH + "/image/ico.png";
 	public final static String ICON_TAB_PNG = SW_HOME_PATH + "/image/tab.png";
+	public final static String ICON_RPT_PNG = SW_HOME_PATH + "/image/rpt.png";
 
 	// ========================
 	// Remote update path

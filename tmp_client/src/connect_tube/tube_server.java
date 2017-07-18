@@ -299,14 +299,22 @@ public class tube_server extends Thread {
 
 	private void run_import_local_admin() {
 		ArrayList<String> suite_file_list = switch_info.get_suite_file_list();
-		String 
 		if (suite_file_list.isEmpty()) {
 			return;
 		}
 		local_tube local_tube_parser = new local_tube(task_info);
-		for (String file : suite_file_list) {
-			local_tube_parser.generate_local_admin_task_queues(file,
-					client_info.get_client_data().get("Machine").get("terminal"));
+		String terminal = new String(client_info.get_client_data().get("Machine").get("terminal"));
+		int counter = 0;
+		while(true){
+			if (counter > 10){
+				break;
+			}
+			String suite_file = switch_info.get_one_suite_file();
+			if (suite_file.equals("")){
+				break;
+			}
+			local_tube_parser.generate_local_admin_task_queues(suite_file, terminal);
+			counter++;
 		}
 	}
 

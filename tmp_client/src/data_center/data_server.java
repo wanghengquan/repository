@@ -9,6 +9,8 @@
  */
 package data_center;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -84,9 +86,11 @@ public class data_server extends Thread {
 		this.machine_runner = new machine_sync(switch_info);
 	}
 
-	private void update_suite_file_to_switch_data(HashMap<String, String> cmd_info){
+	private void initial_cmd_suites_to_switch_data(HashMap<String, String> cmd_info){
 		String suite_files = cmd_info.get("suite_file");
-		123
+		ArrayList<String> file_list = new ArrayList<String>();
+		file_list.addAll(Arrays.asList(suite_files.split(",")));
+		switch_info.add_suite_file_list(file_list);
 	}
 	
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
@@ -208,7 +212,7 @@ public class data_server extends Thread {
 			}
 		}
 		// initial 2 : put suite file data into switch info
-		update_suite_file_to_switch_data(cmd_info);
+		initial_cmd_suites_to_switch_data(cmd_info);
  		// initial 2 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 3 : update default current size into Pool Data

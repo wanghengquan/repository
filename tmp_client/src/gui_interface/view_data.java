@@ -15,14 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.swing.JTable;
-import javax.swing.table.JTableHeader;
 
 public class view_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
@@ -35,6 +31,8 @@ public class view_data {
 	private String select_rejected_queue = new String();
 	private String select_captured_queue = new String();
 	private List<String> select_task_case = new ArrayList<String>();
+	private List<String> export_queue_list = new ArrayList<String>();
+	private List<String> export_title_list = new ArrayList<String>();
 	private String run_action_request = new String();//play, pause, stop
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
@@ -248,6 +246,77 @@ public class view_data {
 		try {
 			this.select_task_case.clear();
 			this.select_task_case.addAll(case_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public List<String> get_export_title_list() {
+		rw_lock.readLock().lock();
+		List<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.export_title_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_export_title_list(List<String> title_list) {
+		rw_lock.writeLock().lock();
+		try {
+			this.export_title_list.clear();
+			this.export_title_list.addAll(title_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void add_export_title_list(String title) {
+		rw_lock.writeLock().lock();
+		try {
+			this.export_title_list.add(title);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void remove_export_title_list(String title) {
+		rw_lock.writeLock().lock();
+		try {
+			if(export_title_list.contains(title)){
+				this.export_title_list.remove(title);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public List<String> get_export_queue_list() {
+		rw_lock.readLock().lock();
+		List<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.export_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_export_queue_list(List<String> queue_list) {
+		rw_lock.writeLock().lock();
+		try {
+			this.export_queue_list.clear();
+			this.export_queue_list.addAll(queue_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void add_export_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			this.export_queue_list.add(queue_name);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -610,71 +679,6 @@ public class view_data {
 	}
 }
 
-class panel_table extends JTable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	public panel_table(Vector<Vector<String>>rowData, Vector<String> columnNames){
-		super(rowData, columnNames);
-		this.setRowHeight(20);
-	}
-	
-	public JTableHeader getTableHeader(){
-		JTableHeader table_header = super.getTableHeader();
-		table_header.setReorderingAllowed(false);
-		return table_header;
-	}
-	
-	public boolean isCellEditable(int row, int column){
-		return false;
-	}
-}
-
-class info_table extends JTable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	public info_table(Vector<Vector<String>>rowData, Vector<String> columnNames){
-		super(rowData, columnNames);
-		this.setRowHeight(24);
-	}
-	
-	public JTableHeader getTableHeader(){
-		JTableHeader table_header = super.getTableHeader();
-		table_header.setReorderingAllowed(false);
-		return table_header;
-	}
-	
-	public boolean isCellEditable(int row, int column){
-		return false;
-	}
-	
-	public boolean rowSelectionAllowed(){
-		return false;
-	}
-}
-
-class setting_table extends JTable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	public setting_table(Vector<Vector<String>>rowData, Vector<String> columnNames){
-		super(rowData, columnNames);
-		this.setRowHeight(24);
-	}
-	
-	public JTableHeader getTableHeader(){
-		JTableHeader table_header = super.getTableHeader();
-		table_header.setReorderingAllowed(false);
-		return table_header;
-	}
-}
 
 class queue_comparator implements Comparator<String>{
 	@Override

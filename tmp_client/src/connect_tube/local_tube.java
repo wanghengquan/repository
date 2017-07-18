@@ -30,7 +30,7 @@ public class local_tube {
 	// public property
 	// protected property
 	// private property
-	private final Logger LOCAL_LOGGER = LogManager.getLogger(local_tube.class.getName());
+	private final Logger LOCAL_TUBE_LOGGER = LogManager.getLogger(local_tube.class.getName());
 	private task_data task_info;
 
 	// public function
@@ -49,17 +49,17 @@ public class local_tube {
 
 	public Boolean sanity_check(Map<String, List<List<String>>> ExcelData) {
 		if (!ExcelData.containsKey("suite")) {
-			LOCAL_LOGGER.error(">>>Error: Cannot find 'suite' sheet ");
+			LOCAL_TUBE_LOGGER.error(">>>Error: Cannot find 'suite' sheet ");
 			return false;
 		}
 		if (!ExcelData.containsKey("case")) {
-			LOCAL_LOGGER.error(">>>Error: Cannot find 'case' sheet ");
+			LOCAL_TUBE_LOGGER.error(">>>Error: Cannot find 'case' sheet ");
 			return false;
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
 		if (suite_map.size() > 8) {
-			LOCAL_LOGGER.error(">>>Error: extra option found in suite sheet::suite info.");
+			LOCAL_TUBE_LOGGER.error(">>>Error: extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
 			return false;
 		}
@@ -67,7 +67,7 @@ public class local_tube {
 				"System", "Machine" };
 		for (String x : suite_keys) {
 			if (!suite_map.containsKey(x)) {
-				LOCAL_LOGGER.error(">>>Error: suite sheet missing :" + x);
+				LOCAL_TUBE_LOGGER.error(">>>Error: suite sheet missing :" + x);
 				return false;
 			}
 		}
@@ -76,25 +76,25 @@ public class local_tube {
 			@SuppressWarnings("unused")
 			int id = Integer.parseInt(prj_id);
 		} catch (NumberFormatException id_e) {
-			LOCAL_LOGGER.error(">>>Error: project_id value wrong, should be a number.");
+			LOCAL_TUBE_LOGGER.error(">>>Error: project_id value wrong, should be a number.");
 			return false;
 		}
 		String suite_name = suite_map.get("suite_name");
 		if (suite_name == null || suite_name == "") {
-			LOCAL_LOGGER.error(">>>Error: suite name missing.");
+			LOCAL_TUBE_LOGGER.error(">>>Error: suite name missing.");
 			return false;
 		}
 		// case sheet title check
 		List<String> case_title = get_case_title(ExcelData);
 		if (case_title == null) {
-			LOCAL_LOGGER.error(">>>Error: Cannot find title line in case sheet.");
+			LOCAL_TUBE_LOGGER.error(">>>Error: Cannot find title line in case sheet.");
 			return false;
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
-				LOCAL_LOGGER.error(">>>Error: case sheet title missing :" + x);
+				LOCAL_TUBE_LOGGER.error(">>>Error: case sheet title missing :" + x);
 				return false;
 			}
 		}
@@ -110,11 +110,11 @@ public class local_tube {
 					String item = macro_lines.get(line_index).get(0);
 					String column = macro_lines.get(line_index).get(1);
 					if (!item.equals("condition") && !item.equals("action")) {
-						LOCAL_LOGGER.error(">>>Error: wrong macro key found in suite sheet:" + item);
+						LOCAL_TUBE_LOGGER.error(">>>Error: wrong macro key found in suite sheet:" + item);
 						return false;
 					}
 					if (!case_title.contains(column)) {
-						LOCAL_LOGGER.error(">>>Error: suite sheet cannot find macro column in case sheet:" + column);
+						LOCAL_TUBE_LOGGER.error(">>>Error: suite sheet cannot find macro column in case sheet:" + column);
 						return false;
 					}
 				}
@@ -330,7 +330,7 @@ public class local_tube {
 		Map<String, List<List<String>>> macro_data = get_macro_data(ExcelData);
 		Map<String, Map<String, String>> raw_data = get_raw_case_data(ExcelData);
 		if (raw_data == null || raw_data.size() < 1) {
-			LOCAL_LOGGER.warn(">>>Warning: No test case found in suite file.");
+			LOCAL_TUBE_LOGGER.warn(">>>Warning: No test case found in suite file.");
 			return merge_macro_data;
 		}
 		Set<String> data_set = raw_data.keySet();
@@ -383,7 +383,7 @@ public class local_tube {
 		Boolean condition = true;
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
-				LOCAL_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
 				continue;
 			}
 			String behavior = line.get(0).trim();
@@ -414,7 +414,7 @@ public class local_tube {
 		// update case data
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
-				LOCAL_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
 				continue;
 			}
 			String behavior = line.get(0).trim();
@@ -431,7 +431,7 @@ public class local_tube {
 			if (column_list.contains(column)) {
 				Boolean update_done = new Boolean(false);
 				if (!value.contains("=")) {
-					LOCAL_LOGGER.warn(
+					LOCAL_TUBE_LOGGER.warn(
 							">>>Warning: Skip macro action non key=value input for columns" + column_list.toString());
 					continue;
 				}
@@ -785,6 +785,11 @@ public class local_tube {
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		//record local suite file destination path
 		File xlsx_fobj = new File(local_file);
+		String xlsx_abs_path = xlsx_fobj.getAbsolutePath();
+		if(!xlsx_fobj.exists()){
+			LOCAL_TUBE_LOGGER.error("Not exist:" + xlsx_abs_path);
+			return;
+		}
 		String xlsx_dest = xlsx_fobj.getParent().replaceAll("\\\\", "/");
 		//get excel data
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();

@@ -347,6 +347,19 @@ public class task_data {
 		}
 		return queue_data;
 	}
+	
+	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_queue_data_from_received_task_queues_map(String queue_name) {
+		rw_lock.readLock().lock();
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		try {
+			if (received_task_queues_map.containsKey(queue_name)) {
+				queue_data.putAll(this.received_task_queues_map.get(queue_name));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queue_data;
+	}	
 
 	public Boolean update_received_task_queues_map(
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues) {

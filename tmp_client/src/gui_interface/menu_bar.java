@@ -25,6 +25,7 @@ import javax.swing.JOptionPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -39,6 +40,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	private main_frame main_view;
 	private switch_data switch_info;
 	private client_data client_info;
+	private task_data task_info;
 	private pool_data pool_info;
 	private view_data view_info;
 	String work_path = new String();
@@ -51,13 +53,19 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem usage, client_help, tmp_doc, tmp_example, contact, about;
 	private String line_separator = System.getProperty("line.separator");	
 	
-	public menu_bar(main_frame main_view, switch_data switch_info, client_data client_info, view_data view_info,
-			pool_data pool_info) {
+	public menu_bar(
+			main_frame main_view, 
+			switch_data switch_info, 
+			client_data client_info, 
+			view_data view_info,
+			pool_data pool_info,
+			task_data task_info) {
 		this.main_view = main_view;
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.view_info = view_info;
 		this.pool_info = pool_info;
+		this.task_info = task_info;
 		this.add(construct_file_menu());
 		this.add(construct_view_menu());
 		this.add(construct_run_menu());
@@ -81,7 +89,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		imports.addActionListener(this);
 		file.add(imports);
 		exports = new JMenuItem("Export...");
-		exports.setEnabled(false);
+		//exports.setEnabled(false);
 		exports.addActionListener(this);
 		file.add(exports);
 		file.addSeparator();
@@ -224,6 +232,9 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(exports)) {
 			MENU_BAR_LOGGER.warn("Export clicked");
+			export_dialog export_view = new export_dialog(main_view, client_info, task_info, view_info);
+			export_view.setLocationRelativeTo(main_view);
+			export_view.setVisible(true);			
 		}
 		if (e.getSource().equals(exit)) {
 			switch_info.set_client_stop_request();
