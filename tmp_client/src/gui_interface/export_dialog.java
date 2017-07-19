@@ -11,7 +11,8 @@ package gui_interface;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -39,13 +40,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import connect_tube.queue_compare;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
-import utility_funcs.time_info;
 
 public class export_dialog extends JDialog implements ChangeListener{
 	/**
@@ -56,6 +59,7 @@ public class export_dialog extends JDialog implements ChangeListener{
 	private view_data view_info;
 	private client_data client_info;
 	private JTabbedPane tabbed_pane;
+	private preview_pane previe_gui;
 
 	public export_dialog(
 			main_frame main_view,
@@ -63,30 +67,36 @@ public class export_dialog extends JDialog implements ChangeListener{
 			task_data task_info,
 			view_data view_info){
 		super(main_view, "Select and generate report", true);
+		//this.setTitle("Select and generate report");
+		//Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
+		//this.setIconImage(icon_image);		
 		this.task_info = task_info;
 		this.view_info = view_info;
 		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		//this.setLocation(800, 500);
-		//this.setLocationRelativeTo(main_view);
 		this.setSize(900, 700);
 	}
 
 	private JTabbedPane construct_tab_pane(){
 		tabbed_pane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		tabbed_pane.addChangeListener(this);
-		ImageIcon icon_image = new ImageIcon(public_data.ICON_RPT_PNG);
+		ImageIcon icon_image_suite = new ImageIcon(public_data.ICON_RPT_SUITE_PNG);
+		ImageIcon icon_image_title = new ImageIcon(public_data.ICON_RPT_TITLE_PNG);
+		ImageIcon icon_image_preview = new ImageIcon(public_data.ICON_RPT_PREVIEW_PNG);
+		ImageIcon icon_image_generate = new ImageIcon(public_data.ICON_RPT_GENERATE_PNG);
 		// pane 1: select suites
-		tabbed_pane.addTab(report_enum.SUITE.toString(), icon_image, new suite_pane(this, task_info, view_info), report_enum.SUITE.get_description());
+		tabbed_pane.addTab(report_enum.SUITE.toString(), icon_image_suite, new suite_pane(this, task_info, view_info), report_enum.SUITE.get_description());
 		// pane 2: title pane
-		tabbed_pane.addTab(report_enum.TITLE.toString(), icon_image, new title_pane(this, task_info, view_info), report_enum.TITLE.get_description());
-		// pane 3: title pane
-		preview_pane previe_gui = new preview_pane(this, task_info, view_info);
-		tabbed_pane.addTab(report_enum.PREVIEW.toString(), icon_image, previe_gui, report_enum.PREVIEW.get_description());
-		new Thread(previe_gui).start();
-		// pane 4: title pane
-		tabbed_pane.addTab(report_enum.GENERATE.toString(), icon_image, new generate_pane(this, client_info, task_info, view_info), report_enum.GENERATE.get_description());
+		tabbed_pane.addTab(report_enum.TITLE.toString(), icon_image_title, new title_pane(this, task_info, view_info), report_enum.TITLE.get_description());
+		// pane 3: preview pane
+		previe_gui = new preview_pane(this, task_info, view_info);
+		tabbed_pane.addTab(report_enum.PREVIEW.toString(), icon_image_preview, previe_gui, report_enum.PREVIEW.get_description());
+		Thread preview_thread = new Thread(previe_gui);
+		preview_thread.start();
+		previe_gui.wait_request();
+		// pane 4: generate pane
+		tabbed_pane.addTab(report_enum.GENERATE.toString(), icon_image_generate, new generate_pane(this, client_info, task_info, view_info), report_enum.GENERATE.get_description());
 		return tabbed_pane;
 	}
 	
@@ -97,22 +107,44 @@ public class export_dialog extends JDialog implements ChangeListener{
 		tabbed_pane.setSelectedIndex(select_index);
 	}
 	
+	public void close_dialog(){
+		previe_gui.soft_stop();
+		this.setVisible(false);
+		this.dispose();
+	}
+	
 	public void go_to_next_pane(){
 		int select_index = tabbed_pane.getSelectedIndex();
+		int result_index = 0;
 		if(select_index >= report_enum.values().length - 1){
 			tabbed_pane.setSelectedIndex(select_index);
+			result_index = select_index;
 		} else {
 			tabbed_pane.setSelectedIndex(select_index + 1);
+			result_index = select_index + 1;
+		}
+		if(result_index == report_enum.PREVIEW.get_index()){
+			previe_gui.wake_request();
+		} else {
+			previe_gui.wait_request();
 		}
 	}
 	
 	public void go_to_previous_pane(){
 		int select_index = tabbed_pane.getSelectedIndex();
+		int result_index = 0;
 		if(select_index <= 0){
 			tabbed_pane.setSelectedIndex(select_index);
+			result_index = select_index;
 		} else {
 			tabbed_pane.setSelectedIndex(select_index - 1);
+			result_index = select_index - 1;
 		}
+		if(result_index == report_enum.PREVIEW.get_index()){
+			previe_gui.wake_request();
+		} else {
+			previe_gui.wait_request();
+		}		
 	}	
 	
 	public static void main(String[] args) {
@@ -208,6 +240,7 @@ class suite_pane extends JPanel implements ActionListener{
 				repaint();
 			}
 		}; 
+		suite_table.setRowHeight(24);
 		suite_table.getColumn("Select").setCellEditor(
 				new checkbox_editor(new JCheckBox()));
 		suite_table.getColumn("Select").setCellRenderer(new checkbox_render());
@@ -309,6 +342,7 @@ class title_pane extends JPanel implements ActionListener{
 				repaint();
 			}
 		}; 
+		title_table.setRowHeight(24);
 		title_table.getColumn("Select").setCellEditor(
 				new checkbox_editor(new JCheckBox()));
 		title_table.getColumn("Select").setCellRenderer(new checkbox_render());
@@ -359,12 +393,16 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 	private export_dialog tabbed_pane;
 	private task_data task_info;
 	private view_data view_info;
+	private boolean stop_request = false;
+	private boolean wait_request = false;
+	private Thread current_thread;
 	private Vector<String> table_column = new Vector<String>();
 	private Vector<Vector<Object>> table_data = new Vector<Vector<Object>>();	
 	private JTable preview_table;
 	private JPanel top_panel;
 	private DefaultTableModel data_model;
 	private JButton previous, next;
+	private static final Logger PREVIEW_PANE_LOGGER = LogManager.getLogger(preview_pane.class.getName());
 	
 	public preview_pane(
 			export_dialog tabbed_pane, 
@@ -381,19 +419,14 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 	private JPanel construct_top_panel(){
 		top_panel = new JPanel(new BorderLayout());
 		data_model = new DefaultTableModel();
-		//data_model.setDataVector(table_data, table_column);
-		preview_table = new JTable(table_column, table_data);//{
-			/**
-			 * 
-			
-			private static final long serialVersionUID = 1L;
-
-			public void tableChanged(TableModelEvent e) {
-				super.tableChanged(e);
-				repaint();
-			}
-		};*/ 
+		//table_column.add("ID");
+		//table_column.add("Design");
+		//table_column.add("Status");
+		//preview_table = new JTable(table_data, table_column);
+		data_model.setDataVector(table_data, table_column);
+		preview_table = new JTable(data_model); 
 		//preview_table.getColumn("ID").setMaxWidth(50);
+		preview_table.setRowHeight(24);
 		JScrollPane scro_panel = new JScrollPane(preview_table);
 		top_panel.add(scro_panel, BorderLayout.CENTER);
 		return top_panel;
@@ -473,12 +506,26 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		while (true) {
+		while (!stop_request) {
+			if (wait_request) {
+				try {
+					synchronized (this) {
+						this.wait();
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				PREVIEW_PANE_LOGGER.info("preview runner Thread running...");
+			}
+			// ============== All dynamic job start from here ==============			
 			update_table_column();
 			update_table_data();
-			System.out.println(">>>>>>>>>>>>>>>>>>>>>>");
-			System.out.println(table_column.toString());
-			System.out.println(table_data.toString());
+			data_model.setDataVector(table_data, table_column);
+			//System.out.println(">>>>>>>>>>>>>>>>>>>>>>");
+			//System.out.println(table_column.toString());
+			//System.out.println(table_data.toString());
 			if (SwingUtilities.isEventDispatchThread()) {
 				preview_table.validate();
 				preview_table.updateUI();
@@ -502,6 +549,28 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 			}
 		}		
 	}
+	
+	public void soft_stop() {
+		stop_request = true;
+	}
+
+	public void hard_stop() {
+		stop_request = true;
+		if (current_thread != null) {
+			current_thread.interrupt();
+		}
+	}
+
+	public void wait_request() {
+		wait_request = true;
+	}
+
+	public void wake_request() {
+		wait_request = false;
+		synchronized (this) {
+			this.notify();
+		}
+	}
 }
 
 
@@ -518,8 +587,10 @@ class generate_pane extends JPanel implements ActionListener{
 	private Vector<Vector<String>> table_data = new Vector<Vector<String>>();
 	private JTextField file_path = new JTextField("");
 	private JTextField file_name = new JTextField("");
-	private JButton open_button = new JButton("Open");
+	private JButton open = new JButton("Open");
+	private JButton close = new JButton("Close");
 	private JButton generate = new JButton("Generate");
+	private JButton clear = new JButton("Clear");
 	private JButton previous, next;
 	
 	public generate_pane(
@@ -537,61 +608,121 @@ class generate_pane extends JPanel implements ActionListener{
 	}
 		
 	private JPanel construct_top_panel(){
-		JPanel top_panel = new JPanel(new GridLayout(11,3,5,5));
-		JLabel path_label = new JLabel("Export Path:");
+		//JPanel top_panel = new JPanel(new GridLayout(11,3,5,5));
+		GridBagLayout layout = new GridBagLayout();
+		JPanel top_panel = new JPanel(layout);
 		if (client_info.get_client_data().containsKey("preference")){
 			file_path.setText(client_info.get_client_data().get("preference").get("work_path"));
 		} else {
 			file_path.setText("NA");
 		}
-		file_name.setText("client_report.csv");		
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());	
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());		
-		//line 1
+		file_name.setText("client_report.csv");
+		JLabel general = new JLabel("Please select and click \"Generate\" button.");
+		JLabel path_label = new JLabel("Export Path:");
+		JLabel blank_label1 = new JLabel("");
+		JLabel blank_label2 = new JLabel("");
+		JLabel blank_label3 = new JLabel("");
+		JLabel blank_label4 = new JLabel("");
+		JLabel file_label = new JLabel("Export Name:");
+		JLabel blank_cell1 = new JLabel("");
+		JLabel blank_cell2 = new JLabel("");
+		top_panel.add(general);
+		top_panel.add(blank_label1);
 		top_panel.add(path_label);
 		top_panel.add(file_path);
-		top_panel.add(open_button);
-		open_button.addActionListener(this);
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());		
-		//line 2
-		JLabel file_label = new JLabel("Export Name:");
+		top_panel.add(open);
+		open.addActionListener(this);
+		top_panel.add(blank_label2);
 		top_panel.add(file_label);
 		top_panel.add(file_name);
-		top_panel.add(new JLabel());
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());		
-		//line 4 
-		top_panel.add(new JLabel());
+		top_panel.add(clear);
+		clear.addActionListener(this);
+		top_panel.add(blank_label3);		
+		top_panel.add(blank_cell1);
+		top_panel.add(blank_cell2);
 		top_panel.add(generate);
 		generate.addActionListener(this);
-		top_panel.add(new JLabel());
-		//line 3
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());		
+		top_panel.add(close);
+		close.addActionListener(this);
+		top_panel.add(blank_label4);
+		//setting constrains =============================
+		GridBagConstraints s = new GridBagConstraints();
+		s.fill = GridBagConstraints.BOTH;
+		//general
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0.2;
+        layout.setConstraints(general, s);
+        //blank_label1
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0.5;
+        layout.setConstraints(blank_label1, s);        
+		//path_label
+        s.gridwidth=1;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(path_label, s);
+        //file_path
+        s.gridwidth=3;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(file_path, s);
+        //open
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(open, s); 
+        //blank_label2
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0.2;
+        layout.setConstraints(blank_label2, s);
+        //file_label
+        s.gridwidth=1;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(file_label, s); 
+        //file_name
+        s.gridwidth=3;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(file_name, s);
+        //clear
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(clear, s);
+        //blank_label3
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0.5;
+        layout.setConstraints(blank_label3, s);        
+        //blank_cell1
+        s.gridwidth=1;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(blank_cell1, s);
+        //blank_cell2
+        s.gridwidth=2;
+        s.weightx = 1;
+        s.weighty=0;
+        layout.setConstraints(blank_cell2, s);
+        //generate
+        s.gridwidth=1;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(generate, s);
+        //close
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(close, s);
+        //blank_label4
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(blank_label4, s);        
 		return top_panel;
 	}
 	
@@ -671,7 +802,13 @@ class generate_pane extends JPanel implements ActionListener{
 			}
 			file_action.force_write_file(export_file, contents.toString());
 		}
-		if(arg0.getSource().equals(open_button)){
+		if(arg0.getSource().equals(clear)){
+			file_name.setText("");
+		}
+		if(arg0.getSource().equals(close)){
+			tabbed_pane.close_dialog();
+		}		
+		if(arg0.getSource().equals(open)){
 			//JFileChooser import_file =  new JFileChooser(work_path);
 			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_PATH);
 			import_path.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//

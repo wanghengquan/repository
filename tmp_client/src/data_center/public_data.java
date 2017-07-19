@@ -25,7 +25,7 @@ public class public_data {
 	// base
 	public final static String BASE_CURRENTVERSION = "2.6.4"; //264 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 264; // version for code use
-	public final static String BASE_BUILDDATE = "2017/7/17";
+	public final static String BASE_BUILDDATE = "2017/7/19";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -49,8 +49,11 @@ public class public_data {
 	// external configure based on software bin path
 	public final static String ICON_FRAME_PNG = SW_HOME_PATH + "/image/frame.png";
 	public final static String ICON_TRAY_PNG = SW_HOME_PATH + "/image/ico.png";
-	public final static String ICON_TAB_PNG = SW_HOME_PATH + "/image/tab.png";
-	public final static String ICON_RPT_PNG = SW_HOME_PATH + "/image/rpt.png";
+	public final static String ICON_SOFTWARE_TAB_PNG = SW_HOME_PATH + "/image/tab.png";
+	public final static String ICON_RPT_SUITE_PNG = SW_HOME_PATH + "/image/suite.png";
+	public final static String ICON_RPT_TITLE_PNG = SW_HOME_PATH + "/image/title.png";
+	public final static String ICON_RPT_PREVIEW_PNG = SW_HOME_PATH + "/image/view.png";
+	public final static String ICON_RPT_GENERATE_PNG = SW_HOME_PATH + "/image/gen.png";
 
 	// ========================
 	// Remote update path

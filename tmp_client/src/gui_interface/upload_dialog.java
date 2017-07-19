@@ -38,8 +38,8 @@ public class upload_dialog extends JFrame{
 	private static final long serialVersionUID = 1L;
 	@SuppressWarnings("unused")
 	private client_data client_info;
-	private JLabel label_username = new JLabel("TMP User Name:");
-	private JLabel label_password = new JLabel("TMP Pass Word:");
+	private JLabel label_username = new JLabel("TMP Username:");
+	private JLabel label_password = new JLabel("TMP Password:");
 	private JLabel label_suitefile = new JLabel("Upload Suite File:");
 	//private JLabel label_output = new JLabel("Upload console Outputs:");
 	private JTextField field_username = new JTextField("public@latticesemi.com", 20);

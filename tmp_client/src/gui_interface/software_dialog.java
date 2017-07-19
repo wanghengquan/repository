@@ -75,7 +75,7 @@ public class software_dialog extends JDialog implements ChangeListener{
 				continue;
 			}
 			//Icon icon_image = (Icon) Toolkit.getDefaultToolkit().getImage(public_data.ICON_TAB_ICO);
-			ImageIcon icon_image = new ImageIcon(public_data.ICON_TAB_PNG);
+			ImageIcon icon_image = new ImageIcon(public_data.ICON_SOFTWARE_TAB_PNG);
 			String shown_tab_name = new String();
 			shown_tab_name = section_name.substring(0, 1).toUpperCase() + section_name.substring(1);
 			tabbed_pane.addTab(shown_tab_name, icon_image, new value_pane(section_name, switch_info, client_info), "Click and show");
