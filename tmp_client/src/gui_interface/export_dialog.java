@@ -14,6 +14,7 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,12 +26,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
@@ -41,6 +44,8 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
+import utility_funcs.time_info;
 
 public class export_dialog extends JDialog implements ChangeListener{
 	/**
@@ -60,6 +65,7 @@ public class export_dialog extends JDialog implements ChangeListener{
 		super(main_view, "Select and generate report", true);
 		this.task_info = task_info;
 		this.view_info = view_info;
+		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
 		//this.setLocation(800, 500);
@@ -72,13 +78,15 @@ public class export_dialog extends JDialog implements ChangeListener{
 		tabbed_pane.addChangeListener(this);
 		ImageIcon icon_image = new ImageIcon(public_data.ICON_RPT_PNG);
 		// pane 1: select suites
-		tabbed_pane.addTab("1. Select Suites", icon_image, new suite_pane(this, task_info, view_info), "Suite setting.");
+		tabbed_pane.addTab(report_enum.SUITE.toString(), icon_image, new suite_pane(this, task_info, view_info), report_enum.SUITE.get_description());
 		// pane 2: title pane
-		tabbed_pane.addTab("2. Select Titles", icon_image, new title_pane(this, task_info, view_info), "Title setting.");
+		tabbed_pane.addTab(report_enum.TITLE.toString(), icon_image, new title_pane(this, task_info, view_info), report_enum.TITLE.get_description());
 		// pane 3: title pane
-		tabbed_pane.addTab("3. Report Preview", icon_image, new preview_pane(this, task_info, view_info), "Report preview.");
+		preview_pane previe_gui = new preview_pane(this, task_info, view_info);
+		tabbed_pane.addTab(report_enum.PREVIEW.toString(), icon_image, previe_gui, report_enum.PREVIEW.get_description());
+		new Thread(previe_gui).start();
 		// pane 4: title pane
-		tabbed_pane.addTab("4. Report Generate", icon_image, new generate_pane(this, client_info, task_info, view_info), "Generate a report.");
+		tabbed_pane.addTab(report_enum.GENERATE.toString(), icon_image, new generate_pane(this, client_info, task_info, view_info), report_enum.GENERATE.get_description());
 		return tabbed_pane;
 	}
 	
@@ -91,12 +99,20 @@ public class export_dialog extends JDialog implements ChangeListener{
 	
 	public void go_to_next_pane(){
 		int select_index = tabbed_pane.getSelectedIndex();
-		tabbed_pane.setSelectedIndex(select_index + 1);
+		if(select_index >= report_enum.values().length - 1){
+			tabbed_pane.setSelectedIndex(select_index);
+		} else {
+			tabbed_pane.setSelectedIndex(select_index + 1);
+		}
 	}
 	
 	public void go_to_previous_pane(){
 		int select_index = tabbed_pane.getSelectedIndex();
-		tabbed_pane.setSelectedIndex(select_index - 1);
+		if(select_index <= 0){
+			tabbed_pane.setSelectedIndex(select_index);
+		} else {
+			tabbed_pane.setSelectedIndex(select_index - 1);
+		}
 	}	
 	
 	public static void main(String[] args) {
@@ -166,6 +182,8 @@ class suite_pane extends JPanel implements ActionListener{
 				status = "Running";
 			} else if (processing_admin_queue_list.contains(queue_name)) {
 				status = "Processing";
+			} else if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
+				status = "Unknown";
 			} else {
 				status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 						.get("admin_status");
@@ -222,11 +240,11 @@ class suite_pane extends JPanel implements ActionListener{
 				String queue_name = (String) suite_table.getValueAt(index, 1);
 				JCheckBox check_box = (JCheckBox) suite_table.getValueAt(index, 3);
 				if(check_box.isSelected()){
-					view_info.add_export_title_list(queue_name);
+					view_info.add_export_queue_list(queue_name);
 				} else {
-					view_info.remove_export_title_list(queue_name);
+					view_info.remove_export_queue_list(queue_name);
 				}
-			}			
+			}	
 			tabbed_pane.go_to_next_pane();
 		}
 	}
@@ -333,7 +351,7 @@ class title_pane extends JPanel implements ActionListener{
 	}
 }
 
-class preview_pane extends JPanel implements ActionListener{
+class preview_pane extends JPanel implements ActionListener, Runnable{
 	/**
 	 * 
 	 */
@@ -343,7 +361,9 @@ class preview_pane extends JPanel implements ActionListener{
 	private view_data view_info;
 	private Vector<String> table_column = new Vector<String>();
 	private Vector<Vector<Object>> table_data = new Vector<Vector<Object>>();	
-	private JTable preview_table;	
+	private JTable preview_table;
+	private JPanel top_panel;
+	private DefaultTableModel data_model;
 	private JButton previous, next;
 	
 	public preview_pane(
@@ -359,8 +379,55 @@ class preview_pane extends JPanel implements ActionListener{
 	}
 		
 	private JPanel construct_top_panel(){
-		JPanel top_panel = new JPanel(new BorderLayout());
+		top_panel = new JPanel(new BorderLayout());
+		data_model = new DefaultTableModel();
+		//data_model.setDataVector(table_data, table_column);
+		preview_table = new JTable(table_column, table_data);//{
+			/**
+			 * 
+			
+			private static final long serialVersionUID = 1L;
+
+			public void tableChanged(TableModelEvent e) {
+				super.tableChanged(e);
+				repaint();
+			}
+		};*/ 
+		//preview_table.getColumn("ID").setMaxWidth(50);
+		JScrollPane scro_panel = new JScrollPane(preview_table);
+		top_panel.add(scro_panel, BorderLayout.CENTER);
+		return top_panel;
+	}
+	
+	private JPanel construct_buttom_panel(){
+		JPanel south_panel = new JPanel(new BorderLayout());
+		previous = new JButton("Previous");
+		previous.addActionListener(this);
+		next = new JButton("Next");
+		next.addActionListener(this);
+		south_panel.add(previous, BorderLayout.WEST);
+		south_panel.add(next, BorderLayout.EAST);
+		return south_panel;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+		if(arg0.getSource().equals(previous)){
+			tabbed_pane.go_to_previous_pane();
+		}
+		if(arg0.getSource().equals(next)){
+			tabbed_pane.go_to_next_pane();
+		}
+	}
+
+	private void update_table_column(){
+		table_column.clear();
 		table_column.addAll(view_info.get_export_title_list());
+	}
+	
+	private void update_table_data(){
+		table_data.clear();
 		ArrayList<String> queue_list = new ArrayList<String>();
 		queue_list.addAll(view_info.get_export_queue_list());
 		for (String queue_name : queue_list){
@@ -401,45 +468,39 @@ class preview_pane extends JPanel implements ActionListener{
 				table_data.add(initial_line);
 			}
 		}		
-		DefaultTableModel dm = new DefaultTableModel();
-		dm.setDataVector(table_data, table_column);
-		preview_table = new JTable(dm){
-			/**
-			 * 
-			*/
-			private static final long serialVersionUID = 1L;
-
-			public void tableChanged(TableModelEvent e) {
-				super.tableChanged(e);
-				repaint();
-			}
-		}; 
-		//preview_table.getColumn("ID").setMaxWidth(50);
-		JScrollPane scro_panel = new JScrollPane(preview_table);
-		top_panel.add(scro_panel, BorderLayout.CENTER);
-		return top_panel;
 	}
 	
-	private JPanel construct_buttom_panel(){
-		JPanel south_panel = new JPanel(new BorderLayout());
-		previous = new JButton("Previous");
-		previous.addActionListener(this);
-		next = new JButton("Next");
-		next.addActionListener(this);
-		south_panel.add(previous, BorderLayout.WEST);
-		south_panel.add(next, BorderLayout.EAST);
-		return south_panel;
-	}
-
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void run() {
 		// TODO Auto-generated method stub
-		if(arg0.getSource().equals(previous)){
-			tabbed_pane.go_to_previous_pane();
-		}
-		if(arg0.getSource().equals(next)){
-			tabbed_pane.go_to_next_pane();
-		}
+		while (true) {
+			update_table_column();
+			update_table_data();
+			System.out.println(">>>>>>>>>>>>>>>>>>>>>>");
+			System.out.println(table_column.toString());
+			System.out.println(table_data.toString());
+			if (SwingUtilities.isEventDispatchThread()) {
+				preview_table.validate();
+				preview_table.updateUI();
+				top_panel.updateUI();
+			} else {
+				SwingUtilities.invokeLater(new Runnable(){
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						preview_table.validate();
+						preview_table.updateUI();
+						top_panel.updateUI();
+					}
+				});
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
 	}
 }
 
@@ -454,10 +515,10 @@ class generate_pane extends JPanel implements ActionListener{
 	private view_data view_info;
 	private client_data client_info;
 	private Vector<String> table_column = new Vector<String>();
-	private Vector<Vector<Object>> table_data = new Vector<Vector<Object>>();
+	private Vector<Vector<String>> table_data = new Vector<Vector<String>>();
 	private JTextField file_path = new JTextField("");
 	private JTextField file_name = new JTextField("");
-	private JButton open_button = new JButton("Select");
+	private JButton open_button = new JButton("Open");
 	private JButton generate = new JButton("Generate");
 	private JButton previous, next;
 	
@@ -470,20 +531,41 @@ class generate_pane extends JPanel implements ActionListener{
 		this.task_info = task_info;
 		this.view_info = view_info;
 		this.client_info = client_info;
-		file_path.setText(client_info.get_client_data().get("preference").get("work_path"));
-		file_name.setText("client_report.csv");
 		this.setLayout(new BorderLayout());
 		this.add(construct_top_panel(), BorderLayout.CENTER);
 		this.add(construct_buttom_panel(), BorderLayout.SOUTH);
 	}
 		
 	private JPanel construct_top_panel(){
-		JPanel top_panel = new JPanel(new GridLayout(4,3,5,5));
+		JPanel top_panel = new JPanel(new GridLayout(11,3,5,5));
 		JLabel path_label = new JLabel("Export Path:");
+		if (client_info.get_client_data().containsKey("preference")){
+			file_path.setText(client_info.get_client_data().get("preference").get("work_path"));
+		} else {
+			file_path.setText("NA");
+		}
+		file_name.setText("client_report.csv");		
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());	
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());		
 		//line 1
 		top_panel.add(path_label);
 		top_panel.add(file_path);
 		top_panel.add(open_button);
+		open_button.addActionListener(this);
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());		
 		//line 2
 		JLabel file_label = new JLabel("Export Name:");
 		top_panel.add(file_label);
@@ -493,10 +575,23 @@ class generate_pane extends JPanel implements ActionListener{
 		top_panel.add(new JLabel());
 		top_panel.add(new JLabel());
 		top_panel.add(new JLabel());
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());		
 		//line 4 
 		top_panel.add(new JLabel());
-		top_panel.add(new JLabel());
 		top_panel.add(generate);
+		generate.addActionListener(this);
+		top_panel.add(new JLabel());
+		//line 3
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());
+		top_panel.add(new JLabel());		
 		return top_panel;
 	}
 	
@@ -518,6 +613,7 @@ class generate_pane extends JPanel implements ActionListener{
 	private void update_table_data(){
 		ArrayList<String> queue_list = new ArrayList<String>();
 		queue_list.addAll(view_info.get_export_queue_list());
+		System.out.println("queue list:" + queue_list.toString());
 		for (String queue_name : queue_list){
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new queue_comparator());
 			queue_data.putAll(task_info.get_queue_data_from_received_task_queues_map(queue_name));
@@ -528,7 +624,7 @@ class generate_pane extends JPanel implements ActionListener{
 			Iterator<String> case_it = queue_data.keySet().iterator();
 			while(case_it.hasNext()){
 				String case_id = case_it.next();
-				Vector<Object> initial_line = new Vector<Object>();				
+				Vector<String> initial_line = new Vector<String>();				
 				for(String title: table_column){
 					switch (title){
 					case "ID":
@@ -566,7 +662,26 @@ class generate_pane extends JPanel implements ActionListener{
 			update_table_data();
 			String text_path = new String(file_path.getText());
 			String text_name = new String(file_name.getText());
-			String export_file = text_path + "/" + text_name;			
+			String export_file = text_path + "/" + text_name;
+			String next_line = System.getProperty("line.separator");
+			StringBuilder contents = new StringBuilder();
+			contents.append(String.join(",", table_column) + next_line);
+			for (Vector<String> line_data : table_data){
+				contents.append(String.join(",", line_data) + next_line);
+			}
+			file_action.force_write_file(export_file, contents.toString());
+		}
+		if(arg0.getSource().equals(open_button)){
+			//JFileChooser import_file =  new JFileChooser(work_path);
+			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_PATH);
+			import_path.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//
+			import_path.setDialogTitle("Select Export Folder");
+			int return_value = import_path.showOpenDialog(null);
+			if (return_value == JFileChooser.APPROVE_OPTION){
+				File open_path = import_path.getSelectedFile();
+				String path = open_path.getAbsolutePath().replaceAll("\\\\", "/");
+				file_path.setText(path);
+			}
 		}		
 		if(arg0.getSource().equals(previous)){
 			tabbed_pane.go_to_previous_pane();

@@ -7,19 +7,17 @@
  * Date:
  * Description:
  */
-package data_center;
+package gui_interface;
 
-public enum result_enum {
-	TOTAL(0, "Total"),
-	PASS(1, "Passed"),
-	FAIL(2, "Failed"),
-	TBD(3, "TBD"),
-	TIMEOUT(4, "Timeout"),
-	OTHERS(5, "Others");
+public enum report_enum {
+	SUITE(0, "Suite setting"),
+	TITLE(1, "Title setting"),
+	PREVIEW(2, "Report preview"),
+	GENERATE(3, "Generate a report");
 	private int index;
 	private String description;
 	
-	private result_enum(int index, String description){
+	private report_enum(int index, String description){
 		this.index = index;
 		this.description = description;
 	}

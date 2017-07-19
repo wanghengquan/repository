@@ -31,7 +31,6 @@ import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
-import data_center.result_enum;
 import data_center.switch_data;
 import gui_interface.view_data;
 import info_parser.xml_parser;

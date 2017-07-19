@@ -275,7 +275,9 @@ public class view_data {
 	public void add_export_title_list(String title) {
 		rw_lock.writeLock().lock();
 		try {
-			this.export_title_list.add(title);
+			if(!export_title_list.contains(title)){
+				this.export_title_list.add(title);
+			}
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -316,7 +318,20 @@ public class view_data {
 	public void add_export_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
 		try {
-			this.export_queue_list.add(queue_name);
+			if (!export_queue_list.contains(queue_name)){
+				this.export_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void remove_export_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if (export_queue_list.contains(queue_name)){
+				this.export_queue_list.remove(queue_name);
+			}
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

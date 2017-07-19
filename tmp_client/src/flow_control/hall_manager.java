@@ -27,7 +27,6 @@ import info_parser.cmd_parser;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 import data_center.public_data;
-import data_center.result_enum;
 
 public class hall_manager extends Thread {
 	// public property
