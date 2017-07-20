@@ -22,6 +22,7 @@ import info_parser.ini_parser;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import data_center.client_data;
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 
@@ -295,7 +296,7 @@ public class config_sync extends Thread {
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			switch_info.set_client_stop_request();
+			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}
 
@@ -311,7 +312,7 @@ public class config_sync extends Thread {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
 			CONFIG_SYNC_LOGGER.warn("config sync get initial config data failed");
-			switch_info.set_client_stop_request();
+			switch_info.set_client_stop_request(exit_enum.DATA);
 		}
 		// initial 2 : update initial(static) data
 		update_static_data(ini_data);

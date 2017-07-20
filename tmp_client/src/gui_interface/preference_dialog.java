@@ -11,6 +11,8 @@ package gui_interface;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -114,17 +116,43 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jp_center3.add(task_serial);
 		jp_center3.add(task_parallel);	
 		//step 4 : input 4th line
-		JPanel jp_center4 = new JPanel(new GridLayout(1,2,5,5));
+		GridBagLayout input4_layout = new GridBagLayout();
+		JPanel jp_center4 = new JPanel(input4_layout);
 		jl_work_path = new JLabel("Work Space:");
 		jt_work_path = new JTextField(preference_data.get("work_path"));
 		jp_center4.add(jl_work_path);
 		jp_center4.add(jt_work_path);
+		GridBagConstraints input4_s = new GridBagConstraints();
+		//for jl_work_path
+		input4_s.fill = GridBagConstraints.BOTH;
+		input4_s.gridwidth=1;
+		input4_s.weightx = 0;
+		input4_s.weighty=0;
+		input4_layout.setConstraints(jl_work_path, input4_s);	
+		//for jt_work_path
+		input4_s.gridwidth=0;
+		input4_s.weightx = 1;
+		input4_s.weighty=0;
+		input4_layout.setConstraints(jt_work_path, input4_s);		
 		//step 5 : input 5th line
-		JPanel jp_center5 = new JPanel(new GridLayout(1,2,5,5));
+		GridBagLayout input5_layout = new GridBagLayout();
+		JPanel jp_center5 = new JPanel(input5_layout);
 		jl_save_path = new JLabel("Save Space:");
 		jt_save_path = new JTextField(preference_data.get("save_path"));
 		jp_center5.add(jl_save_path);
-		jp_center5.add(jt_save_path);		
+		jp_center5.add(jt_save_path);
+		GridBagConstraints input5_s = new GridBagConstraints();
+		//for jl_work_path
+		input5_s.fill = GridBagConstraints.BOTH;
+		input5_s.gridwidth=1;
+		input5_s.weightx = 0;
+		input5_s.weighty=0;
+		input5_layout.setConstraints(jl_save_path, input5_s);	
+		//for jt_work_path
+		input5_s.gridwidth=0;
+		input5_s.weightx = 1;
+		input5_s.weighty=0;
+		input5_layout.setConstraints(jt_save_path, input5_s);		
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,2,5,10));
 		discard = new JButton("Discard");

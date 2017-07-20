@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.import_data;
@@ -267,7 +268,7 @@ public class view_server extends Thread{
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			switch_info.set_client_stop_request();
+			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}
 	

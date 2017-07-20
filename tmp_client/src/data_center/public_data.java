@@ -25,7 +25,7 @@ public class public_data {
 	// base
 	public final static String BASE_CURRENTVERSION = "2.6.4"; //264 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 264; // version for code use
-	public final static String BASE_BUILDDATE = "2017/7/19";
+	public final static String BASE_BUILDDATE = "2017/7/20";
 	public final static String BASE_SUITEFILEVERSION = "1.05";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;

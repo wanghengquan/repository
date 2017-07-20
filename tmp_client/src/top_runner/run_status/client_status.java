@@ -20,6 +20,7 @@ import connect_tube.task_data;
 import connect_tube.tube_server;
 import data_center.client_data;
 import data_center.data_server;
+import data_center.exit_enum;
 import data_center.switch_data;
 import flow_control.export_data;
 import flow_control.hall_manager;
@@ -96,6 +97,18 @@ public class client_status extends Observable  {
     
     public String get_current_status() {  
     	return current_status.get_current_status();  
+    }
+    
+    public void final_stop_with_exit_state(){
+    	exit_enum exit_state = exit_enum.OTHERS;
+    	for (exit_enum current_state: switch_info.get_client_stop_request().keySet()){
+    		if(current_state.get_index() < exit_state.get_index()){
+    			exit_state = current_state;
+    		}
+    	}
+    	System.out.println(">>>Info:Client Exit Code:" + exit_state.get_index());
+    	System.out.println(">>>Info:Client Exit String:" + exit_state.get_description());
+    	System.exit(exit_state.get_index());
     }
     
     public void report_processed_data(){

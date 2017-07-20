@@ -49,7 +49,7 @@ public class upload_dialog extends JFrame{
 	private JButton cancel_button = new JButton("Cancel");
 	private JButton upload_button = new JButton("Upload");
 	private String line_separator = System.getProperty("line.separator");
-	private JTextArea output_area = new JTextArea("Upload Console Outputs:" + line_separator);
+	private JTextArea output_area = new JTextArea(">" + line_separator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
 	String work_path = new String();
@@ -63,22 +63,93 @@ public class upload_dialog extends JFrame{
 		this.setIconImage(icon_image);
 		Container my_container = this.getContentPane();
 		my_container.setLayout(new GridLayout(2,1,10,10));
-		JPanel p1 = new JPanel(new GridLayout(4,2,10,10));
-		JPanel pf = new JPanel(new GridLayout(1,2,5,10));
-		JPanel p2 = new JPanel(new BorderLayout());
-		output_area.setLineWrap(true);
-		JScrollPane sp = new JScrollPane(output_area);
+		//=================================first part 
+		GridBagLayout part1_layout = new GridBagLayout();
+		JPanel p1 = new JPanel(part1_layout);
+		JLabel blank_line1 = new JLabel("");
 		p1.add(label_username);
 		p1.add(field_username);
 		p1.add(label_password);
 		p1.add(field_password);
 		p1.add(label_suitefile);
-		pf.add(field_file);
-		pf.add(open_button);
-		p1.add(pf);
-		p1.add(cancel_button);
+		p1.add(field_file);
+		p1.add(open_button);
+		p1.add(blank_line1);
+		p1.add(cancel_button);		
+		JPanel bland_cell2 = new JPanel();
+		p1.add(bland_cell2);
 		p1.add(upload_button);
-		p2.add(sp);
+		JPanel jp_title = new JPanel(new GridLayout(1,1,5,5));
+		jp_title.add(new JLabel("Upload Console Outputs:"));
+		jp_title.setBackground(Color.LIGHT_GRAY);
+		p1.add(jp_title);
+		GridBagConstraints layout_s = new GridBagConstraints();
+		layout_s.fill = GridBagConstraints.BOTH;
+		//for label_username
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.1;
+		part1_layout.setConstraints(label_username, layout_s);
+		//for field_username
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(field_username, layout_s);
+		//for label_password
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.1;
+		part1_layout.setConstraints(label_password, layout_s);	
+		//for field_password
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(field_password, layout_s);	
+		//for label_suitefile
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.1;
+		part1_layout.setConstraints(label_suitefile, layout_s);	
+		//for field_file
+		layout_s.gridwidth=2;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(field_file, layout_s);
+		//for open_button
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(open_button, layout_s);
+		//for blank_line1
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.5;
+		part1_layout.setConstraints(blank_line1, layout_s);		
+		//for cancel_button
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.1;
+		part1_layout.setConstraints(cancel_button, layout_s);		
+		//for bland_cell2
+		layout_s.gridwidth=2;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(bland_cell2, layout_s);	
+		//for upload_button
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(upload_button, layout_s);
+		//for jp_title
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.1;
+		part1_layout.setConstraints(jp_title, layout_s);		
+		//=================================second part 
+		JPanel p2 = new JPanel(new BorderLayout());
+		output_area.setLineWrap(true);
+		JScrollPane sp = new JScrollPane(output_area);		
+		p2.add(sp, BorderLayout.CENTER);
 		my_container.add(p1);
 		my_container.add(p2);
 		open_button.addActionListener(new open_action());

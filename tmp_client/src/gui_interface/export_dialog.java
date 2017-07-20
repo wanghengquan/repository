@@ -11,11 +11,13 @@ package gui_interface;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +31,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -45,6 +48,7 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.queue_compare;
 import connect_tube.task_data;
+import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
 import utility_funcs.deep_clone;
@@ -75,7 +79,7 @@ public class export_dialog extends JDialog implements ChangeListener{
 		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		this.setSize(900, 700);
+		this.setSize(1000, 800);
 	}
 
 	private JTabbedPane construct_tab_pane(){
@@ -97,7 +101,16 @@ public class export_dialog extends JDialog implements ChangeListener{
 		previe_gui.wait_request();
 		// pane 4: generate pane
 		tabbed_pane.addTab(report_enum.GENERATE.toString(), icon_image_generate, new generate_pane(this, client_info, task_info, view_info), report_enum.GENERATE.get_description());
+		initial_tabs();
 		return tabbed_pane;
+	}
+	
+	private void initial_tabs(){
+		for(report_enum tab: report_enum.values()){
+			if (!tab.equals(report_enum.SUITE)){
+				tabbed_pane.setEnabledAt(tabbed_pane.indexOfTab(tab.toString()), false);
+			}
+		}
 	}
 	
 	@Override
@@ -128,10 +141,18 @@ public class export_dialog extends JDialog implements ChangeListener{
 		} else {
 			previe_gui.wait_request();
 		}
+		for(int index=0 ; index < report_enum.values().length; index++){
+			if (index <= result_index){
+				tabbed_pane.setEnabledAt(index, true);
+			} else {
+				tabbed_pane.setEnabledAt(index, false);
+			}
+		}		
 	}
 	
 	public void go_to_previous_pane(){
 		int select_index = tabbed_pane.getSelectedIndex();
+		//tabbed_pane.setEnabledAt(select_index, false);
 		int result_index = 0;
 		if(select_index <= 0){
 			tabbed_pane.setSelectedIndex(select_index);
@@ -144,7 +165,14 @@ public class export_dialog extends JDialog implements ChangeListener{
 			previe_gui.wake_request();
 		} else {
 			previe_gui.wait_request();
-		}		
+		}
+		for(int index=0 ; index < report_enum.values().length; index++){
+			if (index <= result_index){
+				tabbed_pane.setEnabledAt(index, true);
+			} else {
+				tabbed_pane.setEnabledAt(index, false);
+			}
+		}
 	}	
 	
 	public static void main(String[] args) {
@@ -464,7 +492,7 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 		ArrayList<String> queue_list = new ArrayList<String>();
 		queue_list.addAll(view_info.get_export_queue_list());
 		for (String queue_name : queue_list){
-			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new queue_comparator());
+			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 			queue_data.putAll(task_info.get_queue_data_from_received_task_queues_map(queue_name));
 			queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(queue_name));
 			if(queue_data.isEmpty()){
@@ -590,6 +618,7 @@ class generate_pane extends JPanel implements ActionListener{
 	private JButton open = new JButton("Open");
 	private JButton close = new JButton("Close");
 	private JButton generate = new JButton("Generate");
+	private JButton open_folder = new JButton("Open Folder");
 	private JButton clear = new JButton("Clear");
 	private JButton previous, next;
 	
@@ -623,9 +652,11 @@ class generate_pane extends JPanel implements ActionListener{
 		JLabel blank_label2 = new JLabel("");
 		JLabel blank_label3 = new JLabel("");
 		JLabel blank_label4 = new JLabel("");
+		JLabel blank_label5 = new JLabel("");
 		JLabel file_label = new JLabel("Export Name:");
 		JLabel blank_cell1 = new JLabel("");
 		JLabel blank_cell2 = new JLabel("");
+		JLabel blank_cell4 = new JLabel("");
 		top_panel.add(general);
 		top_panel.add(blank_label1);
 		top_panel.add(path_label);
@@ -642,9 +673,13 @@ class generate_pane extends JPanel implements ActionListener{
 		top_panel.add(blank_cell2);
 		top_panel.add(generate);
 		generate.addActionListener(this);
+		top_panel.add(open_folder);
+		open_folder.addActionListener(this);
+		top_panel.add(blank_label4);
+		top_panel.add(blank_cell4);
 		top_panel.add(close);
 		close.addActionListener(this);
-		top_panel.add(blank_label4);
+		top_panel.add(blank_label5);
 		//setting constrains =============================
 		GridBagConstraints s = new GridBagConstraints();
 		s.fill = GridBagConstraints.BOTH;
@@ -696,7 +731,7 @@ class generate_pane extends JPanel implements ActionListener{
         //blank_label3
         s.gridwidth=0;
         s.weightx = 0;
-        s.weighty=0.5;
+        s.weighty=0;
         layout.setConstraints(blank_label3, s);        
         //blank_cell1
         s.gridwidth=1;
@@ -713,16 +748,31 @@ class generate_pane extends JPanel implements ActionListener{
         s.weightx = 0;
         s.weighty=0;
         layout.setConstraints(generate, s);
+        //open_folder
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(open_folder, s);
+        //blank_label4
+        s.gridwidth=0;
+        s.weightx = 0;
+        s.weighty=0.5;
+        layout.setConstraints(blank_label4, s);        
+        //blank_cell4
+        s.gridwidth=4;
+        s.weightx = 0;
+        s.weighty=0;
+        layout.setConstraints(blank_cell4, s);
         //close
         s.gridwidth=0;
         s.weightx = 0;
         s.weighty=0;
         layout.setConstraints(close, s);
-        //blank_label4
+        //blank_label5
         s.gridwidth=0;
         s.weightx = 0;
         s.weighty=0;
-        layout.setConstraints(blank_label4, s);        
+        layout.setConstraints(blank_label5, s);        
 		return top_panel;
 	}
 	
@@ -802,6 +852,23 @@ class generate_pane extends JPanel implements ActionListener{
 			}
 			file_action.force_write_file(export_file, contents.toString());
 		}
+		if(arg0.getSource().equals(open_folder)){
+			String gen_path = file_path.getText();
+			String message = new String("Cannot open Generate folder:" + gen_path);
+			String title = new String("Open Generate folder failed");
+			if (Desktop.isDesktopSupported()) {
+				Desktop desktop = Desktop.getDesktop();
+				try {
+					desktop.open(new File(gen_path));
+				} catch (IOException tmp_example_exception) {
+					// TODO Auto-generated catch block
+					tmp_example_exception.printStackTrace();
+					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			}			
+		}		
 		if(arg0.getSource().equals(clear)){
 			file_name.setText("");
 		}

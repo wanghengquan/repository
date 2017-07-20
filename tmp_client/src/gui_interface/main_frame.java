@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
@@ -161,7 +162,7 @@ public class main_frame extends JFrame {
 		MenuItem close = new MenuItem("Close");
 		close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
-				switch_info.set_client_stop_request();
+				switch_info.set_client_stop_request(exit_enum.NORMAL);
 			}
 		});
 		MenuItem open = new MenuItem("Open");

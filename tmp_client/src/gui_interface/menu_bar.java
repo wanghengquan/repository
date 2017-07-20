@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
@@ -237,7 +238,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			export_view.setVisible(true);			
 		}
 		if (e.getSource().equals(exit)) {
-			switch_info.set_client_stop_request();
+			switch_info.set_client_stop_request(exit_enum.NORMAL);
 			main_view.setVisible(false);
 		}
 		if (e.getSource().equals(view_all)) {

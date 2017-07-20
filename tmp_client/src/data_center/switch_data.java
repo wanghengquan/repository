@@ -10,6 +10,7 @@
 package data_center;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.prefs.Preferences;
@@ -33,7 +34,7 @@ public class switch_data {
 	private int check_core_request = 0;
 	// client house keep request
 	private int house_keep_request = 0;
-	private int client_stop_request = 0;
+	private HashMap<exit_enum, Integer> client_stop_request = new HashMap<exit_enum, Integer>();
 	// Thread start sequence
 	private Boolean start_progress_power_up = new Boolean(false);
 	private Boolean main_gui_power_up = new Boolean(false);
@@ -157,20 +158,21 @@ public class switch_data {
 	 * finally { rw_lock.readLock().unlock(); } return result; }
 	 */
 
-	public void set_client_stop_request() {
+	public void set_client_stop_request(exit_enum exit_state) {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_stop_request = client_stop_request + 1;
+			Integer ori_data = client_stop_request.getOrDefault(exit_state, 0);
+			client_stop_request.put(exit_state, ori_data + 1);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public int get_client_stop_request() {
-		int result = 0;
+	public HashMap<exit_enum, Integer> get_client_stop_request() {
+		HashMap<exit_enum, Integer> result = new HashMap<exit_enum, Integer>();
 		rw_lock.readLock().lock();
 		try {
-			result = this.client_stop_request;
+			result.putAll(client_stop_request);
 		} finally {
 			rw_lock.readLock().unlock();
 		}

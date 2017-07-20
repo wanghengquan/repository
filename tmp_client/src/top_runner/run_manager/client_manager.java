@@ -18,6 +18,7 @@ import connect_tube.task_data;
 import connect_tube.tube_server;
 import data_center.client_data;
 import data_center.data_server;
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.hall_manager;
@@ -92,7 +93,7 @@ public class client_manager extends Thread  {
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}			
-			System.exit(1);
+			System.exit(exit_enum.DUMP.get_index());
 		}
 	}
 
@@ -148,7 +149,7 @@ public class client_manager extends Thread  {
 				client_sts.to_maintain_status();
 			}
 			// task 3 :
-			if (switch_info.get_client_stop_request() > 0){
+			if (switch_info.get_client_stop_request().size() > 0){
 				client_sts.to_stop_status();
 			} 
 			// task 4 : 

@@ -13,6 +13,7 @@ package top_runner.run_manager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.exit_enum;
 import data_center.switch_data;
 
 
@@ -34,13 +35,13 @@ public class shut_down extends Thread {
 	public void run() {
 		try {
 			SHUT_DOWN_LOGGER.info("shut_down hook called.");
-			System.out.println(">>>Info: shut_down hook called.");
+			System.out.println(">>>Info:Shut down hook called.");
 			// shut down task 1:
 			switch_info.decrease_system_client_insts();
 			// shut down task 2:
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();			
-			System.exit(1);
+			System.exit(exit_enum.DUMP.get_index());
 		}
 	}
 

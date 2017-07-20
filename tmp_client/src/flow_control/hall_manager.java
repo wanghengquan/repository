@@ -20,6 +20,7 @@ import connect_tube.tube_server;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.data_server;
+import data_center.exit_enum;
 import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
@@ -43,6 +44,7 @@ public class hall_manager extends Thread {
 	private view_data view_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
+	private int local_cmd_exit_counter = 0;
 	// sub threads need to be launched
 	HashMap<String, task_waiter> task_waiters;
 	result_waiter waiter_result;
@@ -112,8 +114,8 @@ public class hall_manager extends Thread {
 		return time_info.get_runtime_string(start_time, current_time);	
 	}
 	
-	private String get_client_run_case_summary_data_map(){
-		StringBuilder run_summary = new StringBuilder();
+	private HashMap<result_enum, String> get_client_run_case_summary(){
+		HashMap<result_enum, String> run_summary = new HashMap<result_enum, String>();
 		Integer pass_num = new Integer(0);
 		Integer fail_num = new Integer(0);
 		Integer tbd_num = new Integer(0);
@@ -134,16 +136,16 @@ public class hall_manager extends Thread {
 			others_num = others_num + queue_data.getOrDefault(result_enum.OTHERS, 0);
 			total_num = total_num + queue_data.getOrDefault(result_enum.TOTAL, 0);
 		}
-		run_summary.append(result_enum.TOTAL.toString() + ":" + total_num.toString() + " ");
-		run_summary.append(result_enum.PASS.toString() + ":" + pass_num.toString() + " ");
-		run_summary.append(result_enum.FAIL.toString() + ":" + fail_num.toString() + " ");
-		run_summary.append(result_enum.TBD.toString() + ":" + tbd_num.toString() + " ");
-		run_summary.append(result_enum.TIMEOUT.toString() + ":" + timeout_num.toString() + " ");
-		run_summary.append(result_enum.OTHERS.toString() + ":" + others_num.toString() + " ");
-		return run_summary.toString();
+		run_summary.put(result_enum.TOTAL, total_num.toString());
+		run_summary.put(result_enum.PASS, pass_num.toString());
+		run_summary.put(result_enum.FAIL, fail_num.toString());
+		run_summary.put(result_enum.TBD, tbd_num.toString());
+		run_summary.put(result_enum.TIMEOUT, timeout_num.toString());
+		run_summary.put(result_enum.OTHERS, others_num.toString() );
+		return run_summary;
 	}
 	
-	private void generate_console_report(pool_data pool_info) {
+	private void generate_console_report() {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run time:" + get_client_runtime());
@@ -159,7 +161,7 @@ public class hall_manager extends Thread {
 		String max_thread = String.valueOf(pool_info.get_pool_current_size());
 		String used_thread = String.valueOf(pool_info.get_pool_used_threads());
 		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread);
-		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary_data_map());
+		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary());
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.debug(client_info.get_use_soft_insts());
@@ -168,13 +170,62 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.debug(client_info.get_client_data().toString());
 	}
 
-	private void hall_status_report(pool_data pool_info){
+	private void hall_status_report(){
 		int used_thread = pool_info.get_pool_used_threads();
 		if (used_thread == 0){
 			switch_info.set_client_hall_status("idle");
 		} else {
 			switch_info.set_client_hall_status("busy");
 		}
+	}
+	
+	private void local_cmd_mode_exit_check(){
+		if (!client_info.get_client_data().get("preference").get("link_mode").equals("local")){
+			return;
+		}
+		if (client_info.get_client_data().get("preference").get("cmd_gui").equals("gui")){
+			return;
+		}
+		if (!switch_info.get_suite_file_list().isEmpty()){
+			return;
+		}
+		if (!task_info.get_processing_admin_queue_list().isEmpty()){
+			return;
+		}
+		if (pool_info.get_pool_used_threads() > 0){
+			return;
+		}
+		//make exit report
+		local_cmd_exit_counter++;
+		if (local_cmd_exit_counter < 5){ //4 * base_interval
+			return;
+		}
+		generate_exit_report();
+		HashMap<result_enum, String> run_summary = get_client_run_case_summary();
+		if(Integer.valueOf(run_summary.get(result_enum.FAIL)) > 0 ){
+			switch_info.set_client_stop_request(exit_enum.TASK);
+		} else {
+			switch_info.set_client_stop_request(exit_enum.NORMAL);
+		}
+		
+	}
+	
+	private void generate_exit_report() {
+		// report processing queue list
+		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
+		HALL_MANAGER_LOGGER.info(">>>Run time:" + get_client_runtime());
+		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
+		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
+			HALL_MANAGER_LOGGER.info(">>>                 :"+ queue_name);
+		}
+		HashMap<result_enum, String> run_summary = get_client_run_case_summary();
+		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + run_summary);
+		if(Integer.valueOf(run_summary.get(result_enum.FAIL)) > 0 ){
+			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 1.");
+		} else {
+			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 0.");
+		}
+		HALL_MANAGER_LOGGER.info(">>>==================================");
 	}
 	
 	private void stop_sub_threads() {
@@ -213,7 +264,7 @@ public class hall_manager extends Thread {
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
 			}				
-			switch_info.set_client_stop_request();
+			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}
 
@@ -243,9 +294,11 @@ public class hall_manager extends Thread {
 			// task 1 : update running task waiters
 			start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
 			// task 2 : make general report
-			generate_console_report(pool_info);
+			generate_console_report();
 			// task 3 : Status report
-			hall_status_report(pool_info);
+			hall_status_report();
+			// task 4 : exit apply for local command line mode
+			local_cmd_mode_exit_check();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

@@ -30,7 +30,7 @@ public class work_status extends abstract_status {
 		System.out.println(">>>Info:Go to stop");
 		System.out.println("");		
 		client.set_current_status(client.STOP);
-		System.exit(0);
+		client.final_stop_with_exit_state();
 	}
 
 	public void to_work() {
