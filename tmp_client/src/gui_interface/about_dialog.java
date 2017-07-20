@@ -64,6 +64,8 @@ public class about_dialog extends JDialog implements ActionListener {
 		rumtime.add(this.get_client_runtime());
 		about_data.add(rumtime);
 		JTable about_table = new info_table(about_data, about_column);
+		about_table.getColumn("Item").setMinWidth(100);
+		about_table.getColumn("Value").setMinWidth(100);
 		about_table.setRowHeight(24);
 		container.add(about_table, BorderLayout.CENTER);
 		JTableHeader table_head = about_table.getTableHeader();
