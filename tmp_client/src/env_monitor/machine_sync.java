@@ -310,7 +310,7 @@ public class machine_sync extends Thread {
 		machine_sync client_update = new machine_sync(1);
 		client_update.start();
 		System.out.println(client_update.get_start_time());
-		System.exit(0);
+		System.exit(exit_enum.NORMAL.get_index());
 		INFO_LOGGER.warn("thread start...");
 		try {
 			Thread.sleep(10 * 1000);

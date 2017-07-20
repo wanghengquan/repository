@@ -171,6 +171,8 @@ class value_pane extends JPanel implements ActionListener{
 			j++;
 		}
 		build_table = new setting_table(table_data, table_column);
+		
+		build_table.getColumn("Build").setMinWidth(100);
 		build_table.getColumn("Build").setMaxWidth(200);
 		JScrollPane scro_panel = new JScrollPane(build_table);
 		center_panel.add(scro_panel, BorderLayout.CENTER);

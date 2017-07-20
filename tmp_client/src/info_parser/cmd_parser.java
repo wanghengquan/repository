@@ -17,6 +17,8 @@ import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.exit_enum;
+
 /*
  * PlatUML graph
  * @startuml
@@ -132,7 +134,7 @@ public class cmd_parser {
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp(usage, header, options_obj, footer);
-		System.exit(0);
+		System.exit(exit_enum.NORMAL.get_index());
 	}
 
 	/*

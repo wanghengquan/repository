@@ -251,7 +251,7 @@ public class view_server extends Thread{
 			//0:yes , 1:no
 			int user_select = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
 			if (user_select == 1){
-				System.exit(1);
+				System.exit(exit_enum.USER.get_index());
 			}
 		}
 		switch_info.increase_system_client_insts();

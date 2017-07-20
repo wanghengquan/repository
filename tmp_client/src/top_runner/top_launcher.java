@@ -22,6 +22,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import connect_tube.task_data;
 import data_center.client_data;
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import env_monitor.self_check;
@@ -92,11 +93,11 @@ public class top_launcher  {
 					break;
 				}
 				if (user_choice.equals("n")){
-					System.exit(1);
+					System.exit(exit_enum.USER.get_index());
 				}
 				input_count++;
 				if(input_count > 9){
-					System.exit(1);
+					System.exit(exit_enum.USER.get_index());
 				}
 			}
 			user_input.close(); 
@@ -113,8 +114,8 @@ public class top_launcher  {
 		System.out.println(">>>Info: Contact Us:" + public_data.BASE_CONTACT_MAIL);
 		System.out.println("");
 		initial_log_config();
-		TOP_LAUNCHER_LOGGER.debug("debug output test");
-		TOP_LAUNCHER_LOGGER.info("Info output ntest");
+		TOP_LAUNCHER_LOGGER.debug("Debug output test");
+		TOP_LAUNCHER_LOGGER.info("Info output test");
 		TOP_LAUNCHER_LOGGER.warn("Warn output test");
 		TOP_LAUNCHER_LOGGER.error("Error output test");
 		TOP_LAUNCHER_LOGGER.fatal("Fatal output test");
@@ -129,7 +130,7 @@ public class top_launcher  {
 		// initial 2 : run self check
 		if(!run_self_check()){
 			TOP_LAUNCHER_LOGGER.error(">>>Self check failed.");
-			System.exit(1);
+			System.exit(exit_enum.RUNENV.get_index());
 		}
 		// initial 3 : run client instances check
 		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"));

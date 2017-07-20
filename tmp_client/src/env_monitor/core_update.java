@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.exit_enum;
 import data_center.public_data;
 import utility_funcs.system_cmd;
 
@@ -84,6 +85,6 @@ public class core_update {
 		String work_path = new String("D:/tmp_work_space");
 		updater.update(work_path);
 		System.out.println(">>>update done");
-		System.exit(0);
+		System.exit(exit_enum.NORMAL.get_index());
 	}
 }

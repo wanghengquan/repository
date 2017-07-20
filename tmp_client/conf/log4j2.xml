@@ -16,7 +16,7 @@
 			<AppenderRef ref="Console" />
             <AppenderRef ref="logfile" />
 		</Root>
-		<Logger name="top_control.tmp_manager" level="INFO" additivity="false">
+		<Logger name="top_runner.top_launcher" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />
 		</Logger>
 		<Logger name="flow_control.hall_manager" level="INFO" additivity="false">

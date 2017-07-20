@@ -52,7 +52,7 @@ public class shut_down extends Thread {
 		switch_data switch_info = new switch_data();
 		shut_down sh = new shut_down(switch_info);
 		Runtime.getRuntime().addShutdownHook(sh);
-		System.exit(1);
+		System.exit(exit_enum.NORMAL.get_index());
 		try {
 			Thread.sleep(10000);
 		} catch (InterruptedException e) {
