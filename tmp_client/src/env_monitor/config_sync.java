@@ -33,6 +33,7 @@ import data_center.switch_data;
  * 					ng1_0.954=	xxx
  * 					scan_dir=	xxx
  * 					max_insts=	xxx
+ * 					scan_cmd=	xxx   //for extra user defined build path scan
  * 		....(other software)
  * 
  * 		tmp_machine:terminal=	xxx
