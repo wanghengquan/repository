@@ -21,13 +21,14 @@ import org.apache.logging.log4j.Logger;
 import info_parser.ini_parser;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
+import utility_funcs.system_cmd;
 import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 
 /*
- * This class used to get the basic information of the client, and dump data to configure file
+ * This class used to get the basic information of the client and dump data to configure file
  * return machine_hash:
  * 		radiant	:	dng_b1	=	xxx
  * 					ng1_0.954=	xxx
@@ -121,6 +122,40 @@ public class config_sync extends Thread {
 		return scan_dirs;
 	}
 
+	private HashMap<String, String> get_extra_scan_cmd_dirs(String scan_cmd) {
+		HashMap<String, String> extra_dirs = new HashMap<String, String>();
+		ArrayList<String> cmd_output = new ArrayList<String>();
+		scan_cmd = scan_cmd.replaceAll("\\$work_path", config_hash.get("tmp_preference").get("work_path"));
+		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT);
+		try {
+			cmd_output.addAll(system_cmd.run(scan_cmd));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			CONFIG_SYNC_LOGGER.warn("Run scan command failed");
+			return extra_dirs;
+		}
+		int build_counter = 0;
+		for (String line : cmd_output){
+			if (!line.startsWith("build:")){
+				continue;
+			}
+			String build = line.split(":", 2)[1];
+			String build_name = build.split("=")[0].trim();
+			String build_path = build.split("=")[1].trim();
+			File path_dobj = new File(build_path);
+			if (!path_dobj.exists()){
+				continue;
+			}
+			if (build_counter > 9) {
+				break;//only top 10 build will be take
+			}
+			extra_dirs.put("ex_" + build_name, build_path);
+			build_counter++;
+		}
+		return extra_dirs;
+	}
+	
 	private Boolean get_build_diff(String section, HashMap<String, String> scan_data) {
 		if (scan_data.isEmpty()) {
 			return false;
@@ -138,8 +173,8 @@ public class config_sync extends Thread {
 	}
 
 	private void update_static_data(HashMap<String, HashMap<String, String>> ini_data) {
-		Set<String> config_sections = ini_data.keySet();
-		Iterator<String> section_it = config_sections.iterator();
+		//different section in ini file means different software
+		Iterator<String> section_it = ini_data.keySet().iterator();
 		while (section_it.hasNext()) {
 			String section = section_it.next();
 			HashMap<String, String> section_data = new HashMap<String, String>();
@@ -151,12 +186,12 @@ public class config_sync extends Thread {
 				config_hash.put(section, section_data);
 			} else {
 				// consider as software section
-				Set<String> options_set = section_data.keySet();
-				Iterator<String> option_it = options_set.iterator();
+				Iterator<String> option_it = section_data.keySet().iterator();
 				while (option_it.hasNext()) {
 					String option = option_it.next();
 					String value = section_data.get(option);
-					if (option.equalsIgnoreCase("scan_dir") || option.equalsIgnoreCase("max_insts")) {
+					//bypass scan_dir, scan_cmd and max_insts
+					if (option.contains("scan_") || option.equalsIgnoreCase("max_insts")) {
 						continue;
 					} else {
 						File sw_path = new File(value);
@@ -175,6 +210,9 @@ public class config_sync extends Thread {
 						CONFIG_SYNC_LOGGER.warn(section + ".scan_dir, not exist. skipped");
 					}
 				}
+				if (section_data.containsKey("scan_cmd") && !section_data.get("scan_cmd").equals("")) {
+					update_data.put("scan_cmd", section_data.get("scan_cmd"));
+				}				
 				if (section_data.containsKey("max_insts") && !section_data.get("max_insts").equals("")) {
 					update_data.put("max_insts", section_data.get("max_insts"));
 				} else {
@@ -189,6 +227,7 @@ public class config_sync extends Thread {
 	 * scan update
 	 */
 	private Boolean update_dynamic_data() {
+		//software scan_dir and scan_cmd update
 		int client_updated = 0;
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
@@ -218,6 +257,10 @@ public class config_sync extends Thread {
                         client_info.append_software_build(section, scan_data);
                         client_updated++; // internal config file save
 					}
+				} else if (option.equals("scan_cmd")){
+					HashMap<String, String> extra_data = new HashMap<String, String>();
+					extra_data.putAll(get_extra_scan_cmd_dirs(value));
+					client_info.update_software_scan_cmd_build(section, extra_data);
 				} else if (option.equals("max_insts")) {
 					continue;
 				} else {

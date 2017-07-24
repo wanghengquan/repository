@@ -147,7 +147,7 @@ class value_pane extends JPanel implements ActionListener{
 		JPanel center_panel = new JPanel(new BorderLayout());
 		table_column.add("Build");
 		table_column.add("Path");
-		for (int i = 0; i < 10; i++){
+		for (int i = 0; i < 30; i++){
 			Vector<String> initial_line = new Vector<String>();
 			initial_line.add("");
 			initial_line.add("");
@@ -158,12 +158,12 @@ class value_pane extends JPanel implements ActionListener{
 		Iterator<String> software_info_it = software_info.keySet().iterator();
 		int j = 0;
 		while(software_info_it.hasNext()){
-			if (j > 9){
+			if (j > 29){
 				break;
 			}
 			String build_name = software_info_it.next();
 			String build_path = software_info.get(build_name);
-			if(build_name.equals("scan_dir") || build_name.equals("max_insts")){
+			if(build_name.startsWith("scan_") || build_name.equals("max_insts")){
 				continue;
 			}
 			table_data.get(j).set(0, build_name);
@@ -195,7 +195,7 @@ class value_pane extends JPanel implements ActionListener{
 		// TODO Auto-generated method stub
 		if(arg0.getSource().equals(discard)){
 			table_data.clear();
-			for (int i = 0; i < 10; i++){
+			for (int i = 0; i < 30; i++){
 				Vector<String> initial_line = new Vector<String>();
 				initial_line.add("");
 				initial_line.add("");
@@ -206,7 +206,7 @@ class value_pane extends JPanel implements ActionListener{
 			Iterator<String> software_info_it = software_info.keySet().iterator();
 			int j = 0;
 			while(software_info_it.hasNext()){
-				if (j > 9){
+				if (j > 29){
 					break;
 				}
 				String build_name = software_info_it.next();
@@ -225,7 +225,7 @@ class value_pane extends JPanel implements ActionListener{
 		if(arg0.getSource().equals(apply)){
 			HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 			HashMap<String, String> new_data = new HashMap<String, String>();
-			for (int i = 0; i < 10; i++){
+			for (int i = 0; i < 30; i++){
 				String build = (String) build_table.getValueAt(i, 0);
 				String path = (String) build_table.getValueAt(i, 1);
 				path = path.replaceAll("\\\\", "/");

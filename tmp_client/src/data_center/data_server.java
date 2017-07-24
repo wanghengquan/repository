@@ -31,6 +31,7 @@ import utility_funcs.file_action;
  * 					max_insts = int
  * 		radiant	:	build	=	xxxx
  * 					scan_dir=	xxxx
+ * 					scan_cmd=   xxxx
  * 					max_insts = int 
  * 		...
  * 		System	:	os		=	type_arch

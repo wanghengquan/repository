@@ -77,6 +77,24 @@ public class client_data {
 		}
 	}
 
+	public void update_software_scan_cmd_build(String section, HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> temp_data = new HashMap<String, String>();
+			temp_data.putAll(client_hash.get(section));
+			Iterator<String> option_it = temp_data.keySet().iterator();
+			while(option_it.hasNext()){
+				String option = option_it.next();
+				if (option.startsWith("ex_")){
+					client_hash.get(section).remove(option);
+				}
+			}
+			client_hash.get(section).putAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public void delete_software_build(String section, String build) {
 		rw_lock.writeLock().lock();
 		try {

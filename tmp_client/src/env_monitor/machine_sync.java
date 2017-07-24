@@ -36,7 +36,8 @@ import utility_funcs.linux_info;
  * 					cpu		=	xx%
  * 					mem		=	xx%
  * 		Machine	:	terminal=	xxx
- * 					ip		=	xxx 	
+ * 					ip		=	xxx 
+ *                  start_time = xxx	
  */
 public class machine_sync extends Thread {
 	// public property
@@ -48,7 +49,7 @@ public class machine_sync extends Thread {
 	private Thread machine_thread;
 	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
-	private static final Logger INFO_LOGGER = LogManager.getLogger(machine_sync.class.getName());
+	private static final Logger MACHINE_SYNC_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 	private switch_data switch_info;
 
 	// public function update data every interval seconds
@@ -91,7 +92,7 @@ public class machine_sync extends Thread {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			INFO_LOGGER.warn("Cannot resolve Operation System name");
+			MACHINE_SYNC_LOGGER.warn("Cannot resolve Operation System name");
 			os_name = "unknown";
 		}
 		return os_name;
@@ -120,7 +121,7 @@ public class machine_sync extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				INFO_LOGGER.warn("Cannot resolve Operation System name");
+				MACHINE_SYNC_LOGGER.warn("Cannot resolve Operation System name");
 				cpu_usage = "NA";
 			}
 			return cpu_usage;
@@ -143,7 +144,7 @@ public class machine_sync extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				INFO_LOGGER.warn("Cannot resolve Operation System name");
+				MACHINE_SYNC_LOGGER.warn("Cannot resolve Operation System name");
 				mem_usage = "NA";
 			}
 			return mem_usage;
@@ -161,7 +162,7 @@ public class machine_sync extends Thread {
 			host_name = addr.getHostName().toString();
 		} catch (Exception e) {
 			// e.printStackTrace();
-			INFO_LOGGER.warn("Cannot resolve host name");
+			MACHINE_SYNC_LOGGER.warn("Cannot resolve host name");
 		}
 		return host_name;
 	}
@@ -186,7 +187,7 @@ public class machine_sync extends Thread {
 			}
 		} catch (Exception e) {
 			// e.printStackTrace();
-			INFO_LOGGER.warn("Cannot resolve host ip address");
+			MACHINE_SYNC_LOGGER.warn("Cannot resolve host ip address");
 			host_ip = "NA";
 		}
 		return host_ip;
@@ -229,12 +230,11 @@ public class machine_sync extends Thread {
 	 * update machine_hash: System : space = xxG cpu = xx% mem = xx%
 	 */
 	private void update_dynamic_data() {
-		HashMap<String, String> ori_data = machine_hash.get("System");
 		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(machine_hash.get("System"));
 		String space = get_disk_left();
 		String cpu = get_cpu_usage();
 		String mem = get_mem_usage();
-		system_data.putAll(ori_data);
 		system_data.put("space", space);
 		system_data.put("cpu", cpu);
 		system_data.put("mem", mem);
@@ -266,8 +266,8 @@ public class machine_sync extends Thread {
 					e.printStackTrace();
 				}
 			} else {
-				INFO_LOGGER.debug("machine_sync Thread running...");
-				INFO_LOGGER.debug(machine_sync.machine_hash.toString());
+				MACHINE_SYNC_LOGGER.debug("machine_sync Thread running...");
+				MACHINE_SYNC_LOGGER.debug(machine_sync.machine_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : update machine data
@@ -311,7 +311,7 @@ public class machine_sync extends Thread {
 		client_update.start();
 		System.out.println(client_update.get_start_time());
 		System.exit(exit_enum.NORMAL.get_index());
-		INFO_LOGGER.warn("thread start...");
+		MACHINE_SYNC_LOGGER.warn("thread start...");
 		try {
 			Thread.sleep(10 * 1000);
 		} catch (InterruptedException e) {
@@ -320,14 +320,14 @@ public class machine_sync extends Thread {
 		}
 		System.out.println(machine_sync.machine_hash.toString());
 		client_update.wait_request();
-		INFO_LOGGER.warn("thread wait...");
+		MACHINE_SYNC_LOGGER.warn("thread wait...");
 		try {
 			Thread.sleep(10 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		INFO_LOGGER.warn("thread wake...");
+		MACHINE_SYNC_LOGGER.warn("thread wake...");
 		client_update.wake_request();
 		System.out.println(machine_sync.machine_hash.toString());
 		try {
@@ -336,7 +336,7 @@ public class machine_sync extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		INFO_LOGGER.warn("thread stop...");
+		MACHINE_SYNC_LOGGER.warn("thread stop...");
 		client_update.soft_stop();
 		try {
 			Thread.sleep(10 * 1000);
