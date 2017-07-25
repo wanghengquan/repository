@@ -25,7 +25,7 @@ public class public_data {
 	// base
 	public final static String BASE_CURRENTVERSION = "2.06.05"; //2.6.5 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 20605; // version for code use
-	public final static String BASE_BUILDDATE = "2017/7/21";
+	public final static String BASE_BUILDDATE = "2017/7/25";
 	public final static String BASE_SUITEFILEVERSION = "1.06";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -141,6 +141,8 @@ public class public_data {
 	// Software default data command line > configuration;
 	// Software GUI have higher priority
 	public final static String DEF_SW_MAX_INSTANCES = "10";
+	public final static int DEF_SCAN_CMD_TAKE_LINE = 10;
+	public final static int DEF_GUI_BUILD_SHOW_LINE = 30;
 	// Machine
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public

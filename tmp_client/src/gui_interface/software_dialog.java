@@ -17,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
@@ -147,18 +148,18 @@ class value_pane extends JPanel implements ActionListener{
 		JPanel center_panel = new JPanel(new BorderLayout());
 		table_column.add("Build");
 		table_column.add("Path");
-		for (int i = 0; i < 30; i++){
+		for (int i = 0; i < public_data.DEF_GUI_BUILD_SHOW_LINE; i++){
 			Vector<String> initial_line = new Vector<String>();
 			initial_line.add("");
 			initial_line.add("");
 			table_data.add(initial_line);
 		}
-		HashMap<String, String> software_info = new HashMap<String, String>();
+		TreeMap<String, String> software_info = new TreeMap<String, String>(new build_compare());
 		software_info.putAll(client_info.get_client_data().get(tab_name));
 		Iterator<String> software_info_it = software_info.keySet().iterator();
 		int j = 0;
 		while(software_info_it.hasNext()){
-			if (j > 29){
+			if (j >= public_data.DEF_GUI_BUILD_SHOW_LINE){
 				break;
 			}
 			String build_name = software_info_it.next();
@@ -171,9 +172,8 @@ class value_pane extends JPanel implements ActionListener{
 			j++;
 		}
 		build_table = new setting_table(table_data, table_column);
-		
-		build_table.getColumn("Build").setMinWidth(100);
-		build_table.getColumn("Build").setMaxWidth(200);
+		build_table.getColumn("Build").setMinWidth(150);
+		build_table.getColumn("Build").setMaxWidth(250);
 		JScrollPane scro_panel = new JScrollPane(build_table);
 		center_panel.add(scro_panel, BorderLayout.CENTER);
 		return center_panel;
@@ -195,23 +195,23 @@ class value_pane extends JPanel implements ActionListener{
 		// TODO Auto-generated method stub
 		if(arg0.getSource().equals(discard)){
 			table_data.clear();
-			for (int i = 0; i < 30; i++){
+			for (int i = 0; i < public_data.DEF_GUI_BUILD_SHOW_LINE; i++){
 				Vector<String> initial_line = new Vector<String>();
 				initial_line.add("");
 				initial_line.add("");
 				table_data.add(initial_line);
 			}
-			HashMap<String, String> software_info = new HashMap<String, String>();
+			TreeMap<String, String> software_info = new TreeMap<String, String>(new build_compare());
 			software_info.putAll(client_info.get_client_data().get(tab_name));
 			Iterator<String> software_info_it = software_info.keySet().iterator();
 			int j = 0;
 			while(software_info_it.hasNext()){
-				if (j > 29){
+				if (j >= public_data.DEF_GUI_BUILD_SHOW_LINE){
 					break;
 				}
 				String build_name = software_info_it.next();
 				String build_path = software_info.get(build_name);
-				if(build_name.equals("scan_dir") || build_name.equals("max_insts")){
+				if(build_name.startsWith("scan_") || build_name.equals("max_insts")){
 					continue;
 				}				
 				table_data.get(j).set(0, build_name);
@@ -223,9 +223,9 @@ class value_pane extends JPanel implements ActionListener{
 			jt_scan_dir.setText(client_info.get_client_data().get(tab_name).get("scan_dir"));			
 		}
 		if(arg0.getSource().equals(apply)){
-			HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
+			HashMap<String, String> ori_data = new HashMap<String, String>();
 			HashMap<String, String> new_data = new HashMap<String, String>();
-			for (int i = 0; i < 30; i++){
+			for (int i = 0; i < public_data.DEF_GUI_BUILD_SHOW_LINE; i++){
 				String build = (String) build_table.getValueAt(i, 0);
 				String path = (String) build_table.getValueAt(i, 1);
 				path = path.replaceAll("\\\\", "/");
@@ -241,11 +241,13 @@ class value_pane extends JPanel implements ActionListener{
 				new_data.put(build, path);
 			}
 			//client_hash.putAll(client_info.get_client_data());
-			client_hash.putAll(deep_clone.clone(client_info.get_client_data()));
+			ori_data.putAll(deep_clone.clone(client_info.get_client_data().get(tab_name)));
 			new_data.put("scan_dir", jt_scan_dir.getText());
 			new_data.put("max_insts", jt_max_insts.getText());
-			client_hash.put(tab_name, new_data);
-			client_info.set_client_data(client_hash);
+			if(ori_data.containsKey("scan_cmd")){
+				new_data.put("scan_cmd", ori_data.get("scan_cmd"));
+			}
+			client_info.update_software_data(tab_name, new_data);
 			switch_info.set_client_updated();
 		}
 	}

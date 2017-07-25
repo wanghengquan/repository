@@ -90,13 +90,19 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('s')) {
 			cmd_hash.put("save_path", commandline_obj.getOptionValue('s'));
 		}
-		// 3.6 debug model
+		// 3.6 max threads
+		if (commandline_obj.hasOption('t')) {
+			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
+		} else {
+			cmd_hash.put("max_threads", "3");
+		}		
+		// 3.7 debug model
 		if (commandline_obj.hasOption('d')) {
 			cmd_hash.put("debug", "true");
 		} else {
 			cmd_hash.put("debug", "false");
 		}
-		// 3.7 help definition
+		// 3.8 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
@@ -117,9 +123,11 @@ public class cmd_parser {
 		options_obj.addOption(
 				Option.builder("f").longOpt("suite-file").hasArg().desc("Test suite file for Local run").build());
 		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
-				.desc("Case run place, if not present will use current work path").build());
+				.desc("Case run place, if not present will use current launch path").build());
 		options_obj.addOption(Option.builder("s").longOpt("save-path").hasArg()
 				.desc("Storage place for completed case, if not present will use current work_path").build());
+		options_obj.addOption(Option.builder("t").longOpt("max-threads").hasArg()
+				.desc("Client will launch multi-threads").build());		
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug modle").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help modle").build());
 		return options_obj;
@@ -129,7 +137,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "java -jar tmp_client.jar -c [-l -f <file_path1,file_path2>] [-w <work path>] [-s <save path>]";
+		String usage = "java -jar tmp_client.jar -c [-l -f <file_path1,file_path2>] [-t 3] [-w <work path>] [-s <save path>]";
 		String header = "Here is details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

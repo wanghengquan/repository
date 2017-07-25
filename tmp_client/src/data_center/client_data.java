@@ -18,6 +18,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import utility_funcs.deep_clone;
+
 public class client_data {
 	// public property
 	// {queue_name: {case_id_or_title: {}}}
@@ -67,17 +69,54 @@ public class client_data {
 		}
 	}
 
-	public void append_software_build(String section, HashMap<String, String> update_data) {
+	public void update_software_data(String section, HashMap<String, String> update_data) {
 		rw_lock.writeLock().lock();
 		try {
-			HashMap<String, String> software_data =  client_hash.get(section);
-			software_data.putAll(update_data);
+			if(client_hash.containsKey(section)){
+				client_hash.remove(section);
+			}
+			client_hash.put(section, update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public void update_system_data(HashMap<String, String> update_data){
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> system_data =  client_hash.get("System");
+			system_data.putAll(update_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
-	public void update_software_scan_cmd_build(String section, HashMap<String, String> update_data) {
+	
+	public void update_scan_build_data(HashMap<String, HashMap<String, String>> update_data){
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, HashMap<String, String>> temp_data = new HashMap<String, HashMap<String, String>>();
+			temp_data.putAll(deep_clone.clone(client_hash));
+			Iterator<String> section_it = temp_data.keySet().iterator();
+			while(section_it.hasNext()){
+				String section = section_it.next();
+				if (!update_data.containsKey(section)){
+					continue;
+				}
+				Iterator<String> option_it = temp_data.get(section).keySet().iterator();
+				while(option_it.hasNext()){
+					String option = option_it.next();
+					if (option.startsWith("sd_") || option.startsWith("sc_")){
+						client_hash.get(section).remove(option);
+					}
+				}
+				client_hash.get(section).putAll(update_data.get(section));
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_scan_build_data(String section, HashMap<String, String> update_data) {
 		rw_lock.writeLock().lock();
 		try {
 			HashMap<String, String> temp_data = new HashMap<String, String>();
@@ -85,7 +124,7 @@ public class client_data {
 			Iterator<String> option_it = temp_data.keySet().iterator();
 			while(option_it.hasNext()){
 				String option = option_it.next();
-				if (option.startsWith("ex_")){
+				if (option.startsWith("sd_") || option.startsWith("sc_")){
 					client_hash.get(section).remove(option);
 				}
 			}

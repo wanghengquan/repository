@@ -9,11 +9,13 @@
  */
 package data_center;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +23,10 @@ import env_monitor.config_sync;
 import env_monitor.machine_sync;
 import flow_control.pool_data;
 import info_parser.cmd_parser;
+import info_parser.ini_parser;
+import utility_funcs.deep_clone;
 import utility_funcs.file_action;
+import utility_funcs.system_cmd;
 
 /*
  * This class used to get the basic information of the client.
@@ -87,10 +92,16 @@ public class data_server extends Thread {
 		this.machine_runner = new machine_sync(switch_info);
 	}
 
-	private void initial_cmd_suites_to_switch_data(HashMap<String, String> cmd_info){
+	private void copy_cmd_suites_to_switch_data(HashMap<String, String> cmd_info){
 		String suite_files = cmd_info.get("suite_file");
 		ArrayList<String> file_list = new ArrayList<String>();
-		file_list.addAll(Arrays.asList(suite_files.split(",")));
+		if (suite_files.contains(",")){
+			file_list.addAll(Arrays.asList(suite_files.split(",")));
+		} else if (suite_files.contains(";")){
+			file_list.addAll(Arrays.asList(suite_files.split(";")));
+		} else{
+			file_list.add(suite_files);
+		}
 		switch_info.add_suite_file_list(file_list);
 	}
 	
@@ -120,10 +131,9 @@ public class data_server extends Thread {
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
-																// data
 		client_data.put("Machine", machine_data);
 		// 4. merge preference data (for software use):
-		// command data > config data > data in public_data
+		// command data > config data > default data in public_data
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
@@ -139,29 +149,41 @@ public class data_server extends Thread {
 		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
+	private void dynamic_merge_system_data(){
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(machine_sync.machine_hash.get("System"));
+		client_info.update_system_data(system_data);
+	}
+	
 	// this function may get slipped condition
-	private void dynamic_merge_client_data() {
+	private Boolean dynamic_merge_build_data() {
+		//merge new data form: scan_dir, scan_cmd and machine data 
+		Boolean data_updated = new Boolean(false);
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		client_data.putAll(client_info.get_client_data());
-		HashMap<String, HashMap<String, String>> machine_hash = new HashMap<String, HashMap<String, String>>();
-		HashMap<String, HashMap<String, String>> config_hash = new HashMap<String, HashMap<String, String>>();
-		machine_hash.putAll(machine_sync.machine_hash);
-		config_hash.putAll(config_sync.config_hash);
-		// 1. merge Software data modified by auto scan
-		Iterator<String> config_it = config_hash.keySet().iterator();
-		while (config_it.hasNext()) {
-			String option = config_it.next();
-			HashMap<String, String> option_data = new HashMap<String, String>();
-			option_data.putAll(config_hash.get(option));
-			if (option.contains("tmp_")) {
+		HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
+		Iterator<String> section = client_data.keySet().iterator();
+		while(section.hasNext()){
+			String section_name = section.next();
+			HashMap<String, String> section_data = client_data.get(section_name);
+			if (section_name.equals("System") || section_name.equals("Machine") || section_name.equals("preference")){
 				continue;
 			}
-			client_data.get(option).putAll(option_data);
+			if(section_data.containsKey("scan_dir")){
+				update_data.put(section_name, get_scan_dir_build(section_data.get("scan_dir")));
+			}
+			if(section_data.containsKey("scan_cmd")){
+				update_data.put(section_name, get_scan_cmd_build(section_data.get("scan_cmd")));
+			} else {
+				String def_scan_script = new String("python $tool_path/scan_"+ section_name + ".py");
+				update_data.put(section_name, get_scan_cmd_build(def_scan_script));
+			}
 		}
-		// 2. merge System data
-		client_data.put("System", machine_hash.get("System"));
-		client_info.set_client_data(client_data);
-		DATA_SERVER_LOGGER.debug(client_data.toString());
+		if(get_scan_build_diff(client_data, update_data)){
+			client_info.update_scan_build_data(update_data);
+			data_updated = true;
+		}
+		return data_updated;
 	}
 
 	private void update_max_sw_insts_limitation() {
@@ -186,6 +208,155 @@ public class data_server extends Thread {
 		client_info.set_max_soft_insts(max_soft_insts);
 	}
 
+	private HashMap<String, String> get_scan_dir_build(String scan_path) {
+		HashMap<String, String> scan_dirs = new HashMap<String, String>();
+		File scan_handler = new File(scan_path);
+		if(!scan_handler.exists()){
+			DATA_SERVER_LOGGER.warn("Scan path not exist:" + scan_path);
+			return scan_dirs;
+		}
+		if(!scan_handler.isDirectory()){
+			DATA_SERVER_LOGGER.warn("Scan path not a Directory:" + scan_path);
+			return scan_dirs;
+		}	
+		File[] all_handlers = scan_handler.listFiles();
+		for (File sub_handler : all_handlers) {
+			String build_name = sub_handler.getName();
+			if (!sub_handler.isDirectory()) {
+				continue;
+			}
+			File success_file = new File(sub_handler.getAbsolutePath() + "/success.ini");
+			if (!success_file.exists() || !success_file.canRead()) {
+				continue;
+			}
+			ini_parser build_parser = new ini_parser(success_file.getAbsolutePath().replaceAll("\\\\", "/"));
+			HashMap<String, HashMap<String, String>> build_data = new HashMap<String, HashMap<String, String>>();
+			try {
+				build_data = build_parser.read_ini_data();
+			} catch (ConfigurationException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				DATA_SERVER_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
+				continue;
+			} catch (Exception e) {
+				DATA_SERVER_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
+				continue;				
+			}
+			if (!build_data.containsKey("root")) {
+				continue;
+			}
+			if (!build_data.get("root").containsKey("path")) {
+				continue;
+			}
+			String path = build_data.get("root").get("path");
+			DATA_SERVER_LOGGER.debug("Catch SW path:" + path);
+			scan_dirs.put("sd_" + build_name, path);
+		}
+		return scan_dirs;
+	}
+
+	private HashMap<String, String> get_scan_cmd_build(String scan_cmd) {
+		HashMap<String, String> extra_dirs = new HashMap<String, String>();
+		ArrayList<String> cmd_output = new ArrayList<String>();
+		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_data().get("preference").get("work_path"));
+		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT);
+		try {
+			cmd_output.addAll(system_cmd.run(scan_cmd));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DATA_SERVER_LOGGER.warn("Run scan command failed");
+			return extra_dirs;
+		}
+		int build_counter = 1;
+		for (String line : cmd_output){
+			if (!line.startsWith("build:")){
+				continue;
+			}
+			String build = line.split(":", 2)[1];
+			String build_name = build.split("=")[0].trim();
+			String build_path = build.split("=")[1].trim();
+			File path_dobj = new File(build_path);
+			if (!path_dobj.exists()){
+				continue;
+			}
+			if (build_counter > public_data.DEF_SCAN_CMD_TAKE_LINE) {
+				break;//only top 10 build will be take
+			}
+			extra_dirs.put("sc_" + build_name, build_path);
+			build_counter++;
+		}
+		return extra_dirs;
+	}
+	
+	private Boolean get_scan_build_diff(
+			HashMap<String, HashMap<String, String>> ori_data, 
+			HashMap<String, HashMap<String, String>> new_data) {
+		//just check whether new_data have scan data(sd, sc) that ori_data don't have.
+		if (new_data.isEmpty()) {
+			return false;
+		}
+		Iterator<String> new_section_it = new_data.keySet().iterator();
+		while (new_section_it.hasNext()) {
+			String new_section = new_section_it.next();
+			if (!ori_data.containsKey(new_section)) {
+				return true;
+			}
+			Iterator<String> new_option_it = new_data.get(new_section).keySet().iterator();
+			while(new_option_it.hasNext()){
+				String new_option = new_option_it.next();
+				if (!ori_data.get(new_section).containsKey(new_option)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/*
+	 * scan update
+	 */
+	private void remove_invalid_build_path() {
+		//software scan_dir and scan_cmd update
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
+		Iterator<String> section_it = client_data.keySet().iterator();
+		while (section_it.hasNext()) {
+			String section = section_it.next();
+			HashMap<String, String> section_data = new HashMap<String, String>();
+			section_data.putAll(client_data.get(section));
+			if (section.equals("preference")) {
+				continue;
+			}
+			if (section.equals("Machine")) {
+				continue;
+			}
+			if (section.equals("System")) {
+				continue;
+			}
+			Iterator<String> option_it = section_data.keySet().iterator();
+			while (option_it.hasNext()) {
+				String option = option_it.next();
+				String value = section_data.get(option);
+				if (option.equals("scan_dir")) {
+					continue;
+				} else if (option.equals("scan_cmd")){
+					continue;
+				} else if (option.equals("max_insts")) {
+					continue;
+				} else {
+					File sw_path = new File(value);
+					if (sw_path.exists()) {
+						continue;
+					} else {
+						client_info.delete_software_build(section, option);
+						DATA_SERVER_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
+					}
+				}
+			}	
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -213,13 +384,13 @@ public class data_server extends Thread {
 			}
 		}
 		// initial 2 : put suite file data into switch info
-		initial_cmd_suites_to_switch_data(cmd_info);
- 		// initial 2 : generate initial client data
+		copy_cmd_suites_to_switch_data(cmd_info);
+ 		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_info);
-		// initial 3 : update default current size into Pool Data
+		// initial 4 : update default current size into Pool Data
 		String current_max_threads = client_info.get_client_data().get("preference").get("max_threads");
 		pool_info.set_pool_current_size(Integer.parseInt(current_max_threads));
-		// initial 4 : Announce data server ready
+		// initial 5 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start
 		while (!stop_request) {
@@ -236,9 +407,16 @@ public class data_server extends Thread {
 				DATA_SERVER_LOGGER.info("data_server Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update client data hash
-			dynamic_merge_client_data();
-			// task 2: update max_sw_insts limitation
+			// task 1: update client build data
+			Boolean build_update = dynamic_merge_build_data();
+			if (build_update){
+				switch_info.set_client_updated();
+			}
+			// task 2: update client System data
+			dynamic_merge_system_data();
+			// task 3: check and remove invalid build path
+			remove_invalid_build_path();
+			// task 3: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
 			// HashMap<String, Integer> soft_ware =
 			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
