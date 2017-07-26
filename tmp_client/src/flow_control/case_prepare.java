@@ -147,7 +147,7 @@ public class case_prepare {
 		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
 		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
 		script_addr = script_addr.replaceAll("\\$work_path", work_path);
-		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT);
+		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		// user command used
 		if (script_addr.length() > 1) {
 			return launch_cmd.split("\\s+");
@@ -158,7 +158,7 @@ public class case_prepare {
 		if (launch_cmd.contains("$work_path")){
 			launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_path);
 		} else if (launch_cmd.contains("$tool_path")){
-			launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT);
+			launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		} else {
 			Matcher match = patt.matcher(launch_cmd);
 			launch_cmd = match.replaceFirst(" " + work_path + "/$1");

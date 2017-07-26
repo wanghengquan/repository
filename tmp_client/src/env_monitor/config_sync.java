@@ -174,6 +174,27 @@ public class config_sync extends Thread {
 		return dump_status;
 	}
 
+	private String get_auto_config_file(){
+		String conf_path = new String(public_data.CONF_DEFAULT_INI);
+		String terminal = machine_sync.get_host_name();
+		String priority0_conf_path = public_data.CONF_ROOT_PATH + "/" + terminal + ".ini";
+		File pri0_fobj = new File(priority0_conf_path);
+		if(pri0_fobj.exists()){
+			conf_path = priority0_conf_path;
+		}
+		return conf_path;
+	}
+	
+	private String get_local_config_file(){
+		String terminal = machine_sync.get_host_name();
+		String priority0_conf_path = public_data.CONF_ROOT_PATH + "/" + terminal + ".ini";
+		File pri0_fobj = new File(priority0_conf_path);
+		if(!pri0_fobj.exists()){
+			file_action.copy_file(public_data.CONF_DEFAULT_INI, priority0_conf_path);
+		}
+        return priority0_conf_path;
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -193,7 +214,7 @@ public class config_sync extends Thread {
 		conf_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : get overall configuration data
-		ini_parser ini_runner = new ini_parser(public_data.CONF_DEFAULT_INI);
+		ini_parser ini_runner = new ini_parser(get_auto_config_file());
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			ini_data.putAll(ini_runner.read_ini_data());
@@ -223,7 +244,8 @@ public class config_sync extends Thread {
 			// task 1 : dump configuration updating
 			Boolean dump_request = switch_info.impl_dump_config_request();
 			if (dump_request) {
-				dump_client_data(ini_runner);
+				ini_parser ini_dump = new ini_parser(get_local_config_file());
+				dump_client_data(ini_dump);
 			}
 			try {
 				Thread.sleep(base_interval * 2 * 1000);

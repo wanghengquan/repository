@@ -154,9 +154,9 @@ public class machine_sync extends Thread {
 		}
 	}
 
-	private String get_host_name() {
+	public static String get_host_name() {
 		InetAddress addr = null;
-		String host_name = "";
+		String host_name = "unknown_host";
 		try {
 			addr = InetAddress.getLocalHost();
 			host_name = addr.getHostName().toString();

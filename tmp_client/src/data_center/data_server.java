@@ -259,7 +259,7 @@ public class data_server extends Thread {
 		HashMap<String, String> extra_dirs = new HashMap<String, String>();
 		ArrayList<String> cmd_output = new ArrayList<String>();
 		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_data().get("preference").get("work_path"));
-		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT);
+		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		try {
 			cmd_output.addAll(system_cmd.run(scan_cmd));
 		} catch (Exception e) {
