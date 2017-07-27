@@ -25,7 +25,6 @@ public class work_status extends abstract_status {
 		client.hall_runner.soft_stop();
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();
-		client.switch_info.decrease_system_client_insts();
 		System.out.println(">>>####################");
 		System.out.println(">>>Info:Go to stop");
 		System.out.println("");		

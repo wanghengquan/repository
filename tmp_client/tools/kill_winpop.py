@@ -22,6 +22,7 @@ p_cancel = [re.compile('edif2ngd\.exe', re.I),
             re.compile('vsim\sstandalone', re.I),
             re.compile('timing\.exe', re.I),
             re.compile('^lattice\ssemiconductor$', re.I),
+            re.compile('vsimk\.exe', re.I),
            ]
 def kill_error_box(break_title=""):
     #print 'check all commands status....'

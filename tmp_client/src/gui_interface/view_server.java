@@ -245,16 +245,21 @@ public class view_server extends Thread{
 	
 	private void run_system_client_insts_check(){
 		int start_insts = switch_info.get_system_client_insts();
-		String message = new String("Info: " + String.valueOf(start_insts) + " TMP Client(s) launched already. Do you want to launch a new one?");
+		String message = new String("Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already. Do you want to launch a new one?");
 		String title = new String("TMP Client launch number confirmation.");
 		if(start_insts > 0) {
 			//0:yes , 1:no
+			//both yes and no need to add 1 insts.
+			//yes: add one more insts
+			//no: add one since exit will decrease by default
+			switch_info.increase_system_client_insts();
 			int user_select = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
 			if (user_select == 1){
-				System.exit(exit_enum.USER.get_index());
+				System.exit(exit_enum.USER.get_index());//this action will decrease insts num
 			}
+		} else {
+			switch_info.increase_system_client_insts();
 		}
-		switch_info.increase_system_client_insts();
 	}
 	
 	public void run() {

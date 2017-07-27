@@ -31,31 +31,33 @@ import gui_interface.view_data;
 import info_parser.cmd_parser;
 import top_runner.run_manager.client_manager;
 
-public class top_launcher  {
+public class top_launcher {
 	// public property
 	// protected property
 	// private property
-	//private static final Logger TOP_LAUNCHER_LOGGER = LogManager.getLogger(tmp_manager.class.getName());
-	private static Logger TOP_LAUNCHER_LOGGER = null; 
-	//private Thread current_thread;
-	
+	// private static final Logger TOP_LAUNCHER_LOGGER =
+	// LogManager.getLogger(tmp_manager.class.getName());
+	private static Logger TOP_LAUNCHER_LOGGER = null;
+	// private Thread current_thread;
+
 	public top_launcher() {
 
 	}
-	
-	public static String get_bin_path(){
+
+	public static String get_bin_path() {
 		String class_path = System.getProperty("java.class.path");
 		String path_split = System.getProperty("path.separator");
 		String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
-		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")  || bin_path.endsWith(".so")){
-			bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);  
+		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")
+				|| bin_path.endsWith(".so")) {
+			bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
 		}
 		File file = new File(bin_path);
 		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
 		return bin_path;
 	}
-	
-	private static void initial_log_config(){
+
+	private static void initial_log_config() {
 		ConfigurationSource source;
 		String bin_path = get_bin_path();
 		System.out.println(">>>Info: SW bin path:" + bin_path);
@@ -72,39 +74,43 @@ public class top_launcher  {
 			e.printStackTrace();
 		}
 	}
-	
-	private static Boolean run_self_check(){
+
+	private static Boolean run_self_check() {
 		self_check my_check = new self_check();
 		return my_check.do_self_check();
 	}
-	
-	private static void run_client_insts_check(
-			switch_data switch_info,
-			String run_mode){
+
+	private static void run_client_insts_check(switch_data switch_info, String run_mode) {
 		int start_insts = switch_info.get_system_client_insts();
-		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched already.");
-		if (start_insts > 0 && run_mode.equals("cmd")){
-			Scanner user_input = new Scanner(System.in);
-			int input_count = 0;
-			while(true){
-				System.out.println(">>>Info: Do you want to launch a new one? y/n");
-				String user_choice = user_input.nextLine();
-				if (user_choice.equals("y")){
-					break;
+		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");
+		if (run_mode.equals("cmd")) {
+			if (start_insts > 0) {
+				//both yes and no need to add 1 insts.
+				//yes: add one more insts
+				//no: add one since exit will decrease by default
+				//switch_info.increase_system_client_insts();
+				Scanner user_input = new Scanner(System.in);
+				int input_count = 0;
+				while (true) {
+					System.out.println(">>>Info: Do you want to launch a new one? y/n");
+					String user_choice = user_input.nextLine();
+					if (user_choice.equals("y")) {
+						break;
+					}
+					if (user_choice.equals("n")) {
+						System.exit(exit_enum.USER.get_index());
+					}
+					input_count++;
+					if (input_count > 9) {
+						System.exit(exit_enum.USER.get_index());
+					}
 				}
-				if (user_choice.equals("n")){
-					System.exit(exit_enum.USER.get_index());
-				}
-				input_count++;
-				if(input_count > 9){
-					System.exit(exit_enum.USER.get_index());
-				}
+				user_input.close();
 			}
-			user_input.close(); 
 			switch_info.increase_system_client_insts();
 		}
-	}		
-	
+	}
+
 	/*
 	 * main entry for test
 	 */
@@ -128,14 +134,15 @@ public class top_launcher  {
 		cmd_parser cmd_run = new cmd_parser(args);
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		// initial 2 : run self check
-		if(!run_self_check()){
+		if (!run_self_check()) {
 			TOP_LAUNCHER_LOGGER.error(">>>Self check failed.");
 			System.exit(exit_enum.RUNENV.get_index());
 		}
 		// initial 3 : run client instances check
 		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"));
 		// initial 4 : client manager launch
-		client_manager manager = new client_manager(switch_info, client_info, task_info, view_info, pool_info, cmd_info);
+		client_manager manager = new client_manager(switch_info, client_info, task_info, view_info, pool_info,
+				cmd_info);
 		manager.start();
-	}	
+	}
 }

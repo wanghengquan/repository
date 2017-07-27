@@ -72,7 +72,7 @@ public class cmd_parser {
 		// 3.2 remote or local model
 		if (commandline_obj.hasOption('l')) {
 			cmd_hash.put("link_mode", "local");
-		}
+		} 
 		if (commandline_obj.hasOption('r')) {
 			cmd_hash.put("link_mode", "remote");
 		} 

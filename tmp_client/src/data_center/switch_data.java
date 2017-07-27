@@ -24,7 +24,7 @@ public class switch_data {
 	// private property
 	@SuppressWarnings("unused")
 	private static final Logger SWITCH_DATA_LOGGER = LogManager.getLogger(switch_data.class.getName());
-	private static final Preferences sys_pref = Preferences.userRoot().node("tmp_client_num");
+	private static final Preferences sys_pref = Preferences.userRoot().node("tmp_client");
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// System start client record
 	private int system_client_insts = sys_pref.getInt("", 0);
@@ -65,22 +65,31 @@ public class switch_data {
 	}
 
 	public void increase_system_client_insts() {
+		//always use the data form preference in disk
 		rw_lock.writeLock().lock();
 		try {
-			system_client_insts = system_client_insts + 1;
+			system_client_insts = get_system_client_insts() + 1;
 			sys_pref.putInt("run_num", system_client_insts);
+			sys_pref.flush();
+		} catch (Exception e){
+			e.printStackTrace();
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
 	public void decrease_system_client_insts() {
+		//always use the data form preference in disk
 		rw_lock.writeLock().lock();
 		try {
+			system_client_insts = get_system_client_insts();
 			if (system_client_insts > 0) {
 				system_client_insts = system_client_insts - 1;
 			}
 			sys_pref.putInt("run_num", system_client_insts);
+			sys_pref.flush();
+		} catch (Exception e){
+			e.printStackTrace();			
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
