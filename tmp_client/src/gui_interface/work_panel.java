@@ -395,7 +395,6 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@SuppressWarnings("unused")
 	private JTable table;
 	private JMenuItem retest;
 	private JMenuItem terminate;
@@ -413,7 +412,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		retest.addActionListener(this);
 		terminate = new JMenuItem("Terminate");
 		terminate.addActionListener(this);
-		JMenu view = new JMenu("View...");
+		JMenu view = new JMenu("View");
 		view_all = new JMenuItem("All");
 		view_all.addActionListener(this);
 		view_waiting = new JMenuItem("Waiting");
@@ -444,7 +443,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		this.addSeparator();
 		this.add(view);
 		this.addSeparator();
-		//this.add(details);
+		this.add(details);
 		this.add(results);
 	}
 
@@ -543,6 +542,10 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("details clicked");
+			String watching_queue = view_info.get_watching_queue();
+			String select_case = (String) table.getValueAt(table.getSelectedRow(), 0);
+			task_detail detail_view = new task_detail(watching_queue, select_case, task_info);
+			detail_view.setVisible(true);			
 		}
 		if (arg0.getSource().equals(results)) {
 			System.out.println("results clicked");

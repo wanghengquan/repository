@@ -124,7 +124,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 					}
 					String select_queue = (String) reject_table.getValueAt(reject_table.getSelectedRow(), 0);
 					QUEUE_PANEL_LOGGER.info("Enable queue:" + select_queue);
-					new detail_dialog(select_queue, client_info, task_info).setVisible(true);					
+					new reject_detail(select_queue, client_info, task_info).setVisible(true);					
 				} else {
 					QUEUE_PANEL_LOGGER.error("No line selected");
 				}
@@ -152,7 +152,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	private Component panel_bottom_component() {
 		JPanel capture_panel = new JPanel(new BorderLayout());
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, view_info);
+		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, task_info, view_info);
 		capture_table.addMouseListener(new MouseAdapter() {
 			//for windows popmenu
 			public void mouseReleased(MouseEvent e) {
@@ -383,7 +383,7 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(details)) {
 			System.out.println("reject details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
-			detail_dialog detail_view = new detail_dialog(select_queue, client_info, task_info);
+			reject_detail detail_view = new reject_detail(select_queue, client_info, task_info);
 			detail_view.setVisible(true);
 		}
 	}
@@ -397,17 +397,20 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private JMenuItem show;
 	private JMenuItem run_play, run_pause, run_stop;
+	private JMenuItem detail;
 	private JMenuItem delete;
+	private task_data task_info;
 	private view_data view_info;
 
-	public capture_pop_memu(JTable table, view_data view_info) {
+	public capture_pop_memu(JTable table, task_data task_info, view_data view_info) {
 		this.table = table;
+		this.task_info = task_info;
 		this.view_info = view_info;
 		show = new JMenuItem("Show");
 		show.addActionListener(this);
 		this.add(show);
 		this.addSeparator();
-		JMenu run = new JMenu("Run...");
+		JMenu run = new JMenu("Run");
 		run_play = new JMenuItem("Play");
 		run_play.addActionListener(this);
 		run_pause = new JMenuItem("Pause");
@@ -418,6 +421,10 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		run.add(run_pause);
 		run.add(run_stop);
 		this.add(run);
+		this.addSeparator();
+		detail = new JMenuItem("Detail");
+		detail.addActionListener(this);
+		this.add(detail);
 		this.addSeparator();
 		delete = new JMenuItem("Delete");
 		delete.addActionListener(this);
@@ -457,6 +464,12 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("run_stop clicked");
 			view_info.set_run_action_request("stop");
 		}
+		if (arg0.getSource().equals(detail)) {
+			System.out.println("detail clicked");
+			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
+			capture_detail detail_view = new capture_detail(select_queue, task_info);
+			detail_view.setVisible(true);
+		}		
 		if (arg0.getSource().equals(delete)) {
 			System.out.println("delete clicked");
 			int select_index = table.getSelectedRow();

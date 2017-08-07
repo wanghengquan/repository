@@ -361,6 +361,23 @@ public class task_data {
 		return queue_data;
 	}	
 
+	public HashMap<String, HashMap<String, String>> get_case_from_received_task_queues_map(
+			String queue_name,
+			String case_id) {
+		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+		rw_lock.readLock().lock();
+		try {
+			if (received_task_queues_map.containsKey(queue_name)) {
+				if (received_task_queues_map.get(queue_name).containsKey(case_id)) {
+					case_data.putAll(received_task_queues_map.get(queue_name).get(case_id));
+				}
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return case_data;
+	}
+	
 	public Boolean update_received_task_queues_map(
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues) {
 		Boolean update_status = new Boolean(true);
@@ -665,10 +682,11 @@ public class task_data {
 		return remove_result;
 	}
 
-	public HashMap<String, HashMap<String, String>> get_case_from_processed_task_queues_map(String queue_name,
+	public HashMap<String, HashMap<String, String>> get_case_from_processed_task_queues_map(
+			String queue_name,
 			String case_id) {
 		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
-		rw_lock.writeLock().lock();
+		rw_lock.readLock().lock();
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
 				if (processed_task_queues_map.get(queue_name).containsKey(case_id)) {
@@ -676,7 +694,7 @@ public class task_data {
 				}
 			}
 		} finally {
-			rw_lock.writeLock().unlock();
+			rw_lock.readLock().unlock();
 		}
 		return case_data;
 	}

@@ -23,6 +23,8 @@ import java.awt.TrayIcon;
 import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -145,6 +147,17 @@ public class main_frame extends JFrame {
 		String company = "LATTICE";
 		Image tray_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_TRAY_PNG);
 		TrayIcon trayicon = new TrayIcon(tray_image, title + "@" + company, pop_menu());
+		trayicon.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int click_count = e.getClickCount();
+				if(click_count < 2){
+					MAIN_FRAME_LOGGER.info("click count:" + String.valueOf(click_count) + ", skip.");
+					return;
+				} else {
+					show_main_view();
+				}
+			}
+		});
 		trayicon.setImageAutoSize(true);
 		// trayicon.addActionListener(this);
 		SystemTray systemTray = SystemTray.getSystemTray();
@@ -168,12 +181,7 @@ public class main_frame extends JFrame {
 		MenuItem open = new MenuItem("Open");
 		open.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
-				if (isVisible()) {
-					toFront();
-				} else {
-					setVisible(true);
-					toFront();
-				}
+				show_main_view();
 			}
 		});
 		menu.add(open);
@@ -182,6 +190,15 @@ public class main_frame extends JFrame {
 		return menu;
 	}
 
+	private void show_main_view(){
+		if (this.isVisible()) {
+			this.toFront();
+		} else {
+			this.setVisible(true);
+			this.toFront();
+		}
+	}
+	
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();
 		view_data view_info = new view_data();

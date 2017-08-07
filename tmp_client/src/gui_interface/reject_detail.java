@@ -29,7 +29,7 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 
-public class detail_dialog extends JFrame {
+public class reject_detail extends JFrame {
 	/**
 	 * 
 	 */
@@ -41,11 +41,11 @@ public class detail_dialog extends JFrame {
 	private Vector<Vector<String>> compare_data = new Vector<Vector<String>>();
 	private JTable compare_table;
 
-	public detail_dialog(String queue_name, client_data client_info, task_data task_info) {
+	public reject_detail(String queue_name, client_data client_info, task_data task_info) {
 		this.queue_name = queue_name;
 		this.task_info = task_info;
 		this.client_info = client_info;
-		this.setTitle("Detail info for " + queue_name + ":");
+		this.setTitle("Request info for " + queue_name + ":");
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		Container container = this.getContentPane();
@@ -115,6 +115,8 @@ public class detail_dialog extends JFrame {
 			}
 		}
 		compare_table = new info_table(compare_data, compare_column);
+		compare_table.getColumn("Item").setMaxWidth(250);
+		compare_table.getColumn("Item").setMinWidth(200);		
 		return compare_table;
 	}
 
@@ -141,7 +143,7 @@ public class detail_dialog extends JFrame {
 	public static void main(String[] args) {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
-		detail_dialog compare_view = new detail_dialog(null, client_info, task_info);
+		reject_detail compare_view = new reject_detail(null, client_info, task_info);
 		compare_view.setVisible(true);
 	}
 
