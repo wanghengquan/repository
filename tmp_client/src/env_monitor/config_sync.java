@@ -60,6 +60,7 @@ public class config_sync extends Thread {
 	private client_data client_info;
 	private switch_data switch_info;
 	private String line_separator = System.getProperty("line.separator");
+	private String user_home_dir = System.getProperty("user.home");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 
 	// public function
@@ -177,7 +178,7 @@ public class config_sync extends Thread {
 	private String get_auto_config_file(){
 		String conf_path = new String(public_data.CONF_DEFAULT_INI);
 		String terminal = machine_sync.get_host_name();
-		String priority0_conf_path = public_data.CONF_ROOT_PATH + "/" + terminal + ".ini";
+		String priority0_conf_path = user_home_dir + "/tmp_" + terminal + ".ini";
 		File pri0_fobj = new File(priority0_conf_path);
 		if(pri0_fobj.exists()){
 			conf_path = priority0_conf_path;
@@ -187,7 +188,7 @@ public class config_sync extends Thread {
 	
 	private String get_local_config_file(){
 		String terminal = machine_sync.get_host_name();
-		String priority0_conf_path = public_data.CONF_ROOT_PATH + "/" + terminal + ".ini";
+		String priority0_conf_path = user_home_dir + "/tmp_" + terminal + ".ini";
 		File pri0_fobj = new File(priority0_conf_path);
 		if(!pri0_fobj.exists()){
 			file_action.copy_file(public_data.CONF_DEFAULT_INI, priority0_conf_path);

@@ -91,6 +91,8 @@ public class client_dialog extends JDialog implements ActionListener {
 		client_column.add("Value");
 		reset_table_data();
 		client_table = new setting_table(client_data, client_column);
+		client_table.getColumn("Item").setMaxWidth(200);
+		client_table.getColumn("Item").setMinWidth(150);		
 		return client_table;
 	}
 

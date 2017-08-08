@@ -93,8 +93,6 @@ public class cmd_parser {
 		// 3.6 max threads
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
-		} else {
-			cmd_hash.put("max_threads", "3");
 		}		
 		// 3.7 debug model
 		if (commandline_obj.hasOption('d')) {
