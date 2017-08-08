@@ -11,10 +11,12 @@
 package env_monitor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -61,6 +63,7 @@ public class config_sync extends Thread {
 	private switch_data switch_info;
 	private String line_separator = System.getProperty("line.separator");
 	private String user_home_dir = System.getProperty("user.home");
+	private String user_name = System.getProperty("user.name");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 
 	// public function
@@ -175,25 +178,47 @@ public class config_sync extends Thread {
 		return dump_status;
 	}
 
-	private String get_auto_config_file(){
+	private String get_read_config_file(){
 		String conf_path = new String(public_data.CONF_DEFAULT_INI);
 		String terminal = machine_sync.get_host_name();
-		String priority0_conf_path = user_home_dir + "/tmp_" + terminal + ".ini";
-		File pri0_fobj = new File(priority0_conf_path);
+		String pri0_conf_path = user_home_dir + "/client_conf/" + terminal + ".ini";
+		String pri1_conf_path = public_data.CONF_ROOT_PATH + "/" + user_name + "_" + terminal + ".ini";
+		File pri0_fobj = new File(pri0_conf_path);
+		File pri1_fobj = new File(pri1_conf_path);
+		if(pri1_fobj.exists()){
+			conf_path = pri1_conf_path;
+		}		
 		if(pri0_fobj.exists()){
-			conf_path = priority0_conf_path;
+			conf_path = pri0_conf_path;
 		}
 		return conf_path;
 	}
 	
-	private String get_local_config_file(){
+	private String get_write_config_file(){
 		String terminal = machine_sync.get_host_name();
-		String priority0_conf_path = user_home_dir + "/tmp_" + terminal + ".ini";
-		File pri0_fobj = new File(priority0_conf_path);
-		if(!pri0_fobj.exists()){
-			file_action.copy_file(public_data.CONF_DEFAULT_INI, priority0_conf_path);
+		String def_conf_path = new String(public_data.CONF_DEFAULT_INI);
+		String pri0_conf_path = user_home_dir + "/client_conf/" + terminal + ".ini";
+		String pri1_conf_path = public_data.CONF_ROOT_PATH + "/" + user_name + "_" + terminal + ".ini";
+		String final_conf_path = new String(public_data.CONF_DEFAULT_INI);
+		File def_fobj = new File(def_conf_path);
+		File pri0_fobj = new File(pri0_conf_path);
+		File pri1_fobj = new File(pri1_conf_path);
+		try {
+			FileUtils.copyFile(def_fobj, pri0_fobj);
+			final_conf_path = pri0_conf_path;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			try {
+				FileUtils.copyFile(def_fobj, pri1_fobj);
+				final_conf_path = pri1_conf_path;
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				// e1.printStackTrace();
+				final_conf_path = def_conf_path;
+			}
 		}
-        return priority0_conf_path;
+        return final_conf_path;
 	}
 	
 	public void run() {
@@ -215,7 +240,7 @@ public class config_sync extends Thread {
 		conf_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : get overall configuration data
-		ini_parser ini_runner = new ini_parser(get_auto_config_file());
+		ini_parser ini_runner = new ini_parser(get_read_config_file());
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			ini_data.putAll(ini_runner.read_ini_data());
@@ -245,7 +270,7 @@ public class config_sync extends Thread {
 			// task 1 : dump configuration updating
 			Boolean dump_request = switch_info.impl_dump_config_request();
 			if (dump_request) {
-				ini_parser ini_dump = new ini_parser(get_local_config_file());
+				ini_parser ini_dump = new ini_parser(get_write_config_file());
 				dump_client_data(ini_dump);
 			}
 			try {

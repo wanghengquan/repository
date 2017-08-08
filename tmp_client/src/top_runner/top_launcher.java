@@ -25,6 +25,7 @@ import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
+import env_monitor.machine_sync;
 import env_monitor.self_check;
 import flow_control.pool_data;
 import gui_interface.view_data;
@@ -144,5 +145,7 @@ public class top_launcher {
 		client_manager manager = new client_manager(switch_info, client_info, task_info, view_info, pool_info,
 				cmd_info);
 		manager.start();
+		System.out.println(">>>Info: Run Machine:" + machine_sync.get_host_name());
+		System.out.println(">>>Info: Run Account:" + System.getProperty("user.name"));
 	}
 }
