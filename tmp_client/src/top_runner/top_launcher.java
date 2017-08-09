@@ -81,15 +81,18 @@ public class top_launcher {
 		return my_check.do_self_check();
 	}
 
-	private static void run_client_insts_check(switch_data switch_info, String run_mode) {
+	private static void run_client_insts_check(
+			switch_data switch_info, 
+			String run_mode, 
+			String unattended_mode) {
 		int start_insts = switch_info.get_system_client_insts();
-		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");
+		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");	
 		if (run_mode.equals("cmd")) {
-			if (start_insts > 0) {
+			if ((start_insts > 0) && (!unattended_mode.equals("1"))) {
 				//both yes and no need to add 1 insts.
 				//yes: add one more insts
 				//no: add one since exit will decrease by default
-				//switch_info.increase_system_client_insts();
+				//switch_info.increase_system_client_insts();		
 				Scanner user_input = new Scanner(System.in);
 				int input_count = 0;
 				while (true) {
@@ -106,7 +109,7 @@ public class top_launcher {
 						System.exit(exit_enum.USER.get_index());
 					}
 				}
-				user_input.close();
+				user_input.close();				
 			}
 			switch_info.increase_system_client_insts();
 		}
@@ -140,7 +143,7 @@ public class top_launcher {
 			System.exit(exit_enum.RUNENV.get_index());
 		}
 		// initial 3 : run client instances check
-		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"));
+		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"), cmd_info.getOrDefault("unattended", ""));
 		// initial 4 : client manager launch
 		client_manager manager = new client_manager(switch_info, client_info, task_info, view_info, pool_info,
 				cmd_info);

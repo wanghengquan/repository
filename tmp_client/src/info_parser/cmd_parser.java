@@ -69,6 +69,9 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("cmd_gui", "gui");
 		}
+		if (commandline_obj.hasOption('u')) {
+			cmd_hash.put("unattended", "1");
+		}
 		// 3.2 remote or local model
 		if (commandline_obj.hasOption('l')) {
 			cmd_hash.put("link_mode", "local");
@@ -114,10 +117,11 @@ public class cmd_parser {
 	 */	
 	private Options get_options() {
 		Options options_obj = new Options();
-		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command modle").build());
-		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI modle").build());
-		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL modle").build());
-		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE modle").build());
+		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command mode").build());
+		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI mode").build());
+		options_obj.addOption(Option.builder("u").longOpt("unattended").desc("Client will run in unattended mode").build());
+		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
+		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
 		options_obj.addOption(
 				Option.builder("f").longOpt("suite-file").hasArg().desc("Test suite file for Local run").build());
 		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
@@ -126,8 +130,8 @@ public class cmd_parser {
 				.desc("Storage place for completed case, if not present will use current work_path").build());
 		options_obj.addOption(Option.builder("t").longOpt("max-threads").hasArg()
 				.desc("Client will launch multi-threads").build());		
-		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug modle").build());
-		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help modle").build());
+		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());
+		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
 		return options_obj;
 	}
 
@@ -135,7 +139,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "java -jar tmp_client.jar -c [-l -f <file_path1,file_path2>] [-t 3] [-w <work path>] [-s <save path>]";
+		String usage = "java -jar tmp_client.jar [-c|-g] [-u] [-l -f <file_path1,file_path2>] [-t 3] [-w <work path>] [-s <save path>]";
 		String header = "Here is details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

@@ -44,6 +44,7 @@ public class view_server extends Thread{
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
+	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL ;
 	// public function
@@ -51,11 +52,13 @@ public class view_server extends Thread{
 	// private function
 
 	public view_server(
+			HashMap<String, String> cmd_info,
 			switch_data switch_info, 
 			client_data client_info, 
 			task_data task_info, 
 			view_data view_info,
 			pool_data pool_info) {
+		this.cmd_info = cmd_info;
 		this.switch_info = switch_info;
 		this.task_info = task_info;
 		this.view_info = view_info;
@@ -247,9 +250,10 @@ public class view_server extends Thread{
 		int start_insts = switch_info.get_system_client_insts();
 		String message = new String("Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already. Do you want to launch a new one?");
 		String title = new String("TMP Client launch number confirmation.");
-		if(start_insts > 0) {
+		String unattended_mode = cmd_info.getOrDefault("unattended", "");
+		//both yes and no need to add 1 insts.
+		if ((start_insts > 0) && (!unattended_mode.equals("1"))) {
 			//0:yes , 1:no
-			//both yes and no need to add 1 insts.
 			//yes: add one more insts
 			//no: add one since exit will decrease by default
 			switch_info.increase_system_client_insts();

@@ -18,6 +18,8 @@ import java.util.prefs.Preferences;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import env_monitor.machine_sync;
+
 public class switch_data {
 	// public property
 	// protected property
@@ -56,8 +58,9 @@ public class switch_data {
 
 	public int get_system_client_insts() {
 		rw_lock.writeLock().lock();
+		String terminal = new String(machine_sync.get_host_name());
 		try {
-			system_client_insts = sys_pref.getInt("run_num", 0);
+			system_client_insts = sys_pref.getInt(terminal, 0);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -67,9 +70,10 @@ public class switch_data {
 	public void increase_system_client_insts() {
 		//always use the data form preference in disk
 		rw_lock.writeLock().lock();
+		String terminal = new String(machine_sync.get_host_name());
 		try {
 			system_client_insts = get_system_client_insts() + 1;
-			sys_pref.putInt("run_num", system_client_insts);
+			sys_pref.putInt(terminal, system_client_insts);
 			sys_pref.flush();
 		} catch (Exception e){
 			e.printStackTrace();
@@ -81,12 +85,13 @@ public class switch_data {
 	public void decrease_system_client_insts() {
 		//always use the data form preference in disk
 		rw_lock.writeLock().lock();
+		String terminal = new String(machine_sync.get_host_name());
 		try {
 			system_client_insts = get_system_client_insts();
 			if (system_client_insts > 0) {
 				system_client_insts = system_client_insts - 1;
 			}
-			sys_pref.putInt("run_num", system_client_insts);
+			sys_pref.putInt(terminal, system_client_insts);
 			sys_pref.flush();
 		} catch (Exception e){
 			e.printStackTrace();			

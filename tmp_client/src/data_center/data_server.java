@@ -131,6 +131,9 @@ public class data_server extends Thread {
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
+		if(cmd_hash.containsKey("unattended")){				// add command line data
+			machine_data.put("unattended", cmd_hash.get("unattended"));
+		}
 		client_data.put("Machine", machine_data);
 		// 4. merge preference data (for software use):
 		// command data > config data > default data in public_data
