@@ -492,9 +492,12 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 		ArrayList<String> queue_list = new ArrayList<String>();
 		queue_list.addAll(view_info.get_export_queue_list());
 		for (String queue_name : queue_list){
+			//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>");
+			//System.out.println("queue name:" + queue_name);
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 			queue_data.putAll(task_info.get_queue_data_from_received_task_queues_map(queue_name));
 			queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(queue_name));
+			//System.out.println("queue data:" + queue_data.toString());
 			if(queue_data.isEmpty()){
 				continue;
 			}
@@ -557,7 +560,7 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 			if (SwingUtilities.isEventDispatchThread()) {
 				preview_table.validate();
 				preview_table.updateUI();
-				top_panel.updateUI();
+				//top_panel.updateUI();
 			} else {
 				SwingUtilities.invokeLater(new Runnable(){
 					@Override
@@ -565,7 +568,7 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 						// TODO Auto-generated method stub
 						preview_table.validate();
 						preview_table.updateUI();
-						top_panel.updateUI();
+						//top_panel.updateUI();
 					}
 				});
 			}
@@ -794,9 +797,8 @@ class generate_pane extends JPanel implements ActionListener{
 	private void update_table_data(){
 		ArrayList<String> queue_list = new ArrayList<String>();
 		queue_list.addAll(view_info.get_export_queue_list());
-		System.out.println("queue list:" + queue_list.toString());
 		for (String queue_name : queue_list){
-			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new queue_comparator());
+			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 			queue_data.putAll(task_info.get_queue_data_from_received_task_queues_map(queue_name));
 			queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(queue_name));
 			if(queue_data.isEmpty()){

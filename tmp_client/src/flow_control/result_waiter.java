@@ -201,6 +201,9 @@ public class result_waiter extends Thread {
 			if (view_info.get_watching_queue().equalsIgnoreCase(dump_queue)) {
 				continue;// queue in GUI watching
 			}
+			if (view_info.get_export_queue_list().contains(dump_queue)){
+				continue;// queue in GUI dump status
+			}
 			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
 				continue;// no queue data to dump (already dumped)
 			}
