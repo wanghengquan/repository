@@ -69,6 +69,9 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("cmd_gui", "gui");
 		}
+		if (commandline_obj.hasOption('a')) {
+			cmd_hash.put("unattended", "0");
+		}		
 		if (commandline_obj.hasOption('u')) {
 			cmd_hash.put("unattended", "1");
 		}
@@ -119,6 +122,7 @@ public class cmd_parser {
 		Options options_obj = new Options();
 		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command mode").build());
 		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI mode").build());
+		options_obj.addOption(Option.builder("a").longOpt("attended").desc("Client will run in attended mode").build());
 		options_obj.addOption(Option.builder("u").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
@@ -139,7 +143,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "java -jar tmp_client.jar [-c|-g] [-u] [-l -f <file_path1,file_path2>] [-t 3] [-w <work path>] [-s <save path>]";
+		String usage = "java -jar tmp_client.jar [-c|-g] [-a|-u] [-l -f <file_path1,file_path2>] [-t 3] [-w <work path>] [-s <save path>]";
 		String header = "Here is details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
