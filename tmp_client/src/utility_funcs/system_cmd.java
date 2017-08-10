@@ -52,6 +52,7 @@ public class system_cmd {
 		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
 		string_list.add("Exit Code:" + process.exitValue());
+		Thread.sleep(1);
 		read_out.stopGobbling();
 		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
 		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
@@ -164,6 +165,7 @@ public class system_cmd {
 		boolean exit_status = p.waitFor((long) timeout, TimeUnit.SECONDS);
 		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
+		Thread.sleep(1);
 		read_out.stopGobbling();
 		if (exit_status) {
 			int exit_value = p.exitValue();
@@ -367,6 +369,7 @@ class StreamGobbler extends Thread {
 				inputStreamReader.close();
 			} catch (IOException e) {
 				// swallow it
+				e.printStackTrace();
 			}
 		}
 	}
