@@ -397,7 +397,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private JMenuItem show;
 	private JMenuItem run_play, run_pause, run_stop;
-	private JMenuItem detail;
+	private JMenuItem details;
 	private JMenuItem delete;
 	private task_data task_info;
 	private view_data view_info;
@@ -422,9 +422,9 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		run.add(run_stop);
 		this.add(run);
 		this.addSeparator();
-		detail = new JMenuItem("Detail");
-		detail.addActionListener(this);
-		this.add(detail);
+		details = new JMenuItem("Details");
+		details.addActionListener(this);
+		this.add(details);
 		this.addSeparator();
 		delete = new JMenuItem("Delete");
 		delete.addActionListener(this);
@@ -464,7 +464,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("run_stop clicked");
 			view_info.set_run_action_request("stop");
 		}
-		if (arg0.getSource().equals(detail)) {
+		if (arg0.getSource().equals(details)) {
 			System.out.println("detail clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			capture_detail detail_view = new capture_detail(select_queue, task_info);
