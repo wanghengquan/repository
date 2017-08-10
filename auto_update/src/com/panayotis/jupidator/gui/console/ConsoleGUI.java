@@ -43,7 +43,7 @@ public class ConsoleGUI implements JupidatorGUI {
     private Updater callback;
     private boolean is_loglist_enabled = true;
     private boolean can_not_ignore = false;
-    private boolean should_show_jupidator_about = true;
+    private boolean should_show_jupidator_about = false;
     private String appname;
     private BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 
@@ -67,7 +67,7 @@ public class ConsoleGUI implements JupidatorGUI {
         System.out.println(info2);
         if (is_loglist_enabled && getAnswer(_("Do you want to see the detailed changelog? [Y/n] "), "n") != 'n') {
             System.out.println();
-            System.out.println(loglist);
+            System.out.println(loglist.replaceAll("@@", ""));
         }
         String question = _("Do you want to (S)kip this version, (R)emind later or (I)nstall? [s/r/i] ");
         String valid_ans = "sri";
@@ -92,9 +92,15 @@ public class ConsoleGUI implements JupidatorGUI {
                         break;
                     }
                 default:
-                    System.out.println(_("Wrong answer."));
+                    System.out.println(_("Wrong answer," + getAnswer(question, valid_ans) + "!"));
                     valid = false;
             }
+            try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
 
@@ -144,7 +150,7 @@ public class ConsoleGUI implements JupidatorGUI {
             String input = sysin.readLine();
             if (input == null || list == null)
                 return 0;
-
+            
             input = input.toLowerCase().trim();
             list = list.toLowerCase();
             if (list.length() == 0 || input.length() == 0)

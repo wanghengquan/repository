@@ -93,6 +93,7 @@ public class top_launcher {
 				//yes: add one more insts
 				//no: add one since exit will decrease by default
 				//switch_info.increase_system_client_insts();		
+				@SuppressWarnings("resource")
 				Scanner user_input = new Scanner(System.in);
 				int input_count = 0;
 				while (true) {
@@ -109,7 +110,7 @@ public class top_launcher {
 						System.exit(exit_enum.USER.get_index());
 					}
 				}
-				user_input.close();				
+				//user_input.close(); for future use	
 			}
 			switch_info.increase_system_client_insts();
 		}

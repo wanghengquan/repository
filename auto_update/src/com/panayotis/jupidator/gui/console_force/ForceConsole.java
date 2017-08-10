@@ -43,7 +43,7 @@ public class ForceConsole implements JupidatorGUI {
     private Updater callback;
     private boolean is_loglist_enabled = true;
     private boolean can_not_ignore = false;
-    private boolean should_show_jupidator_about = true;
+    private boolean should_show_jupidator_about = false;
     private String appname;
     private BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 
@@ -67,7 +67,7 @@ public class ForceConsole implements JupidatorGUI {
         System.out.println(info2);
         if (is_loglist_enabled) {
             System.out.println();
-            System.out.println(loglist);
+            System.out.println(loglist.replaceAll("@@", ""));
         }
         String question = _("Do you want to (S)kip this version, (R)emind later or (I)nstall? [s/r/i] ");
         String valid_ans = "sri";
