@@ -172,15 +172,17 @@ public class data_server extends Thread {
 			if (section_name.equals("System") || section_name.equals("Machine") || section_name.equals("preference")){
 				continue;
 			}
+			HashMap<String, String> build_data = new HashMap<String, String>();
 			if(section_data.containsKey("scan_dir")){
-				update_data.put(section_name, get_scan_dir_build(section_data.get("scan_dir")));
+				build_data.putAll(get_scan_dir_build(section_data.get("scan_dir")));
 			}
 			if(section_data.containsKey("scan_cmd")){
-				update_data.put(section_name, get_scan_cmd_build(section_data.get("scan_cmd")));
+				build_data.putAll(get_scan_cmd_build(section_data.get("scan_cmd")));
 			} else {
 				String def_scan_script = new String("python $tool_path/scan_"+ section_name + ".py");
-				update_data.put(section_name, get_scan_cmd_build(def_scan_script));
+				build_data.putAll(get_scan_cmd_build(def_scan_script));
 			}
+			update_data.put(section_name, build_data);
 		}
 		if(get_scan_build_diff(client_data, update_data)){
 			client_info.update_scan_build_data(update_data);
@@ -230,6 +232,7 @@ public class data_server extends Thread {
 			}
 			File success_file = new File(sub_handler.getAbsolutePath() + "/success.ini");
 			if (!success_file.exists() || !success_file.canRead()) {
+				DATA_SERVER_LOGGER.info("Success.ini file not exists/readable:" + scan_path);
 				continue;
 			}
 			ini_parser build_parser = new ini_parser(success_file.getAbsolutePath().replaceAll("\\\\", "/"));
