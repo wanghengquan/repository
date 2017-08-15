@@ -285,6 +285,7 @@ public class upload_dialog extends JFrame{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			upload_button.setEnabled(true);
 		}
 	}
 	
