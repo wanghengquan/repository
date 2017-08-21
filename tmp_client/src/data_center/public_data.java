@@ -121,7 +121,7 @@ public class public_data {
 	// ========================
 	// Link to core script
 	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lshlabd0001/platform/trunk/bqs_scripts/DEV";
+	public final static String CORE_SCRIPT_ADDR = "http://lshlabd0011/platform/trunk/bqs_scripts/DEV";
 
 	// ========================
 	// task case default setting
