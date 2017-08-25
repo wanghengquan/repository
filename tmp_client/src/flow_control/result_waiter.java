@@ -169,11 +169,11 @@ public class result_waiter extends Thread {
 			if (running_queue_in_pool.contains(queue_name)) {
 				continue;// queue not finished
 			}
-			if (!task_info.get_processed_task_queues_map().containsKey(queue_name)) {
-				continue;// no queue data to dump (already dumped)
-			}
 			if (reported_admin_queue_list.contains(queue_name)){
 				continue;// finished queue already reported.
+			}			
+			if (!task_info.get_processed_task_queues_map().containsKey(queue_name)) {
+				continue;// no queue data to dump (already dumped)
 			}
 			// report task queue
 			report_status = export_data.export_disk_finished_task_queue_report(queue_name, client_info, task_info);
@@ -395,7 +395,7 @@ public class result_waiter extends Thread {
 			lin_link = String.format("<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>", detail_path, detail_path);
 			runlog.append("Unified Location(Win Default Access) ==> " + win_link + line_separator);
 			runlog.append("Unified Location(Lin Default Access) ==> " + lin_link + line_separator);
-			runlog.append("Note: If the above link not work, please copy it to your file explorer manually." + line_separator);
+			runlog.append("Note: If the link above not work, please copy it to your file explorer manually." + line_separator);
 			runlog.append(line_separator);
 			runlog.append(line_separator);
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("cmd_output");

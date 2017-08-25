@@ -179,7 +179,7 @@ public class export_data {
 		admin_data.putAll(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
 		if (admin_data.isEmpty()){
 			admin_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
-		}		
+		}
 		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 		String run_dir_name = "run" + admin_data.get("ID").get("run");
