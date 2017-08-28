@@ -100,7 +100,7 @@ public class app_update implements UpdatedApplication  {
         	if(update_skipped){
         		switch_info.set_client_console_updating(false);
         	}
-        } catch (UpdaterException ex) {
+        } catch (Exception ex) {
             //ex.printStackTrace();
             switch_info.set_client_console_updating(false);
             APP_UPDATE_LOGGER.warn("TMP client self update failed.");

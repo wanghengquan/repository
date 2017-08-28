@@ -115,34 +115,31 @@ public class hall_manager extends Thread {
 		return time_info.get_runtime_string(start_time, current_time);	
 	}
 	
-	private HashMap<result_enum, String> get_client_run_case_summary(){
-		HashMap<result_enum, String> run_summary = new HashMap<result_enum, String>();
+	private HashMap<task_enum, String> get_client_run_case_summary(){
+		HashMap<task_enum, String> run_summary = new HashMap<task_enum, String>();
 		Integer pass_num = new Integer(0);
 		Integer fail_num = new Integer(0);
 		Integer tbd_num = new Integer(0);
 		Integer timeout_num = new Integer(0);
 		Integer others_num = new Integer(0);
-		Integer total_num = new Integer(0);
-		HashMap<String, HashMap<result_enum, Integer>> summary_map = new HashMap<String, HashMap<result_enum, Integer>>();
+		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
 		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
-			HashMap<result_enum, Integer> queue_data = new HashMap<result_enum, Integer>();
+			HashMap<task_enum, Integer> queue_data = new HashMap<task_enum, Integer>();
 			queue_data.putAll(summary_map.get(queue_name));
-			pass_num = pass_num + queue_data.getOrDefault(result_enum.PASS, 0);
-			fail_num = fail_num + queue_data.getOrDefault(result_enum.FAIL, 0);
-			tbd_num = tbd_num + queue_data.getOrDefault(result_enum.TBD, 0);
-			timeout_num = timeout_num + queue_data.getOrDefault(result_enum.TIMEOUT, 0);
-			others_num = others_num + queue_data.getOrDefault(result_enum.OTHERS, 0);
-			total_num = total_num + queue_data.getOrDefault(result_enum.TOTAL, 0);
+			pass_num = pass_num + queue_data.getOrDefault(task_enum.PASS, 0);
+			fail_num = fail_num + queue_data.getOrDefault(task_enum.FAIL, 0);
+			tbd_num = tbd_num + queue_data.getOrDefault(task_enum.TBD, 0);
+			timeout_num = timeout_num + queue_data.getOrDefault(task_enum.TIMEOUT, 0);
+			others_num = others_num + queue_data.getOrDefault(task_enum.OTHERS, 0);
 		}
-		run_summary.put(result_enum.TOTAL, total_num.toString());
-		run_summary.put(result_enum.PASS, pass_num.toString());
-		run_summary.put(result_enum.FAIL, fail_num.toString());
-		run_summary.put(result_enum.TBD, tbd_num.toString());
-		run_summary.put(result_enum.TIMEOUT, timeout_num.toString());
-		run_summary.put(result_enum.OTHERS, others_num.toString() );
+		run_summary.put(task_enum.PASS, pass_num.toString());
+		run_summary.put(task_enum.FAIL, fail_num.toString());
+		run_summary.put(task_enum.TBD, tbd_num.toString());
+		run_summary.put(task_enum.TIMEOUT, timeout_num.toString());
+		run_summary.put(task_enum.OTHERS, others_num.toString() );
 		return run_summary;
 	}
 	
@@ -229,8 +226,8 @@ public class hall_manager extends Thread {
 			return;
 		}
 		generate_exit_report();
-		HashMap<result_enum, String> run_summary = get_client_run_case_summary();
-		if(Integer.valueOf(run_summary.get(result_enum.FAIL)) > 0 ){
+		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
+		if(Integer.valueOf(run_summary.get(task_enum.FAIL)) > 0 ){
 			switch_info.set_client_stop_request(exit_enum.TASK);
 		} else {
 			switch_info.set_client_stop_request(exit_enum.NORMAL);
@@ -248,9 +245,9 @@ public class hall_manager extends Thread {
 		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
 			HALL_MANAGER_LOGGER.info(">>>                 :"+ queue_name);
 		}
-		HashMap<result_enum, String> run_summary = get_client_run_case_summary();
+		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + run_summary);
-		if(Integer.valueOf(run_summary.get(result_enum.FAIL)) > 0 ){
+		if(Integer.valueOf(run_summary.get(task_enum.FAIL)) > 0 ){
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 1.");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 0.");
@@ -290,6 +287,9 @@ public class hall_manager extends Thread {
 			run_exception.printStackTrace();
 			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, " " + line_separator);
+			file_action.append_file(dump_path, "####################" + line_separator);
+			file_action.append_file(dump_path, time_info.get_date_time() + line_separator);			
 			file_action.append_file(dump_path, run_exception.toString() + line_separator);
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);

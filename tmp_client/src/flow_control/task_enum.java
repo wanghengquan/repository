@@ -9,17 +9,20 @@
  */
 package flow_control;
 
-public enum result_enum {
-	TOTAL(0, "Total"),
-	PASS(1, "Passed"),
-	FAIL(2, "Failed"),
-	TBD(3, "TBD"),
-	TIMEOUT(4, "Timeout"),
-	OTHERS(5, "Others");
+public enum task_enum {
+	WAITING(0, "Waiting"),
+	PROCESSING(1, "Processing"),
+	PASS(2, "Passed"),
+	FAIL(3, "Failed"),
+	TBD(4, "TBD"),
+	TIMEOUT(5, "Timeout"),
+	CASEISSUE(6, "Case Issue"),
+	SWISSUE(7, "SW Issue"),
+	OTHERS(8, "Others");
 	private int index;
 	private String description;
 	
-	private result_enum(int index, String description){
+	private task_enum(int index, String description){
 		this.index = index;
 		this.description = description;
 	}

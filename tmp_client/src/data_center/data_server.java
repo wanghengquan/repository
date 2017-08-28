@@ -27,6 +27,7 @@ import info_parser.ini_parser;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.system_cmd;
+import utility_funcs.time_info;
 
 /*
  * This class used to get the basic information of the client.
@@ -370,6 +371,9 @@ public class data_server extends Thread {
 			run_exception.printStackTrace();
 			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, " " + line_separator);
+			file_action.append_file(dump_path, "####################" + line_separator);
+			file_action.append_file(dump_path, time_info.get_date_time() + line_separator);			
 			file_action.append_file(dump_path, run_exception.toString() + line_separator);
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);

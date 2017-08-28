@@ -63,22 +63,21 @@ public class xml_parser {
 		return text;
 	}
 
-	public String create_result_document_string(HashMap<String, HashMap<String, String>> xml_data, String ip,
+	public String create_result_document_string(HashMap<String, HashMap<String, Object>> xml_data, String ip,
 			String machine) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("CaseResults");
 		root_element.addAttribute("ip", ip);
 		root_element.addAttribute("machine", machine);
-		Set<String> xml_data_set = xml_data.keySet();
-		Iterator<String> xml_data_it = xml_data_set.iterator();
+		Iterator<String> xml_data_it = xml_data.keySet().iterator();
 		while (xml_data_it.hasNext()) {
 			String level1_key = xml_data_it.next();
-			HashMap<String, String> level1_data = xml_data.get(level1_key);
+			HashMap<String, Object> level1_data = xml_data.get(level1_key);
 			Element level1_element = root_element.addElement("case");
 			Iterator<String> level1_data_it = xml_data.get(level1_key).keySet().iterator();
 			while (level1_data_it.hasNext()) {
 				String level2_key = level1_data_it.next();
-				String level2_value = level1_data.get(level2_key);
+				String level2_value = (String) level1_data.get(level2_key);
 				level1_element.addElement(level2_key).addText(level2_value);
 			}
 		}

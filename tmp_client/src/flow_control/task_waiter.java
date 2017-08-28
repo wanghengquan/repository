@@ -31,6 +31,7 @@ import data_center.switch_data;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.system_call;
+import utility_funcs.time_info;
 
 public class task_waiter extends Thread {
 	// public property
@@ -101,8 +102,8 @@ public class task_waiter extends Thread {
 			if (queue_data.isEmpty()) {
 				continue; // some one delete this queue already
 			}
-			String queue_status = queue_data.get("Status").get("admin_status");
-			if (queue_status.equalsIgnoreCase("processing")) {
+			String status = queue_data.get("Status").get("admin_status");
+			if (status.equalsIgnoreCase(queue_enum.PROCESSING.get_description())) {
 				processing_admin_queue_list.add(queue_name);
 			}
 		}
@@ -320,7 +321,7 @@ public class task_waiter extends Thread {
 	}
 
 	private void move_finished_admin_queue_from_tube(String queue_name) {
-		// more received admin queue data to processed queue data
+		// move received admin queue data to processed queue data
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		queue_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
 		if (queue_data == null || queue_data.isEmpty()) {
@@ -562,6 +563,9 @@ public class task_waiter extends Thread {
 			run_exception.printStackTrace();
 			String dump_path = client_info.get_client_data().get("preference").get("work_path") + "/"
 					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			file_action.append_file(dump_path, " " + line_separator);
+			file_action.append_file(dump_path, "####################" + line_separator);
+			file_action.append_file(dump_path, time_info.get_date_time() + line_separator);			
 			file_action.append_file(dump_path, run_exception.toString() + line_separator);
 			for (Object item : run_exception.getStackTrace()) {
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
@@ -693,8 +697,7 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
-				continue;// register false, some one else may register this case
-							// already.
+				continue;// register false, someone register this case already.
 			}
 			// task 7 : get test case ready and initial case report
 			// ======================>key variable 4: case_work_path ready
