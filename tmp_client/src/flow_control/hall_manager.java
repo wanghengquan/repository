@@ -129,14 +129,14 @@ public class hall_manager extends Thread {
 			String queue_name = queue_it.next();
 			HashMap<task_enum, Integer> queue_data = new HashMap<task_enum, Integer>();
 			queue_data.putAll(summary_map.get(queue_name));
-			pass_num = pass_num + queue_data.getOrDefault(task_enum.PASS, 0);
-			fail_num = fail_num + queue_data.getOrDefault(task_enum.FAIL, 0);
+			pass_num = pass_num + queue_data.getOrDefault(task_enum.PASSED, 0);
+			fail_num = fail_num + queue_data.getOrDefault(task_enum.FAILED, 0);
 			tbd_num = tbd_num + queue_data.getOrDefault(task_enum.TBD, 0);
 			timeout_num = timeout_num + queue_data.getOrDefault(task_enum.TIMEOUT, 0);
 			others_num = others_num + queue_data.getOrDefault(task_enum.OTHERS, 0);
 		}
-		run_summary.put(task_enum.PASS, pass_num.toString());
-		run_summary.put(task_enum.FAIL, fail_num.toString());
+		run_summary.put(task_enum.PASSED, pass_num.toString());
+		run_summary.put(task_enum.FAILED, fail_num.toString());
 		run_summary.put(task_enum.TBD, tbd_num.toString());
 		run_summary.put(task_enum.TIMEOUT, timeout_num.toString());
 		run_summary.put(task_enum.OTHERS, others_num.toString() );
@@ -189,6 +189,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary());
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
+		HALL_MANAGER_LOGGER.warn(task_info.get_received_admin_queues_treemap().toString());
 		HALL_MANAGER_LOGGER.debug(client_info.get_use_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_max_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());
@@ -227,7 +228,7 @@ public class hall_manager extends Thread {
 		}
 		generate_exit_report();
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
-		if(Integer.valueOf(run_summary.get(task_enum.FAIL)) > 0 ){
+		if(Integer.valueOf(run_summary.get(task_enum.FAILED)) > 0 ){
 			switch_info.set_client_stop_request(exit_enum.TASK);
 		} else {
 			switch_info.set_client_stop_request(exit_enum.NORMAL);
@@ -247,7 +248,7 @@ public class hall_manager extends Thread {
 		}
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + run_summary);
-		if(Integer.valueOf(run_summary.get(task_enum.FAIL)) > 0 ){
+		if(Integer.valueOf(run_summary.get(task_enum.FAILED)) > 0 ){
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 1.");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 0.");

@@ -10,11 +10,13 @@
 package flow_control;
 
 public enum queue_enum {
-	PROCESSING(0, "Processing"),
-	RUNNING(1, "Running"),	
-	FINISHED(2, "Finished"),
-	STOPPED(3, "Stopped"),
-	PAUSED(4, "Paused");
+	WAITING(0, "Waiting"),
+	PROCESSING(1, "Processing"),
+	RUNNING(2, "Running"),	
+	FINISHED(3, "Finished"),
+	STOPPED(4, "Stopped"),
+	PAUSED(5, "Paused"),
+	UNKNOWN(6, "Unknown");
 	private int index;
 	private String description;
 	

@@ -31,6 +31,8 @@ import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.queue_enum;
+import flow_control.task_enum;
 
 public class menu_bar extends JMenuBar implements ActionListener {
 	/**
@@ -104,17 +106,17 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		JMenu view = new JMenu("View");
 		view_all = new JMenuItem("All");
 		view_all.addActionListener(this);
-		view_waiting = new JMenuItem("Waiting");
+		view_waiting = new JMenuItem(task_enum.WAITING.get_description());
 		view_waiting.addActionListener(this);
-		view_processing = new JMenuItem("Processing");
+		view_processing = new JMenuItem(task_enum.PROCESSING.get_description());
 		view_processing.addActionListener(this);
-		view_passed = new JMenuItem("Passed");
+		view_passed = new JMenuItem(task_enum.PASSED.get_description());
 		view_passed.addActionListener(this);
-		view_failed = new JMenuItem("Failed");
+		view_failed = new JMenuItem(task_enum.FAILED.get_description());
 		view_failed.addActionListener(this);
-		view_tbd = new JMenuItem("TBD");
+		view_tbd = new JMenuItem(task_enum.TBD.get_description());
 		view_tbd.addActionListener(this);
-		view_timeout = new JMenuItem("Timeout");
+		view_timeout = new JMenuItem(task_enum.TIMEOUT.get_description());
 		view_timeout.addActionListener(this);
 		view.add(view_all);
 		view.add(view_waiting);
@@ -138,17 +140,17 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		run.add(pause);
 		run.add(stop);
 		JMenu retest = new JMenu("Retest");
-		retest_all = new JMenuItem("All");
+		retest_all = new JMenuItem(retest_enum.ALL.get_description());
 		retest_all.addActionListener(this);
 		retest_selected = new JMenuItem("Selected");
 		retest_selected.addActionListener(this);
-		retest_failed = new JMenuItem("Failed");
+		retest_failed = new JMenuItem(task_enum.FAILED.get_description());
 		retest_failed.addActionListener(this);
-		retest_passed = new JMenuItem("Passed");
+		retest_passed = new JMenuItem(task_enum.PASSED.get_description());
 		retest_passed.addActionListener(this);
-		retest_tbd = new JMenuItem("TBD");
+		retest_tbd = new JMenuItem(task_enum.TBD.get_description());
 		retest_tbd.addActionListener(this);
-		retest_timeout = new JMenuItem("Timeout");
+		retest_timeout = new JMenuItem(task_enum.TIMEOUT.get_description());
 		retest_timeout.addActionListener(this);
 		retest.add(retest_all);
 		retest.add(retest_selected);
@@ -243,67 +245,67 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(view_all)) {
 			MENU_BAR_LOGGER.warn("view_all clicked");
-			view_info.set_watching_queue_area("all");
+			view_info.set_watching_queue_area(watch_enum.ALL);
 		}
 		if (e.getSource().equals(view_waiting)) {
 			MENU_BAR_LOGGER.warn("view_waiting clicked");
-			view_info.set_watching_queue_area("waiting");
+			view_info.set_watching_queue_area(watch_enum.WAITING);
 		}
 		if (e.getSource().equals(view_processing)) {
 			MENU_BAR_LOGGER.warn("view_processing clicked");
-			view_info.set_watching_queue_area("processing");
+			view_info.set_watching_queue_area(watch_enum.PROCESSING);
 		}
 		if (e.getSource().equals(view_passed)) {
 			MENU_BAR_LOGGER.warn("view_passed clicked");
-			view_info.set_watching_queue_area("passed");
+			view_info.set_watching_queue_area(watch_enum.PASSED);
 		}
 		if (e.getSource().equals(view_failed)) {
 			MENU_BAR_LOGGER.warn("view_failed clicked");
-			view_info.set_watching_queue_area("failed");
+			view_info.set_watching_queue_area(watch_enum.FAILED);
 		}
 		if (e.getSource().equals(view_tbd)) {
 			MENU_BAR_LOGGER.warn("view_tbd clicked");
-			view_info.set_watching_queue_area("tbd");
+			view_info.set_watching_queue_area(watch_enum.TBD);
 		}
 		if (e.getSource().equals(view_timeout)) {
 			MENU_BAR_LOGGER.warn("view_timeout clicked");
-			view_info.set_watching_queue_area("timeout");
+			view_info.set_watching_queue_area(watch_enum.TIMEOUT);
 		}
 		if (e.getSource().equals(play)) {
 			MENU_BAR_LOGGER.warn("play clicked");
-			view_info.set_run_action_request("processing");
+			view_info.set_run_action_request(queue_enum.PROCESSING);
 		}
 		if (e.getSource().equals(pause)) {
 			MENU_BAR_LOGGER.warn("pause clicked");
-			view_info.set_run_action_request("pause");
+			view_info.set_run_action_request(queue_enum.PAUSED);
 		}
 		if (e.getSource().equals(stop)) {
 			MENU_BAR_LOGGER.warn("stop clicked");
-			view_info.set_run_action_request("stop");
+			view_info.set_run_action_request(queue_enum.STOPPED);
 		}
 		if (e.getSource().equals(retest_all)) {
 			MENU_BAR_LOGGER.warn("retest_all clicked");
-			view_info.set_retest_queue_area("all");
+			view_info.set_retest_queue_area(retest_enum.ALL);
 		}
 		if (e.getSource().equals(retest_selected)) {
 			MENU_BAR_LOGGER.warn("retest_selected clicked");
-			view_info.set_retest_queue_area("selected");
+			view_info.set_retest_queue_area(retest_enum.SELECTED);
 		}
 		if (e.getSource().equals(retest_passed)) {
 			MENU_BAR_LOGGER.warn("retest_passed clicked");
-			view_info.set_retest_queue_area("passed");
+			view_info.set_retest_queue_area(retest_enum.PASSED);
 		}
 		if (e.getSource().equals(retest_failed)) {
 			MENU_BAR_LOGGER.warn("retest_failed clicked");
-			view_info.set_retest_queue_area("failed");
+			view_info.set_retest_queue_area(retest_enum.FAILED);
 		}
 		if (e.getSource().equals(retest_tbd)) {
 			MENU_BAR_LOGGER.warn("retest_tbd clicked");
-			view_info.set_retest_queue_area("tbd");
+			view_info.set_retest_queue_area(retest_enum.TBD);
 		}
 		if (e.getSource().equals(retest_timeout)) {
 			MENU_BAR_LOGGER.warn("retest_timeout clicked");
-			view_info.set_retest_queue_area("timeout");
+			view_info.set_retest_queue_area(retest_enum.TIMEOUT);
 		}
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.warn("upload clicked");

@@ -118,7 +118,7 @@ public class task_waiter extends Thread {
 		for (String queue_name : running_admin_queue_list) {
 			if (!processing_admin_queue_list.contains(queue_name)) {
 				// running queue finished or removed out side
-				task_info.update_finished_admin_queue_list(queue_name);
+				// task_info.update_finished_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
 			}
 		}
@@ -328,6 +328,8 @@ public class task_waiter extends Thread {
 			TASK_WAITER_LOGGER.info(waiter_name + ":Move queue already finished, " + queue_name);
 			return;
 		}
+		HashMap<String, String> status_data = queue_data.get("Status");
+		status_data.put("admin_status", queue_enum.FINISHED.get_description());
 		task_info.update_queue_to_processed_admin_queues_treemap(queue_name, queue_data);
 		// delete all buffered info
 		task_info.remove_queue_from_received_admin_queues_treemap(queue_name);

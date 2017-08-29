@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
+import flow_control.queue_enum;
 import utility_funcs.time_info;
 
 public class queue_panel extends JSplitPane implements Runnable {
@@ -139,7 +140,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Boolean run_status = new Boolean(false);
 		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
-		if(!status.equalsIgnoreCase("finished")){
+		if(!status.equals(queue_enum.FINISHED.get_description())){
 			return run_status;
 		}
 		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
@@ -158,11 +159,15 @@ public class queue_panel extends JSplitPane implements Runnable {
 			public void mouseReleased(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						//1. delete setting
 						if (is_selected_queue_deletable()){
 							capture_menu.enable_delete_item();
 						} else {
 							capture_menu.disable_delete_item();
 						}
+						//2. play stop pause setting
+						String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
+						capture_menu.initial_queue_available_actions(status);
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -173,11 +178,15 @@ public class queue_panel extends JSplitPane implements Runnable {
 			public void mousePressed(MouseEvent e) {
 				if (capture_table.getSelectedRows().length > 0) {
 					if (e.isPopupTrigger()) {
+						//1. delete setting
 						if (is_selected_queue_deletable()){
 							capture_menu.enable_delete_item();
 						} else {
 							capture_menu.disable_delete_item();
-						}						
+						}	
+						//2. play stop pause setting
+						String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
+						capture_menu.initial_queue_available_actions(status);						
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -200,7 +209,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 					String select_queue = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 					QUEUE_PANEL_LOGGER.info("Double click and show queue:" + select_queue);
 					view_info.set_watching_queue(select_queue);
-					view_info.set_watching_queue_area("all");
+					view_info.set_watching_queue_area(watch_enum.ALL);
 				} else {
 					QUEUE_PANEL_LOGGER.error("No line selected");
 				}
@@ -244,21 +253,30 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
-			String status = new String("");
+			queue_enum status = queue_enum.UNKNOWN;
 			if (finished_admin_queue_list.contains(queue_name)) {
-				status = "Finished";
+				status = queue_enum.FINISHED;
 			} else if (running_admin_queue_list.contains(queue_name)) {
-				status = "Running";
+				status = queue_enum.RUNNING;
 			} else if (processing_admin_queue_list.contains(queue_name)) {
-				status = "Processing";
+				status = queue_enum.PROCESSING;
 			} else {
-				status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
+				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 						.get("admin_status");
+				if (admin_status.equals(queue_enum.STOPPED.get_description()) || admin_status.equalsIgnoreCase("stop")){//data style from rmq
+					status = queue_enum.STOPPED;
+				} else if (admin_status.equals(queue_enum.PAUSED.get_description()) || admin_status.equalsIgnoreCase("pause")){//data style from rmq
+					status = queue_enum.PAUSED;
+				} else if (admin_status.equalsIgnoreCase("processing")) {
+					status = queue_enum.PROCESSING;
+				} else {
+					status = queue_enum.UNKNOWN;
+				}
 			}
 			// add watching vector
 			Vector<String> show_line = new Vector<String>();
 			show_line.add(queue_name);
-			show_line.add(status);
+			show_line.add(status.get_description());
 			new_data.add(show_line);
 			show_update = true;
 		}
@@ -277,7 +295,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		} else {
 			update_status = false;
 		}
-		view_info.set_select_rejected_queue(selected_queue);
+		view_info.set_select_rejected_queue_name(selected_queue);
 		return update_status;
 	}
 
@@ -291,7 +309,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		} else {
 			update_status = false;
 		}
-		view_info.set_select_captured_queue(selected_queue);
+		view_info.set_select_captured_queue_name(selected_queue);
 		return update_status;
 	}
 
@@ -443,6 +461,34 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		delete.setEnabled(true);
 	}
 	
+	public void initial_queue_available_actions(String action){
+		if (action.equals(queue_enum.FINISHED.get_description())){
+			run_play.setEnabled(false);
+			run_pause.setEnabled(false);
+			run_stop.setEnabled(true);
+		} else if (action.equals(queue_enum.STOPPED.get_description())){
+			run_play.setEnabled(true);
+			run_pause.setEnabled(false);
+			run_stop.setEnabled(false);			
+		} else if (action.equals(queue_enum.PAUSED.get_description())){
+			run_play.setEnabled(true);
+			run_pause.setEnabled(false);
+			run_stop.setEnabled(true);			
+		} else if (action.equals(queue_enum.PROCESSING.get_description())){
+			run_play.setEnabled(false);
+			run_pause.setEnabled(true);
+			run_stop.setEnabled(true);			
+		} else if (action.equals(queue_enum.RUNNING.get_description())){
+			run_play.setEnabled(false);
+			run_pause.setEnabled(true);
+			run_stop.setEnabled(true);			
+		} else {
+			run_play.setEnabled(false);
+			run_pause.setEnabled(false);
+			run_stop.setEnabled(false);	
+		}
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -450,19 +496,19 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("show details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.set_watching_queue(select_queue);
-			view_info.set_watching_queue_area("all");
+			view_info.set_watching_queue_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(run_play)) {
 			System.out.println("run_play clicked");
-			view_info.set_run_action_request("processing");
+			view_info.set_run_action_request(queue_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(run_pause)) {
 			System.out.println("run_pause clicked");
-			view_info.set_run_action_request("pause");
+			view_info.set_run_action_request(queue_enum.PAUSED);
 		}
 		if (arg0.getSource().equals(run_stop)) {
 			System.out.println("run_stop clicked");
-			view_info.set_run_action_request("stop");
+			view_info.set_run_action_request(queue_enum.STOPPED);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("detail clicked");

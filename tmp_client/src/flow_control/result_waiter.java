@@ -128,7 +128,7 @@ public class result_waiter extends Thread {
 					run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
 					break;
 				default:// auto and any other inputs  treated as auto
-					if (cmd_status.equals(task_enum.FAIL)) {
+					if (cmd_status.equals(task_enum.FAILED)) {
 						run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
 					} else {
 						run_status = copy_case_to_save_path(case_work_path, case_save_path, "archive");
@@ -266,11 +266,11 @@ public class result_waiter extends Thread {
 			String queue_name = (String) one_call_data.get("queue_name");
 			task_enum case_result = (task_enum) case_report_map.get(call_index).get("status");
 			switch (case_result){
-			case PASS:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.PASS, 1);
+			case PASSED:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.PASSED, 1);
 				break;
-			case FAIL:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.FAIL, 1);
+			case FAILED:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.FAILED, 1);
 				break;
 			case TIMEOUT:
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TIMEOUT, 1);
@@ -317,7 +317,7 @@ public class result_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			HashMap<String, String> case_status = case_data.get("Status");
-			case_status.put("cmd_status", (String) case_report_map.get(call_index).get("status"));
+			case_status.put("cmd_status", ((task_enum) case_report_map.get(call_index).get("status")).get_description());
 			case_status.put("cmd_reason", (String) case_report_map.get(call_index).get("reason"));
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", time_info.get_man_date_time());
@@ -435,7 +435,6 @@ public class result_waiter extends Thread {
 				remote_data.put(call_index, case_report_data.get(call_index));
 			}
 		}
-
 		if (remote_data.size() > 0) {
 			// remote send
 			String rmq_result_str = parser.create_result_document_string(remote_data, ip, terminal);
@@ -519,10 +518,10 @@ public class result_waiter extends Thread {
 		}
 		switch (status){
 		case "Passed":
-			task_status = task_enum.PASS;
+			task_status = task_enum.PASSED;
 			break;
 		case "Failed":
-			task_status = task_enum.FAIL;
+			task_status = task_enum.FAILED;
 			break;	
 		case "TBD":
 			task_status = task_enum.TBD;

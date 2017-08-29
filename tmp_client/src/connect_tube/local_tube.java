@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import flow_control.task_enum;
 import info_parser.xls_parser;
 import info_parser.xml_parser;
 import utility_funcs.time_info;
@@ -849,7 +850,7 @@ public class local_tube {
 				task_queue_data.putAll(xlsx_received_task_queues_map.get(queue_name));
 			}
 			HashMap<String, String> case_status_data = new HashMap<String, String>();
-			case_status_data.put("cmd_status", "waiting");
+			case_status_data.put("cmd_status", task_enum.WAITING.get_description());
 			case_data.put("Status", case_status_data);
 			task_queue_data.put(case_name, case_data);
 			xlsx_received_task_queues_map.put(queue_name, task_queue_data);

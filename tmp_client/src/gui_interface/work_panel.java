@@ -45,6 +45,7 @@ import connect_tube.task_data;
 import connect_tube.taskid_compare;
 import data_center.client_data;
 import flow_control.import_data;
+import flow_control.task_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.time_info;
 
@@ -168,40 +169,42 @@ public class work_panel extends JSplitPane implements Runnable{
 	}
 	
 
-	private Vector<String> get_one_report_line(HashMap<String, HashMap<String, String>> design_data, String watching_queue_area) {
+	private Vector<String> get_one_report_line(
+			HashMap<String, HashMap<String, String>> design_data, 
+			watch_enum watching_area) {
 		Vector<String> add_line = new Vector<String>();
-		if(!watching_queue_area.equalsIgnoreCase("all")){
+		if(!watching_area.equals(watch_enum.ALL)){
 			if(!design_data.get("Status").containsKey("cmd_status")){
 				return add_line;//empty line which will be ignore
 			}
 		}
-		if(watching_queue_area.equalsIgnoreCase("passed")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("passed")){
+		if(watching_area.equals(watch_enum.PASSED)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.PASSED.get_description())){
 				return add_line;//non-passed line which will be ignore
 			}
 		}
-		if(watching_queue_area.equalsIgnoreCase("failed")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("failed")){
+		if(watching_area.equals(watch_enum.FAILED)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.FAILED.get_description())){
 				return add_line;//non-failed line which will be ignore
 			}
 		}
-		if(watching_queue_area.equalsIgnoreCase("tbd")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("tbd")){
+		if(watching_area.equals(watch_enum.TBD)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.TBD.get_description())){
 				return add_line;//non-tbd line which will be ignore
 			}
 		}		
-		if(watching_queue_area.equalsIgnoreCase("timeout")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("timeout")){
+		if(watching_area.equals(watch_enum.TIMEOUT)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.TIMEOUT.get_description())){
 				return add_line;//non-timeout line which will be ignore
 			}
 		}
-		if(watching_queue_area.equalsIgnoreCase("processing")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("processing")){
+		if(watching_area.equals(watch_enum.PROCESSING)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.PROCESSING.get_description())){
 				return add_line;//non-processing line which will be ignore
 			}
 		}
-		if(watching_queue_area.equalsIgnoreCase("waiting")){
-			if (!design_data.get("Status").get("cmd_status").equalsIgnoreCase("waiting")){
+		if(watching_area.equals(watch_enum.WAITING)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.WAITING.get_description())){
 				return add_line;//non-waiting line which will be ignore
 			}
 		}		
@@ -254,12 +257,12 @@ public class work_panel extends JSplitPane implements Runnable{
 	private Boolean update_working_queue_data() {
 		Boolean show_update = new Boolean(true);
 		String watching_queue = view_info.get_watching_queue();
-		String watching_queue_area = view_info.get_watching_queue_area();
+		watch_enum watching_area = view_info.get_watching_queue_area();
 		if (watching_queue.equals("")) {
 			return show_update; // no watching queue selected
 		}
-		if (watching_queue_area.equals("")){
-			watching_queue_area = "all";
+		if (watching_area.equals(watch_enum.UNKNOWN)){
+			watching_area = watch_enum.ALL;
 		}
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
@@ -269,7 +272,7 @@ public class work_panel extends JSplitPane implements Runnable{
 			import_disk_admin_data_to_processed_data(watching_queue);
 			Boolean task_import_status = import_disk_task_data_to_processed_data(watching_queue);
 			if (!task_import_status){
-				WORK_PANEl_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_queue_area);
+				WORK_PANEl_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_area.get_description());
 				work_data.clear();
 				work_data.addAll(get_blank_data());
 				return show_update; // no data show
@@ -292,7 +295,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		while (case_it.hasNext()) {
 			String case_id = case_it.next();
 			HashMap<String, HashMap<String, String>> design_data = queue_data.get(case_id);
-			Vector<String> add_line = get_one_report_line(design_data, watching_queue_area);
+			Vector<String> add_line = get_one_report_line(design_data, watching_area);
 			if(add_line.isEmpty()){
 				continue;
 			}
@@ -413,19 +416,19 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		terminate = new JMenuItem("Terminate");
 		terminate.addActionListener(this);
 		JMenu view = new JMenu("View");
-		view_all = new JMenuItem("All");
+		view_all = new JMenuItem(watch_enum.ALL.get_description());
 		view_all.addActionListener(this);
-		view_waiting = new JMenuItem("Waiting");
+		view_waiting = new JMenuItem(watch_enum.WAITING.get_description());
 		view_waiting.addActionListener(this);
-		view_processing = new JMenuItem("Processing");
+		view_processing = new JMenuItem(watch_enum.PROCESSING.get_description());
 		view_processing.addActionListener(this);		
-		view_failed = new JMenuItem("Failed");
+		view_failed = new JMenuItem(watch_enum.FAILED.get_description());
 		view_failed.addActionListener(this);
-		view_passed = new JMenuItem("Passed");
+		view_passed = new JMenuItem(watch_enum.PASSED.get_description());
 		view_passed.addActionListener(this);
-		view_tbd = new JMenuItem("TBD");
+		view_tbd = new JMenuItem(watch_enum.TBD.get_description());
 		view_tbd.addActionListener(this);		
-		view_timeout = new JMenuItem("Timeout");
+		view_timeout = new JMenuItem(watch_enum.TIMEOUT.get_description());
 		view_timeout.addActionListener(this);
 		view.add(view_all);
 		view.add(view_waiting);
@@ -506,7 +509,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(retest)) {
 			System.out.println("retest clicked");
-			view_info.set_retest_queue_area("selected");
+			view_info.set_retest_queue_area(retest_enum.SELECTED);
 		}
 		if (arg0.getSource().equals(terminate)) {
 			System.out.println("terminate clicked");
@@ -514,31 +517,31 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}		
 		if (arg0.getSource().equals(view_all)) {
 			System.out.println("view all");
-			view_info.set_watching_queue_area("all");
+			view_info.set_watching_queue_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(view_processing)) {
 			System.out.println("view failed");
-			view_info.set_watching_queue_area("processing");
+			view_info.set_watching_queue_area(watch_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(view_waiting)) {
 			System.out.println("view waiting");
-			view_info.set_watching_queue_area("waiting");
+			view_info.set_watching_queue_area(watch_enum.WAITING);
 		}			
 		if (arg0.getSource().equals(view_failed)) {
 			System.out.println("view failed");
-			view_info.set_watching_queue_area("failed");
+			view_info.set_watching_queue_area(watch_enum.FAILED);
 		}
 		if (arg0.getSource().equals(view_passed)) {
 			System.out.println("view passed");
-			view_info.set_watching_queue_area("passed");
+			view_info.set_watching_queue_area(watch_enum.PASSED);
 		}
 		if (arg0.getSource().equals(view_tbd)) {
 			System.out.println("view tbd");
-			view_info.set_watching_queue_area("tbd");
+			view_info.set_watching_queue_area(watch_enum.TBD);
 		}
 		if (arg0.getSource().equals(view_timeout)) {
 			System.out.println("view timeout");
-			view_info.set_watching_queue_area("timeout");
+			view_info.set_watching_queue_area(watch_enum.TIMEOUT);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("details clicked");

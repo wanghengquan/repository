@@ -7,9 +7,9 @@
  * Date:
  * Description:
  */
-package flow_control;
+package gui_interface;
 
-public enum task_enum {
+public enum watch_enum {
 	WAITING(0, "Waiting"),
 	PROCESSING(1, "Processing"),
 	PASSED(2, "Passed"),
@@ -19,11 +19,12 @@ public enum task_enum {
 	CASEISSUE(6, "Case Issue"),
 	SWISSUE(7, "SW Issue"),
 	OTHERS(8, "Others"),
-	UNKNOWN(9, "Unknown");
+	UNKNOWN(9, "Unknown"),
+	ALL(10, "All");
 	private int index;
 	private String description;
 	
-	private task_enum(int index, String description){
+	private watch_enum(int index, String description){
 		this.index = index;
 		this.description = description;
 	}

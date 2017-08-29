@@ -29,10 +29,12 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.import_data;
 import flow_control.pool_data;
+import flow_control.queue_enum;
+import flow_control.task_enum;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 
-public class view_server extends Thread{
+public class view_server extends Thread {
 	// public property
 	// protected property
 	// private property
@@ -47,18 +49,13 @@ public class view_server extends Thread{
 	private pool_data pool_info;
 	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
-	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL ;
+	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
 	// protected function
 	// private function
 
-	public view_server(
-			HashMap<String, String> cmd_info,
-			switch_data switch_info, 
-			client_data client_info, 
-			task_data task_info, 
-			view_data view_info,
-			pool_data pool_info) {
+	public view_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info,
+			task_data task_info, view_data view_info, pool_data pool_info) {
 		this.cmd_info = cmd_info;
 		this.switch_info = switch_info;
 		this.task_info = task_info;
@@ -67,86 +64,175 @@ public class view_server extends Thread{
 		this.pool_info = pool_info;
 	}
 
-	private List<String> get_retest_case_list(String retest_queue){
+	private List<String> get_retest_case_list(String retest_queue) {
 		List<String> case_list = new ArrayList<String>();
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(retest_queue));
-		String retest_area = view_info.impl_retest_queue_area();
-		if (retest_area.equals("")){
+		retest_enum retest_area = view_info.impl_retest_queue_area();
+		if (retest_area.equals(retest_enum.UNKNOWN)) {
 			return case_list;
 		}
-		if (retest_area.equals("all")){
+		if (retest_area.equals(retest_enum.ALL)) {
 			case_list.addAll(queue_data.keySet());
-		} else if (retest_area.equals("selected")){
+		} else if (retest_area.equals(retest_enum.SELECTED)) {
 			case_list.addAll(view_info.get_select_task_case());
 		} else {
 			Iterator<String> queue_data_it = queue_data.keySet().iterator();
-			while(queue_data_it.hasNext()){
+			while (queue_data_it.hasNext()) {
 				String case_id = queue_data_it.next();
-				if(!queue_data.get(case_id).get("Status").containsKey("cmd_status")){
+				if (!queue_data.get(case_id).get("Status").containsKey("cmd_status")) {
 					continue;
 				}
 				String cmd_status = queue_data.get(case_id).get("Status").get("cmd_status");
-				if(cmd_status.equalsIgnoreCase(retest_area)){
+				if (cmd_status.equalsIgnoreCase(retest_area.get_description())) {
 					case_list.add(case_id);
 				}
 			}
 		}
 		return case_list;
 	}
-	
-	private Boolean implements_retest_task_request(){
+
+	private Boolean implements_retest_task_request() {
 		Boolean retest_status = new Boolean(true);
-		//get retest queue name
+		// get retest queue name
 		String queue_name = view_info.get_watching_queue();
-		//get retest case list
+		// get retest case list
 		ArrayList<String> case_list = new ArrayList<String>();
 		case_list.addAll(get_retest_case_list(queue_name));
-		if(case_list.isEmpty()){
+		if (case_list.isEmpty()) {
 			return retest_status;
 		}
-		//move case from processed to received and mark case with waiting
+		// move case from processed to received and mark case with waiting
 		task_info.copy_task_list_from_processed_to_received_task_queues_map(queue_name, case_list);
-		task_info.mark_task_list_for_processed_task_queues_map(queue_name, case_list, "waiting");
-		//mark admin_status to processing
+		task_info.mark_task_list_for_processed_task_queues_map(queue_name, case_list, task_enum.WAITING);
+		// mark admin_status to processing
 		task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 		task_info.active_waiting_received_admin_queues_treemap(queue_name);
 		return retest_status;
+	}
+
+	private queue_enum get_admin_queue_status(String queue_name){
+		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
+		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
+		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
+		queue_enum queue_status = queue_enum.UNKNOWN;
+		if (finished_admin_queue_list.contains(queue_name)) {
+			queue_status = queue_enum.FINISHED;
+		} else if (running_admin_queue_list.contains(queue_name)) {
+			queue_status = queue_enum.RUNNING;
+		} else if (processing_admin_queue_list.contains(queue_name)) {
+			queue_status = queue_enum.PROCESSING;
+		} else {
+			String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
+					.get("admin_status");
+			if (admin_status.equals(queue_enum.STOPPED.get_description()) || admin_status.equalsIgnoreCase("stop")){//data style from rmq
+				queue_status = queue_enum.STOPPED;
+			} else if (admin_status.equals(queue_enum.PAUSED.get_description()) ||admin_status.equalsIgnoreCase("pause")){//data style from rmq
+				queue_status = queue_enum.PAUSED;
+			} else if (admin_status.equalsIgnoreCase("processing")) {
+				queue_status = queue_enum.PROCESSING;
+			} else {
+				queue_status = queue_enum.UNKNOWN;
+			}
+		}
+		return queue_status;
+	}
+	
+	private Boolean run_action_legal_check(
+			queue_enum queue_status,
+			queue_enum run_action){
+		Boolean legal_run = new Boolean(true);
+		switch (queue_status){
+		case PROCESSING:
+			if (run_action.equals(queue_enum.STOPPED)){
+				legal_run = true;
+			} else if (run_action.equals(queue_enum.PAUSED)){
+				legal_run = true;
+			} else {
+				legal_run = false;
+			}
+			break;
+		case RUNNING:
+			if (run_action.equals(queue_enum.STOPPED)){
+				legal_run = true;
+			} else if (run_action.equals(queue_enum.PAUSED)){
+				legal_run = true;
+			} else {
+				legal_run = false;
+			}
+			break;
+		case STOPPED:
+			if (run_action.equals(queue_enum.PROCESSING)){
+				legal_run = true;
+			} else {
+				legal_run = false;
+			}
+			break;
+		case PAUSED:
+			if (run_action.equals(queue_enum.PROCESSING)){
+				legal_run = true;
+			} else if (run_action.equals(queue_enum.STOPPED)) {
+				legal_run = true;
+			} else {
+				legal_run = false;
+			}
+			break;	
+		case FINISHED:
+			if (run_action.equals(queue_enum.STOPPED)){
+				legal_run = true;
+			} else {
+				legal_run = false;
+			}
+			break;				
+		default:
+			legal_run = false;
+			break;
+		}
+		return legal_run;
 	}
 	
 	private Boolean implements_run_action_request(){
 		Boolean action_status = new Boolean(true);
 		//get retest queue
-		String queue_name = view_info.get_select_captured_queue();
-		String run_action = view_info.impl_run_action_request();
-		if (run_action.equals("")){
+		String queue_name = view_info.get_select_captured_queue_name();
+		if (queue_name.equals("")){
 			return action_status;
 		}
-		if(task_info.get_finished_admin_queue_list().contains(queue_name)){
-			if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
-				Boolean import_admin_status = import_disk_admin_data_to_processed_data(queue_name);
-				Boolean import_task_status = import_disk_task_data_to_processed_data(queue_name);
-				if (!import_admin_status || !import_task_status){
-					VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action);
-					return action_status;
+		//get queue status
+		queue_enum queue_status = get_admin_queue_status(queue_name);
+		queue_enum run_action = view_info.impl_run_action_request();
+		//legal check
+		Boolean legal_run = run_action_legal_check(queue_status, run_action);
+		if (!legal_run){
+			VIEW_SERVER_LOGGER.debug("illegal run>>> queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
+			return action_status;
+		}
+		if(run_action.equals(queue_enum.STOPPED)){
+			if(task_info.get_finished_admin_queue_list().contains(queue_name)){
+				if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
+					Boolean import_admin_status = import_disk_admin_data_to_processed_data(queue_name);
+					Boolean import_task_status = import_disk_task_data_to_processed_data(queue_name);
+					if (!import_admin_status || !import_task_status){
+						VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action.get_description());
+						return action_status;
+					}
 				}
+				task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+				task_info.remove_finished_admin_queue_list(queue_name);
 			}
-			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
-			task_info.mark_task_queue_for_processed_task_queues_map(queue_name, "waiting");
-			task_info.remove_finished_admin_queue_list(queue_name);
+			task_info.mark_task_queue_for_processed_task_queues_map(queue_name, task_enum.WAITING);
 		}
 		task_info.mark_queue_in_received_admin_queues_treemap(queue_name, run_action);
 		return action_status;
-	}	
-	
-	//dup function in work panel
+	}
+
+	// dup function in work panel
 	private Boolean import_disk_admin_data_to_processed_data(String queue_name) {
 		Boolean import_status = new Boolean(false);
 		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
-		import_admin_data.putAll(
-				import_data.import_disk_finished_admin_data(queue_name, client_info));
-		if (import_admin_data.isEmpty()){
+		import_admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client_info));
+		if (import_admin_data.isEmpty()) {
 			import_status = false;
 		} else {
 			task_info.update_queue_to_processed_admin_queues_treemap(queue_name, import_admin_data);
@@ -154,32 +240,31 @@ public class view_server extends Thread{
 		}
 		return import_status;
 	}
-	
-	//dup function in work panel
+
+	// dup function in work panel
 	private Boolean import_disk_task_data_to_processed_data(String queue_name) {
 		Boolean import_status = new Boolean(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		import_task_data.putAll(
-				import_data.import_disk_finished_task_data(queue_name, client_info));
-		if (import_task_data.isEmpty()){
+		import_task_data.putAll(import_data.import_disk_finished_task_data(queue_name, client_info));
+		if (import_task_data.isEmpty()) {
 			import_status = false;
 		} else {
 			task_info.update_queue_to_processed_task_queues_map(queue_name, import_task_data);
 			import_status = true;
 		}
 		return import_status;
-	}	
-	
-	private void implements_del_finished_request(){
-		//get delete list
+	}
+
+	private void implements_del_finished_request() {
+		// get delete list
 		List<String> delete_list = new ArrayList<String>();
 		delete_list.addAll(view_info.impl_delete_finished_queue());
-		for (String queue_name : delete_list){
-			//delete data in memory
+		for (String queue_name : delete_list) {
+			// delete data in memory
 			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
 			task_info.remove_queue_from_processed_task_queues_map(queue_name);
 			task_info.remove_finished_admin_queue_list(queue_name);
-			//delete data in disk
+			// delete data in disk
 			String work_path = new String();
 			if (client_info.get_client_data().containsKey("preference")) {
 				work_path = client_info.get_client_data().get("preference").get("work_path");
@@ -194,13 +279,13 @@ public class view_server extends Thread{
 			}
 			if (task_path.exists() && task_path.isFile()) {
 				task_path.delete();
-			}			
+			}
 		}
 	}
-	
-	private void start_main_gui(){
-		while(true){
-			if(switch_info.get_data_server_power_up()){
+
+	private void start_main_gui() {
+		while (true) {
+			if (switch_info.get_data_server_power_up()) {
 				break;
 			}
 			try {
@@ -209,14 +294,14 @@ public class view_server extends Thread{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}	
+		}
 		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
 			top_view.setVisible(true);
 			top_view.show_welcome_letter();
 		} else {
-			SwingUtilities.invokeLater(new Runnable(){
+			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
@@ -225,15 +310,15 @@ public class view_server extends Thread{
 					top_view.show_welcome_letter();
 				}
 			});
-		}		
+		}
 	}
-	
-	private void start_progress_show(){
+
+	private void start_progress_show() {
 		start_progress start_prepare = new start_progress(switch_info);
 		start_prepare.setVisible(true);
 		new Thread(start_prepare).start();
-		while(true){
-			if(switch_info.get_start_progress_power_up()){
+		while (true) {
+			if (switch_info.get_start_progress_power_up()) {
 				break;
 			}
 			try {
@@ -244,47 +329,49 @@ public class view_server extends Thread{
 			}
 		}
 		start_prepare.setVisible(false);
-		start_prepare.dispose();		
+		start_prepare.dispose();
 	}
-	
-	private void run_system_client_insts_check(){
+
+	private void run_system_client_insts_check() {
 		int start_insts = switch_info.get_system_client_insts();
-		String message = new String("Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already. Do you want to launch a new one?");
+		String message = new String("Info: " + String.valueOf(start_insts)
+				+ " TMP Client(s) launched with your account already. Do you want to launch a new one?");
 		String title = new String("TMP Client launch number confirmation.");
 		String unattended_mode = cmd_info.getOrDefault("unattended", "");
-		//both yes and no need to add 1 insts.
+		// both yes and no need to add 1 insts.
 		if ((start_insts > 0) && (!unattended_mode.equals("1"))) {
-			//0:yes , 1:no
-			//yes: add one more insts
-			//no: add one since exit will decrease by default
+			// 0:yes , 1:no
+			// yes: add one more insts
+			// no: add one since exit will decrease by default
 			switch_info.increase_system_client_insts();
 			int user_select = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
-			if (user_select == 1){
-				System.exit(exit_enum.USER.get_index());//this action will decrease insts num
+			if (user_select == 1) {
+				System.exit(exit_enum.USER.get_index());// this action will
+														// decrease insts num
 			}
 		} else {
 			switch_info.increase_system_client_insts();
 		}
 	}
-	
+
 	public void run() {
 		try {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
-					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			String dump_path = client_info.get_client_data().get("preference").get("work_path") + "/"
+					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, time_info.get_date_time() + line_separator);			
+			file_action.append_file(dump_path, time_info.get_date_time() + line_separator);
 			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for(Object item: run_exception.getStackTrace()){
+			for (Object item : run_exception.getStackTrace()) {
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}			
+			}
 			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}
-	
+
 	private void monitor_run() {
 		// ============== All static job start from here ==============
 		// initial 0 : TMP client software instances check
@@ -295,7 +382,7 @@ public class view_server extends Thread{
 		start_main_gui();
 		// initial 3 : Announce main GUI ready
 		switch_info.set_main_gui_power_up();
-		//======================================
+		// ======================================
 		current_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
@@ -325,7 +412,7 @@ public class view_server extends Thread{
 			}
 		}
 	}
-	
+
 	public void soft_stop() {
 		stop_request = true;
 	}
@@ -355,4 +442,3 @@ public class view_server extends Thread{
 		//
 	}
 }
-

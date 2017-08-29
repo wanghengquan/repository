@@ -20,20 +20,23 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import flow_control.queue_enum;
+
 public class view_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	private Boolean view_debug = new Boolean(false);
 	private String watching_queue = new String();
-	private String watching_queue_area = new String();//all, processing, passed, failed, TBD, timeout,
-	private String retest_queue_area = new String();//all, selected, passed, failed, TBD, timeout,
+	private watch_enum watching_queue_area = watch_enum.UNKNOWN;
+	private retest_enum retest_queue_area = retest_enum.UNKNOWN;
 	private int stop_case_request = 0;
 	private List<String> delete_finished_queue = new ArrayList<String>();
-	private String select_rejected_queue = new String();
-	private String select_captured_queue = new String();
+	private String select_rejected_queue_name = new String();
+	private String select_captured_queue_name = new String();
+	private queue_enum select_captured_queue_status = queue_enum.UNKNOWN;
 	private List<String> select_task_case = new ArrayList<String>();
 	private List<String> export_queue_list = new ArrayList<String>();
 	private List<String> export_title_list = new ArrayList<String>();
-	private String run_action_request = new String();//play, pause, stop
+	private queue_enum run_action_request = queue_enum.WAITING;//play, pause, stop
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_comparator());
@@ -83,9 +86,9 @@ public class view_data {
 		}
 	}
 	
-	public String get_watching_queue_area() {
+	public watch_enum get_watching_queue_area() {
 		rw_lock.readLock().lock();
-		String temp = new String();
+		watch_enum temp = watch_enum.UNKNOWN;
 		try {
 			temp = watching_queue_area;
 		} finally {
@@ -94,7 +97,7 @@ public class view_data {
 		return temp;
 	}
 
-	public void set_watching_queue_area(String queue_area) {
+	public void set_watching_queue_area(watch_enum queue_area) {
 		rw_lock.writeLock().lock();
 		try {
 			this.watching_queue_area = queue_area;
@@ -103,9 +106,9 @@ public class view_data {
 		}
 	}	
 	
-	public String get_retest_queue_area() {
+	public retest_enum get_retest_queue_area() {
 		rw_lock.readLock().lock();
-		String temp = new String();
+		retest_enum temp = retest_enum.UNKNOWN;
 		try {
 			temp = retest_queue_area;
 		} finally {
@@ -114,7 +117,7 @@ public class view_data {
 		return temp;
 	}
 
-	public void set_retest_queue_area(String queue_area) {
+	public void set_retest_queue_area(retest_enum queue_area) {
 		rw_lock.writeLock().lock();
 		try {
 			this.retest_queue_area = queue_area;
@@ -123,12 +126,12 @@ public class view_data {
 		}
 	}	
 	
-	public String impl_retest_queue_area() {
+	public retest_enum impl_retest_queue_area() {
 		rw_lock.writeLock().lock();
-		String impl_area = new String();
+		retest_enum impl_area = retest_enum.UNKNOWN;
 		try {
 			impl_area = retest_queue_area;
-			this.retest_queue_area = "";
+			this.retest_queue_area = retest_enum.UNKNOWN;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -190,45 +193,65 @@ public class view_data {
 		return delete_list;
 	}
 	
-	public String get_select_rejected_queue() {
+	public String get_select_rejected_queue_name() {
 		rw_lock.readLock().lock();
 		String temp = new String();
 		try {
-			temp = select_rejected_queue;
+			temp = select_rejected_queue_name;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 
-	public void set_select_rejected_queue(String queue_name) {
+	public void set_select_rejected_queue_name(String queue_name) {
 		rw_lock.writeLock().lock();
 		try {
-			this.select_rejected_queue = queue_name;
+			this.select_rejected_queue_name = queue_name;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}	
 	
-	public String get_select_captured_queue() {
+	public String get_select_captured_queue_name() {
 		rw_lock.readLock().lock();
 		String temp = new String();
 		try {
-			temp = select_captured_queue;
+			temp = select_captured_queue_name;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 
-	public void set_select_captured_queue(String queue_name) {
+	public void set_select_captured_queue_name(String queue_name) {
 		rw_lock.writeLock().lock();
 		try {
-			this.select_captured_queue = queue_name;
+			this.select_captured_queue_name = queue_name;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}	
+	
+	public queue_enum get_select_captured_queue_status() {
+		rw_lock.readLock().lock();
+		queue_enum temp = queue_enum.UNKNOWN;
+		try {
+			temp = select_captured_queue_status;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
+	public void set_select_captured_queue_status(queue_enum queue_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.select_captured_queue_status = queue_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 	
 	public List<String> get_select_task_case() {
 		rw_lock.readLock().lock();
@@ -337,7 +360,7 @@ public class view_data {
 		}
 	}
 	
-	public void set_run_action_request(String request_action) {
+	public void set_run_action_request(queue_enum request_action) {
 		rw_lock.writeLock().lock();
 		try {
 			this.run_action_request = request_action;
@@ -346,225 +369,17 @@ public class view_data {
 		}
 	}	
 	
-	public String impl_run_action_request() {
+	public queue_enum impl_run_action_request() {
 		rw_lock.writeLock().lock();
-		String impl_action = new String();
+		queue_enum impl_action = queue_enum.UNKNOWN;
 		try {
 			impl_action = run_action_request;
-			this.run_action_request = "";
+			this.run_action_request = queue_enum.UNKNOWN;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 		return impl_action;
 	}
-	
-	/*
-	public Vector<String> get_work_column() {
-		rw_lock.readLock().lock();
-		Vector<String> temp = new Vector<String>();
-		try {
-			temp.addAll(work_column);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-	
-	
-	public Vector<String> get_reject_column() {
-		rw_lock.readLock().lock();
-		Vector<String> temp = new Vector<String>();
-		try {
-			temp.addAll(reject_column);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-
-	public Vector<String> get_capture_column() {
-		rw_lock.readLock().lock();
-		Vector<String> temp = new Vector<String>();
-		try {
-			temp.addAll(capture_column);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-
-	
-	public JTable get_work_table() {
-		rw_lock.readLock().lock();
-		JTable temp = new JTable();
-		try {
-			temp = work_table;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}	
-
-	public JTable get_reject_table() {
-		rw_lock.readLock().lock();
-		JTable temp = new JTable();
-		try {
-			temp = reject_table;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-	
-	public JTable get_capture_table() {
-		rw_lock.readLock().lock();
-		JTable temp = new JTable();
-		try {
-			temp = capture_table;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-		*/
-	/*
-	public Vector<Vector<String>> get_work_data() {
-		rw_lock.readLock().lock();
-		Vector<Vector<String>> temp = new Vector<Vector<String>>();
-		try {
-			temp.addAll(work_data);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-
-	public void set_work_data(Vector<Vector<String>> update_data) {
-		rw_lock.writeLock().lock();
-		try {
-			work_data.clear();
-			work_data.addAll(update_data);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void update_work_data(Vector<String> update_line) {
-		rw_lock.writeLock().lock();
-		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		try {
-			String update_id = update_line.get(0);
-			for (Vector<String> line : work_data){
-				String search_id = line.get(0);
-				if (search_id.equals(update_id)){
-					new_data.add(update_line);
-				} else {
-					new_data.add(line);
-				}	
-			}
-			work_data.clear();
-			work_data.addAll(new_data);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void add_work_data(Vector<String> add_list) {
-		rw_lock.writeLock().lock();
-		try {
-			work_data.add(add_list);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-
-	public void clear_work_data() {
-		rw_lock.writeLock().lock();
-		try {
-			work_data.clear();;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public Vector<Vector<String>> get_reject_data() {
-		rw_lock.readLock().lock();
-		Vector<Vector<String>> temp = new Vector<Vector<String>>();
-		try {
-			temp = reject_data;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-
-	public void set_reject_data(Vector<Vector<String>> update_data) {
-		rw_lock.writeLock().lock();
-		try {
-			reject_data.clear();
-			reject_data.addAll(update_data);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void add_reject_data(Vector<String> add_list) {
-		rw_lock.writeLock().lock();
-		try {
-			reject_data.add(add_list);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void clear_reject_data() {
-		rw_lock.writeLock().lock();
-		try {
-			reject_data.clear();
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public Vector<Vector<String>> get_capture_data() {
-		rw_lock.readLock().lock();
-		Vector<Vector<String>> temp = new Vector<Vector<String>>();
-		try {
-			temp = capture_data;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-
-	public void set_capture_data(Vector<Vector<String>> update_data) {
-		rw_lock.writeLock().lock();
-		try {
-			capture_data.clear();
-			capture_data.addAll(update_data);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void add_capture_data(Vector<String> add_list) {
-		rw_lock.writeLock().lock();
-		try {
-			capture_data.add(add_list);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void clear_capture_data() {
-		rw_lock.writeLock().lock();
-		try {
-			capture_data.clear();
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	*/
 	
 	public Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_watching_task_queues_data_map() {
 		rw_lock.readLock().lock();
