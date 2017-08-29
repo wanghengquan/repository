@@ -32,7 +32,6 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import flow_control.queue_enum;
-import flow_control.task_enum;
 
 public class menu_bar extends JMenuBar implements ActionListener {
 	/**
@@ -104,19 +103,19 @@ public class menu_bar extends JMenuBar implements ActionListener {
 
 	public JMenu construct_view_menu() {
 		JMenu view = new JMenu("View");
-		view_all = new JMenuItem("All");
+		view_all = new JMenuItem(watch_enum.ALL.get_description());
 		view_all.addActionListener(this);
-		view_waiting = new JMenuItem(task_enum.WAITING.get_description());
+		view_waiting = new JMenuItem(watch_enum.WAITING.get_description());
 		view_waiting.addActionListener(this);
-		view_processing = new JMenuItem(task_enum.PROCESSING.get_description());
+		view_processing = new JMenuItem(watch_enum.PROCESSING.get_description());
 		view_processing.addActionListener(this);
-		view_passed = new JMenuItem(task_enum.PASSED.get_description());
+		view_passed = new JMenuItem(watch_enum.PASSED.get_description());
 		view_passed.addActionListener(this);
-		view_failed = new JMenuItem(task_enum.FAILED.get_description());
+		view_failed = new JMenuItem(watch_enum.FAILED.get_description());
 		view_failed.addActionListener(this);
-		view_tbd = new JMenuItem(task_enum.TBD.get_description());
+		view_tbd = new JMenuItem(watch_enum.TBD.get_description());
 		view_tbd.addActionListener(this);
-		view_timeout = new JMenuItem(task_enum.TIMEOUT.get_description());
+		view_timeout = new JMenuItem(watch_enum.TIMEOUT.get_description());
 		view_timeout.addActionListener(this);
 		view.add(view_all);
 		view.add(view_waiting);
@@ -142,15 +141,15 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		JMenu retest = new JMenu("Retest");
 		retest_all = new JMenuItem(retest_enum.ALL.get_description());
 		retest_all.addActionListener(this);
-		retest_selected = new JMenuItem("Selected");
+		retest_selected = new JMenuItem(retest_enum.SELECTED.get_description());
 		retest_selected.addActionListener(this);
-		retest_failed = new JMenuItem(task_enum.FAILED.get_description());
+		retest_failed = new JMenuItem(retest_enum.FAILED.get_description());
 		retest_failed.addActionListener(this);
-		retest_passed = new JMenuItem(task_enum.PASSED.get_description());
+		retest_passed = new JMenuItem(retest_enum.PASSED.get_description());
 		retest_passed.addActionListener(this);
-		retest_tbd = new JMenuItem(task_enum.TBD.get_description());
+		retest_tbd = new JMenuItem(retest_enum.TBD.get_description());
 		retest_tbd.addActionListener(this);
-		retest_timeout = new JMenuItem(task_enum.TIMEOUT.get_description());
+		retest_timeout = new JMenuItem(retest_enum.TIMEOUT.get_description());
 		retest_timeout.addActionListener(this);
 		retest.add(retest_all);
 		retest.add(retest_selected);

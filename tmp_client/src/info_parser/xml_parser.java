@@ -29,6 +29,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
+import flow_control.task_enum;
 import utility_funcs.time_info;
 
 /*
@@ -77,8 +78,8 @@ public class xml_parser {
 			Iterator<String> level1_data_it = xml_data.get(level1_key).keySet().iterator();
 			while (level1_data_it.hasNext()) {
 				String level2_key = level1_data_it.next();
-				String level2_value = (String) level1_data.get(level2_key);
-				level1_element.addElement(level2_key).addText(level2_value);
+				task_enum level2_value = (task_enum) level1_data.get(level2_key);
+				level1_element.addElement(level2_key).addText(level2_value.get_description());
 			}
 		}
 		String text = document.asXML();

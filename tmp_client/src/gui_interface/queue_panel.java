@@ -167,6 +167,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 						}
 						//2. play stop pause setting
 						String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
+						// queue_enum status = queue_enum.valueOf((String) capture_table.getValueAt(capture_table.getSelectedRow(), 1));
 						capture_menu.initial_queue_available_actions(status);
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
@@ -263,11 +264,17 @@ public class queue_panel extends JSplitPane implements Runnable {
 			} else {
 				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 						.get("admin_status");
-				if (admin_status.equals(queue_enum.STOPPED.get_description()) || admin_status.equalsIgnoreCase("stop")){//data style from rmq
+				if (admin_status.equals(queue_enum.STOPPED.get_description())){
 					status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.PAUSED.get_description()) || admin_status.equalsIgnoreCase("pause")){//data style from rmq
+				} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
+					status = queue_enum.STOPPED;
+				} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
 					status = queue_enum.PAUSED;
-				} else if (admin_status.equalsIgnoreCase("processing")) {
+				} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
+					status = queue_enum.PAUSED;
+				} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
+					status = queue_enum.PROCESSING;
+				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
 					status = queue_enum.PROCESSING;
 				} else {
 					status = queue_enum.UNKNOWN;

@@ -125,11 +125,17 @@ public class view_server extends Thread {
 		} else {
 			String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 					.get("admin_status");
-			if (admin_status.equals(queue_enum.STOPPED.get_description()) || admin_status.equalsIgnoreCase("stop")){//data style from rmq
+			if (admin_status.equals(queue_enum.STOPPED.get_description())){
 				queue_status = queue_enum.STOPPED;
-			} else if (admin_status.equals(queue_enum.PAUSED.get_description()) ||admin_status.equalsIgnoreCase("pause")){//data style from rmq
+			} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
+				queue_status = queue_enum.STOPPED;
+			} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
 				queue_status = queue_enum.PAUSED;
-			} else if (admin_status.equalsIgnoreCase("processing")) {
+			} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
+				queue_status = queue_enum.PAUSED;
+			} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
+				queue_status = queue_enum.PROCESSING;
+			} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
 				queue_status = queue_enum.PROCESSING;
 			} else {
 				queue_status = queue_enum.UNKNOWN;

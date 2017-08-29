@@ -34,6 +34,7 @@ public class pool_data {
 	private HashMap<String, HashMap<String, Object>> call_map = new HashMap<String, HashMap<String, Object>>();
 	private int pool_used_threads = 0;
 	private int pool_current_size = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
+	private HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>> ();
 
 	public pool_data(int pool_size) {
 		this.run_pool = Executors.newFixedThreadPool(pool_size);
@@ -123,6 +124,29 @@ public class pool_data {
 		return remove_result;
 	}
 
+	public synchronized HashMap<String, HashMap<String, Object>> get_history_send_data(){
+		HashMap<String, HashMap<String, Object>> history_data = new HashMap<String, HashMap<String, Object>>();
+		history_data.putAll(history_send_data);
+		return history_data;
+	}
+	
+	public synchronized Boolean update_history_send_data(
+			String case_index, 
+			HashMap<String, Object> update_data){
+		Boolean update_status = new Boolean(true);
+		history_send_data.put(case_index, update_data);
+		return update_status;
+	}
+	
+	public synchronized Boolean remove_history_send_data(String case_index){
+		Boolean remove_status = new Boolean(false);
+		if (history_send_data.containsKey(case_index)){
+			history_send_data.remove(case_index);
+			remove_status = true;
+		}
+		return remove_status;
+	}
+	
 	public void shutdown_pool() {
 		run_pool.shutdown();
 	}
