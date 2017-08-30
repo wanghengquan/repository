@@ -78,8 +78,14 @@ public class xml_parser {
 			Iterator<String> level1_data_it = xml_data.get(level1_key).keySet().iterator();
 			while (level1_data_it.hasNext()) {
 				String level2_key = level1_data_it.next();
-				task_enum level2_value = (task_enum) level1_data.get(level2_key);
-				level1_element.addElement(level2_key).addText(level2_value.get_description());
+				String level2_value = new String(); 
+				if (level2_key.equals("status")){
+					task_enum level2_temp = (task_enum) level1_data.get(level2_key);
+					level2_value = level2_temp.get_description();
+				} else {
+					level2_value = (String) level1_data.get(level2_key);
+				}
+				level1_element.addElement(level2_key).addText(level2_value);
 			}
 		}
 		String text = document.asXML();

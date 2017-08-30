@@ -477,8 +477,7 @@ public class result_waiter extends Thread {
 				history_case_data.putAll(history_send_data.get(case_index));
 				task_enum current_status = (task_enum) case_data.get("status");
 				task_enum history_status = (task_enum) history_case_data.get("status");
-				if (current_status.compareTo(history_status) > 0) {// status
-																	// update
+				if (current_status.compareTo(history_status) > 0) {// status update
 					remote_send_data.put(case_index, case_data);
 					history_case_data.put("status", case_data.get("status"));
 					history_case_data.put("counter", 0);
