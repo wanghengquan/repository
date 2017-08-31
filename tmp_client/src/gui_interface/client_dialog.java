@@ -39,7 +39,7 @@ public class client_dialog extends JDialog implements ActionListener {
 	private Vector<String> group = new Vector<String>();
 	private Vector<String> client_private = new Vector<String>();
 	private Vector<String> unattended = new Vector<String>();
-
+	
 	private JButton discard, apply;
 	private JTable client_table;
 
@@ -83,7 +83,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		client_data.add(terminal);
 		client_data.add(group);
 		client_data.add(client_private);
-		client_data.add(unattended);
+		client_data.add(unattended);		
 	}
 
 	public JTable construct_table_panel() {
@@ -97,7 +97,7 @@ public class client_dialog extends JDialog implements ActionListener {
 	}
 
 	public JPanel construct_action_panel() {
-		JPanel action = new JPanel(new GridLayout(1, 2, 5, 10));
+		JPanel action = new JPanel(new GridLayout(1, 2, 5, 5));
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
@@ -112,7 +112,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(discard)) {
 			reset_table_data();
-			client_table.updateUI();
+			client_table.updateUI();		
 		}
 		if (arg0.getSource().equals(apply)) {
 			HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
@@ -126,7 +126,7 @@ public class client_dialog extends JDialog implements ActionListener {
 			machine_data.put("private", (String) client_table.getValueAt(2, 1));
 			machine_data.put("unattended", (String) client_table.getValueAt(3, 1));
 			client_info.set_client_data(update_data);
-			switch_info.set_client_updated();
+			switch_info.set_client_updated();			
 		}
 	}
 

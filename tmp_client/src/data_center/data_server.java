@@ -52,6 +52,7 @@ import utility_funcs.time_info;
  * 					group	=	xxx
  * 					private	=	0/1
  * 					unattended = 0/1
+ * 					stable_version = 0/1
  * 					start_time = xxxxx
  * 
  * 	 preference :	thread_mode = xx
@@ -130,6 +131,7 @@ public class data_server extends Thread {
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
+		machine_data.put("stable_version", public_data.DEF_STABLE_VERSION);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
 		if(cmd_hash.containsKey("unattended")){				// add command line data

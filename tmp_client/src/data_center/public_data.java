@@ -25,7 +25,7 @@ public class public_data {
 	// base
 	public final static String BASE_CURRENTVERSION = "2.06.09"; //2.06.09 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 20609; // version for code use
-	public final static String BASE_BUILDDATE = "2017/08/30";
+	public final static String BASE_BUILDDATE = "2017/08/31";
 	public final static String BASE_SUITEFILEVERSION = "1.06";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -59,7 +59,7 @@ public class public_data {
 	// ========================
 	// Remote update path
 	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";
-	// public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/test.xml";
+	public final static String UPDATE_URL_DEV = "http://d50534/test/job_1/client_update/update_dev.xml";
 	
 	// ========================
 	// workspace folder configuration, real path = work_path + following folder
@@ -148,6 +148,7 @@ public class public_data {
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
 	public final static String DEF_UNATTENDED_MODE = "0"; // 1 UNATTENDED(no user), 0 ATTENDED(user there)
+	public final static String DEF_STABLE_VERSION = "1"; // 1 get stable update, 0 get develop update
 	// preference
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial",
 																// "parallel",

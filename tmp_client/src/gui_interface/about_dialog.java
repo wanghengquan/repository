@@ -14,9 +14,11 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -42,6 +44,7 @@ public class about_dialog extends JDialog implements ActionListener {
 	private Vector<String> rumtime = new Vector<String>();
 	private client_data client_info;
 	private switch_data switch_info;
+	private JCheckBox jc_test;
 	private JButton close, update;
 
 	public about_dialog(main_frame main_view, client_data client_info, switch_data switch_info) {
@@ -72,17 +75,34 @@ public class about_dialog extends JDialog implements ActionListener {
 		container.add(table_head, BorderLayout.NORTH);
 		container.add(construct_action_panel(), BorderLayout.SOUTH);
 		//this.setLocation(800, 500);
-		this.setSize(400, 300);
+		this.setSize(450, 300);
 	}
 
 	public JPanel construct_action_panel() {
-		JPanel action = new JPanel(new GridLayout(1, 2, 5, 10));
+		JPanel action = new JPanel(new GridLayout(2, 1, 5, 5));
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(client_info.get_client_data());
+		//join internal test
+		jc_test = new JCheckBox("Join internal test and Get latest developing version.");
+		action.add(jc_test);
+		String config_value = new String(public_data.DEF_STABLE_VERSION);
+		if(client_data.containsKey("Machine")){
+			config_value = client_data.get("Machine").getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
+		}
+		if(config_value.equals("1")){
+			jc_test.setSelected(false);
+		} else {
+			jc_test.setSelected(true);
+		}
+		// acction button
+		JPanel action_button = new JPanel(new GridLayout(1, 2, 5, 10));
 		close = new JButton("Close");
 		close.addActionListener(this);
 		update = new JButton("Check Update");
 		update.addActionListener(this);
-		action.add(close);
-		action.add(update);
+		action_button.add(close);
+		action_button.add(update);
+		action.add(action_button);
 		return action;
 	}
 	
@@ -100,9 +120,23 @@ public class about_dialog extends JDialog implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
+		// dump check box first
+		HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
+		update_data.putAll(client_info.get_client_data());
+		if (update_data.containsKey("Machine")) {
+			HashMap<String, String> machine_data = update_data.get("Machine");
+			if(jc_test.isSelected()){
+				machine_data.put("stable_version", "0");
+			} else {
+				machine_data.put("stable_version", "1");
+			}
+			client_info.set_client_data(update_data);
+			switch_info.set_client_updated();			
+		}
+		// action perform
 		if(arg0.getSource().equals(close)){
 			this.dispose();
-		}
+		} 
 		if(arg0.getSource().equals(update)){
 			//this.setVisible(false);
 			this.dispose();

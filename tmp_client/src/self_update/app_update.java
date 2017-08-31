@@ -42,9 +42,17 @@ public class app_update implements UpdatedApplication  {
 	}
 	
 	public void gui_manual_update(){
+		String stable_version = new String(public_data.DEF_STABLE_VERSION);
+		if(client_info.get_client_data().containsKey("Machine")){
+			stable_version = client_info.get_client_data().get("Machine").getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
+		}
+		String update_path = new String(public_data.UPDATE_URL);
+		if(stable_version.equals("0")){
+			update_path = public_data.UPDATE_URL_DEV;
+		}
         try {
         	Updater app_update =  new Updater(
-                    public_data.UPDATE_URL,
+        			update_path,
                     public_data.SW_HOME_PATH,
                     public_data.BASE_CURRENTVERSION_INT,
                     public_data.BASE_CURRENTVERSION,
