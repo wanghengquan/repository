@@ -19,7 +19,8 @@ public enum queue_enum {
 	REMOTEPROCESSIONG(6, "processing"),
 	REMOTESTOPED(7, "stop"),
 	REMOTEPAUSED(8, "pause"),
-	UNKNOWN(9, "Unknown");
+	REMOTEDONE(9, "done"),
+	UNKNOWN(10, "Unknown");
 	private int index;
 	private String description;
 	

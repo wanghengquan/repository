@@ -276,6 +276,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 					status = queue_enum.PROCESSING;
 				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
 					status = queue_enum.PROCESSING;
+				} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
+					status = queue_enum.FINISHED;
 				} else {
 					status = queue_enum.UNKNOWN;
 				}

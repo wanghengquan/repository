@@ -137,6 +137,8 @@ public class view_server extends Thread {
 				queue_status = queue_enum.PROCESSING;
 			} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
 				queue_status = queue_enum.PROCESSING;
+			} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
+				queue_status = queue_enum.FINISHED;
 			} else {
 				queue_status = queue_enum.UNKNOWN;
 			}
@@ -269,6 +271,7 @@ public class view_server extends Thread {
 			// delete data in memory
 			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
 			task_info.remove_queue_from_processed_task_queues_map(queue_name);
+			task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
 			task_info.remove_finished_admin_queue_list(queue_name);
 			// delete data in disk
 			String work_path = new String();
