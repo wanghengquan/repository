@@ -259,7 +259,10 @@ public class data_server extends Thread {
 			}
 			String path = build_data.get("root").get("path");
 			DATA_SERVER_LOGGER.debug("Catch SW path:" + path);
-			scan_dirs.put("sd_" + build_name, path);
+			File path_handler = new File(path);
+			if (path_handler.exists()){
+				scan_dirs.put("sd_" + build_name, path);
+			}
 		}
 		return scan_dirs;
 	}
