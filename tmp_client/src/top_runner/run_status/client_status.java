@@ -106,8 +106,8 @@ public class client_status extends Observable  {
     			exit_state = current_state;
     		}
     	}
-    	System.out.println(">>>Info:Client Exit Code:" + exit_state.get_index());
-    	System.out.println(">>>Info:Client Exit Reason:" + exit_state.get_description());
+    	System.out.println(">>>Info: Client Exit Code:" + exit_state.get_index());
+    	System.out.println(">>>Info: Client Exit Reason:" + exit_state.get_description());
     	System.exit(exit_state.get_index());
     }
     

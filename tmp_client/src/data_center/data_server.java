@@ -358,8 +358,8 @@ public class data_server extends Thread {
 					if (sw_path.exists()) {
 						continue;
 					} else {
-						client_info.delete_software_build(section, option);
 						DATA_SERVER_LOGGER.warn(section + "." + option + ":" + value + ", not exist. skipped");
+						client_info.delete_software_build(section, option);
 					}
 				}
 			}	

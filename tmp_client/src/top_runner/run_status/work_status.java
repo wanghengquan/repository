@@ -9,6 +9,7 @@
  */
 package top_runner.run_status;
 
+import data_center.public_data;
 import env_monitor.core_update;
 import self_update.app_update;
 
@@ -25,6 +26,12 @@ public class work_status extends abstract_status {
 		client.hall_runner.soft_stop();
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();
+		try {
+			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println(">>>####################");
 		System.out.println(">>>Info:Go to stop");
 		System.out.println("");		
@@ -44,6 +51,12 @@ public class work_status extends abstract_status {
 		client.hall_runner.wait_request();
 		client.tube_runner.wait_request();
 		client.data_runner.wait_request();
+		try {
+			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		// task 2: implements_self_quiet_update
 		implements_self_quiet_update();
 		// task 3: implements_core_script_update

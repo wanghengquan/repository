@@ -269,7 +269,7 @@ public class config_sync extends Thread {
 				}
 			} else {
 				CONFIG_SYNC_LOGGER.debug("config sync Thread running...");
-				CONFIG_SYNC_LOGGER.debug(config_hash.toString());
+				// CONFIG_SYNC_LOGGER.debug(config_hash.toString()); java.util.ConcurrentModificationException
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : dump configuration updating

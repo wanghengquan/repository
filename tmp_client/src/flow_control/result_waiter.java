@@ -583,6 +583,9 @@ public class result_waiter extends Thread {
 		case "TBD":
 			task_status = task_enum.TBD;
 			break;
+		case "Timeout":
+			task_status = task_enum.TIMEOUT;
+			break;			
 		default:
 			task_status = task_enum.OTHERS;
 		}

@@ -9,6 +9,7 @@
  */
 package top_runner.run_status;
 
+import data_center.public_data;
 
 public class maintain_status extends abstract_status {
 	
@@ -20,6 +21,12 @@ public class maintain_status extends abstract_status {
 		client.report_processed_data();
 		client.dump_finished_data();
 		client.dump_memory_data();
+		try {
+			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		System.out.println(">>>####################");
 		System.out.println(">>>Info:Go to stop");
 		System.out.println("");		
