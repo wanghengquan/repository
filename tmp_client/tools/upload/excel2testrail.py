@@ -45,21 +45,14 @@ class Excel2TestRail:
             new_args.append("--username=%s" % self.username)
         if self.password:
             new_args.append("--password=%s" % self.password)
-        # // Jason, set default username/password for public@latticesemi.com
-        #  if not self.username:
-        #      xTools.say_it("Error. TestRail API username must be specified!")
-        #      return 1
-        #  if not self.password:
-        #      xTools.say_it("Error. TestRail API password must be specified!")
-        #      return 1
         upload.process(new_args)
 
     def run_option_parser(self):
         parser = optparse.OptionParser()
         parser.add_option("-d", "--debug", action="store_true", help="Debug only")
         parser.add_option("-f", "--infile", help="specify Excel conf file")
-        parser.add_option("-u", "--username", help="specify testrail user name, default user is public@latticesemi.com", default="public@latticesemi.com")
-        parser.add_option("-p", "--password", help="specify testrail password", default="lattice")
+        parser.add_option("-u", "--username", help="specify testrail user name.")
+        parser.add_option("-p", "--password", help="specify testrail password")
         parser.add_option("-t", "--testrail", help="specify testrail URL, format: http://$server/testrail")
 
         opts, args = parser.parse_args()

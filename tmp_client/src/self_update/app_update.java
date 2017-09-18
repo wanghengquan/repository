@@ -77,8 +77,18 @@ public class app_update implements UpdatedApplication  {
 	}
 	
 	public void smart_update(){
+		//stable version
+		String stable_version = new String(public_data.DEF_STABLE_VERSION);
+		if(client_info.get_client_data().containsKey("Machine")){
+			stable_version = client_info.get_client_data().get("Machine").getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
+		}
+		String update_path = new String(public_data.UPDATE_URL);
+		if(stable_version.equals("0")){
+			update_path = public_data.UPDATE_URL_DEV;
+		}		
+		// user_interface gui or cmd and attended or unattended
 		String user_interface = client_info.get_client_data().get("preference").get("cmd_gui");
-		String unattended_mode = client_info.get_client_data().get("Machine").get("unattended");
+		String unattended_mode = client_info.get_client_data().get("Machine").get("unattended");		
 		Boolean console_update = new Boolean(false); 
 		if (user_interface.equalsIgnoreCase("cmd")){ 
 			console_update = true; 
@@ -87,10 +97,10 @@ public class app_update implements UpdatedApplication  {
 		Boolean unattended_update = new Boolean(false);
 		if (unattended_mode.equalsIgnoreCase("1")){ 
 			unattended_update = true; 
-		} 		
+		} 			
         try {
         	Updater app_update =  new Updater(
-                    public_data.UPDATE_URL,
+        			update_path,
                     public_data.SW_HOME_PATH,
                     public_data.BASE_CURRENTVERSION_INT,
                     public_data.BASE_CURRENTVERSION,

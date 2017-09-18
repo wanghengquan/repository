@@ -91,8 +91,8 @@ __author__ = 'syan'
 
 # --------------------------------------------------------------------
 # T E S T R A I L  A P I
-API_TR_USER = "API_TR_USER"
-API_TR_PASSWD = "API_TR_PASSWD"
+API_TR_USER = "shawn.yan@latticesemi.com"
+API_TR_PASSWD = "lattice"
 API_TR_URL = "http://linux-d50553/testrail/"
 
 

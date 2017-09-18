@@ -185,6 +185,8 @@ def create_case_data(raw_string):
     int_values = [("custom_test_level", "TestLevel"),
                   ("custom_fpga_pio", "PIO"),
                   ("custom_fpga_slice", "Slice"),
+                  ("custom_fpga_ebr", "EBR"),
+                  ("custom_fpga_dsp", "DSP"),
                   ]
     for (db_column, column) in int_values:
         try:
@@ -210,6 +212,15 @@ def create_case_data(raw_string):
             final_dict["custom_fpga_rtl"] = _code
     else:
         final_dict["custom_fpga_rtl"] = 3  # default is unknown
+
+    testbench = raw_dict.get("TestBench")
+    _t_testbench = {"YES": 1, "NO": 2, "unknown": 3}
+    if testbench:
+        _code = _t_testbench.get(testbench)
+        if _code:
+            final_dict["custom_test_bench"] = _code
+    else:
+        final_dict["custom_test_bench"] = 3  # default is unknown
     # /////////////////////
     # create custom_config
     lines = list()
