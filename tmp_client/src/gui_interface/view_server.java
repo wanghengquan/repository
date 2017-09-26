@@ -16,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +46,7 @@ public class view_server extends Thread {
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
+	@SuppressWarnings("unused")
 	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
@@ -342,6 +342,8 @@ public class view_server extends Thread {
 	}
 
 	private void run_system_client_insts_check() {
+		switch_info.increase_system_client_insts();
+		/*
 		int start_insts = switch_info.get_system_client_insts();
 		String message = new String("Info: " + String.valueOf(start_insts)
 				+ " TMP Client(s) launched with your account already. Do you want to launch a new one?");
@@ -361,6 +363,7 @@ public class view_server extends Thread {
 		} else {
 			switch_info.increase_system_client_insts();
 		}
+		*/
 	}
 
 	public void run() {

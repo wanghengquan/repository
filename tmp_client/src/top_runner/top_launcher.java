@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.Scanner;
+//import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,7 +86,8 @@ public class top_launcher {
 			String run_mode, 
 			String unattended_mode) {
 		int start_insts = switch_info.get_system_client_insts();
-		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");	
+		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");
+		/*
 		if (run_mode.equals("cmd")) {
 			if ((start_insts > 0) && (!unattended_mode.equals("1"))) {
 				//both yes and no need to add 1 insts.
@@ -114,6 +115,7 @@ public class top_launcher {
 			}
 			switch_info.increase_system_client_insts();
 		}
+		*/
 	}
 
 	/*

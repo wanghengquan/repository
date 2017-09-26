@@ -76,8 +76,8 @@ public class upload_dialog extends JFrame{
 		p1.add(open_button);
 		p1.add(blank_line1);
 		p1.add(cancel_button);		
-		JPanel bland_cell2 = new JPanel();
-		p1.add(bland_cell2);
+		JPanel blank_cell2 = new JPanel();
+		p1.add(blank_cell2);
 		p1.add(upload_button);
 		JPanel jp_title = new JPanel(new GridLayout(1,1,5,5));
 		jp_title.add(new JLabel("Upload Console Outputs:"));
@@ -130,11 +130,11 @@ public class upload_dialog extends JFrame{
 		layout_s.weightx = 0;
 		layout_s.weighty=0.1;
 		part1_layout.setConstraints(cancel_button, layout_s);		
-		//for bland_cell2
+		//for blank_cell2
 		layout_s.gridwidth=2;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(bland_cell2, layout_s);	
+		part1_layout.setConstraints(blank_cell2, layout_s);	
 		//for upload_button
 		layout_s.gridwidth=0;
 		layout_s.weightx = 0;

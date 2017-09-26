@@ -56,7 +56,10 @@ public class public_data {
 	public final static String ICON_RPT_TITLE_PNG = SW_HOME_PATH + "/image/title.png";
 	public final static String ICON_RPT_PREVIEW_PNG = SW_HOME_PATH + "/image/view.png";
 	public final static String ICON_RPT_GENERATE_PNG = SW_HOME_PATH + "/image/gen.png";
-
+	public final static String ICON_ATTENDED_MODE = SW_HOME_PATH + "/image/engineer.png";
+	public final static String ICON_UNATTENDED_MODE = SW_HOME_PATH + "/image/robot.png";
+	public final static String ICON_PRIVATE_MODE = SW_HOME_PATH + "/image/private.png";
+	public final static String ICON_PUBLIC_MODE = SW_HOME_PATH + "/image/public.png";
 	// ========================
 	// Remote update path
 	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";
