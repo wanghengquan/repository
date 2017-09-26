@@ -191,7 +191,7 @@ def create_case_data(raw_string):
     for (db_column, column) in int_values:
         try:
             final_dict[db_column] = int(raw_dict.get(column))
-        except ValueError:
+        except (ValueError, TypeError):
             if db_column == "custom_test_level":
                 final_dict[db_column] = 1
 

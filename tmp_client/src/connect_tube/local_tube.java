@@ -10,7 +10,6 @@
 package connect_tube;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 
 import flow_control.task_enum;
 import info_parser.xls_parser;
-import info_parser.xml_parser;
 import utility_funcs.time_info;
 
 /*
@@ -29,6 +27,7 @@ import utility_funcs.time_info;
  */
 public class local_tube {
 	// public property
+	public static String suite_file_error_msg = new String();
 	// protected property
 	// private property
 	private final Logger LOCAL_TUBE_LOGGER = LogManager.getLogger(local_tube.class.getName());
@@ -41,26 +40,37 @@ public class local_tube {
 
 	// protected function
 	// private function
-	private Map<String, List<List<String>>> get_excel_data(String excel_file) {
+	public static Map<String, List<List<String>>> get_excel_data(String excel_file) {
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		xls_parser excel_obj = new xls_parser();
 		ExcelData = excel_obj.GetExcelData(excel_file);
 		return ExcelData;
 	}
 
-	public Boolean sanity_check(Map<String, List<List<String>>> ExcelData) {
+	public static Boolean suite_file_sanity_check(String file_path) {
+		File xlsx_fobj = new File(file_path);
+		if(!xlsx_fobj.exists()){
+			suite_file_error_msg = "Error: Suite file not exists.";
+			System.out.println(">>>Error: Suite file not exists.");
+			return false;
+		}
+		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
+		ExcelData.putAll(get_excel_data(file_path));		
 		if (!ExcelData.containsKey("suite")) {
-			LOCAL_TUBE_LOGGER.error(">>>Error: Cannot find 'suite' sheet ");
+			suite_file_error_msg = "Error: Cannot find 'suite' sheet.";
+			System.out.println(">>>Error: Cannot find 'suite' sheet.");
 			return false;
 		}
 		if (!ExcelData.containsKey("case")) {
-			LOCAL_TUBE_LOGGER.error(">>>Error: Cannot find 'case' sheet ");
+			suite_file_error_msg = "Error: Cannot find 'case' sheet.";
+			System.out.println(">>>Error: Cannot find 'case' sheet.");
 			return false;
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
 		if (suite_map.size() > 8) {
-			LOCAL_TUBE_LOGGER.error(">>>Error: extra option found in suite sheet::suite info.");
+			suite_file_error_msg = "Error: Extra option found in suite sheet::suite info.";
+			System.out.println(">>>Error: Extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
 			return false;
 		}
@@ -68,7 +78,8 @@ public class local_tube {
 				"System", "Machine" };
 		for (String x : suite_keys) {
 			if (!suite_map.containsKey(x)) {
-				LOCAL_TUBE_LOGGER.error(">>>Error: suite sheet missing :" + x);
+				suite_file_error_msg = "Error: Suite sheet missing :" + x + ".";
+				System.out.println(">>>Error: Suite sheet missing :" + x + ".");
 				return false;
 			}
 		}
@@ -77,25 +88,29 @@ public class local_tube {
 			@SuppressWarnings("unused")
 			int id = Integer.parseInt(prj_id);
 		} catch (NumberFormatException id_e) {
-			LOCAL_TUBE_LOGGER.error(">>>Error: project_id value wrong, should be a number.");
+			suite_file_error_msg = "Error: project_id value wrong, should be a number.";
+			System.out.println(">>>Error: project_id value wrong, should be a number.");
 			return false;
 		}
 		String suite_name = suite_map.get("suite_name");
 		if (suite_name == null || suite_name == "") {
-			LOCAL_TUBE_LOGGER.error(">>>Error: suite name missing.");
+			suite_file_error_msg = "Error: Suite name missing.";
+			System.out.println(">>>Error: Suite name missing.");
 			return false;
 		}
 		// case sheet title check
 		List<String> case_title = get_case_title(ExcelData);
 		if (case_title == null) {
-			LOCAL_TUBE_LOGGER.error(">>>Error: Cannot find title line in case sheet.");
+			suite_file_error_msg = "Error: Cannot find title line in case sheet.";
+			System.out.println(">>>Error: Cannot find title line in case sheet.");
 			return false;
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
-				LOCAL_TUBE_LOGGER.error(">>>Error: case sheet title missing :" + x);
+				suite_file_error_msg = "Error: case sheet title missing :" + x + ".";
+				System.out.println(">>>Error: case sheet title missing :" + x + ".");
 				return false;
 			}
 		}
@@ -111,11 +126,13 @@ public class local_tube {
 					String item = macro_lines.get(line_index).get(0);
 					String column = macro_lines.get(line_index).get(1);
 					if (!item.equals("condition") && !item.equals("action")) {
-						LOCAL_TUBE_LOGGER.error(">>>Error: wrong macro key found in suite sheet:" + item);
+						suite_file_error_msg = "Error: Wrong macro key found in suite sheet:" + item + ".";
+						System.out.println(">>>Error: Wrong macro key found in suite sheet:" + item + ".");
 						return false;
 					}
 					if (!case_title.contains(column)) {
-						LOCAL_TUBE_LOGGER.error(">>>Error: suite sheet cannot find macro column in case sheet:" + column);
+						suite_file_error_msg = "Error: suite sheet cannot find macro column in case sheet:" + column + ".";
+						System.out.println(">>>Error: suite sheet cannot find macro column in case sheet:" + column + ".");
 						return false;
 					}
 				}
@@ -124,7 +141,7 @@ public class local_tube {
 		return true;
 	}
 
-	private Map<String, String> get_suite_data(Map<String, List<List<String>>> ExcelData) {
+	public static Map<String, String> get_suite_data(Map<String, List<List<String>>> ExcelData) {
 		// key word verify
 		List<List<String>> suite_sheet = ExcelData.get("suite");
 		Map<String, String> suite_data = new HashMap<String, String>();
@@ -172,7 +189,7 @@ public class local_tube {
 		return suite_data;
 	}
 
-	private Map<String, List<List<String>>> get_macro_data(Map<String, List<List<String>>> ExcelData) {
+	public static Map<String, List<List<String>>> get_macro_data(Map<String, List<List<String>>> ExcelData) {
 		// get macro data
 		List<List<String>> suite_sheet = ExcelData.get("suite");
 		Map<String, List<List<String>>> macro_data = new HashMap<String, List<List<String>>>();
@@ -215,7 +232,7 @@ public class local_tube {
 		return return_data;
 	}
 
-	public Map<String, List<List<String>>> sort_macro_map(Map<String, List<List<String>>> oriMap) {
+	public static Map<String, List<List<String>>> sort_macro_map(Map<String, List<List<String>>> oriMap) {
 		if (oriMap == null || oriMap.isEmpty()) {
 			return null;
 		}
@@ -236,7 +253,7 @@ public class local_tube {
 		return sortedMap;
 	}
 
-	private List<String> get_case_title(Map<String, List<List<String>>> ExcelData) {
+	public static List<String> get_case_title(Map<String, List<List<String>>> ExcelData) {
 		List<List<String>> case_sheet = ExcelData.get("case");
 		List<String> title_list = new ArrayList<String>();
 		// title_list = suite_sheet.get(1);
@@ -533,7 +550,7 @@ public class local_tube {
 		return sortedMap;
 	}
 
-	private int getInt(String str, String patt) {
+	public static int getInt(String str, String patt) {
 		int i = 0;
 		try {
 			Pattern p = Pattern.compile(patt);
@@ -784,13 +801,13 @@ public class local_tube {
 	public void generate_local_admin_task_queues(String local_file, String current_terminal) {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> xlsx_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
-		//record local suite file destination path
-		File xlsx_fobj = new File(local_file);
-		String xlsx_abs_path = xlsx_fobj.getAbsolutePath();
-		if(!xlsx_fobj.exists()){
-			LOCAL_TUBE_LOGGER.error("Not exist:" + xlsx_abs_path);
-			return;
+		//excel file sanity check
+		if(!suite_file_sanity_check(local_file)){
+			LOCAL_TUBE_LOGGER.error("Suite file wrong format:" + local_file);
+			return;			
 		}
+		//get excel file destination
+		File xlsx_fobj = new File(local_file);
 		String xlsx_dest = xlsx_fobj.getParent().replaceAll("\\\\", "/");
 		//get excel data
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
@@ -867,8 +884,8 @@ public class local_tube {
 		sheet_parser.generate_local_admin_task_queues("D:/java_dev/diamond_regression.xlsx", current_terminal);
 		// System.out.println(task_info.get_received_task_queues_map().toString());
 		// System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		/*		
 		xml_parser xml_parser2 = new xml_parser();
-
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
 		String queue_name = dump_queue_it.next();
 		HashMap<String, HashMap<String, String>> admin_queue_data = task_info
@@ -892,5 +909,6 @@ public class local_tube {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 	}
 }

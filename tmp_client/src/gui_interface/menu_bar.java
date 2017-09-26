@@ -25,6 +25,7 @@ import javax.swing.JOptionPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.local_tube;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.exit_enum;
@@ -218,7 +219,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			String link_mode = client_info.get_client_data().get("preference").get("link_mode");
 			if (link_mode.equals("remote")){
 				String title = new String("Link mode error");
-				String message = new String("Client run in remote mode, cannot import local suite file.");
+				String message = new String("Client run in remote mode, cannot import local suite file. Please go and setting in \"Setting --> Preference...\"");
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}			
@@ -228,8 +229,15 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			if (return_value == JFileChooser.APPROVE_OPTION) {
 				File local_suite_file = import_file.getSelectedFile();
 				String path = local_suite_file.getAbsolutePath().replaceAll("\\\\", "/");
-				switch_info.add_suite_file_list(path);
-				MENU_BAR_LOGGER.warn("Importing suite file:" + switch_info.get_suite_file_list().toString());
+				if (local_tube.suite_file_sanity_check(path)){
+					switch_info.add_suite_file_list(path);
+					MENU_BAR_LOGGER.warn("Importing suite file:" + switch_info.get_suite_file_list().toString());
+				} else {
+					String title = new String("Import suite file error");
+					String message = new String(local_tube.suite_file_error_msg);
+					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
 			}
 		}
 		if (e.getSource().equals(exports)) {

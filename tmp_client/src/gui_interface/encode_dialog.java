@@ -22,9 +22,9 @@ public class encode_dialog extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JLabel label_username = new JLabel("User Name:");
-	private JLabel label_passwd01 = new JLabel("Pass Word:");
-	private JLabel label_passwd02 = new JLabel("Pass Word:");
+	private JLabel label_username = new JLabel("Username:");
+	private JLabel label_passwd01 = new JLabel("Password:");
+	private JLabel label_passwd02 = new JLabel("Password:");
 	private JTextField field_username = new JTextField("", 20);
 	private JPasswordField field_passwd01 = new JPasswordField("", 20);
 	private JPasswordField field_passwd02 = new JPasswordField("", 20);
