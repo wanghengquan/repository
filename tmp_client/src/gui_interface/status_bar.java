@@ -87,20 +87,6 @@ public class status_bar extends JPanel implements Runnable{
 		//blank cell3
 		JPanel blank_cell3 = new JPanel();
 		bar_panel.add(blank_cell3);
-		//private/public mode
-		String belong = new String(public_data.DEF_MACHINE_PRIVATE);
-		if (client_info.get_client_data().containsKey("Machine")) {
-			belong = client_info.get_client_data().get("Machine").getOrDefault("private", public_data.DEF_UNATTENDED_MODE);
-		}
-		icon_belong = new JLabel();
-		if(belong.equals("1")){
-			icon_belong.setIcon(private_image);
-			icon_belong.setToolTipText("Client run in Private mode, only task assign to this client will be take!");
-		} else {
-			icon_belong.setIcon(public_image);
-			icon_belong.setToolTipText("Client run in Public mode, all matched task will be take!");
-		}
-		bar_panel.add(icon_belong);		
 		//attended mode
 		String mode = new String(public_data.DEF_UNATTENDED_MODE);
 		if (client_info.get_client_data().containsKey("Machine")) {
@@ -114,7 +100,21 @@ public class status_bar extends JPanel implements Runnable{
 			icon_mode.setIcon(robot_image);
 			icon_mode.setToolTipText("Client run in Unattended mode.");
 		}
-		bar_panel.add(icon_mode);
+		bar_panel.add(icon_mode);		
+		//private/public mode
+		String belong = new String(public_data.DEF_MACHINE_PRIVATE);
+		if (client_info.get_client_data().containsKey("Machine")) {
+			belong = client_info.get_client_data().get("Machine").getOrDefault("private", public_data.DEF_UNATTENDED_MODE);
+		}
+		icon_belong = new JLabel();
+		if(belong.equals("1")){
+			icon_belong.setIcon(private_image);
+			icon_belong.setToolTipText("Client run in Private mode, only task assign to this client will be take!");
+		} else {
+			icon_belong.setIcon(public_image);
+			icon_belong.setToolTipText("Client run in Public mode, all matched task will be take!");
+		}
+		bar_panel.add(icon_belong);
 		//Setting
 		GridBagConstraints layout_s = new GridBagConstraints();
 		layout_s.fill = GridBagConstraints.BOTH;
@@ -178,16 +178,16 @@ public class status_bar extends JPanel implements Runnable{
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
 		status_layout.setConstraints(blank_cell3, layout_s);
-		//for icon_belong
+		//for icon_mode
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
-		status_layout.setConstraints(icon_belong, layout_s);		
-		//for icon_mode
+		status_layout.setConstraints(icon_mode, layout_s);
+		//for icon_belong
 		layout_s.gridwidth=0;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
-		status_layout.setConstraints(icon_mode, layout_s);
+		status_layout.setConstraints(icon_belong, layout_s);		
 		return bar_panel;
 	}
 	
@@ -283,7 +283,7 @@ public class status_bar extends JPanel implements Runnable{
 				});
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

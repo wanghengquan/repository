@@ -74,6 +74,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//step 1 :input 1th line
 		JPanel jp_center1 = new JPanel(new GridLayout(1,4,5,5));
 		jl_link_mode = new JLabel("Link Server:");
+		jl_link_mode.setToolTipText("Client connect server select.");
 		link_both = new JRadioButton("Both");
 		link_remote = new JRadioButton("Remote");
 		link_local = new JRadioButton("Local");		
@@ -89,6 +90,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//step 2 : input 2th line
 		JPanel jp_center2 = new JPanel(new GridLayout(1,4,5,5));
 		jl_max_threads = new JLabel("Max Threads:");
+		jl_max_threads.setToolTipText("Maximum thread number launched for task/case run(one thread for one task/case)");
 		thread_auto = new JRadioButton("Auto");
 		thread_manual = new JRadioButton("Manually");
 		thread_text = new JTextField(preference_data.get("max_threads"));
@@ -103,6 +105,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//step 3 : input 3th line
 		JPanel jp_center3 = new JPanel(new GridLayout(1,4,5,5));
 		jl_task_assign = new JLabel("Task Assign:");
+		jl_task_assign.setToolTipText("The method for Client processing available task queues.");
 		task_auto = new JRadioButton("Auto");
 		task_serial = new JRadioButton("Serial");
 		task_parallel = new JRadioButton("Parallel");
@@ -119,6 +122,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		GridBagLayout input4_layout = new GridBagLayout();
 		JPanel jp_center4 = new JPanel(input4_layout);
 		jl_work_path = new JLabel("Work Space:");
+		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
 		jt_work_path = new JTextField(preference_data.get("work_path"));
 		jp_center4.add(jl_work_path);
 		jp_center4.add(jt_work_path);
@@ -138,6 +142,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		GridBagLayout input5_layout = new GridBagLayout();
 		JPanel jp_center5 = new JPanel(input5_layout);
 		jl_save_path = new JLabel("Save Space:");
+		jl_save_path.setToolTipText("Client try to copy task case to this place, if same as \"Work Space\" client will skip copy action.");
 		jt_save_path = new JTextField(preference_data.get("save_path"));
 		jp_center5.add(jl_save_path);
 		jp_center5.add(jt_save_path);
