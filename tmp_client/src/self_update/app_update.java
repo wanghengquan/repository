@@ -72,7 +72,7 @@ public class app_update implements UpdatedApplication  {
         	}        	
         } catch (UpdaterException ex) {
             //ex.printStackTrace();
-            APP_UPDATE_LOGGER.warn("TMP client self update failed.");
+            APP_UPDATE_LOGGER.warn("TMP client self update failed from : " + update_path);
         }
 	}
 	
@@ -121,7 +121,7 @@ public class app_update implements UpdatedApplication  {
         } catch (Exception ex) {
             //ex.printStackTrace();
             switch_info.set_client_console_updating(false);
-            APP_UPDATE_LOGGER.warn("TMP client self update failed.");
+            APP_UPDATE_LOGGER.warn("TMP client self update failed from : " + update_path);
         }
 	}
 	

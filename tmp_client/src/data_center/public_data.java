@@ -137,6 +137,9 @@ public class public_data {
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_POOL_MAXIMUM_SIZE = 30;
+	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
+	public final static int PERF_AUTO_MAXIMUM_MEM = 90;
+	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
 
 	// ========================
 	// >>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java

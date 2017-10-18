@@ -46,6 +46,9 @@ public class hall_manager extends Thread {
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private int local_cmd_exit_counter = 0;
+	private int thread_auto_adjust_counter = 0;
+	private ArrayList<Integer> client_history_cpu_list = new ArrayList<Integer>();
+	private ArrayList<Integer> client_history_mem_list = new ArrayList<Integer>();
 	// sub threads need to be launched
 	HashMap<String, task_waiter> task_waiters;
 	result_waiter waiter_result;
@@ -236,6 +239,105 @@ public class hall_manager extends Thread {
 		
 	}
 	
+	private void thread_auto_adjustment(){
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(client_info.get_client_data());
+		if (client_data.get("preference").get("thread_mode").equals("manual")){
+			return;
+		}
+		//only when processing queue list not empty, this feature work
+		ArrayList<String> processing_queue_list = new ArrayList<String>();
+		processing_queue_list.addAll(task_info.get_processing_admin_queue_list());
+		if(processing_queue_list.isEmpty()){
+			return;
+		}
+		//system info record if not successfully record, skip this point
+		if (!current_system_info_record()){
+			return;
+		}
+		thread_auto_adjust_counter += 1;
+		if(thread_auto_adjust_counter <= public_data.PERF_AUTO_ADJUST_CYCLE){
+			return;// adjust cycle = 6 * 10 seconds
+		}
+		//only when used thread >= pool_curent_size, this feature work
+		int max_thread = pool_info.get_pool_current_size();
+		int used_thread = pool_info.get_pool_used_threads();
+		int cpu_avgs = get_integer_list_average(client_history_cpu_list);
+		int mem_avgs = get_integer_list_average(client_history_mem_list);
+		if(cpu_avgs == 0 || mem_avgs ==0){
+			//empty data find, skip adjustment
+			cleanup_auto_adjust_record();
+			return;
+		}
+		if(cpu_avgs > public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs > public_data.PERF_AUTO_MAXIMUM_MEM){
+			if (used_thread <= max_thread){
+				decrease_max_thread();
+			}
+		} 
+		if (cpu_avgs < public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs < public_data.PERF_AUTO_MAXIMUM_MEM){
+			if (used_thread >= max_thread){
+				increase_max_thread();
+			}			
+		}
+		cleanup_auto_adjust_record();	
+	}
+	
+	private void decrease_max_thread(){
+		int current_max_thread = pool_info.get_pool_current_size();
+		int new_max_thread = current_max_thread - 1;
+		if (new_max_thread > 0){
+			pool_info.set_pool_current_size(new_max_thread);
+		}
+	}
+	
+	private void increase_max_thread(){
+		int current_max_thread = pool_info.get_pool_current_size();
+		int new_max_thread = current_max_thread + 1;
+		if (new_max_thread <= public_data.PERF_POOL_MAXIMUM_SIZE){
+			pool_info.set_pool_current_size(new_max_thread);
+		}
+	}
+	
+	private int get_integer_list_average(ArrayList<Integer> integer_list){
+		int list_num = integer_list.size();
+		if (list_num == 0){
+			return 0;
+		}
+		int list_sum = 0;
+		for(Integer data: integer_list){
+			list_sum += data;
+		}
+		int list_avg = list_sum / list_num;
+		return list_avg;
+	}
+	
+	private void cleanup_auto_adjust_record(){
+		thread_auto_adjust_counter = 0;
+		client_history_cpu_list.clear();
+		client_history_mem_list.clear();
+	}
+	
+	private Boolean current_system_info_record(){
+		Boolean record_status = new Boolean(true);
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(client_info.get_client_data());
+		String cpu_usage = client_data.get("System").get("cpu");
+		String mem_usage = client_data.get("System").get("mem");
+		Integer cpu_integer = new Integer(0);
+		Integer mem_integer = new Integer(0);
+		try{
+			cpu_integer = Integer.valueOf(cpu_usage);
+			mem_integer = Integer.valueOf(mem_usage);
+		} catch (Exception e) {
+			HALL_MANAGER_LOGGER.warn("Cannot parser CPU/MEM value.");
+			record_status = false;
+			return record_status;
+		}
+		client_history_cpu_list.add(cpu_integer);
+		client_history_mem_list.add(mem_integer);
+		return record_status;
+	}
+	
 	private void generate_exit_report() {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
@@ -330,6 +432,8 @@ public class hall_manager extends Thread {
 			hall_status_report();
 			// task 4 : exit apply for local command line mode
 			local_cmd_mode_exit_check();
+			// task 5 : Maximum threads adjustment
+			thread_auto_adjustment();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
