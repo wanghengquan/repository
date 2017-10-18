@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 import traceback
 import xTools
 import csv
@@ -101,7 +102,7 @@ def get_type_id(type_string):
     {u'is_default': False, u'id': 10, u'name': u'Security'},
     {u'is_default': False, u'id': 11, u'name': u'Smoke & Sanity'},
     {u'is_default': False, u'id': 12, u'name': u'Usability'}]
-    """
+
 
     type_dict = {'Acceptance'      : 1,
                  'Accessibility'   : 2,
@@ -118,12 +119,23 @@ def get_type_id(type_string):
                  'Usability'       : 12,
                  'Manually'        : 13,
                  }
+
+    @ 2017/10/18, Update types.
+    """
+    type_dict = {"Usability": 1,
+                 "Functionality": 7,
+                 "Stability": 4,
+                 "Performance": 3,
+                 "Manually": 13,
+                 "Reliability": 2
+    }
     code = type_dict.get(type_string)
     if type_string:
         if not code:
-            xTools.say_it("Warning. Unknown type name: %s" % type_string)
+            xTools.say_it("Error. Unknown type name: %s" % type_string)
+            sys.exit(1)
     if not code:
-        code = 6 # default is Functional
+        code = 7  # default is Functionality
     return code
 
 def get_priority_id(priority_string):
@@ -132,18 +144,28 @@ def get_priority_id(priority_string):
     {u'is_default': True, u'priority': 2, u'id': 2, u'short_name': u'Medium', u'name': u'Medium'},
     {u'is_default': False, u'priority': 3, u'id': 3, u'short_name': u'High', u'name': u'High'},
     {u'is_default': False, u'priority': 4, u'id': 4, u'short_name': u'Critical', u'name': u'Critical'}]
-    """
+
     priority_dict = {'Low' : 1,
                      'Medium' : 2,
                      'High' : 3,
                      'Critical' : 4,
                      }
+
+    @ 2017/10/18, Update priorities.
+    """
+    priority_dict = {"Critical": 2,
+                     "Blocker": 1,
+                     "Major": 3,
+                     "Minor": 4,
+                     "Trivial": 5
+    }
     code = priority_dict.get(priority_string)
     if priority_string:
         if not code:
-            xTools.say_it("Warning. Unknown priority name: %s" % priority_string)
+            xTools.say_it("Error. Unknown priority name: %s" % priority_string)
+            sys.exit(1)
     if not code:
-        code = 2 # default is Medium
+        code = 2  # default is Critical
     return code
 
 def create_case_data(raw_string):

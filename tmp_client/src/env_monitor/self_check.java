@@ -36,19 +36,21 @@ public class self_check {
 	private String get_python_version() {
 		String cmd = "python --version ";
 		// Python 2.7.2
-		String raw_input = new String();
+		ArrayList<String> excute_retruns = new ArrayList<String>();
 		String ver_str = new String("unknown");
 		try {
-			ArrayList<String> excute_retruns = system_cmd.run(cmd);
-			raw_input = excute_retruns.get(1);
+			excute_retruns.addAll(system_cmd.run(cmd));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 		}
 		Pattern version_patt = Pattern.compile("python\\s(\\d\\.\\d+.\\d+)", Pattern.CASE_INSENSITIVE);
-		Matcher version_match = version_patt.matcher(raw_input);
-		if (version_match.find()) {
-			ver_str = version_match.group(1);
+		for (String line : excute_retruns){
+			Matcher version_match = version_patt.matcher(line);
+			if (version_match.find()) {
+				ver_str = version_match.group(1);
+				break;
+			}
 		}
 		return ver_str;
 	}
@@ -61,19 +63,21 @@ public class self_check {
 	private String get_svn_version() {
 		String cmd = "svn --version";
 		// svn, version 1.6.11 (r934486)
-		String raw_input = "";
 		String ver_str = "unknown";
+		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
-			ArrayList<String> excute_retruns = system_cmd.run(cmd);
-			raw_input = excute_retruns.get(1);
+			excute_retruns.addAll(system_cmd.run(cmd));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 		}
 		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d\\.\\d+)", Pattern.CASE_INSENSITIVE);
-		Matcher version_match = version_patt.matcher(raw_input);
-		if (version_match.find()) {
-			ver_str = version_match.group(1);
+		for (String line : excute_retruns){
+			Matcher version_match = version_patt.matcher(line);
+			if (version_match.find()) {
+				ver_str = version_match.group(1);
+				break;
+			}
 		}
 		return ver_str;
 	}

@@ -95,7 +95,9 @@ public class tube_server extends Thread {
 		return system_match;
 	}
 
-	private Boolean admin_queue_machine_key_check(HashMap<String, HashMap<String, String>> queue_data,
+	private Boolean admin_queue_machine_key_check(
+			String queue_name,
+			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		Boolean machine_match = new Boolean(true);
 		if (!queue_data.containsKey("Machine")) {
@@ -116,6 +118,11 @@ public class tube_server extends Thread {
 				machine_match = false;
 				break;
 			}
+		}
+		//check private when queue come from remote(not local)
+		if (queue_name.contains("0@")){
+			//this is a local task queue no private need to check
+			return machine_match;
 		}
 		String client_current_private = client_hash.get("Machine").get("private");
 		if (client_current_private.equals("1")) {
@@ -151,13 +158,15 @@ public class tube_server extends Thread {
 		return software_match;
 	}
 
-	public ArrayList<String> admin_queue_mismatch_list_check(HashMap<String, HashMap<String, String>> queue_data,
+	public ArrayList<String> admin_queue_mismatch_list_check(
+			String queue_name,
+			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		ArrayList<String> mismatch_list = new ArrayList<String>();
 		if (!admin_queue_system_key_check(queue_data, client_hash)) {
 			mismatch_list.add("System");
 		}
-		if (!admin_queue_machine_key_check(queue_data, client_hash)) {
+		if (!admin_queue_machine_key_check(queue_name, queue_data, client_hash)) {
 			mismatch_list.add("Machine");
 		}
 		if (!admin_queue_software_key_check(queue_data, client_hash)) {
@@ -178,15 +187,14 @@ public class tube_server extends Thread {
 		client_data.putAll(client_info.get_client_data());
 		total_admin_queue.putAll(task_info.get_received_admin_queues_treemap());
 		old_rejected_reason_queue.putAll(task_info.get_rejected_admin_reason_treemap());
-		Set<String> queue_set = total_admin_queue.keySet();
-		Iterator<String> queue_it = queue_set.iterator();
+		Iterator<String> queue_it = total_admin_queue.keySet().iterator();
 		while (queue_it.hasNext()) {
 			String queue_name = queue_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			queue_data.putAll(total_admin_queue.get(queue_name));
 			// check mismatch list
 			ArrayList<String> mismatch_item = new ArrayList<String>();
-			mismatch_item = admin_queue_mismatch_list_check(queue_data, client_data);
+			mismatch_item = admin_queue_mismatch_list_check(queue_name, queue_data, client_data);
 			if (mismatch_item.isEmpty()) {
 				captured_admin_queue.put(queue_name, queue_data);
 				if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)) {

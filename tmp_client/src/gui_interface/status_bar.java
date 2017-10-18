@@ -109,10 +109,10 @@ public class status_bar extends JPanel implements Runnable{
 		icon_belong = new JLabel();
 		if(belong.equals("1")){
 			icon_belong.setIcon(private_image);
-			icon_belong.setToolTipText("Client run in Private mode, only task assign to this client will be take!");
+			icon_belong.setToolTipText("Run in Private mode, only task assigned to this client will be take!");
 		} else {
 			icon_belong.setIcon(public_image);
-			icon_belong.setToolTipText("Client run in Public mode, all matched task will be take!");
+			icon_belong.setToolTipText("Run in Public mode, all assigned/matched task will be take!");
 		}
 		bar_panel.add(icon_belong);
 		//Setting
