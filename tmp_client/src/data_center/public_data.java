@@ -26,7 +26,7 @@ public class public_data {
 	// end with 0: long term version, otherwise developing version
 	public final static String BASE_CURRENTVERSION = "2.06.13"; //2.06.12 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 20613; // version for code use
-	public final static String BASE_BUILDDATE = "2017/10/18";
+	public final static String BASE_BUILDDATE = "2017/10/20";
 	public final static String BASE_SUITEFILEVERSION = "1.08";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -93,6 +93,7 @@ public class public_data {
 	public final static String DOC_CLIENT_USAGE = SW_HOME_PATH + "/doc/usage.pdf";
 	public final static String DOC_TMP_USAGE = SW_HOME_PATH + "/doc/TMP_doc";
 	public final static String DOC_EXAMPLE_PATH = SW_HOME_PATH + "/doc/TMP_example";
+	public final static String DOC_EIT_PATH = SW_HOME_PATH + "/doc/TMP_EIT_suites";
 
 	// ========================
 	// link to RabbitMQ configuration data only shown here

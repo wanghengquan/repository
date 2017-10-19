@@ -47,7 +47,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	private pool_data pool_info;
 	private view_data view_info;
 	String work_path = new String();
-	JMenuItem imports, exports, exit;
+	JMenuItem import_user_suite, import_unit_suite, exports, exit;
 	JMenuItem view_all, view_waiting, view_processing, view_passed, view_failed, view_tbd, view_timeout;
 	JMenuItem play, pause, stop;
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout;
@@ -88,8 +88,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 
 	public JMenu construct_file_menu() {
 		JMenu file = new JMenu("File");
-		imports = new JMenuItem("Import...");
-		imports.addActionListener(this);
+		JMenu imports = new JMenu("Import");		
+		import_user_suite = new JMenuItem("User suite...");
+		import_user_suite.addActionListener(this);
+		import_unit_suite = new JMenuItem("Unit suite...");
+		import_unit_suite.addActionListener(this);
+		imports.add(import_user_suite);
+		imports.add(import_unit_suite);
 		file.add(imports);
 		exports = new JMenuItem("Export...");
 		//exports.setEnabled(false);
@@ -215,7 +220,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
-		if (e.getSource().equals(imports)) {
+		if (e.getSource().equals(import_user_suite)) {
 			String link_mode = client_info.get_client_data().get("preference").get("link_mode");
 			if (link_mode.equals("remote")){
 				String title = new String("Link mode error");
@@ -240,6 +245,31 @@ public class menu_bar extends JMenuBar implements ActionListener {
 				}
 			}
 		}
+		if (e.getSource().equals(import_unit_suite)) {
+			String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+			if (link_mode.equals("remote")){
+				String title = new String("Link mode error");
+				String message = new String("Client run in remote mode, cannot import local suite file. Please go and setting in \"Setting --> Preference...\"");
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}			
+			JFileChooser import_file = new JFileChooser(public_data.DOC_EIT_PATH);
+			import_file.setDialogTitle("Select Unit Suite file");
+			int return_value = import_file.showOpenDialog(null);
+			if (return_value == JFileChooser.APPROVE_OPTION) {
+				File local_suite_file = import_file.getSelectedFile();
+				String path = local_suite_file.getAbsolutePath().replaceAll("\\\\", "/");
+				if (local_tube.suite_file_sanity_check(path)){
+					switch_info.add_suite_file_list(path);
+					MENU_BAR_LOGGER.warn("Importing suite file:" + switch_info.get_suite_file_list().toString());
+				} else {
+					String title = new String("Import suite file error");
+					String message = new String(local_tube.suite_file_error_msg);
+					JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+			}
+		}		
 		if (e.getSource().equals(exports)) {
 			MENU_BAR_LOGGER.warn("Export clicked");
 			export_dialog export_view = new export_dialog(main_view, client_info, task_info, view_info);
