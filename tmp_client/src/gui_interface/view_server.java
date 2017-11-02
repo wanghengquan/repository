@@ -123,24 +123,28 @@ public class view_server extends Thread {
 		} else if (processing_admin_queue_list.contains(queue_name)) {
 			queue_status = queue_enum.PROCESSING;
 		} else {
-			String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
-					.get("admin_status");
-			if (admin_status.equals(queue_enum.STOPPED.get_description())){
-				queue_status = queue_enum.STOPPED;
-			} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
-				queue_status = queue_enum.STOPPED;
-			} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
-				queue_status = queue_enum.PAUSED;
-			} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
-				queue_status = queue_enum.PAUSED;
-			} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
-				queue_status = queue_enum.PROCESSING;
-			} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
-				queue_status = queue_enum.PROCESSING;
-			} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
-				queue_status = queue_enum.FINISHED;
-			} else {
+			if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
 				queue_status = queue_enum.UNKNOWN;
+			} else {
+				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
+						.get("admin_status");
+				if (admin_status.equals(queue_enum.STOPPED.get_description())){
+					queue_status = queue_enum.STOPPED;
+				} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
+					queue_status = queue_enum.STOPPED;
+				} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
+					queue_status = queue_enum.PAUSED;
+				} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
+					queue_status = queue_enum.PAUSED;
+				} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
+					queue_status = queue_enum.PROCESSING;
+				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
+					queue_status = queue_enum.PROCESSING;
+				} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
+					queue_status = queue_enum.FINISHED;
+				} else {
+					queue_status = queue_enum.UNKNOWN;
+				}
 			}
 		}
 		return queue_status;
@@ -212,7 +216,7 @@ public class view_server extends Thread {
 		//legal check
 		Boolean legal_run = run_action_legal_check(queue_status, run_action);
 		if (!legal_run){
-			VIEW_SERVER_LOGGER.debug("illegal run>>> queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
+			VIEW_SERVER_LOGGER.debug(">>>illegal run, queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
 			return action_status;
 		}
 		if(run_action.equals(queue_enum.STOPPED)){
