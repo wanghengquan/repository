@@ -68,22 +68,24 @@ public class case_prepare {
 		return case_work_path;
 	}
 
-	protected ArrayList<String> get_design_export(HashMap<String, HashMap<String, String>> task_data,
-			String case_work_path) throws IOException, Exception {
+	protected ArrayList<String> get_design_export(
+			HashMap<String, HashMap<String, String>> task_data,
+			String case_work_path
+			) throws IOException, Exception {
 		ArrayList<String> export_msg = new ArrayList<String>();
 		// generate source URL
-		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest");
-		String repository = task_data.get("CaseInfo").get("repository");
+		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim();
+		String repository = task_data.get("CaseInfo").get("repository").trim();
 		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
-		String suite_path = task_data.get("CaseInfo").get("suite_path");
-		String design_name = task_data.get("CaseInfo").get("design_name");
+		String suite_path = task_data.get("CaseInfo").get("suite_path").trim();
+		String design_name = task_data.get("CaseInfo").get("design_name").trim();
 		String design_src_url = repository + "/" + suite_path + "/" + design_name;
 		// generate destination URL
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		String design_des_url = case_work_path + "/" + design_base_name;
 		// get access author key
-		String auth_key = task_data.get("CaseInfo").get("auth_key");
+		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
@@ -115,7 +117,7 @@ public class case_prepare {
 			String case_work_path) throws IOException, Exception {
 		ArrayList<String> export_msg = new ArrayList<String>();
 		// generate source URL
-		String script_addr = task_data.get("CaseInfo").get("script_address");
+		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
 		if (script_addr.equals("") || script_addr == null) {
 			CASE_PREPARE_LOGGER.debug("Internal script used, no export need.");
 			export_msg.add("Internal script used, no export need.");
@@ -124,7 +126,7 @@ public class case_prepare {
 		// generate destination URL
 		// = case_work_path
 		// get access author key
-		String auth_key = task_data.get("CaseInfo").get("auth_key");
+		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
@@ -145,11 +147,15 @@ public class case_prepare {
 
 	protected String[] get_run_command(
 			HashMap<String, HashMap<String, String>> task_data,
-			String case_path,
+			String case_work_path,
 			String work_path
 			) {
 		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
 		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
+		String design_name = task_data.get("CaseInfo").get("design_name").trim();
+		File design_name_fobj = new File(design_name);
+		String design_base_name = design_name_fobj.getName();
+		String case_path = case_work_path + "/" + design_base_name;
 		script_addr = script_addr.replaceAll("\\$work_path", work_path);
 		script_addr = script_addr.replaceAll("\\$case_path", case_path);
 		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
@@ -171,9 +177,6 @@ public class case_prepare {
 			launch_cmd = match.replaceFirst(" " + work_path + "/$1");
 		}
 		// add default --deisgn option
-		String design_name = task_data.get("CaseInfo").get("design_name");
-		File design_name_fobj = new File(design_name);
-		String design_base_name = design_name_fobj.getName();
 		String[] cmd_list;
 		if (launch_cmd.contains("run_lattice.py"))
 			cmd_list = (launch_cmd + " --design=" + design_base_name).split("\\s+");

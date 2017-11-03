@@ -26,7 +26,7 @@ public class public_data {
 	// end with 0: long term version, otherwise developing version
 	public final static String BASE_CURRENTVERSION = "2.06.15"; //2.06.12 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 20615; // version for code use
-	public final static String BASE_BUILDDATE = "2017/11/02";
+	public final static String BASE_BUILDDATE = "2017/11/03";
 	public final static String BASE_SUITEFILEVERSION = "1.08";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
