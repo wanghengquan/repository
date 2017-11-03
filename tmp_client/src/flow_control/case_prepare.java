@@ -143,10 +143,15 @@ public class case_prepare {
 		return export_msg;
 	}
 
-	protected String[] get_run_command(HashMap<String, HashMap<String, String>> task_data, String work_path) {
+	protected String[] get_run_command(
+			HashMap<String, HashMap<String, String>> task_data,
+			String case_path,
+			String work_path
+			) {
 		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
 		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
 		script_addr = script_addr.replaceAll("\\$work_path", work_path);
+		script_addr = script_addr.replaceAll("\\$case_path", case_path);
 		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		// user command used
 		if (script_addr.length() > 1) {
@@ -157,7 +162,9 @@ public class case_prepare {
 		Pattern patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe))", Pattern.CASE_INSENSITIVE);
 		if (launch_cmd.contains("$work_path")){
 			launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_path);
-		} else if (launch_cmd.contains("$tool_path")){
+		} else if (launch_cmd.contains("$case_path")){
+			launch_cmd = launch_cmd.replaceAll("\\$case_path", " " + case_path);
+		} else if (launch_cmd.contains("$tool_path")){	
 			launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		} else {
 			Matcher match = patt.matcher(launch_cmd);
@@ -292,8 +299,10 @@ public class case_prepare {
 		return cmd_array;
 	}
 
-	protected ArrayList<String> get_case_ready(HashMap<String, HashMap<String, String>> task_data, String working_dir)
-			throws Exception {
+	protected ArrayList<String> get_case_ready(
+			HashMap<String, HashMap<String, String>> task_data, 
+			String working_dir
+			) throws Exception {
 		ArrayList<String> export_list = new ArrayList<String>();
 		ArrayList<String> export_design = this.get_design_export(task_data, working_dir);
 		ArrayList<String> export_script = this.get_script_export(task_data, working_dir);

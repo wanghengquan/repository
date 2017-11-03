@@ -723,7 +723,9 @@ public class task_waiter extends Thread {
 			file_action.append_file(local_case_report, "[Export]" + line_separator);
 			file_action.append_file(local_case_report, String.join(line_separator, case_prepare_list) + line_separator);
 			// task 8 : launch cmd
-			String[] run_cmd = prepare_obj.get_run_command(task_data,
+			String[] run_cmd = prepare_obj.get_run_command(
+					task_data,
+					case_work_path,
 					client_info.get_client_data().get("preference").get("work_path"));
 			// task 9 : launch env
 			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.get_client_data());
