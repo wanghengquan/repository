@@ -249,6 +249,7 @@ public class hall_manager extends Thread {
 		ArrayList<String> processing_queue_list = new ArrayList<String>();
 		processing_queue_list.addAll(task_info.get_processing_admin_queue_list());
 		if(processing_queue_list.isEmpty()){
+			reset_default_max_thread();
 			return;
 		}
 		//system info record if not successfully record, skip this point
@@ -296,6 +297,20 @@ public class hall_manager extends Thread {
 		if (new_max_thread <= public_data.PERF_POOL_MAXIMUM_SIZE){
 			pool_info.set_pool_current_size(new_max_thread);
 		}
+	}
+	
+	private void reset_default_max_thread(){
+		int max_thread = pool_info.get_pool_current_size();
+		int used_thread = pool_info.get_pool_used_threads();
+		String default_max_threads = client_info.get_client_data().get("preference").get("max_threads");
+		int def_thread = Integer.parseInt(default_max_threads);
+		if (used_thread > 0){
+			return;
+		}
+		if (max_thread == def_thread){
+			return;//already reseted
+		}
+		pool_info.set_pool_current_size(def_thread);
 	}
 	
 	private int get_integer_list_average(ArrayList<Integer> integer_list){

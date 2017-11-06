@@ -545,13 +545,17 @@ public class task_data {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (received_task_queues_map.containsKey(queue_name)) {
-				queue_data = deep_clone.clone(received_task_queues_map.get(queue_name));
+				queue_data.putAll(deep_clone.clone(received_task_queues_map.get(queue_name)));
 			}
 			for (String case_id : case_list) {
 				HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
-				task_data = deep_clone.clone(processed_task_queues_map.get(queue_name).get(case_id));
-				HashMap<String, String> status_data = task_data.get("Status");
+				task_data.putAll(deep_clone.clone(processed_task_queues_map.get(queue_name).get(case_id)));
+				HashMap<String, String> status_data = new HashMap<String, String>();
+				if(task_data.containsKey("Status")){
+					status_data.putAll(task_data.get("Status"));
+				}
 				status_data.put("cmd_status", task_enum.WAITING.get_description());
+				task_data.put("Status", status_data);
 				queue_data.put(case_id, task_data);
 				// processed_task_queues_map.get(queue_name).remove(case_id);
 			}
