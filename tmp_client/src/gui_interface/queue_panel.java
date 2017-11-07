@@ -243,8 +243,9 @@ public class queue_panel extends JSplitPane implements Runnable {
 
 	private Boolean update_captured_queue_data() {
 		Boolean show_update = new Boolean(false);
-		Set<String> captured_set = new TreeSet<String>(new queue_comparator());
+		Set<String> captured_set = new TreeSet<String>(new queue_compare());
 		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
+		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
 		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
 		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
