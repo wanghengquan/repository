@@ -20,6 +20,7 @@ import data_center.client_data;
 import data_center.data_server;
 import data_center.exit_enum;
 import data_center.public_data;
+import data_center.status_enum;
 import data_center.switch_data;
 import flow_control.hall_manager;
 import flow_control.pool_data;
@@ -68,6 +69,8 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean start_maintenance_mode(){
+		//maintenance start by any of following:
+		//scenario 1: idle for a long time
 		String current_hall_status = switch_info.get_client_hall_status();
 		if(current_hall_status.equalsIgnoreCase("idle")){
 			hall_idle_count += 1;
@@ -78,6 +81,15 @@ public class client_manager extends Thread  {
 			//cycle is base_interval * 1 * 60 = 5 minutes
 			hall_idle_count = 0;
 			return true;
+		}
+		//scenario 2: system suspend, cpu, mem, space exceed the maximum usage
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(client_info.get_client_system_data());
+		if (system_data.containsKey("status")){
+			String system_status = system_data.get("status");
+			if (system_status.equals(status_enum.SUSPEND.get_description())){
+				return true;
+			}
 		}
 		return false;
 	}
@@ -146,6 +158,7 @@ public class client_manager extends Thread  {
 			// ============== All dynamic job start from here ==============
 			// task 1 : return to work status
 			if (client_sts.get_current_status().equals("maintain_status")){
+				client_sts.do_state_things();
 				client_sts.to_work_status();
 			}
 			// task 2 : maintenance mode calculate
@@ -155,6 +168,7 @@ public class client_manager extends Thread  {
 			// task 3 :
 			if (switch_info.get_client_stop_request().size() > 0){
 				client_sts.to_stop_status();
+				client_sts.do_state_things();
 			} 
 			// task 4 : 
 			try {

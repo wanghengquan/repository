@@ -23,6 +23,7 @@ import data_center.client_data;
 import data_center.data_server;
 import data_center.exit_enum;
 import data_center.public_data;
+import data_center.status_enum;
 import data_center.switch_data;
 import flow_control.pool_data;
 import info_parser.cmd_parser;
@@ -227,24 +228,12 @@ public class tube_server extends Thread {
 		HashMap<String, String> complex_data = new HashMap<String, String>();
 		String host_name = client_hash.get("Machine").get("terminal");
 		String admin_request = "1";
-		String cpu_used = client_hash.get("System").get("cpu");
-		int cpu_used_int = 0;
-		try{
-			cpu_used_int = Integer.parseInt(cpu_used);
-		} catch (Exception e) {
-			cpu_used_int = 99;
-		}
-		String status = new String();
-		if (cpu_used_int > 60) {
-			status = "Busy";
-		} else {
-			status = "Free";
-		}
+		String system_status = client_hash.get("System").getOrDefault("status", status_enum.UNKNOWN.get_description());
 		int used_thread = pool_info.get_pool_used_threads();
 		int max_thread = pool_info.get_pool_current_size();
 		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
-		simple_data.put("status", status);
+		simple_data.put("status", system_status);
 		simple_data.put("used_thread", rpt_thread);
 		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
 		//client only sent request(1), server side will response and reset the value to 0
@@ -255,6 +244,7 @@ public class tube_server extends Thread {
 		String host_ip = client_hash.get("Machine").get("ip");
 		String os = client_hash.get("System").get("os");
 		String group_name = client_hash.get("Machine").get("group");
+		String cpu_used = client_hash.get("System").get("cpu");
 		String memory_used = client_hash.get("System").get("mem");
 		String disk_left = client_hash.get("System").get("space");
 		String os_type = client_hash.get("System").get("os_type");

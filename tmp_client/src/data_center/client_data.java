@@ -69,6 +69,45 @@ public class client_data {
 		}
 	}
 
+	public HashMap<String, String> get_client_system_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			if (client_hash.containsKey("System")){
+				temp.putAll(client_hash.get("System"));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_client_system_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			if(client_hash.containsKey("System")){
+				client_hash.remove("System");
+			}
+			client_hash.put("System", update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_system_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> system_data = new HashMap<String, String>();
+			if(client_hash.containsKey("System")){
+				system_data.putAll(client_hash.get("System"));
+			}
+			system_data.putAll(update_data);
+			client_hash.put("System", system_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
 	public void update_software_data(String section, HashMap<String, String> update_data) {
 		rw_lock.writeLock().lock();
 		try {

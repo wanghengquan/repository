@@ -38,6 +38,12 @@ public class public_data {
 	public final static String SW_HOME_PATH = get_home_path();
 
 	// ========================
+	// Client run limitation (system requirements)
+	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
+	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
+	public final static int RUN_LIMITATION_SPACE = 10;//client suspend when disk space less than this value
+	
+	// ========================
 	// log setting
 	public final static String LOG_HOME = SW_HOME_PATH;
 	public final static String FILE_NAME = "client.log";
@@ -60,6 +66,7 @@ public class public_data {
 	public final static String ICON_UNATTENDED_MODE = SW_HOME_PATH + "/image/robot.png";
 	public final static String ICON_PRIVATE_MODE = SW_HOME_PATH + "/image/private.png";
 	public final static String ICON_PUBLIC_MODE = SW_HOME_PATH + "/image/public.png";
+	
 	// ========================
 	// Remote update path
 	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";

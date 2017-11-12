@@ -121,7 +121,7 @@ public class machine_sync extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				MACHINE_SYNC_LOGGER.warn("Cannot resolve Operation System name");
+				MACHINE_SYNC_LOGGER.warn("Cannot resolve System CPU usage");
 				cpu_usage = "NA";
 			}
 			return cpu_usage;
@@ -144,7 +144,7 @@ public class machine_sync extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				MACHINE_SYNC_LOGGER.warn("Cannot resolve Operation System name");
+				MACHINE_SYNC_LOGGER.warn("Cannot resolve System MEM usage");
 				mem_usage = "NA";
 			}
 			return mem_usage;

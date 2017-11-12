@@ -24,6 +24,10 @@ public abstract class abstract_status {
 	void to_maintain() {
 	}
 
+	void do_state_things(){
+		
+	}
+	
 	public String get_current_status() {
 		String current_status = getClass().getName();
 		return current_status.substring(current_status.lastIndexOf('.') + 1);

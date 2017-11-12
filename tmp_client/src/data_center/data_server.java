@@ -46,6 +46,7 @@ import utility_funcs.time_info;
  * 					space	=	xx	G
  * 					cpu		=	xx	%
  * 					mem		=	xx	%
+ * 					status  =   Free/Busy/Suspend
  * 
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
@@ -369,6 +370,56 @@ public class data_server extends Thread {
 		}
 	}
 	
+	private void update_client_current_status(){
+		status_enum system_status = calculate_client_current_status();
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.put("status", system_status.get_description());
+		client_info.update_system_data(system_data);		
+	}
+	
+	private status_enum calculate_client_current_status(){
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(machine_sync.machine_hash.get("System"));
+		String cpu_used = system_data.get("cpu");
+		String mem_used = system_data.get("mem");
+		String space_left = system_data.get("space");
+		int cpu_used_int = 0;
+		try{
+			cpu_used_int = Integer.parseInt(cpu_used);
+		} catch (Exception e) {
+			return status_enum.UNKNOWN;
+		}
+		int mem_used_int = 0;
+		try{
+			mem_used_int = Integer.parseInt(mem_used);
+		} catch (Exception e) {
+			return status_enum.UNKNOWN;
+		}
+		int space_left_int = 0;
+		try{
+			space_left_int = Integer.parseInt(space_left);
+		} catch (Exception e) {
+			return status_enum.UNKNOWN;
+		}
+		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
+			return status_enum.SUSPEND;
+		}
+		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
+			return status_enum.SUSPEND;
+		}		
+		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
+			return status_enum.SUSPEND;
+		}
+		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
+			return status_enum.SUSPEND;
+		}		
+		if (cpu_used_int > public_data.RUN_LIMITATION_CPU / 2){
+			return status_enum.BUSY;
+		} else {
+			return status_enum.IDLE;
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -429,9 +480,11 @@ public class data_server extends Thread {
 			}
 			// task 2: update client System data
 			dynamic_merge_system_data();
-			// task 3: check and remove invalid build path
+			// task 3: update client current status
+			update_client_current_status();			
+			// task 4: check and remove invalid build path
 			remove_invalid_build_path();
-			// task 3: update max_sw_insts limitation
+			// task 5: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
 			// HashMap<String, Integer> soft_ware =
 			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
