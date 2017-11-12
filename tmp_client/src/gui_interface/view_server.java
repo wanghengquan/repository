@@ -18,6 +18,7 @@ import java.util.TreeMap;
 
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +31,7 @@ import flow_control.import_data;
 import flow_control.pool_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
+import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 
@@ -50,6 +52,7 @@ public class view_server extends Thread {
 	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
+	private String file_seprator = System.getProperty("file.separator");
 	// public function
 	// protected function
 	// private function
@@ -66,12 +69,12 @@ public class view_server extends Thread {
 
 	private List<String> get_retest_case_list(String retest_queue) {
 		List<String> case_list = new ArrayList<String>();
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(retest_queue));
 		retest_enum retest_area = view_info.impl_retest_queue_area();
 		if (retest_area.equals(retest_enum.UNKNOWN)) {
 			return case_list;
-		}
+		}		
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		queue_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(retest_queue));
 		if (retest_area.equals(retest_enum.ALL)) {
 			case_list.addAll(queue_data.keySet());
 		} else if (retest_area.equals(retest_enum.SELECTED)) {
@@ -272,18 +275,28 @@ public class view_server extends Thread {
 		List<String> delete_list = new ArrayList<String>();
 		delete_list.addAll(view_info.impl_delete_finished_queue());
 		for (String queue_name : delete_list) {
-			// delete data in memory
-			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
-			task_info.remove_queue_from_processed_task_queues_map(queue_name);
-			task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
-			task_info.remove_finished_admin_queue_list(queue_name);
-			// delete data in disk
+			// public info for implementation
 			String work_path = new String();
 			if (client_info.get_client_data().containsKey("preference")) {
 				work_path = client_info.get_client_data().get("preference").get("work_path");
 			} else {
 				work_path = public_data.DEF_WORK_PATH;
 			}
+			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+			admin_data.putAll(deep_clone.clone(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name)));
+			admin_data.putAll(deep_clone.clone(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name)));
+			if (admin_data.isEmpty()){
+				admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client_info));				
+			}
+			if (admin_data.isEmpty()){
+				continue;
+			}
+			// delete data in memory
+			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
+			task_info.remove_queue_from_processed_task_queues_map(queue_name);
+			task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
+			task_info.remove_finished_admin_queue_list(queue_name);
+			// delete log in disk
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
 			File admin_path = new File(work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
 			File task_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
@@ -293,6 +306,25 @@ public class view_server extends Thread {
 			if (task_path.exists() && task_path.isFile()) {
 				task_path.delete();
 			}
+			// delete results in disk
+			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+			String prj_dir_name = "prj" + admin_data.get("ID").get("project");
+			String run_dir_name = "run" + admin_data.get("ID").get("run");
+			String[] path_array = new String[] { work_path, tmp_result_dir, prj_dir_name, run_dir_name };
+			String result_url = String.join(file_seprator, path_array);	
+			File result_url_fobj = new File(result_url);
+			Thread del_result = new Thread(){
+				public void run() {
+					if (result_url_fobj.exists()){
+						if(FileUtils.deleteQuietly(result_url_fobj)){
+							VIEW_SERVER_LOGGER.debug("Result path cleanup Pass:" + result_url);
+						} else {
+							VIEW_SERVER_LOGGER.info("Result path cleanup Fail:" + result_url);
+						}
+					}
+				}
+			};
+			del_result.start();
 		}
 	}
 
@@ -421,7 +453,7 @@ public class view_server extends Thread {
 			// task 3 : delete finished queue data
 			implements_del_finished_request();
 			try {
-				Thread.sleep(base_interval * 1 * 1000);
+				Thread.sleep(base_interval * 1 * 100);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
