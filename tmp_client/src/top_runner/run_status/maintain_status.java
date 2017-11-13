@@ -46,8 +46,10 @@ public class maintain_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
+		client.switch_info.set_client_house_keeping(true);
 		implements_self_quiet_update();
-		implements_core_script_update();		
+		implements_core_script_update();
+		client.switch_info.set_client_house_keeping(false);
 	}	
 	//=============================================================
 	//methods for locals

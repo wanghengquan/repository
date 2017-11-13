@@ -68,7 +68,21 @@ public class client_manager extends Thread  {
 		this.cmd_info = cmd_info;
 	}
 	
-	private Boolean start_maintenance_mode(){
+	private Boolean start_work_mode(client_status client_sts){
+		if(client_sts.get_current_status().equals("work_status")){
+			return false; //already in work status
+		}
+		if(switch_info.get_client_house_keeping()){
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	private Boolean start_maintenance_mode(client_status client_sts){
+		if(client_sts.get_current_status().equals("maintain_status")){
+			return false; //already in maintain_status
+		}		
 		//maintenance start by any of following:
 		//scenario 1: idle for a long time
 		String current_hall_status = switch_info.get_client_hall_status();
@@ -157,13 +171,14 @@ public class client_manager extends Thread  {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : return to work status
-			if (client_sts.get_current_status().equals("maintain_status")){
-				client_sts.do_state_things();
+			if (start_work_mode(client_sts)){
 				client_sts.to_work_status();
+				client_sts.do_state_things();
 			}
 			// task 2 : maintenance mode calculate
-			if(start_maintenance_mode()){
+			if(start_maintenance_mode(client_sts)){
 				client_sts.to_maintain_status();
+				client_sts.do_state_things();
 			}
 			// task 3 :
 			if (switch_info.get_client_stop_request().size() > 0){

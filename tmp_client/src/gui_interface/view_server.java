@@ -291,7 +291,9 @@ public class view_server extends Thread {
 			if (admin_data.isEmpty()){
 				continue;
 			}
-			// delete data in memory
+			// delete data in memory(Remote server may send a done queue which also need to be delete)
+			task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
+			task_info.remove_queue_from_received_task_queues_map(queue_name);			
 			task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
 			task_info.remove_queue_from_processed_task_queues_map(queue_name);
 			task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);

@@ -43,14 +43,20 @@ public class switch_data {
 	private Boolean data_server_power_up = new Boolean(false);
 	private Boolean tube_server_power_up = new Boolean(false);
 	private Boolean hall_server_power_up = new Boolean(false);
-	// Client run state
-	private Boolean client_console_updating = new Boolean(false);
-
 	// suite file updating
 	private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
 	private String client_hall_status = new String("busy");
-
+	// Client concole updating
+	private Boolean client_console_updating = new Boolean(false);
+	// Client maintaince mode (house keeping) assertion
+	private Boolean client_house_keeping = new Boolean(false);
+	// system level message
+	//private String client_info_message = new String("");
+	//private String client_warn_message = new String("");
+	//private String client_error_message = new String("");
+	
+	
 	// public function
 	public switch_data() {
 
@@ -307,6 +313,27 @@ public class switch_data {
 		rw_lock.readLock().lock();
 		try {
 			status = this.client_console_updating;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}	
+	
+	//client_house_keeping
+	public void set_client_house_keeping(Boolean new_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_house_keeping = new_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_client_house_keeping() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_house_keeping;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
