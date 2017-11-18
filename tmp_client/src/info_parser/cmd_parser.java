@@ -131,7 +131,7 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
 				.desc("Case run place, if not present will use current launch path").build());
 		options_obj.addOption(Option.builder("s").longOpt("save-path").hasArg()
-				.desc("Storage place for completed case, if not present will use current work_path").build());
+				.desc("Storage place for case remote store, if not present will use current work_path").build());
 		options_obj.addOption(Option.builder("t").longOpt("max-threads").hasArg()
 				.desc("Client will launch multi-threads").build());		
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());
