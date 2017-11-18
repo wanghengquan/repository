@@ -45,6 +45,13 @@ class initial_status extends abstract_status {
 		// task 7: get hall manager ready
 		get_hall_manager_reay();
 		System.out.println(">>>Info: working...");
+		//waiting for all waiter ready
+		try {
+			Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		client.set_current_status(client.WORK);
 	}
 

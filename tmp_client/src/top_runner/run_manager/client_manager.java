@@ -88,7 +88,7 @@ public class client_manager extends Thread  {
 		//scenario 1: idle for a long time
 		//String current_hall_status = switch_info.get_client_hall_status();
 		if(pool_info.get_pool_used_threads() == 0){
-			idle_counter += 1;
+			idle_counter ++;
 		} else {
 			idle_counter = 0;
 		}

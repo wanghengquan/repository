@@ -40,7 +40,7 @@ public class work_status extends abstract_status {
 		client.tube_runner.wait_request();
 		client.data_runner.wait_request();
 		try {
-			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000 * 5);
+			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000 * 2);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
