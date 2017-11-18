@@ -41,7 +41,7 @@ class stop_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		System.out.println("Run state things");
+		System.out.println(">>>Info:Run state things");
 		report_processed_data();
 		dump_finished_data();
 		dump_memory_data();		

@@ -23,6 +23,11 @@ public class time_info {
 		return formatter.format(new Date());
 	}
 
+	public static String get_date_year() {
+		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy");
+		return formatter.format(new Date());
+	}
+	
 	public static String get_date() {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMdd");
 		return formatter.format(new Date());

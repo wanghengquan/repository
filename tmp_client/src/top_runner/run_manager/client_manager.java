@@ -27,6 +27,7 @@ import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import top_runner.run_status.client_status;
+import top_runner.run_status.maintain_enum;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 
@@ -48,7 +49,7 @@ public class client_manager extends Thread  {
 	private view_data view_info;
 	private pool_data pool_info;
 	private HashMap<String, String> cmd_info;
-	private int hall_idle_count = 0;
+	private int idle_counter = 0;
 	// public function
 	// protected function
 	// private function	
@@ -79,22 +80,22 @@ public class client_manager extends Thread  {
 		}
 	}
 	
-	private Boolean start_maintenance_mode(client_status client_sts){
+	private maintain_enum start_maintenance_mode(client_status client_sts){
 		if(client_sts.get_current_status().equals("maintain_status")){
-			return false; //already in maintain_status
+			return maintain_enum.unknown; //already in maintain_status
 		}		
 		//maintenance start by any of following:
 		//scenario 1: idle for a long time
-		String current_hall_status = switch_info.get_client_hall_status();
-		if(current_hall_status.equalsIgnoreCase("idle")){
-			hall_idle_count += 1;
+		//String current_hall_status = switch_info.get_client_hall_status();
+		if(pool_info.get_pool_used_threads() == 0){
+			idle_counter += 1;
 		} else {
-			hall_idle_count = 0;
+			idle_counter = 0;
 		}
-		if (hall_idle_count > 60){
+		if (idle_counter > 60){
 			//cycle is base_interval * 1 * 60 = 5 minutes
-			hall_idle_count = 0;
-			return true;
+			idle_counter = 0;
+			return maintain_enum.idle;
 		}
 		//scenario 2: system suspend, cpu, mem, space exceed the maximum usage
 		HashMap<String, String> system_data = new HashMap<String, String>();
@@ -102,10 +103,10 @@ public class client_manager extends Thread  {
 		if (system_data.containsKey("status")){
 			String system_status = system_data.get("status");
 			if (system_status.equals(status_enum.SUSPEND.get_description())){
-				return true;
+				return maintain_enum.suspend;
 			}
 		}
-		return false;
+		return maintain_enum.unknown;
 	}
 	
 	public void run() {
@@ -176,7 +177,9 @@ public class client_manager extends Thread  {
 				client_sts.do_state_things();
 			}
 			// task 2 : maintenance mode calculate
-			if(start_maintenance_mode(client_sts)){
+			maintain_enum maintain_entry = start_maintenance_mode(client_sts);
+			if(!maintain_entry.equals(maintain_enum.unknown)){
+				switch_info.set_client_maintain_reason(maintain_entry);
 				client_sts.to_maintain_status();
 				client_sts.do_state_things();
 			}

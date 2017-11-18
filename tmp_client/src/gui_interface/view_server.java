@@ -404,6 +404,44 @@ public class view_server extends Thread {
 		*/
 	}
 
+	/*
+	private void implements_disk_cleanup_request(){
+		Boolean space_cleanup_apply = view_info.get_space_cleanup_apply();
+		if (!space_cleanup_apply){
+			//no apply
+			return;
+		}
+		if (disk_cleanup_dialog_show){
+			//already shown
+			return;
+		}
+		disk_cleanup_dialog_show = true;
+		String message = new String();
+		String title = new String("Work Space cleanup required.");
+		if (SwingUtilities.isEventDispatchThread()) {
+			int user_input = 1;
+			user_input = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.OK_OPTION);
+			if (user_input == 0){
+				disk_cleanup_dialog_show = false;
+				view_info.set_space_cleanup_apply(false);
+			}
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					int user_input = 1;
+					user_input = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.OK_OPTION);
+					if (user_input == 0){
+						disk_cleanup_dialog_show = false;
+						view_info.set_space_cleanup_apply(false);
+					}					
+				}
+			});
+		}		
+	}
+	*/
+	
 	public void run() {
 		try {
 			monitor_run();

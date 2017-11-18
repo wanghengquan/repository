@@ -108,6 +108,84 @@ public class client_data {
 		}
 	}	
 	
+	public HashMap<String, String> get_client_machine_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			if (client_hash.containsKey("Machine")){
+				temp.putAll(client_hash.get("Machine"));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_client_machine_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			if(client_hash.containsKey("Machine")){
+				client_hash.remove("Machine");
+			}
+			client_hash.put("Machine", update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_machine_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> machine_data = new HashMap<String, String>();
+			if(client_hash.containsKey("Machine")){
+				machine_data.putAll(client_hash.get("Machine"));
+			}
+			machine_data.putAll(update_data);
+			client_hash.put("Machine", machine_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public HashMap<String, String> get_client_preference_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			if (client_hash.containsKey("preference")){
+				temp.putAll(client_hash.get("preference"));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_client_preference_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			if(client_hash.containsKey("preference")){
+				client_hash.remove("preference");
+			}
+			client_hash.put("preference", update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_preference_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> preference_data = new HashMap<String, String>();
+			if(client_hash.containsKey("preference")){
+				preference_data.putAll(client_hash.get("preference"));
+			}
+			preference_data.putAll(update_data);
+			client_hash.put("preference", preference_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public void update_software_data(String section, HashMap<String, String> update_data) {
 		rw_lock.writeLock().lock();
 		try {

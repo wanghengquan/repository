@@ -40,7 +40,7 @@ public class work_status extends abstract_status {
 		client.tube_runner.wait_request();
 		client.data_runner.wait_request();
 		try {
-			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000);
+			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000 * 5);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,7 +52,7 @@ public class work_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		System.out.println("No extra thing to do, already running");
+		System.out.println(">>>Info:No extra thing to do, already running");
 	}	
 	
 	//=============================================================

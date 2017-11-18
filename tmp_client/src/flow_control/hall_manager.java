@@ -198,15 +198,6 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_client_data().toString());
 	}
-
-	private void hall_status_report(){
-		int used_thread = pool_info.get_pool_used_threads();
-		if (used_thread == 0){
-			switch_info.set_client_hall_status("idle");
-		} else {
-			switch_info.set_client_hall_status("busy");
-		}
-	}
 	
 	private void local_cmd_mode_exit_check(){
 		if (!client_info.get_client_data().get("preference").get("link_mode").equals("local")){
@@ -443,11 +434,9 @@ public class hall_manager extends Thread {
 			start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
 			// task 2 : make general report
 			generate_console_report();
-			// task 3 : Status report
-			hall_status_report();
-			// task 4 : exit apply for local command line mode
+			// task 3 : exit apply for local command line mode
 			local_cmd_mode_exit_check();
-			// task 5 : Maximum threads adjustment
+			// task 4 : Maximum threads adjustment
 			thread_auto_adjustment();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);

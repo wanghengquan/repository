@@ -34,6 +34,7 @@ public class view_data {
 	private List<String> export_queue_list = new ArrayList<String>();
 	private List<String> export_title_list = new ArrayList<String>();
 	private queue_enum run_action_request = queue_enum.WAITING;//play, pause, stop
+	private Boolean space_cleanup_apply = new Boolean(false);
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_compare());
@@ -504,4 +505,26 @@ public class view_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	
+	//space_cleanup_dialog
+	public Boolean get_space_cleanup_apply() {
+		rw_lock.readLock().lock();
+		Boolean temp = new Boolean(false);
+		try {
+			temp = space_cleanup_apply;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_space_cleanup_apply(Boolean new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			space_cleanup_apply = new_data;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 }

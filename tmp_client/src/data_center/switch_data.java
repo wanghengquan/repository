@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import env_monitor.machine_sync;
+import top_runner.run_status.maintain_enum;
 
 public class switch_data {
 	// public property
@@ -46,11 +47,12 @@ public class switch_data {
 	// suite file updating
 	private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
-	private String client_hall_status = new String("busy");
+	// private String client_hall_status = new String("busy");
 	// Client concole updating
 	private Boolean client_console_updating = new Boolean(false);
 	// Client maintaince mode (house keeping) assertion
 	private Boolean client_house_keeping = new Boolean(false);
+	private maintain_enum client_maintain_reason = maintain_enum.unknown;
 	// system level message
 	//private String client_info_message = new String("");
 	//private String client_warn_message = new String("");
@@ -340,6 +342,28 @@ public class switch_data {
 		return status;
 	}	
 	
+	//client_maintain_reason
+	public void set_client_maintain_reason(maintain_enum maintain_entry) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_maintain_reason = maintain_entry;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public maintain_enum get_client_maintain_reason() {
+		maintain_enum maintain_entry = maintain_enum.unknown;
+		rw_lock.readLock().lock();
+		try {
+			maintain_entry = this.client_maintain_reason;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return maintain_entry;
+	}
+	
+	/*
 	public void set_client_hall_status(String current_status) {
 		rw_lock.writeLock().lock();
 		try {
@@ -359,7 +383,8 @@ public class switch_data {
 		}
 		return status;
 	}
-
+	 */
+	
 	public void add_suite_file_list(ArrayList<String> file_list) {
 		rw_lock.writeLock().lock();
 		try {
