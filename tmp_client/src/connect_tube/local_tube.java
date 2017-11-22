@@ -808,7 +808,7 @@ public class local_tube {
 		}
 		//get excel file destination
 		File xlsx_fobj = new File(local_file);
-		String xlsx_dest = xlsx_fobj.getParent().replaceAll("\\\\", "/");
+		String xlsx_dest = xlsx_fobj.getAbsoluteFile().getParent().replaceAll("\\\\", "/");
 		//get excel data
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		ExcelData.putAll(get_excel_data(local_file));
