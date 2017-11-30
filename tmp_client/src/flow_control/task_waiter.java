@@ -668,11 +668,13 @@ public class task_waiter extends Thread {
 			task_data.putAll(get_final_task_data(queue_name, admin_data));
 			if (task_data.isEmpty()) {
 				TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
-				task_info.update_finished_admin_queue_list(queue_name);
+				task_info.decrease_processing_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
 				// move queue form received to processed admin queue treemap
 				move_finished_admin_queue_from_tube(queue_name);
 				move_finished_task_queue_from_tube(queue_name);
+				//update finished list must be placed here to avoid multi threadsrisk
+				task_info.update_finished_admin_queue_list(queue_name);
 				// release booking info
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);

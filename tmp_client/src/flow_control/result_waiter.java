@@ -383,6 +383,7 @@ public class result_waiter extends Thread {
 			runlog.append(line_separator);
 			runlog.append(line_separator);
 			runlog.append("####################" + line_separator);
+			runlog.append("Run with TMP client:" + public_data.BASE_CURRENTVERSION + line_separator);
 			String host_name = client_info.get_client_data().get("Machine").get("terminal");
 			String run_path = (String) one_call_data.get("case_dir");
 			runlog.append("Runtime Location ==> " + host_name + ":" + run_path + line_separator);
@@ -399,8 +400,8 @@ public class result_waiter extends Thread {
 			lin_link = String.format(
 					"<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>",
 					detail_path, detail_path);
-			runlog.append("Unified Location(Win Default Access) ==> " + win_link + line_separator);
-			runlog.append("Unified Location(Lin Default Access) ==> " + lin_link + line_separator);
+			runlog.append("Unified Location(Win LSH Access) ==> " + win_link + line_separator);
+			runlog.append("Unified Location(Lin LSH Access) ==> " + lin_link + line_separator);
 			runlog.append("Note: If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);
 			runlog.append(line_separator);

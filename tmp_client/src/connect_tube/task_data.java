@@ -771,6 +771,21 @@ public class task_data {
 		}
 	}
 
+	public Boolean decrease_processing_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		Boolean decrease_status = new Boolean(true);
+		try {
+			if (processing_admin_queue_list.contains(queue_name)) {
+				processing_admin_queue_list.remove(queue_name);
+			} else {
+				decrease_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return decrease_status;
+	}	
+	
 	// not used
 	public ArrayList<String> get_pending_admin_queue_list() {
 		rw_lock.readLock().lock();
