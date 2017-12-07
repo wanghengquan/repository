@@ -82,31 +82,35 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('r')) {
 			cmd_hash.put("link_mode", "remote");
 		} 
-		// 3.3 suite file value
+		// 3.3 ignore/skip task requirements check
+		if (commandline_obj.hasOption('i')) {
+			cmd_hash.put("ignore_request", commandline_obj.getOptionValue('i'));
+		} 	
+		// 3.4 suite file value
 		if (commandline_obj.hasOption('f')) {
 			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f'));
 		} else {
 			cmd_hash.put("suite_file", "");
 		}
-		// 3.4 work path
+		// 3.5 work path
 		if (commandline_obj.hasOption('w')) {
 			cmd_hash.put("work_path", commandline_obj.getOptionValue('w'));
 		}
-		// 3.5 save path
+		// 3.6 save path
 		if (commandline_obj.hasOption('s')) {
 			cmd_hash.put("save_path", commandline_obj.getOptionValue('s'));
 		}
-		// 3.6 max threads
+		// 3.7 max threads
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}		
-		// 3.7 debug model
+		// 3.8 debug model
 		if (commandline_obj.hasOption('d')) {
 			cmd_hash.put("debug", "true");
 		} else {
 			cmd_hash.put("debug", "false");
 		}
-		// 3.8 help definition
+		// 3.9 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
@@ -126,6 +130,8 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("u").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
+		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
+				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine) check").build());		
 		options_obj.addOption(
 				Option.builder("f").longOpt("suite-file").hasArg().desc("Test suite file for Local run").build());
 		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
@@ -133,7 +139,7 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("s").longOpt("save-path").hasArg()
 				.desc("Storage place for case remote store, if not present will use current work_path").build());
 		options_obj.addOption(Option.builder("t").longOpt("max-threads").hasArg()
-				.desc("Client will launch multi-threads").build());		
+				.desc("Client will launch $t threads").build());
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
 		return options_obj;
@@ -143,7 +149,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "java -jar tmp_client.jar [-c|-g] [-a|-u] [-l -f <file_path1,file_path2>] [-t 3] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-c|-g] [-a|-u] [-l -f <file_path1,file_path2> | -r] [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
 		String header = "Here is details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

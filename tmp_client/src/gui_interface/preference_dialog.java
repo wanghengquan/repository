@@ -17,12 +17,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -45,8 +47,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	private client_data client_info;
 	private pool_data pool_info;
 	private JPanel preference_panel;
-	private JLabel jl_link_mode, jl_max_threads, jl_task_assign, jl_work_path, jl_save_path;
+	private JLabel jl_link_mode, jl_max_threads, jl_task_assign, jl_ignore_request, jl_work_path, jl_save_path;
 	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel;
+	private JCheckBox ignore_software, ignore_system, ignore_machine;
 	private JTextField thread_text, jt_work_path, jt_save_path;
 	private JButton discard, apply;
 
@@ -59,14 +62,13 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		container.add(construct_preference_panel());
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(500, 300);
+		this.setSize(550, 350);
 	}
 	
 	private JPanel construct_preference_panel(){
-		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		client_data.putAll(client_info.get_client_data());
-		HashMap<String, String> preference_data = client_data.get("preference");
-		preference_panel = new JPanel(new GridLayout(7,1,5,5));
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client_info.get_client_preference_data());
+		preference_panel = new JPanel(new GridLayout(8,1,5,5));
 		//step 0 : Title line
 		JPanel jp_title = new JPanel(new GridLayout(1,1,5,5));
 		jp_title.add(new JLabel("Preference items:"));
@@ -118,46 +120,58 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jp_center3.add(task_auto);
 		jp_center3.add(task_serial);
 		jp_center3.add(task_parallel);	
-		//step 4 : input 4th line
-		GridBagLayout input4_layout = new GridBagLayout();
-		JPanel jp_center4 = new JPanel(input4_layout);
-		jl_work_path = new JLabel("Work Space:");
-		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
-		jt_work_path = new JTextField(preference_data.get("work_path"));
-		jp_center4.add(jl_work_path);
-		jp_center4.add(jt_work_path);
-		GridBagConstraints input4_s = new GridBagConstraints();
-		//for jl_work_path
-		input4_s.fill = GridBagConstraints.BOTH;
-		input4_s.gridwidth=1;
-		input4_s.weightx = 0;
-		input4_s.weighty=0;
-		input4_layout.setConstraints(jl_work_path, input4_s);	
-		//for jt_work_path
-		input4_s.gridwidth=0;
-		input4_s.weightx = 1;
-		input4_s.weighty=0;
-		input4_layout.setConstraints(jt_work_path, input4_s);		
+		//step 4 : input 4th 
+		JPanel jp_center4 = new JPanel(new GridLayout(1,4,5,5));
+		jl_ignore_request = new JLabel("Ignore Request:");
+		jl_ignore_request.setToolTipText("Client will ignore/skip the task requirements check.");
+		ignore_software = new JCheckBox("Software");
+		ignore_system = new JCheckBox("System");
+		ignore_machine = new JCheckBox("Machine");
+		initial_ignore_default_value(preference_data.get("ignore_request"));
+		jp_center4.add(jl_ignore_request);
+		jp_center4.add(ignore_software);
+		jp_center4.add(ignore_system);
+		jp_center4.add(ignore_machine);		
 		//step 5 : input 5th line
 		GridBagLayout input5_layout = new GridBagLayout();
 		JPanel jp_center5 = new JPanel(input5_layout);
-		jl_save_path = new JLabel("Save Space:");
-		jl_save_path.setToolTipText("Client try to copy task case to this place, if same as \"Work Space\" client will skip copy action.");
-		jt_save_path = new JTextField(preference_data.get("save_path"));
-		jp_center5.add(jl_save_path);
-		jp_center5.add(jt_save_path);
+		jl_work_path = new JLabel("Work Space:");
+		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
+		jt_work_path = new JTextField(preference_data.get("work_path"));
+		jp_center5.add(jl_work_path);
+		jp_center5.add(jt_work_path);
 		GridBagConstraints input5_s = new GridBagConstraints();
 		//for jl_work_path
 		input5_s.fill = GridBagConstraints.BOTH;
 		input5_s.gridwidth=1;
 		input5_s.weightx = 0;
 		input5_s.weighty=0;
-		input5_layout.setConstraints(jl_save_path, input5_s);	
+		input5_layout.setConstraints(jl_work_path, input5_s);	
 		//for jt_work_path
 		input5_s.gridwidth=0;
 		input5_s.weightx = 1;
 		input5_s.weighty=0;
-		input5_layout.setConstraints(jt_save_path, input5_s);		
+		input5_layout.setConstraints(jt_work_path, input5_s);		
+		//step 6 : input 6th line
+		GridBagLayout input6_layout = new GridBagLayout();
+		JPanel jp_center6 = new JPanel(input6_layout);
+		jl_save_path = new JLabel("Save Space:");
+		jl_save_path.setToolTipText("Client try to copy task case to this place, if same as \"Work Space\" client will skip copy action.");
+		jt_save_path = new JTextField(preference_data.get("save_path"));
+		jp_center6.add(jl_save_path);
+		jp_center6.add(jt_save_path);
+		GridBagConstraints input6_s = new GridBagConstraints();
+		//for jl_work_path
+		input6_s.fill = GridBagConstraints.BOTH;
+		input6_s.gridwidth=1;
+		input6_s.weightx = 0;
+		input6_s.weighty=0;
+		input6_layout.setConstraints(jl_save_path, input6_s);	
+		//for jt_work_path
+		input6_s.gridwidth=0;
+		input6_s.weightx = 1;
+		input6_s.weighty=0;
+		input6_layout.setConstraints(jt_save_path, input6_s);		
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,2,5,10));
 		discard = new JButton("Discard");
@@ -173,6 +187,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		preference_panel.add(jp_center3);
 		preference_panel.add(jp_center4);
 		preference_panel.add(jp_center5);
+		preference_panel.add(jp_center6);
 		preference_panel.add(jp_bottom);
 		return preference_panel;
 	}
@@ -211,6 +226,24 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			thread_manual.setSelected(true);
 			thread_text.setEnabled(true);			
 		}
+	}
+	
+	private void initial_ignore_default_value(String ignore_request){
+		if (ignore_request.contains("machine")){
+			ignore_machine.setSelected(true);
+		} else {
+			ignore_machine.setSelected(false);
+		}
+		if (ignore_request.contains("system")){
+			ignore_system.setSelected(true);
+		} else {
+			ignore_system.setSelected(false);
+		}
+		if (ignore_request.contains("software")){
+			ignore_software.setSelected(true);
+		} else {
+			ignore_software.setSelected(false);
+		}		
 	}
 	
 	private void initial_task_default_value(String task_mode){
@@ -254,13 +287,13 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	@Override
 	public void actionPerformed(ActionEvent arg0) {		
 		// TODO Auto-generated method stub
-		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		client_data.putAll(client_info.get_client_data());
-		HashMap<String, String> preference_data = client_data.get("preference");		
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client_info.get_client_preference_data());
 		if(arg0.getSource().equals(discard)){
 			initial_link_default_value(preference_data.get("link_mode"));
 			initial_thread_default_value(preference_data.get("thread_mode"));
 			initial_task_default_value(preference_data.get("task_mode"));
+			initial_ignore_default_value(preference_data.get("ignore_request"));
 			thread_text.setText(preference_data.get("max_threads"));
 			jt_work_path.setText(preference_data.get("work_path"));
 			jt_save_path.setText(preference_data.get("save_path"));
@@ -296,6 +329,18 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			} else {
 				preference_data.put("task_mode", "parallel");
 			}
+			//ignore request
+			ArrayList<String> ignore_list = new ArrayList<String>();
+			if (ignore_machine.isSelected()){
+				ignore_list.add("machine");
+			}
+			if (ignore_system.isSelected()){
+				ignore_list.add("system");
+			}
+			if (ignore_software.isSelected()){
+				ignore_list.add("software");
+			}
+			preference_data.put("ignore_request", String.join(",", ignore_list));
 			//work path
 			if(jt_work_path.getText().trim().equals("")){
 				String message = new String("Empty work path found.");
@@ -327,7 +372,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				return;
 			}
 			//input data
-			client_info.set_client_data(client_data);
+			client_info.set_client_preference_data(preference_data);
 			switch_info.set_client_updated();
 		}		
 	}

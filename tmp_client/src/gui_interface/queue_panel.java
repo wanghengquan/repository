@@ -11,12 +11,16 @@ package gui_interface;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 //import java.util.Vector;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -25,6 +29,7 @@ import java.util.Vector;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -39,6 +44,7 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
+import data_center.public_data;
 import flow_control.queue_enum;
 import utility_funcs.time_info;
 
@@ -153,7 +159,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	private Component panel_bottom_component() {
 		JPanel capture_panel = new JPanel(new BorderLayout());
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, task_info, view_info);
+		capture_pop_memu capture_menu = new capture_pop_memu(capture_table, task_info, client_info, view_info);
 		capture_table.addMouseListener(new MouseAdapter() {
 			//for windows popmenu
 			public void mouseReleased(MouseEvent e) {
@@ -425,14 +431,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private JMenuItem show;
 	private JMenuItem run_play, run_pause, run_stop;
-	private JMenuItem details;
+	private JMenuItem details, results;
 	private JMenuItem delete;
 	private task_data task_info;
+	private client_data client_info;
 	private view_data view_info;
+	private String line_separator = System.getProperty("line.separator");
+	private String file_seprator = System.getProperty("file.separator");
 
-	public capture_pop_memu(JTable table, task_data task_info, view_data view_info) {
+	public capture_pop_memu(JTable table, task_data task_info, client_data client_info, view_data view_info) {
 		this.table = table;
 		this.task_info = task_info;
+		this.client_info = client_info;
 		this.view_info = view_info;
 		show = new JMenuItem("Show");
 		show.addActionListener(this);
@@ -452,7 +462,10 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		this.addSeparator();
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
+		results = new JMenuItem("Results");
+		results.addActionListener(this);		
 		this.add(details);
+		this.add(results);
 		this.addSeparator();
 		delete = new JMenuItem("Delete");
 		delete.addActionListener(this);
@@ -499,6 +512,58 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		}
 	}
 	
+	public void open_result_folder(String queue_name){
+		String title = "Open Folder Failed:";
+		String message = new String("");
+		if (queue_name == null){
+			message = "Cannot open run DIR, unknow error." + line_separator;
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return;			
+		}
+		if(!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
+			message = "Cannot open run DIR, "+ queue_name + " not exists." + line_separator;
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+		String work_space = new String();
+		admin_data.putAll(task_info.get_captured_admin_queues_treemap().get(queue_name));
+		if (admin_data == null|| admin_data.isEmpty()){
+			message = "Cannot open run DIR, "+ queue_name + " not exists." + line_separator;
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return;			
+		}
+		work_space = client_info.get_client_preference_data().getOrDefault("work_path", "");
+		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
+		String run_dir_name = "run" + admin_data.get("ID").get("run");
+		String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name };
+		String task_work_path = String.join(file_seprator, path_array);
+		task_work_path = task_work_path.replaceAll("\\\\", "/");		
+		File task_work_path_fobj = new File(task_work_path);
+		if(!task_work_path_fobj.exists()){
+			message = "Cannot open run DIR, "+ task_work_path + " not exists." + line_separator;
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			return;			
+		}
+		message = "Can not open path with system register browser" + line_separator + task_work_path;
+		if(Desktop.isDesktopSupported()){
+			Desktop desktop = Desktop.getDesktop();
+			try {
+				desktop.open(task_work_path_fobj);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			} catch (IllegalArgumentException e2){
+				e2.printStackTrace();
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			}
+		} else {
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+		}	
+	}	
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -525,6 +590,11 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			capture_detail detail_view = new capture_detail(select_queue, task_info);
 			detail_view.setVisible(true);
+		}	
+		if (arg0.getSource().equals(results)) {
+			System.out.println("results clicked");
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			open_result_folder(queue_name);
 		}		
 		if (arg0.getSource().equals(delete)) {
 			System.out.println("delete clicked");

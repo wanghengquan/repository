@@ -44,7 +44,7 @@ public class export_data {
 			task_data task_info){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		received_admin_queues_treemap.putAll(task_info.get_received_admin_queues_treemap());
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/retrieve/received_admin";
 		Iterator<String> queue_it = received_admin_queues_treemap.keySet().iterator();
@@ -66,7 +66,7 @@ public class export_data {
 			task_data task_info){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> processed_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		processed_admin_queues_treemap.putAll(task_info.get_processed_admin_queues_treemap());
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/retrieve/processed_admin";
 		Iterator<String> queue_it = processed_admin_queues_treemap.keySet().iterator();
@@ -88,7 +88,7 @@ public class export_data {
 			task_data task_info){
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		received_task_queues_map.putAll(task_info.get_received_task_queues_map());
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/retrieve/received_task";
 		Iterator<String> queue_it = received_task_queues_map.keySet().iterator();
@@ -110,7 +110,7 @@ public class export_data {
 			task_data task_info){
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/retrieve/processed_task";
 		Iterator<String> queue_it = processed_task_queues_map.keySet().iterator();
@@ -138,7 +138,7 @@ public class export_data {
 		} else {
 			return dump_status;
 		}
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/finished/admin";
 		dump_status = export_admin_data(queue_name, admin_data, dump_path);
@@ -156,7 +156,7 @@ public class export_data {
 		} else {
 			return dump_status;
 		}
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String dump_path = work_path + "/" + log_folder + "/finished/task";
 		dump_status = export_task_data(queue_name, task_data, dump_path);
@@ -168,7 +168,7 @@ public class export_data {
 		client_data client_info,
 		task_data task_info){
 		Boolean export_status = new Boolean(false);	
-		String work_dir = new String(client_info.get_client_data().get("preference").get("work_path"));
+		String work_dir = new String(client_info.get_client_preference_data().get("work_path"));
 		File work_dir_fobj = new File(work_dir);
 		if (!work_dir_fobj.exists()) {
 			EXPORT_DATA_LOGGER.warn("Work space do not exists:" + work_dir);

@@ -164,14 +164,27 @@ public class tube_server extends Thread {
 			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		ArrayList<String> mismatch_list = new ArrayList<String>();
-		if (!admin_queue_system_key_check(queue_data, client_hash)) {
-			mismatch_list.add("System");
+		String ignore_request = new String("");
+		if (client_hash.containsKey("preference")){
+			ignore_request = client_hash.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		}
-		if (!admin_queue_machine_key_check(queue_name, queue_data, client_hash)) {
-			mismatch_list.add("Machine");
+		if (!ignore_request.contains("all")){
+			return mismatch_list;
 		}
-		if (!admin_queue_software_key_check(queue_data, client_hash)) {
-			mismatch_list.add("Software");
+		if (!ignore_request.contains("system")){
+			if (!admin_queue_system_key_check(queue_data, client_hash)) {
+				mismatch_list.add("System");
+			}			
+		}
+		if (!ignore_request.contains("machine")){
+			if (!admin_queue_machine_key_check(queue_name, queue_data, client_hash)) {
+				mismatch_list.add("Machine");
+			}		
+		}
+		if (!ignore_request.contains("software")){
+			if (!admin_queue_software_key_check(queue_data, client_hash)) {
+				mismatch_list.add("Software");
+			}
 		}
 		return mismatch_list;
 	}
@@ -185,7 +198,7 @@ public class tube_server extends Thread {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> captured_admin_queue = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		TreeMap<String, String> new_rejected_reason_queue = new TreeMap<String, String>();
 		TreeMap<String, String> old_rejected_reason_queue = new TreeMap<String, String>();
-		client_data.putAll(client_info.get_client_data());
+		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
 		total_admin_queue.putAll(task_info.get_received_admin_queues_treemap());
 		old_rejected_reason_queue.putAll(task_info.get_rejected_admin_reason_treemap());
 		Iterator<String> queue_it = total_admin_queue.keySet().iterator();
@@ -303,7 +316,7 @@ public class tube_server extends Thread {
 			return;
 		}
 		local_tube local_tube_parser = new local_tube(task_info);
-		String terminal = new String(client_info.get_client_data().get("Machine").get("terminal"));
+		String terminal = new String(client_info.get_client_machine_data().get("terminal"));
 		int counter = 0;
 		while(true){
 			if (counter > 10){
@@ -319,7 +332,7 @@ public class tube_server extends Thread {
 	}
 
 	private void run_import_remote_admin(){
-		String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+		String link_mode = client_info.get_client_preference_data().get("link_mode");
 		if (link_mode.equalsIgnoreCase("local")){
 			try {
 				rmq_runner.stop_admin_tube();
@@ -329,7 +342,7 @@ public class tube_server extends Thread {
 			}
 		} else {
 			try {
-				rmq_runner.start_admin_tube(client_info.get_client_data().get("Machine").get("terminal"));
+				rmq_runner.start_admin_tube(client_info.get_client_machine_data().get("terminal"));
 			} catch (Exception e1) {
 				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
 			}
@@ -337,7 +350,7 @@ public class tube_server extends Thread {
 	}
 	
 	private void run_received_admin_sorting(){
-		String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+		String link_mode = client_info.get_client_preference_data().get("link_mode");
 		if (link_mode.equalsIgnoreCase("both")){
 			return;
 		}
@@ -368,7 +381,7 @@ public class tube_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_path") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);

@@ -145,6 +145,8 @@ public class data_server extends Thread {
 		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
 		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
+		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
+		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("work_path", public_data.DEF_WORK_PATH);
@@ -271,7 +273,7 @@ public class data_server extends Thread {
 	private HashMap<String, String> get_scan_cmd_build(String scan_cmd) {
 		HashMap<String, String> extra_dirs = new HashMap<String, String>();
 		ArrayList<String> cmd_output = new ArrayList<String>();
-		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_data().get("preference").get("work_path"));
+		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_preference_data().get("work_path"));
 		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		try {
 			cmd_output.addAll(system_cmd.run(scan_cmd));
@@ -425,7 +427,7 @@ public class data_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_path") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
@@ -454,7 +456,7 @@ public class data_server extends Thread {
  		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 4 : update default current size into Pool Data
-		String current_max_threads = client_info.get_client_data().get("preference").get("max_threads");
+		String current_max_threads = client_info.get_client_preference_data().get("max_threads");
 		pool_info.set_pool_current_size(Integer.parseInt(current_max_threads));
 		// initial 5 : Announce data server ready
 		switch_info.set_data_server_power_up();

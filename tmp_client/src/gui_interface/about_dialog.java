@@ -109,7 +109,7 @@ public class about_dialog extends JDialog implements ActionListener {
 	private String get_client_runtime(){
 		String start_time = new String("0");
 		try{
-			start_time = client_info.get_client_data().get("Machine").get("start_time");
+			start_time = client_info.get_client_machine_data().get("start_time");
 		} catch (Exception e){
 			return "NA";
 		}

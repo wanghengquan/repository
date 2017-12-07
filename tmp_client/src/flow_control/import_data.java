@@ -34,11 +34,11 @@ public class import_data {
 
 	public import_data() {
 	}
-	
+
 	public static TreeMap<String, HashMap<String, HashMap<String, String>>> retrieve_disk_dumped_received_admin_data(
 			client_data client_info){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> update_queues = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		File log_path = new File(work_path + "/" + log_folder + "/retrieve/received_admin");
 		if (!log_path.exists() || !log_path.canRead()) {
@@ -71,7 +71,7 @@ public class import_data {
 	public static TreeMap<String, HashMap<String, HashMap<String, String>>> retrieve_disk_dumped_processed_admin_data(
 			client_data client_info){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> update_queues = new TreeMap<String, HashMap<String, HashMap<String, String>>>();		
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		File log_path = new File(work_path + "/" + log_folder + "/retrieve/processed_admin");
 		if (!log_path.exists() || !log_path.canRead()) {
@@ -104,7 +104,7 @@ public class import_data {
 	public static Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> retrieve_disk_dumped_received_task_data(
 			client_data client_info){
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> ();
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		File log_path = new File(work_path + "/" + log_folder + "/retrieve/received_task");
 		if (!log_path.exists() || !log_path.canRead()) {
@@ -137,7 +137,7 @@ public class import_data {
 	public static Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> retrieve_disk_dumped_processed_task_data(
 			client_data client_info){
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> ();		
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		File log_path = new File(work_path + "/" + log_folder + "/retrieve/processed_task");
 		if (!log_path.exists() || !log_path.canRead()) {
@@ -169,7 +169,7 @@ public class import_data {
 	
 	public static ArrayList<String> import_disk_finished_admin_queue_list(
 			client_data client_info){
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		File log_path = new File(work_path + "/" + log_folder + "/finished/admin");
@@ -196,7 +196,7 @@ public class import_data {
 	public static HashMap<String, HashMap<String, String>> import_disk_finished_admin_data(
 			String queue_name,
 			client_data client_info) {		
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String xml_path = work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml";
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
@@ -207,7 +207,7 @@ public class import_data {
 	public static TreeMap<String, HashMap<String, HashMap<String, String>>> import_disk_finished_task_data(
 			String queue_name,
 			client_data client_info) {		
-		String work_path = client_info.get_client_data().get("preference").get("work_path");
+		String work_path = client_info.get_client_preference_data().get("work_path");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
 		String xml_path = work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml";
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();

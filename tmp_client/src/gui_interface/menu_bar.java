@@ -246,7 +246,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			}
 		}
 		if (e.getSource().equals(import_unit_suite)) {
-			String link_mode = client_info.get_client_data().get("preference").get("link_mode");
+			String link_mode = client_info.get_client_preference_data().get("link_mode");
 			if (link_mode.equals("remote")){
 				String title = new String("Link mode error");
 				String message = new String("Client run in remote mode, cannot import local suite file. Please go and setting in \"Setting --> Preference...\"");

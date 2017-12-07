@@ -26,7 +26,7 @@ public class public_data {
 	// end with 0: long term version, otherwise developing version
 	public final static String BASE_CURRENTVERSION = "2.06.19"; //2.06.12 External.Internal.DEV
 	public final static int BASE_CURRENTVERSION_INT = 20619; // version for code use
-	public final static String BASE_BUILDDATE = "2017/11/30";
+	public final static String BASE_BUILDDATE = "2017/12/07";
 	public final static String BASE_SUITEFILEVERSION = "1.09";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -169,9 +169,8 @@ public class public_data {
 																// "parallel",
 																// "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
-	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local",
-																// "remote",
-																// "both"
+	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local","remote","both"
+	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"software", "system", "machine"
 	public final static String DEF_POOL_CURRENT_SIZE = "5";
 	public final static String DEF_SHOW_WELCOME = "1";
 	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");

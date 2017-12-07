@@ -710,7 +710,7 @@ public class task_waiter extends Thread {
 			String case_work_path = new String();
 			try {
 				case_work_path = prepare_obj.get_working_dir(task_data,
-						client_info.get_client_data().get("preference").get("work_path"));
+						client_info.get_client_preference_data().get("work_path"));
 				case_prepare_list = prepare_obj.get_case_ready(task_data, case_work_path);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -728,7 +728,7 @@ public class task_waiter extends Thread {
 			String[] run_cmd = prepare_obj.get_run_command(
 					task_data,
 					case_work_path,
-					client_info.get_client_data().get("preference").get("work_path"));
+					client_info.get_client_preference_data().get("work_path"));
 			// task 9 : launch env
 			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.get_client_data());
 			// task 10 : launch (add case info to task data)

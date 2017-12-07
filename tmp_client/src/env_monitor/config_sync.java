@@ -132,7 +132,10 @@ public class config_sync extends Thread {
 		}
 	}
 
-	private Boolean dump_client_data(ini_parser ini_runner) {
+	private Boolean dump_client_data(
+			ini_parser ini_runner,
+			HashMap<String, HashMap<String, String>> ini_data
+			) {
 		Boolean dump_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
 		write_data.putAll(deep_clone.clone(client_info.get_client_data()));
@@ -149,15 +152,19 @@ public class config_sync extends Thread {
 			dump_status = false;
 			return dump_status;
 		}
+		String cmd_gui = write_data.get("preference").get("cmd_gui");
 		HashMap<String, String> tmp_preference_data = new HashMap<String, String>();
+		HashMap<String, String> cfg_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
 		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
+		tmp_preference_data.put("ignore_request", write_data.get("preference").get("ignore_request"));
 		tmp_preference_data.put("thread_mode", write_data.get("preference").get("thread_mode"));
 		tmp_preference_data.put("task_mode", write_data.get("preference").get("task_mode"));
 		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));
 		tmp_preference_data.put("work_path", write_data.get("preference").get("work_path"));
 		tmp_preference_data.put("save_path", write_data.get("preference").get("save_path"));
+		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
@@ -166,7 +173,11 @@ public class config_sync extends Thread {
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
-		write_data.put("tmp_preference", tmp_preference_data);
+		if (cmd_gui.equalsIgnoreCase("gui")){
+			write_data.put("tmp_preference", tmp_preference_data);
+		} else {
+			write_data.put("tmp_preference", cfg_preference_data);
+		}
 		write_data.put("tmp_machine", tmp_machine_data);
 		CONFIG_SYNC_LOGGER.info(write_data.toString());
 		try {
@@ -228,7 +239,7 @@ public class config_sync extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_path") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
@@ -276,7 +287,7 @@ public class config_sync extends Thread {
 			Boolean dump_request = switch_info.impl_dump_config_request();
 			if (dump_request) {
 				ini_parser ini_dump = new ini_parser(get_write_config_file());
-				dump_client_data(ini_dump);
+				dump_client_data(ini_dump, ini_data);
 			}
 			try {
 				Thread.sleep(base_interval * 2 * 1000);

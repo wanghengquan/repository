@@ -109,7 +109,7 @@ public class hall_manager extends Thread {
 	private String get_client_runtime(){
 		String start_time = new String("0");
 		try{
-			start_time = client_info.get_client_data().get("Machine").get("start_time");
+			start_time = client_info.get_client_machine_data().get("start_time");
 		} catch (Exception e){
 			HALL_MANAGER_LOGGER.info("Get client start time failed.");
 			return "NA";
@@ -145,14 +145,14 @@ public class hall_manager extends Thread {
 		run_summary.put(task_enum.OTHERS, others_num.toString() );
 		return run_summary;
 	}
-	
+
 	private void generate_console_report() {
 		// report processing queue list
 		int show_queue_number = 6;
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_data().get("preference").get("cmd_gui"));
-		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_data().get("preference").get("link_mode"));
+		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		// report Captured queue list
 		ArrayList<String> captured_queue_list = new ArrayList<String>();
 		captured_queue_list.addAll(task_info.get_captured_admin_queues_treemap().keySet());
@@ -200,10 +200,10 @@ public class hall_manager extends Thread {
 	}
 	
 	private void local_cmd_mode_exit_check(){
-		if (!client_info.get_client_data().get("preference").get("link_mode").equals("local")){
+		if (!client_info.get_client_preference_data().get("link_mode").equals("local")){
 			return;
 		}
-		if (client_info.get_client_data().get("preference").get("cmd_gui").equals("gui")){
+		if (client_info.get_client_preference_data().get("cmd_gui").equals("gui")){
 			return;
 		}
 		if (!switch_info.get_suite_file_list().isEmpty()){
@@ -293,7 +293,7 @@ public class hall_manager extends Thread {
 	private void reset_default_max_thread(){
 		int max_thread = pool_info.get_pool_current_size();
 		int used_thread = pool_info.get_pool_used_threads();
-		String default_max_threads = client_info.get_client_data().get("preference").get("max_threads");
+		String default_max_threads = client_info.get_client_preference_data().get("max_threads");
 		int def_thread = Integer.parseInt(default_max_threads);
 		if (used_thread > 0){
 			return;
@@ -348,8 +348,8 @@ public class hall_manager extends Thread {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_data().get("preference").get("cmd_gui"));
-		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_data().get("preference").get("link_mode"));
+		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
 		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
 			HALL_MANAGER_LOGGER.info(">>>                 :"+ queue_name);
@@ -394,7 +394,7 @@ public class hall_manager extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_path") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
