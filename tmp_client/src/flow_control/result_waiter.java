@@ -129,10 +129,10 @@ public class result_waiter extends Thread {
 				run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
 				break;
 			default:// auto and any other inputs treated as auto
-				if (cmd_status.equals(task_enum.FAILED)) {
-					run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
-				} else {
+				if (cmd_status.equals(task_enum.PASSED)) {
 					run_status = copy_case_to_save_path(case_work_path, case_save_path, "archive");
+				} else {
+					run_status = copy_case_to_save_path(case_work_path, case_save_path, "source");
 				}
 			}
 		}

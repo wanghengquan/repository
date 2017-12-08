@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.public_data;
 import flow_control.task_enum;
 import info_parser.xls_parser;
 import utility_funcs.time_info;
@@ -801,7 +802,8 @@ public class local_tube {
 	// generate different admin and task queue hash
 	public void generate_local_admin_task_queues(String local_file, String current_terminal) {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> xlsx_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>(); 
+		local_file = local_file.replaceAll("\\$unit_path", public_data.DOC_EIT_PATH);
 		//excel file sanity check
 		if(!suite_file_sanity_check(local_file)){
 			LOCAL_TUBE_LOGGER.warn("Suite file wrong format:" + local_file);

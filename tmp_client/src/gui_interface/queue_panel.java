@@ -520,19 +520,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;			
 		}
-		if(!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-			message = "Cannot open run DIR, "+ queue_name + " not exists." + line_separator;
-			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
-		String work_space = new String();
-		admin_data.putAll(task_info.get_captured_admin_queues_treemap().get(queue_name));
-		if (admin_data == null|| admin_data.isEmpty()){
+		if (task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
+			admin_data.putAll(task_info.get_captured_admin_queues_treemap().get(queue_name));
+		} else if (task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
+			admin_data.putAll(task_info.get_processed_admin_queues_treemap().get(queue_name));
+		} else {
 			message = "Cannot open run DIR, "+ queue_name + " not exists." + line_separator;
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-			return;			
+			return;	
 		}
+		//get work_space
+		String work_space = new String();
 		work_space = client_info.get_client_preference_data().getOrDefault("work_path", "");
 		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 		String prj_dir_name = "prj" + admin_data.get("ID").get("project");

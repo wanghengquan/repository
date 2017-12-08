@@ -132,8 +132,8 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
 		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
 				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine) check").build());		
-		options_obj.addOption(
-				Option.builder("f").longOpt("suite-file").hasArg().desc("Test suite file for Local run").build());
+		options_obj.addOption(Option.builder("f").longOpt("suite-file").hasArg()
+				.desc("Test suite file for Local run, $unit_path represent the path to <install_path>/doc/TMP_EIT_suites").build());
 		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
 				.desc("Case run place, if not present will use current launch path").build());
 		options_obj.addOption(Option.builder("s").longOpt("save-path").hasArg()
