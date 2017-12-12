@@ -493,10 +493,10 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 				desktop.open(new File(work_path));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			} catch (IllegalArgumentException e2){
-				e2.printStackTrace();
+				// e2.printStackTrace();
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			}
 		} else {

@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.public_data;
 import flow_control.task_enum;
 import info_parser.xls_parser;
+import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 
@@ -999,6 +1000,11 @@ public class local_tube {
 		//LaunchCommand
 		HashMap<String, String> cmd_data = new HashMap<String, String>();
 		String exe_file = imported_data.get("exe");
+		String arg_file = imported_data.get("arg");
+		exe_file = "$case_path/" + exe_file;
+		if (arg_file.length() > 0){
+			exe_file = exe_file + " " + arg_file;
+		}
 		if(exe_file.contains(".py")){
 			cmd_data.put("cmd", "python " + exe_file);
 		} else if (exe_file.contains(".pl")){
@@ -1034,7 +1040,7 @@ public class local_tube {
 				env_data.put(key, value);
 			}
 		}		
-		admin_queue_data.put("Environment", machine_data);
+		admin_queue_data.put("Environment", env_data);
 		//System
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		admin_queue_data.put("System", system_data);		
@@ -1048,9 +1054,23 @@ public class local_tube {
 		return admin_queue_data;
 	}
 	
+	private List<String> get_design_name_list(String suite_path, String key_file){
+		List<String> design_list = new ArrayList<String>();
+		List<String> key_paths = new ArrayList<String>();
+		key_paths.addAll(file_action.get_key_path_list(suite_path, key_file));
+		for (String key_path:key_paths){
+			key_path = key_path.replaceAll(suite_path, "");
+			key_path = key_path.replaceAll("^/", "");
+			design_list.add(key_path);
+		}
+		return design_list;
+	}
+	
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
 			HashMap<String, String> imported_data){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+		admin_data.putAll(get_admin_queue_data(imported_data));
 		//get case list
 		String suite_path = imported_data.get("path");
 		String key_file = imported_data.get("key");
@@ -1073,7 +1093,7 @@ public class local_tube {
 				}
 			}
 		} else {
-			case_list.addAll(file_action.get_key_file_list(suite_path, key_file));
+			case_list.addAll(get_design_name_list(suite_path, key_file));
 		}
 		if(case_list.size() < 1){
 			return task_queue_data;
@@ -1082,20 +1102,37 @@ public class local_tube {
 		int case_counter = 0;
 		for(String case_path: case_list){
 			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+			case_data.putAll(deep_clone.clone(admin_data));
 			//generate case name
 			String case_name = String.valueOf(case_counter);
 			//generate TestID
 			HashMap<String, String> id_data = new HashMap<String, String>();
 			id_data.put("id", case_name);
-			case_data.put("TestID", id_data);
+			if(case_data.containsKey("TestID")){
+				HashMap<String, String> link_data = case_data.get("TestID");
+				link_data.putAll(id_data);
+			} else {
+				case_data.put("TestID", id_data);
+			}
 			//generate CaseInfo
 			HashMap<String, String> info_data = new HashMap<String, String>();
 			info_data.put("design_name", case_path);
-			case_data.put("CaseInfo", info_data);			
+			if(case_data.containsKey("CaseInfo")){
+				HashMap<String, String> link_data = case_data.get("CaseInfo");
+				link_data.putAll(info_data);
+			} else {
+				case_data.put("CaseInfo", info_data);
+			}			
 			//Status
 			HashMap<String, String> status_data = new HashMap<String, String>();
 			status_data.put("cmd_status", task_enum.WAITING.get_description());
-			case_data.put("Status", status_data);
+			if(case_data.containsKey("Status")){
+				HashMap<String, String> link_data = case_data.get("Status");
+				link_data.putAll(status_data);
+			} else {
+				case_data.put("Status", status_data);
+			}			
+			//return
 			task_queue_data.put(case_name, case_data);
 			case_counter++;
 		}

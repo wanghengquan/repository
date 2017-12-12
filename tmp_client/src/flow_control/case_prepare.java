@@ -151,8 +151,13 @@ public class case_prepare {
 			HashMap<String, HashMap<String, String>> task_data,
 			String case_work_path){
 		String launch_dir = new String("");
+		String design_name = task_data.get("CaseInfo").get("design_name").trim();
+		File design_name_fobj = new File(design_name);
+		String design_base_name = design_name_fobj.getName();
+		String case_path = case_work_path + "/" + design_base_name;
 		if (task_data.get("LaunchCommand").containsKey("dir")){
 			launch_dir = task_data.get("LaunchCommand").get("dir").trim();
+			launch_dir = launch_dir.replaceAll("\\$case_path", case_path);
 		} else {
 			launch_dir = case_work_path;
 		}

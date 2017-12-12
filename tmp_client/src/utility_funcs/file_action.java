@@ -254,8 +254,7 @@ public class file_action {
 		    return;
 		}
 		for (File f : flist){
-			if (f.isDirectory()) {
-		        System.out.println("Dir==>" + f.getAbsolutePath()); 
+			if (f.isDirectory()) { 
 		        scan_directory(f, key_file);				
 			} else {
 				String file_name = f.getName();
@@ -266,8 +265,35 @@ public class file_action {
 		}
 	}
 	
+	public static List<String> get_key_path_list(String top_path, String key_file) {
+		key_file_list = new ArrayList<String>();
+		File top_path_obj = new File(top_path);
+		if (!top_path_obj.exists()){
+			return key_file_list;
+		}
+		scan_directory2(top_path_obj, key_file);
+		return key_file_list;
+	}
+	
+	public static void scan_directory2(File file, String key_file) {
+		File flist[] = file.listFiles();
+		if (flist == null || flist.length == 0) {
+		    return;
+		}
+		for (File f : flist){
+			if (f.isDirectory()) { 
+				scan_directory2(f, key_file);				
+			} else {
+				String file_name = f.getName();
+				if (file_name.equalsIgnoreCase(key_file)){
+					key_file_list.add(f.getAbsoluteFile().getParent().replaceAll("\\\\", "/"));
+				}
+			}
+		}
+	}	
+	
 	public static void main(String[] args) {
-		System.out.println(read_file_lines("D:/test/test.txt").toString());
+		System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
 	}	
 	
 	public static void main2(String[] args) {
