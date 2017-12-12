@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.public_data;
 import flow_control.task_enum;
 import info_parser.xls_parser;
+import utility_funcs.file_action;
 import utility_funcs.time_info;
 
 /*
@@ -29,6 +30,7 @@ import utility_funcs.time_info;
 public class local_tube {
 	// public property
 	public static String suite_file_error_msg = new String();
+	public static String suite_path_error_msg = new String();
 	// protected property
 	// private property
 	private final Logger LOCAL_TUBE_LOGGER = LogManager.getLogger(local_tube.class.getName());
@@ -497,6 +499,7 @@ public class local_tube {
 	private Map<String, HashMap<String, HashMap<String, String>>> get_merge_suite_case_data(
 			Map<String, String> suite_data, 
 			Map<String, Map<String, String>> case_data,
+			String extra_env,
 			String xlsx_dest) {
 		Map<String, HashMap<String, HashMap<String, String>>> cross_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> sorted_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
@@ -504,7 +507,7 @@ public class local_tube {
 		while (case_iterator.hasNext()) {
 			String case_id = case_iterator.next();
 			Map<String, String> one_case_data = case_data.get(case_id);
-			HashMap<String, HashMap<String, String>> merge_data = merge_suite_case_data(suite_data, one_case_data, xlsx_dest);
+			HashMap<String, HashMap<String, String>> merge_data = merge_suite_case_data(suite_data, one_case_data, extra_env, xlsx_dest);
 			cross_data.put(case_id, merge_data);
 		}
 		sorted_data = sortMapByKey(cross_data);
@@ -571,6 +574,7 @@ public class local_tube {
 	public HashMap<String, HashMap<String, String>> merge_suite_case_data(
 			Map<String, String> suite_data,
 			Map<String, String> case_data,
+			String extra_env,
 			String xlsx_dest) {
 		HashMap<String, HashMap<String, String>> merge_data = new HashMap<String, HashMap<String, String>>();
 		// insert id data
@@ -608,9 +612,33 @@ public class local_tube {
 		case_map.put("xlsx_dest", xlsx_dest);
 		merge_data.put("CaseInfo", case_map);
 		// insert Environment data
+		HashMap<String, String> environ_map = new HashMap<String, String>();
+		HashMap<String, String> extra_map = new HashMap<String, String>();
+		List<String> env_list = new ArrayList<String>();
+		if (extra_env.length() > 0){
+			if (extra_env.contains(",")){
+				env_list.addAll(Arrays.asList(extra_env.split(",")));
+			} else if (extra_env.contains(";")){
+				env_list.addAll(Arrays.asList(extra_env.split(";")));
+			} else{
+				env_list.add(extra_env);
+			}
+		}
+		if(env_list.size() > 0){
+			for (String env_line: env_list){
+				if (!env_line.contains("=")){
+					LOCAL_TUBE_LOGGER.warn("ignore environ setting since no = found in:" + env_line);
+					continue;
+				}
+				String key = env_line.split("=", 2)[0].trim();
+				String value = env_line.split("=", 2)[1].trim();
+				extra_map.put(key, value);
+			}
+		}
 		String suite_environ = suite_data.get("Environment").trim();
 		String case_environ = case_data.get("Environment").trim();
-		HashMap<String, String> environ_map = comm_suite_case_merge(suite_environ, case_environ);
+		environ_map.putAll(comm_suite_case_merge(suite_environ, case_environ));
+		environ_map.putAll(extra_map);//user import environ have higher priority
 		merge_data.put("Environment", environ_map);
 		// insert LaunchCommand data
 		String suite_cmd = suite_data.get("LaunchCommand").trim();
@@ -800,7 +828,10 @@ public class local_tube {
 	}
 
 	// generate different admin and task queue hash
-	public void generate_local_admin_task_queues(String local_file, String current_terminal) {
+	public void generate_suite_file_local_admin_task_queues(
+			String local_file,
+			String extra_env,
+			String current_terminal) {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> xlsx_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>(); 
 		local_file = local_file.replaceAll("\\$unit_path", public_data.DOC_EIT_PATH);
@@ -817,7 +848,7 @@ public class local_tube {
 		ExcelData.putAll(get_excel_data(local_file));
 		Map<String, String> suite_sheet_data = get_suite_data(ExcelData);
 		Map<String, Map<String, String>> case_sheet_data = get_merge_macro_case_data(ExcelData);
-		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_sheet_data, case_sheet_data, xlsx_dest);
+		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_sheet_data, case_sheet_data, extra_env, xlsx_dest);
 		if (merge_data == null){
 			LOCAL_TUBE_LOGGER.warn("Suite file no case found:" + local_file);
 			return;
@@ -883,11 +914,202 @@ public class local_tube {
 		task_info.update_received_admin_queues_treemap(xlsx_received_admin_queues_treemap);
 	}
 
+	//===========================================================================
+	//===========================================================================
+	//for suite path support
+	public static Boolean suite_path_sanity_check(String suite_path, String suite_key) {
+		File xlsx_fobj = new File(suite_path);
+		if(!xlsx_fobj.exists()){
+			suite_path_error_msg = "Error: Suite path not exists.";
+			System.out.println(">>>Error: Suite path not exists.");
+			return false;
+		}
+		if(file_action.get_key_file_list(suite_path, suite_key).size() < 1){
+			suite_path_error_msg = "Error: Suite path no key file found.";
+			System.out.println(">>>Error: Suite path no key file found.");
+			return false;			
+		}
+		return true;
+	}
+	
+	public void generate_suite_path_local_admin_task_queues(
+			HashMap<String, String> imported_data){
+		//step 1: generate queue_name
+		String queue_name = get_queue_name(imported_data);
+		//step 2: generate admin_data
+		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
+		admin_queue_data.putAll(get_admin_queue_data(imported_data));
+		//step 1: generate task_data
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		task_queue_data.putAll(get_task_queue_data(imported_data));
+		task_info.update_queue_to_received_admin_queues_treemap(queue_name, admin_queue_data);
+		task_info.update_queue_to_received_task_queues_map(queue_name, task_queue_data);
+	}
+	
+	private String get_queue_name(HashMap<String, String> imported_data) {
+		// generate queue name
+		String queue_name = new String();
+		// admin queue priority check:0>1>2..>5(default)>...8>9
+		String priority = new String("5");
+		// task belong to this client: 0, assign task(0) > match task(1)
+		String attribute = new String("0");
+		// receive time
+		String mark_time = time_info.get_time_hhmm();
+		// queue base name
+		String admin_queue_base = new String("");
+		String suite_path = imported_data.get("path");
+		File path_obj = new File(suite_path);
+		String suite_name = path_obj.getName();
+		if (suite_name.length() < 1){
+			admin_queue_base = "local_suite";
+		} else {
+			admin_queue_base = suite_name;
+		}
+		// pack data
+		// xx0@run_xxx_suite_time :
+		// priority:match/assign task:job_from_local@run_number
+		queue_name = priority + attribute + "0" + "@" 
+				+ "run_" + mark_time + "_" + admin_queue_base + "_" + time_info.get_date_time();
+		return queue_name;
+	}
+	
+	private HashMap<String, HashMap<String, String>> get_admin_queue_data(
+			HashMap<String, String> imported_data){
+		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
+		//id_data create
+		HashMap<String, String> id_data = new HashMap<String, String>();
+		String suite_path = imported_data.get("path");
+		File path_obj = new File(suite_path);
+		String suite_name = path_obj.getName();
+		if (suite_name.length() < 1){
+			suite_name = "local_suite";	
+		}
+		id_data.put("project", "x");
+		id_data.put("run", suite_name);
+		id_data.put("suite", suite_name);
+		admin_queue_data.put("ID", id_data);
+		//CaseInfo create
+		HashMap<String, String> caseinfo_data = new HashMap<String, String>();
+		caseinfo_data.put("suite_path", ".");
+		caseinfo_data.put("repository", suite_path);
+		admin_queue_data.put("CaseInfo", caseinfo_data);
+		//Machine
+		HashMap<String, String> machine_data = new HashMap<String, String>();
+		admin_queue_data.put("Machine", machine_data);
+		//LaunchCommand
+		HashMap<String, String> cmd_data = new HashMap<String, String>();
+		String exe_file = imported_data.get("exe");
+		if(exe_file.contains(".py")){
+			cmd_data.put("cmd", "python " + exe_file);
+		} else if (exe_file.contains(".pl")){
+			cmd_data.put("cmd", "perl " + exe_file);
+		} else if (exe_file.contains(".sh")){
+			cmd_data.put("cmd", "sh " + exe_file);
+		} else {
+			cmd_data.put("cmd", exe_file);
+		}
+		cmd_data.put("dir", "$case_path");
+		admin_queue_data.put("LaunchCommand", cmd_data);
+		//Environment
+		HashMap<String, String> env_data = new HashMap<String, String>();
+		String extra_env = imported_data.get("env");
+		List<String> env_list = new ArrayList<String>();
+		if (extra_env.length() > 0){
+			if (extra_env.contains(",")){
+				env_list.addAll(Arrays.asList(extra_env.split(",")));
+			} else if (extra_env.contains(";")){
+				env_list.addAll(Arrays.asList(extra_env.split(";")));
+			} else{
+				env_list.add(extra_env);
+			}
+		}		
+		if(env_list.size() > 0){
+			for (String env_line: env_list){
+				if (!env_line.contains("=")){
+					LOCAL_TUBE_LOGGER.warn("ignore environ setting since no = found in:" + env_line);
+					continue;
+				}
+				String key = env_line.split("=", 2)[0].trim();
+				String value = env_line.split("=", 2)[1].trim();
+				env_data.put(key, value);
+			}
+		}		
+		admin_queue_data.put("Environment", machine_data);
+		//System
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		admin_queue_data.put("System", system_data);		
+		//Software
+		HashMap<String, String> software_data = new HashMap<String, String>();
+		admin_queue_data.put("Software", software_data);
+		//Status
+		HashMap<String, String> status_data = new HashMap<String, String>();
+		status_data.put("admin_status", "processing");
+		admin_queue_data.put("Status", status_data);
+		return admin_queue_data;
+	}
+	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
+			HashMap<String, String> imported_data){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		//get case list
+		String suite_path = imported_data.get("path");
+		String key_file = imported_data.get("key");
+		String list_path = suite_path + "/list.txt";
+		File list_fobj = new File(list_path);
+		List<String> case_list = new ArrayList<String>();
+		if (list_fobj.exists()){
+			List<String> line_list = new ArrayList<String>();
+			line_list.addAll(file_action.read_file_lines(list_path));
+			for (String line : line_list){
+				if(line.startsWith(";")){
+					continue;
+				}
+				if(line.startsWith("#")){
+					continue;
+				}
+				File path_obj = new File(line);
+				if(path_obj.exists()){
+					case_list.add(line);
+				}
+			}
+		} else {
+			case_list.addAll(file_action.get_key_file_list(suite_path, key_file));
+		}
+		if(case_list.size() < 1){
+			return task_queue_data;
+		}
+		//generate case data
+		int case_counter = 0;
+		for(String case_path: case_list){
+			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+			//generate case name
+			String case_name = String.valueOf(case_counter);
+			//generate TestID
+			HashMap<String, String> id_data = new HashMap<String, String>();
+			id_data.put("id", case_name);
+			case_data.put("TestID", id_data);
+			//generate CaseInfo
+			HashMap<String, String> info_data = new HashMap<String, String>();
+			info_data.put("design_name", case_path);
+			case_data.put("CaseInfo", info_data);			
+			//Status
+			HashMap<String, String> status_data = new HashMap<String, String>();
+			status_data.put("cmd_status", task_enum.WAITING.get_description());
+			case_data.put("Status", status_data);
+			task_queue_data.put(case_name, case_data);
+			case_counter++;
+		}
+		return task_queue_data;
+	}
+	
+	//===========================================================================
+	//===========================================================================
+	//main	
 	public static void main(String[] argv) {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
-		sheet_parser.generate_local_admin_task_queues("D:/java_dev/radiant_regression.xlsx", current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues("D:/java_dev/radiant_regression.xlsx", "", current_terminal);
 		// System.out.println(task_info.get_received_task_queues_map().toString());
 		// System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

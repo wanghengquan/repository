@@ -19,6 +19,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.task_data;
 import env_monitor.config_sync;
 import env_monitor.machine_sync;
 import flow_control.pool_data;
@@ -74,6 +75,7 @@ public class data_server extends Thread {
 	private Thread current_thread;
 	private HashMap<String, String> cmd_info;
 	private client_data client_info;
+	private task_data task_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
 	private String line_separator = System.getProperty("line.separator");
@@ -85,27 +87,88 @@ public class data_server extends Thread {
 	// protected function
 	// private function
 
-	public data_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info,
+	public data_server(HashMap<String, String> cmd_info, switch_data switch_info, task_data task_info, client_data client_info,
 			pool_data pool_info) {
 		this.cmd_info = cmd_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.task_info = task_info;
 		this.pool_info = pool_info;
 		this.config_runner = new config_sync(switch_info, client_info);
 		this.machine_runner = new machine_sync(switch_info);
 	}
 
-	private void copy_cmd_suites_to_switch_data(HashMap<String, String> cmd_info){
-		String suite_files = cmd_info.get("suite_file");
-		ArrayList<String> file_list = new ArrayList<String>();
-		if (suite_files.contains(",")){
-			file_list.addAll(Arrays.asList(suite_files.split(",")));
-		} else if (suite_files.contains(";")){
-			file_list.addAll(Arrays.asList(suite_files.split(";")));
-		} else{
-			file_list.add(suite_files);
+	private void impoart_suite_file_task_data(
+			String task_file,
+			String task_env){
+		String import_time_id = time_info.get_date_time();
+		HashMap <String, String> task_data = new HashMap <String, String>();
+		task_data.put("path", task_file);
+		task_data.put("env", task_env);
+		task_info.update_local_file_imported_task_map(import_time_id, task_data);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		switch_info.add_suite_file_list(file_list);
+	}
+	
+	private void impoart_suite_path_task_data(
+			String task_path,
+			String task_key,
+			String task_exe,
+			String task_arg,
+			String task_evn){
+		String import_time_id = time_info.get_date_time();
+		HashMap <String, String> task_data = new HashMap <String, String>();
+		task_data.put("path", task_path);
+		task_data.put("key", task_key);
+		task_data.put("exe", task_exe);
+		task_data.put("arg", task_arg);
+		task_data.put("env", task_evn);
+		task_info.update_local_path_imported_task_map(import_time_id, task_data);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}		
+	
+	private void update_cmd_suites_to_switch_data(HashMap<String, String> cmd_info){
+		String suite_files = cmd_info.get("suite_file");
+		String task_env = cmd_info.get("task_environ");
+		if (suite_files.length() > 0){
+			ArrayList<String> file_list = new ArrayList<String>();
+			if (suite_files.contains(",")){
+				file_list.addAll(Arrays.asList(suite_files.split(",")));
+			} else if (suite_files.contains(";")){
+				file_list.addAll(Arrays.asList(suite_files.split(";")));
+			} else{
+				file_list.add(suite_files);
+			}
+			for(String suite_file:file_list){
+				impoart_suite_file_task_data(suite_file, task_env);
+			}			
+		}
+		String suite_paths = cmd_info.get("suite_path");
+		String task_key = cmd_info.get("key_file");
+		String task_exe = cmd_info.get("exe_file");
+		String task_arg = cmd_info.get("arguments");
+		if (suite_paths.length() > 0){
+			ArrayList<String> path_list = new ArrayList<String>();
+			if (suite_paths.contains(",")){
+				path_list.addAll(Arrays.asList(suite_paths.split(",")));
+			} else if (suite_paths.contains(";")){
+				path_list.addAll(Arrays.asList(suite_paths.split(";")));
+			} else{
+				path_list.add(suite_paths);
+			}
+			for(String suite_path:path_list){
+				impoart_suite_path_task_data(suite_path, task_key, task_exe, task_arg, task_env);
+			}			
+		}		
 	}
 	
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
@@ -452,7 +515,7 @@ public class data_server extends Thread {
 			}
 		}
 		// initial 2 : put suite file data into switch info
-		copy_cmd_suites_to_switch_data(cmd_info);
+		update_cmd_suites_to_switch_data(cmd_info);
  		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 4 : update default current size into Pool Data
@@ -538,9 +601,10 @@ public class data_server extends Thread {
 		cmd_parser cmd_run = new cmd_parser(args);
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		switch_data switch_info = new switch_data();
+		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
-		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server server_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
 		server_runner.start();
 		try {
 			Thread.sleep(10 * 1000);

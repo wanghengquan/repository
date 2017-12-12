@@ -37,7 +37,9 @@ public class case_prepare {
 	public case_prepare() {
 	}
 
-	protected String get_working_dir(HashMap<String, HashMap<String, String>> task_data, String work_dir)
+	protected String get_working_dir(
+			HashMap<String, HashMap<String, String>> task_data, 
+			String work_dir)
 			throws IOException {
 		String work_dir_ready = new String("");
 		File work_dir_fobj = new File(work_dir);
@@ -145,6 +147,18 @@ public class case_prepare {
 		return export_msg;
 	}
 
+	protected String get_run_directory(
+			HashMap<String, HashMap<String, String>> task_data,
+			String case_work_path){
+		String launch_dir = new String("");
+		if (task_data.get("LaunchCommand").containsKey("dir")){
+			launch_dir = task_data.get("LaunchCommand").get("dir").trim();
+		} else {
+			launch_dir = case_work_path;
+		}
+		return launch_dir;
+	}
+	
 	protected String[] get_run_command(
 			HashMap<String, HashMap<String, String>> task_data,
 			String case_work_path,
@@ -156,7 +170,7 @@ public class case_prepare {
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		String case_path = case_work_path + "/" + design_base_name;
-		script_addr = script_addr.replaceAll("\\$work_path", work_path);
+		script_addr = script_addr.replaceAll("\\$work_path", work_path);// = work_space
 		script_addr = script_addr.replaceAll("\\$case_path", case_path);
 		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		// user command used
@@ -195,7 +209,8 @@ public class case_prepare {
 		return cmd_list;
 	}
 
-	protected HashMap<String, String> get_run_environment(HashMap<String, HashMap<String, String>> task_data,
+	protected HashMap<String, String> get_run_environment(
+			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data) {
 		HashMap<String, String> run_env = new HashMap<String, String>();
 		// put python unbuffered environ
@@ -203,14 +218,17 @@ public class case_prepare {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
 		// put environ for software requirements
-		Set<String> software_request_set = task_data.get("Software").keySet();
-		Iterator<String> software_request_it = software_request_set.iterator();
-		while (software_request_it.hasNext()) {
-			String software_name = software_request_it.next();
-			String software_build = task_data.get("Software").get(software_name);
-			String software_path = client_data.get(software_name).get(software_build);
-			String software_env_name = "EXTERNAL_" + software_name.toUpperCase() + "_PATH";
-			run_env.put(software_env_name, software_path);
+		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
+		if (!ignore_request.contains("software")){
+			Set<String> software_request_set = task_data.get("Software").keySet();
+			Iterator<String> software_request_it = software_request_set.iterator();
+			while (software_request_it.hasNext()) {
+				String software_name = software_request_it.next();
+				String software_build = task_data.get("Software").get(software_name);
+				String software_path = client_data.get(software_name).get(software_build);
+				String software_env_name = "EXTERNAL_" + software_name.toUpperCase() + "_PATH";
+				run_env.put(software_env_name, software_path);
+			}
 		}
 		// put environ in task info Environment
 		Set<String> env_request_set = task_data.get("Environment").keySet();

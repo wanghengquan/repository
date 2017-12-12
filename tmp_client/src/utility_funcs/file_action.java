@@ -1,7 +1,9 @@
 package utility_funcs;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -19,7 +21,8 @@ import org.apache.logging.log4j.Logger;
  */
 public class file_action {
 	private static final Logger FILE_ACTION_LOGGER = LogManager.getLogger(file_action.class.getName());
-
+	private static List<String> key_file_list;
+	
 	public file_action() {
 
 	}
@@ -143,6 +146,31 @@ public class file_action {
 		}
 	}
 
+	public static List<String> read_file_lines(String filename) {
+		List<String> file_lines = new ArrayList<String>();
+		File file = new File(filename);
+		if(!file.exists()){
+			return file_lines;
+		}
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(file));
+			String s = null;
+			while((s = br.readLine())!=null){
+				s = s.trim();
+				if(s.equals("")){
+					continue;
+				}
+				file_lines.add(s);
+			}
+			br.close();			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return file_lines;
+	}
+	
 	public static int delete_file(String filename) {
 		File file = new File(filename);
 		try {
@@ -210,10 +238,38 @@ public class file_action {
 		}
 	}
 
-	public static void main(String[] args) {
-		zipFolder("D:/tmp_work_space/results/prj3/run826/T1444702", "D:/tmp_work_space/results/prj3/run826/T1444702.zip");
+	public static List<String> get_key_file_list(String top_path, String key_file) {
+		key_file_list = new ArrayList<String>();
+		File top_path_obj = new File(top_path);
+		if (!top_path_obj.exists()){
+			return key_file_list;
+		}
+		scan_directory(top_path_obj, key_file);
+		return key_file_list;
 	}
-
+	
+	public static void scan_directory(File file, String key_file) {
+		File flist[] = file.listFiles();
+		if (flist == null || flist.length == 0) {
+		    return;
+		}
+		for (File f : flist){
+			if (f.isDirectory()) {
+		        System.out.println("Dir==>" + f.getAbsolutePath()); 
+		        scan_directory(f, key_file);				
+			} else {
+				String file_name = f.getName();
+				if (file_name.equalsIgnoreCase(key_file)){
+					key_file_list.add(f.getAbsolutePath().replaceAll("\\\\", "/"));
+				}
+			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(read_file_lines("D:/test/test.txt").toString());
+	}	
+	
 	public static void main2(String[] args) {
 		String work_dir = System.getProperty("user.dir");
 		System.out.println(work_dir);

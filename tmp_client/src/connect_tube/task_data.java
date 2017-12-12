@@ -44,6 +44,10 @@ public class task_data {
 			new queue_compare());
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+	private Map<String, HashMap<String, String>> local_file_imported_task_map = new HashMap<String, HashMap<String, String>>();
+	private Map<String, HashMap<String, String>> local_file_finished_task_map = new HashMap<String, HashMap<String, String>>();
+	private Map<String, HashMap<String, String>> local_path_imported_task_map = new HashMap<String, HashMap<String, String>>();
+	private Map<String, HashMap<String, String>> local_path_finished_task_map = new HashMap<String, HashMap<String, String>>();	
 	private static final Logger TASK_DATA_LOGGER = LogManager.getLogger(task_data.class.getName());
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// public function
@@ -1028,6 +1032,127 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	
+	
+	//Map<String, HashMap<String, String>> local_file_imported_task_map
+	public HashMap<String, HashMap<String, String>> get_local_file_imported_task_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
+		try {
+			temp.putAll(local_file_imported_task_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void reset_local_file_imported_task_map() {
+		rw_lock.writeLock().lock();
+		try {
+			local_file_imported_task_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_local_file_imported_task_map(String task, HashMap<String, String> task_data) {
+		rw_lock.writeLock().lock();
+		try {
+			local_file_imported_task_map.put(task, task_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	//Map<String, HashMap<String, String>> local_file_finished_task_map
+	public HashMap<String, HashMap<String, String>> get_local_file_finished_task_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
+		try {
+			temp.putAll(local_file_finished_task_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void reset_local_file_finished_task_map() {
+		rw_lock.writeLock().lock();
+		try {
+			local_file_finished_task_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_local_file_finished_task_map(String task, HashMap<String, String> task_data) {
+		rw_lock.writeLock().lock();
+		try {
+			local_file_finished_task_map.put(task, task_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	//Map<String, HashMap<String, String>> local_path_imported_task_map
+	public HashMap<String, HashMap<String, String>> get_local_path_imported_task_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
+		try {
+			temp.putAll(local_path_imported_task_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void reset_local_path_imported_task_map() {
+		rw_lock.writeLock().lock();
+		try {
+			local_path_imported_task_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_local_path_imported_task_map(String task, HashMap<String, String> task_data) {
+		rw_lock.writeLock().lock();
+		try {
+			local_path_imported_task_map.put(task, task_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	//Map<String, HashMap<String, String>> local_file_finished_task_map
+	public HashMap<String, HashMap<String, String>> get_local_path_finished_task_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
+		try {
+			temp.putAll(local_path_finished_task_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void reset_local_path_finished_task_map() {
+		rw_lock.writeLock().lock();
+		try {
+			local_path_finished_task_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_local_path_finished_task_map(String task, HashMap<String, String> task_data) {
+		rw_lock.writeLock().lock();
+		try {
+			local_path_finished_task_map.put(task, task_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
 	
 	/*
 	 * main entry for test

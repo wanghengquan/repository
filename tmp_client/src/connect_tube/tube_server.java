@@ -168,7 +168,7 @@ public class tube_server extends Thread {
 		if (client_hash.containsKey("preference")){
 			ignore_request = client_hash.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		}
-		if (!ignore_request.contains("all")){
+		if (ignore_request.contains("all")){
 			return mismatch_list;
 		}
 		if (!ignore_request.contains("system")){
@@ -310,28 +310,63 @@ public class tube_server extends Thread {
 		return send_status;
 	}
 
-	private void run_import_local_admin() {
-		ArrayList<String> suite_file_list = switch_info.get_suite_file_list();
-		if (suite_file_list.isEmpty()) {
+	private void run_import_local_path_admin() {
+		Map<String, HashMap<String, String>> imported_map = new HashMap<String, HashMap<String, String>>();
+		imported_map.putAll(deep_clone.clone(task_info.get_local_path_imported_task_map()));
+		Map<String, HashMap<String, String>> finished_map = new HashMap<String, HashMap<String, String>>();
+		finished_map.putAll(deep_clone.clone(task_info.get_local_path_finished_task_map()));		
+		if (imported_map.isEmpty()) {
 			return;
 		}
-		local_tube local_tube_parser = new local_tube(task_info);
-		String terminal = new String(client_info.get_client_machine_data().get("terminal"));
+		local_tube local_path_tube_parser = new local_tube(task_info);
+		Iterator<String> imported_it = imported_map.keySet().iterator();
 		int counter = 0;
-		while(true){
-			if (counter > 10){
+		while(imported_it.hasNext()){
+			if (counter > 5){
 				break;
 			}
-			String suite_file = switch_info.get_one_suite_file();
-			if (suite_file.equals("")){
+			String imported_id = imported_it.next();
+			if (finished_map.containsKey(imported_id)){
+				continue;
+			} else {
+				task_info.update_local_path_finished_task_map(imported_id, imported_map.get(imported_id));
+			}
+			HashMap<String, String> imported_data = imported_map.get(imported_id);
+			local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_data);
+			counter++;
+		}
+	}	
+	
+	private void run_import_local_file_admin() {
+		Map<String, HashMap<String, String>> imported_map = new HashMap<String, HashMap<String, String>>();
+		imported_map.putAll(deep_clone.clone(task_info.get_local_file_imported_task_map()));
+		Map<String, HashMap<String, String>> finished_map = new HashMap<String, HashMap<String, String>>();
+		finished_map.putAll(deep_clone.clone(task_info.get_local_file_finished_task_map()));		
+		if (imported_map.isEmpty()) {
+			return;
+		}
+		local_tube local_file_tube_parser = new local_tube(task_info);
+		String terminal = new String(client_info.get_client_machine_data().get("terminal"));
+		Iterator<String> imported_it = imported_map.keySet().iterator();
+		int counter = 0;
+		while(imported_it.hasNext()){
+			if (counter > 5){
 				break;
 			}
-			local_tube_parser.generate_local_admin_task_queues(suite_file, terminal);
+			String imported_id = imported_it.next();
+			if (finished_map.containsKey(imported_id)){
+				continue;
+			} else {
+				task_info.update_local_file_finished_task_map(imported_id, imported_map.get(imported_id));
+			}
+			String imported_file = imported_map.get(imported_id).get("path");
+			String imported_env = imported_map.get(imported_id).get("env");
+			local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, terminal);
 			counter++;
 		}
 	}
 
-	private void run_import_remote_admin(){
+	private void run_import_remote_task_admin(){
 		String link_mode = client_info.get_client_preference_data().get("link_mode");
 		if (link_mode.equalsIgnoreCase("local")){
 			try {
@@ -417,9 +452,11 @@ public class tube_server extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: update remote admin
-			run_import_remote_admin();
-			// task 2: update local admin (local file, import)
-			run_import_local_admin();
+			run_import_remote_task_admin();
+			// task 2: update local suite file admin (local file, import)
+			run_import_local_file_admin();
+			// task 3: update local suite path admin (local file, import)
+			run_import_local_path_admin();
 			// task 3 flash tube input:
 			run_received_admin_sorting();
 			// task 4: flash tube output: captured and rejected treemap
@@ -473,7 +510,7 @@ public class tube_server extends Thread {
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
 		task_data task_info = new task_data();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {

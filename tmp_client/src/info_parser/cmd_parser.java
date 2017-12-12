@@ -30,7 +30,8 @@ import data_center.exit_enum;
 public class cmd_parser {
 	// public property
 	// protected property
-	// public static HashMap<String, String> cmd_hash = new HashMap<String, String>();
+	// public static HashMap<String, String> cmd_hash = new HashMap<String,
+	// String>();
 	// private property
 	private final Logger CMD_PARSER_LOGGER = LogManager.getLogger(cmd_parser.class.getName());
 	private String[] args;
@@ -44,7 +45,7 @@ public class cmd_parser {
 	 * @startuml :option definition; :option parser; :option collect;
 	 * 
 	 * @enduml
-	 */	
+	 */
 	public HashMap<String, String> cmdline_parser() {
 		HashMap<String, String> cmd_hash = new HashMap<String, String>();
 		// 1. get defined options
@@ -69,48 +70,85 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("cmd_gui", "gui");
 		}
-		if (commandline_obj.hasOption('a')) {
-			cmd_hash.put("unattended", "0");
-		}		
-		if (commandline_obj.hasOption('u')) {
-			cmd_hash.put("unattended", "1");
-		}
 		// 3.2 remote or local model
 		if (commandline_obj.hasOption('l')) {
 			cmd_hash.put("link_mode", "local");
-		} 
+		}
 		if (commandline_obj.hasOption('r')) {
 			cmd_hash.put("link_mode", "remote");
-		} 
+		}
 		// 3.3 ignore/skip task requirements check
 		if (commandline_obj.hasOption('i')) {
 			cmd_hash.put("ignore_request", commandline_obj.getOptionValue('i'));
-		} 	
+		}
 		// 3.4 suite file value
 		if (commandline_obj.hasOption('f')) {
 			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f'));
 		} else {
 			cmd_hash.put("suite_file", "");
 		}
-		// 3.5 work path
+		// 3.5 suite path value
+		if (commandline_obj.hasOption('p')) {
+			cmd_hash.put("suite_path", commandline_obj.getOptionValue('p'));
+		} else {
+			cmd_hash.put("suite_path", "");
+		}
+		// 3.6 key file value
+		if (commandline_obj.hasOption('k')) {
+			cmd_hash.put("key_file", commandline_obj.getOptionValue('k'));
+		} else {
+			cmd_hash.put("key_file", "");
+		}
+		// 3.7 execute file value
+		if (commandline_obj.hasOption('x')) {
+			cmd_hash.put("exe_file", commandline_obj.getOptionValue('x'));
+		} else {
+			cmd_hash.put("exe_file", "");
+		}
+		// 3.8 arguments for execute file
+		if (commandline_obj.hasOption('a')) {
+			cmd_hash.put("arguments", commandline_obj.getOptionValue('a'));
+		} else {
+			cmd_hash.put("arguments", "");
+		}
+		// 3.9 task environments setting
+		if (commandline_obj.hasOption('e')) {
+			cmd_hash.put("task_environ", commandline_obj.getOptionValue('e'));
+		} else {
+			cmd_hash.put("task_environ", "");
+		}
+		// 3.10 client environments setting
+		if (commandline_obj.hasOption('E')) {
+			cmd_hash.put("client_environ", commandline_obj.getOptionValue('E'));
+		} else {
+			cmd_hash.put("client_environ", "");
+		}
+		// 3.11 attended/unattended mode setting
+		if (commandline_obj.hasOption('A')) {
+			cmd_hash.put("unattended", "0");
+		}
+		if (commandline_obj.hasOption('U')) {
+			cmd_hash.put("unattended", "1");
+		}
+		// 3.12 work path
 		if (commandline_obj.hasOption('w')) {
 			cmd_hash.put("work_path", commandline_obj.getOptionValue('w'));
 		}
-		// 3.6 save path
+		// 3.13 save path
 		if (commandline_obj.hasOption('s')) {
 			cmd_hash.put("save_path", commandline_obj.getOptionValue('s'));
 		}
-		// 3.7 max threads
+		// 3.14 max threads
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
-		}		
-		// 3.8 debug model
+		}
+		// 3.15 debug model
 		if (commandline_obj.hasOption('d')) {
 			cmd_hash.put("debug", "true");
 		} else {
 			cmd_hash.put("debug", "false");
 		}
-		// 3.9 help definition
+		// 3.16 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
@@ -121,25 +159,43 @@ public class cmd_parser {
 	// private function
 	/*
 	 * return option definition
-	 */	
+	 */
 	private Options get_options() {
 		Options options_obj = new Options();
 		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command mode").build());
-		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI mode").build());
-		options_obj.addOption(Option.builder("a").longOpt("attended").desc("Client will run in attended mode").build());
-		options_obj.addOption(Option.builder("u").longOpt("unattended").desc("Client will run in unattended mode").build());
+		options_obj.addOption(
+				Option.builder("g").longOpt("gui").desc("Client will run in GUI mode, default mode.").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
+		options_obj.addOption(Option.builder("A").longOpt("attended").desc("Client will run in attended mode").build());
+		options_obj.addOption(
+				Option.builder("U").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
-				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine) check").build());		
+				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine) check")
+				.build());
 		options_obj.addOption(Option.builder("f").longOpt("suite-file").hasArg()
-				.desc("Test suite file for Local run, $unit_path represent the path to <install_path>/doc/TMP_EIT_suites").build());
+				.desc("Test suite file for Local run, $unit_path represent the path to <install_path>/doc/TMP_EIT_suites")
+				.build());
+		options_obj.addOption(Option.builder("p").longOpt("suite-path").hasArg()
+				.desc("Test suite path for Local run, all test case in this folder will be run unless a list.txt in path root")
+				.build());
+		options_obj.addOption(Option.builder("k").longOpt("key-file").hasArg()
+				.desc("The key file to help client consider the path is a case path, Work with -p(suite path)")
+				.build());
+		options_obj.addOption(Option.builder("x").longOpt("exe-file").hasArg()
+				.desc("The execute file in every case path, Work with -p(suite path)").build());
+		options_obj.addOption(Option.builder("a").longOpt("arguments").hasArg()
+				.desc("The arguments for execute file , Work with -x(exe_file)").build());
+		options_obj.addOption(Option.builder("e").longOpt("task-environ").hasArg()
+				.desc("Task level extra environment setting.").build());
+		options_obj.addOption(Option.builder("E").longOpt("client-environ").hasArg()
+				.desc("Client/global level extra environment setting, will affect all tasks.").build());
 		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
 				.desc("Case run place, if not present will use current launch path").build());
 		options_obj.addOption(Option.builder("s").longOpt("save-path").hasArg()
 				.desc("Storage place for case remote store, if not present will use current work_path").build());
-		options_obj.addOption(Option.builder("t").longOpt("max-threads").hasArg()
-				.desc("Client will launch $t threads").build());
+		options_obj.addOption(
+				Option.builder("t").longOpt("max-threads").hasArg().desc("Client will launch $t threads").build());
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
 		return options_obj;
@@ -149,8 +205,8 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-c|-g] [-a|-u] [-l -f <file_path1,file_path2> | -r] [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
-		String header = "Here is details:\n\n";
+		String usage = "[clientc.exe|client|java -jar client.jar] \n [-c|-g] [-A|-U] \n [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] \n [-e|E <env1=value1,env2=value2...>]\n [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
+		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp(usage, header, options_obj, footer);

@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.06.19"; //2.06.12 External.Internal.DEV
-	public final static int BASE_CURRENTVERSION_INT = 20619; // version for code use
-	public final static String BASE_BUILDDATE = "2017/12/08";
+	public final static String BASE_CURRENTVERSION = "2.06.20"; //2.06.12 External.Internal.DEV
+	public final static int BASE_CURRENTVERSION_INT = 20620; // version for code use
+	public final static String BASE_BUILDDATE = "2017/12/10";
 	public final static String BASE_SUITEFILEVERSION = "1.09";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -41,7 +41,7 @@ public class public_data {
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
 	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
-	public final static int RUN_LIMITATION_SPACE = 10;//client suspend when disk space less than this value
+	public final static int RUN_LIMITATION_SPACE = 5;//client suspend when disk space less than this value
 	
 	// ========================
 	// log setting
@@ -58,6 +58,8 @@ public class public_data {
 	public final static String ICON_FRAME_PNG = SW_HOME_PATH + "/image/frame.png";
 	public final static String ICON_TRAY_PNG = SW_HOME_PATH + "/image/ico.png";
 	public final static String ICON_SOFTWARE_TAB_PNG = SW_HOME_PATH + "/image/tab.png";
+	public final static String ICON_IMPORT_FILE = SW_HOME_PATH + "/image/file.png";
+	public final static String ICON_IMPORT_PATH = SW_HOME_PATH + "/image/folder.png";
 	public final static String ICON_RPT_SUITE_PNG = SW_HOME_PATH + "/image/suite.png";
 	public final static String ICON_RPT_TITLE_PNG = SW_HOME_PATH + "/image/title.png";
 	public final static String ICON_RPT_PREVIEW_PNG = SW_HOME_PATH + "/image/view.png";

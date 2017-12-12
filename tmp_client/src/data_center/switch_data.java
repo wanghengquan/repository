@@ -9,7 +9,6 @@
  */
 package data_center;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -45,12 +44,12 @@ public class switch_data {
 	private Boolean tube_server_power_up = new Boolean(false);
 	private Boolean hall_server_power_up = new Boolean(false);
 	// suite file updating
-	private ArrayList<String> suite_file_list = new ArrayList<String>();
+	// private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
 	// private String client_hall_status = new String("busy");
-	// Client concole updating
+	// Client console updating
 	private Boolean client_console_updating = new Boolean(false);
-	// Client maintaince mode (house keeping) assertion
+	// Client maintains mode (house keeping) assertion
 	private Boolean client_house_keeping = new Boolean(false);
 	private maintain_enum client_maintain_reason = maintain_enum.unknown;
 	// system level message
@@ -384,8 +383,8 @@ public class switch_data {
 		return status;
 	}
 	 */
-	
-	public void add_suite_file_list(ArrayList<String> file_list) {
+	/*
+	public void add_suite_file_list1(ArrayList<String> file_list) {
 		rw_lock.writeLock().lock();
 		try {
 			this.suite_file_list.addAll(file_list);
@@ -394,7 +393,7 @@ public class switch_data {
 		}
 	}
 
-	public void add_suite_file_list(String suite_file) {
+	public void add_suite_file_list1(String suite_file) {
 		rw_lock.writeLock().lock();
 		try {
 			this.suite_file_list.add(suite_file);
@@ -403,7 +402,8 @@ public class switch_data {
 		}
 	}
 	
-	public ArrayList<String> get_suite_file_list() {
+	
+	public ArrayList<String> get_suite_file_list1() {
 		rw_lock.readLock().lock();
 		ArrayList<String> value = new ArrayList<String>();
 		try {
@@ -414,7 +414,7 @@ public class switch_data {
 		return value;
 	}
 
-	public String get_one_suite_file() {
+	public String get_one_suite_file1() {
 		rw_lock.writeLock().lock();
 		String value = new String(); 
 		try {
@@ -427,6 +427,7 @@ public class switch_data {
 		}
 		return value;
 	}
+	*/
 
 	/*
 	 * public void set_current_max_thread(Integer new_data) {

@@ -63,7 +63,7 @@ public class export_dialog extends JDialog implements ChangeListener{
 	private view_data view_info;
 	private client_data client_info;
 	private JTabbedPane tabbed_pane;
-	private preview_pane previe_gui;
+	private preview_pane preview_gui;
 
 	public export_dialog(
 			main_frame main_view,
@@ -94,11 +94,11 @@ public class export_dialog extends JDialog implements ChangeListener{
 		// pane 2: title pane
 		tabbed_pane.addTab(report_enum.TITLE.toString(), icon_image_title, new title_pane(this, task_info, view_info), report_enum.TITLE.get_description());
 		// pane 3: preview pane
-		previe_gui = new preview_pane(this, task_info, view_info);
-		tabbed_pane.addTab(report_enum.PREVIEW.toString(), icon_image_preview, previe_gui, report_enum.PREVIEW.get_description());
-		Thread preview_thread = new Thread(previe_gui);
+		preview_gui = new preview_pane(this, task_info, view_info);
+		tabbed_pane.addTab(report_enum.PREVIEW.toString(), icon_image_preview, preview_gui, report_enum.PREVIEW.get_description());
+		Thread preview_thread = new Thread(preview_gui);
 		preview_thread.start();
-		previe_gui.wait_request();
+		preview_gui.wait_request();
 		// pane 4: generate pane
 		tabbed_pane.addTab(report_enum.GENERATE.toString(), icon_image_generate, new generate_pane(this, client_info, task_info, view_info), report_enum.GENERATE.get_description());
 		initial_tabs();
@@ -121,7 +121,7 @@ public class export_dialog extends JDialog implements ChangeListener{
 	}
 	
 	public void close_dialog(){
-		previe_gui.soft_stop();
+		preview_gui.soft_stop();
 		this.setVisible(false);
 		this.dispose();
 	}
@@ -137,9 +137,9 @@ public class export_dialog extends JDialog implements ChangeListener{
 			result_index = select_index + 1;
 		}
 		if(result_index == report_enum.PREVIEW.get_index()){
-			previe_gui.wake_request();
+			preview_gui.wake_request();
 		} else {
-			previe_gui.wait_request();
+			preview_gui.wait_request();
 		}
 		for(int index=0 ; index < report_enum.values().length; index++){
 			if (index <= result_index){
@@ -162,9 +162,9 @@ public class export_dialog extends JDialog implements ChangeListener{
 			result_index = select_index - 1;
 		}
 		if(result_index == report_enum.PREVIEW.get_index()){
-			previe_gui.wake_request();
+			preview_gui.wake_request();
 		} else {
-			previe_gui.wait_request();
+			preview_gui.wait_request();
 		}
 		for(int index=0 ; index < report_enum.values().length; index++){
 			if (index <= result_index){

@@ -731,10 +731,12 @@ public class task_waiter extends Thread {
 					client_info.get_client_preference_data().get("work_path"));
 			// task 9 : launch env
 			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.get_client_data());
-			// task 10 : launch (add case info to task data)
+			// task 10: launch dir by-default use case work path
+			String run_dir = prepare_obj.get_run_directory(task_data, case_work_path);
+			// task 11 : launch (add case info to task data)
 			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			String result_keep = task_data.get("CaseInfo").get("result_keep");
-			system_call sys_call = new system_call(run_cmd, run_env, case_work_path, case_time_out);
+			system_call sys_call = new system_call(run_cmd, run_env, run_dir, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out, result_keep);
 		}
 	}

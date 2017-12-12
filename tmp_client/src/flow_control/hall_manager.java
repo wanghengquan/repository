@@ -9,6 +9,7 @@
  */
 package flow_control;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -206,7 +207,10 @@ public class hall_manager extends Thread {
 		if (client_info.get_client_preference_data().get("cmd_gui").equals("gui")){
 			return;
 		}
-		if (!switch_info.get_suite_file_list().isEmpty()){
+		if (task_info.get_local_file_finished_task_map().size() < task_info.get_local_file_imported_task_map().size()){
+			return;
+		}
+		if (task_info.get_local_path_finished_task_map().size() < task_info.get_local_path_imported_task_map().size()){
 			return;
 		}
 		if (!task_info.get_processing_admin_queue_list().isEmpty()){
@@ -223,7 +227,9 @@ public class hall_manager extends Thread {
 		generate_exit_report();
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		if(Integer.valueOf(run_summary.get(task_enum.FAILED)) > 0 ){
-			switch_info.set_client_stop_request(exit_enum.TASK);
+			switch_info.set_client_stop_request(exit_enum.TASK2);
+		} else if(Integer.valueOf(run_summary.get(task_enum.TBD)) > 0 ){
+			switch_info.set_client_stop_request(exit_enum.TASK1);
 		} else {
 			switch_info.set_client_stop_request(exit_enum.NORMAL);
 		}
@@ -344,6 +350,35 @@ public class hall_manager extends Thread {
 		return record_status;
 	}
 	
+	private String get_report_file_path(
+			String queue_name){
+		//get report file path
+		String report_file_path = new String("");
+		String work_space = new String(client_info.get_client_preference_data().get("work_path"));
+		File work_space_fobj = new File(work_space);
+		if (!work_space_fobj.exists()) {
+			HALL_MANAGER_LOGGER.warn("Work space do not exists:" + work_space);
+			return report_file_path;
+		}		
+		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+		admin_data.putAll(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
+		if (admin_data.isEmpty()){
+			admin_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
+		}
+		if (admin_data.isEmpty()){
+			HALL_MANAGER_LOGGER.warn("No admin data found for queue:" + queue_name);
+			return report_file_path;			
+		}
+		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
+		String run_dir_name = "run" + admin_data.get("ID").get("run");
+		String report_name = run_dir_name + ".csv";
+		String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name, report_name};
+		report_file_path = String.join(System.getProperty("file.separator"), path_array);
+		report_file_path = report_file_path.replaceAll("\\\\", "/");
+		return report_file_path;
+	}
+	
 	private void generate_exit_report() {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
@@ -352,11 +387,13 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
 		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
-			HALL_MANAGER_LOGGER.info(">>>                 :"+ queue_name);
+			HALL_MANAGER_LOGGER.info(">>>"+ queue_name + ":" + get_report_file_path(queue_name));
 		}
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + run_summary);
 		if(Integer.valueOf(run_summary.get(task_enum.FAILED)) > 0 ){
+			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 2.");
+		} else if(Integer.valueOf(run_summary.get(task_enum.TBD)) > 0 ){
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 1.");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 0.");
@@ -486,7 +523,7 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
