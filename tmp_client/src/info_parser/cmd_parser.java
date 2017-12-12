@@ -83,13 +83,13 @@ public class cmd_parser {
 		}
 		// 3.4 suite file value
 		if (commandline_obj.hasOption('f')) {
-			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f'));
+			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f').replaceAll("\\\\", "/"));
 		} else {
 			cmd_hash.put("suite_file", "");
 		}
 		// 3.5 suite path value
 		if (commandline_obj.hasOption('p')) {
-			cmd_hash.put("suite_path", commandline_obj.getOptionValue('p'));
+			cmd_hash.put("suite_path", commandline_obj.getOptionValue('p').replaceAll("\\\\", "/"));
 		} else {
 			cmd_hash.put("suite_path", "");
 		}
@@ -107,7 +107,7 @@ public class cmd_parser {
 		}
 		// 3.8 arguments for execute file
 		if (commandline_obj.hasOption('a')) {
-			cmd_hash.put("arguments", commandline_obj.getOptionValue('a'));
+			cmd_hash.put("arguments", commandline_obj.getOptionValue('a').replaceAll("\\\\", "/"));
 		} else {
 			cmd_hash.put("arguments", "");
 		}
@@ -132,11 +132,11 @@ public class cmd_parser {
 		}
 		// 3.12 work path
 		if (commandline_obj.hasOption('w')) {
-			cmd_hash.put("work_path", commandline_obj.getOptionValue('w'));
+			cmd_hash.put("work_path", commandline_obj.getOptionValue('w').replaceAll("\\\\", "/"));
 		}
 		// 3.13 save path
 		if (commandline_obj.hasOption('s')) {
-			cmd_hash.put("save_path", commandline_obj.getOptionValue('s'));
+			cmd_hash.put("save_path", commandline_obj.getOptionValue('s').replaceAll("\\\\", "/"));
 		}
 		// 3.14 max threads
 		if (commandline_obj.hasOption('t')) {
