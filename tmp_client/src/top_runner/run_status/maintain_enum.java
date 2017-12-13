@@ -12,8 +12,10 @@ package top_runner.run_status;
 public enum maintain_enum {
 	idle(1, "system_idel"),
 	update(2, "system_update"),
-	suspend(3, "system_suspend"),
-	unknown(4, "unknown");
+	cpu(3, "cpu_overload"),
+	mem(4, "mem_overload"),
+	space(5, "no_space"),
+	unknown(6, "unknown");
 	private int index;
 	private String description;
 	

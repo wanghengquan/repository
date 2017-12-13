@@ -20,8 +20,8 @@ import data_center.client_data;
 import data_center.data_server;
 import data_center.exit_enum;
 import data_center.public_data;
-import data_center.status_enum;
 import data_center.switch_data;
+import env_monitor.machine_sync;
 import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
@@ -98,13 +98,35 @@ public class client_manager extends Thread  {
 			return maintain_enum.idle;
 		}
 		//scenario 2: system suspend, cpu, mem, space exceed the maximum usage
-		HashMap<String, String> system_data = new HashMap<String, String>();
-		system_data.putAll(client_info.get_client_system_data());
-		if (system_data.containsKey("status")){
-			String system_status = system_data.get("status");
-			if (system_status.equals(status_enum.SUSPEND.get_description())){
-				return maintain_enum.suspend;
-			}
+		String cpu_used = machine_sync.get_cpu_usage();
+		String mem_used = machine_sync.get_mem_usage();
+		String space_left = machine_sync.get_disk_left();
+		int cpu_used_int = 0;
+		try{
+			cpu_used_int = Integer.parseInt(cpu_used);
+		} catch (Exception e) {
+			return maintain_enum.unknown;
+		}
+		int mem_used_int = 0;
+		try{
+			mem_used_int = Integer.parseInt(mem_used);
+		} catch (Exception e) {
+			return maintain_enum.unknown;
+		}
+		int space_left_int = 0;
+		try{
+			space_left_int = Integer.parseInt(space_left);
+		} catch (Exception e) {
+			return maintain_enum.unknown;
+		}
+		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
+			return maintain_enum.cpu;
+		}
+		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
+			return maintain_enum.mem;
+		}		
+		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
+			return maintain_enum.space;
 		}
 		return maintain_enum.unknown;
 	}
@@ -178,7 +200,7 @@ public class client_manager extends Thread  {
 			}
 			// task 2 : maintenance mode calculate
 			maintain_enum maintain_entry = start_maintenance_mode(client_sts);
-			if(maintain_entry.equals(maintain_enum.idle) || maintain_entry.equals(maintain_enum.suspend)){
+			if(!maintain_entry.equals(maintain_enum.unknown)){
 				switch_info.set_client_maintain_reason(maintain_entry);
 				client_sts.to_maintain_status();
 				client_sts.do_state_things();

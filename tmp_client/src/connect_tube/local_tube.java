@@ -935,19 +935,23 @@ public class local_tube {
 	
 	public void generate_suite_path_local_admin_task_queues(
 			HashMap<String, String> imported_data){
+		//step 0: start time
+		String generate_time = time_info.get_date_time();
 		//step 1: generate queue_name
-		String queue_name = get_queue_name(imported_data);
+		String queue_name = get_queue_name(imported_data, generate_time);
 		//step 2: generate admin_data
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
-		admin_queue_data.putAll(get_admin_queue_data(imported_data));
+		admin_queue_data.putAll(get_admin_queue_data(imported_data, generate_time));
 		//step 1: generate task_data
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		task_queue_data.putAll(get_task_queue_data(imported_data));
+		task_queue_data.putAll(get_task_queue_data(imported_data, admin_queue_data));
 		task_info.update_queue_to_received_admin_queues_treemap(queue_name, admin_queue_data);
 		task_info.update_queue_to_received_task_queues_map(queue_name, task_queue_data);
 	}
 	
-	private String get_queue_name(HashMap<String, String> imported_data) {
+	private String get_queue_name(
+			HashMap<String, String> imported_data,
+			String generate_time) {
 		// generate queue name
 		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
@@ -970,12 +974,13 @@ public class local_tube {
 		// xx0@run_xxx_suite_time :
 		// priority:match/assign task:job_from_local@run_number
 		queue_name = priority + attribute + "0" + "@" 
-				+ "run_" + mark_time + "_" + admin_queue_base + "_" + time_info.get_date_time();
+				+ "run_" + mark_time + "_" + admin_queue_base + "_" + generate_time;
 		return queue_name;
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_admin_queue_data(
-			HashMap<String, String> imported_data){
+			HashMap<String, String> imported_data,
+			String generate_time){
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		//id_data create
 		HashMap<String, String> id_data = new HashMap<String, String>();
@@ -986,7 +991,7 @@ public class local_tube {
 			suite_name = "local_suite";	
 		}
 		id_data.put("project", "x");
-		id_data.put("run", suite_name);
+		id_data.put("run", suite_name + "_" + generate_time);
 		id_data.put("suite", suite_name);
 		admin_queue_data.put("ID", id_data);
 		//CaseInfo create
@@ -1067,10 +1072,9 @@ public class local_tube {
 	}
 	
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
-			HashMap<String, String> imported_data){
+			HashMap<String, String> imported_data,
+			HashMap<String, HashMap<String, String>> admin_data){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
-		admin_data.putAll(get_admin_queue_data(imported_data));
 		//get case list
 		String suite_path = imported_data.get("path");
 		String key_file = imported_data.get("key");

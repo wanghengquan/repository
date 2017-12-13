@@ -325,16 +325,17 @@ class file_pane extends JPanel implements ActionListener{
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			String user_file = jt_user_file.getText();
+			String user_file = jt_user_file.getText().replaceAll("\\\\", "/");
 			String user_env = jt_user_env.getText();
 			if (user_file.length() > 0){
 				impoart_local_task_data(user_file, user_env);
 			}			
-			String unit_file = jt_unit_file.getText();
+			String unit_file = jt_unit_file.getText().replaceAll("\\\\", "/");
 			String unit_env = jt_unit_env.getText();
 			if (unit_file.length() > 0){
 				impoart_local_task_data(unit_file, unit_env);
 			}
+			tabbed_pane.dispose();
 		}
 	}
 }
@@ -556,7 +557,7 @@ class path_pane extends JPanel implements ActionListener{
 			tabbed_pane.dispose();
 		}
 		if(arg0.getSource().equals(apply)){
-			String suite_path = jt_suite_path.getText();
+			String suite_path = jt_suite_path.getText().replaceAll("\\\\", "/");
 			String suite_key = jt_key_file.getText();
 			String suite_exe = jt_exe_file.getText();
 			String suite_arg = jt_arguments.getText();
@@ -564,6 +565,7 @@ class path_pane extends JPanel implements ActionListener{
 			if (suite_path.length() > 0){
 				impoart_local_task_data(suite_path, suite_key, suite_exe, suite_arg, suite_env);
 			}
+			tabbed_pane.dispose();
 		}
 	}
 }

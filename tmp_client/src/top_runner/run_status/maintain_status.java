@@ -71,9 +71,18 @@ public class maintain_status extends abstract_status {
 		case update:
 			implements_core_script_update();
 			break;
-		case suspend:
-			implements_suspend_action();
+		case cpu:
+			System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
+			client_cpu_action();
 			break;
+		case mem:
+			System.out.println(">>>MEM:" + machine_sync.get_mem_usage());
+			client_mem_action();
+			break;
+		case space:
+			System.out.println(">>>Space:" + machine_sync.get_disk_left());
+			client_space_action();
+			break;			
 		default:
 			break;
 		}
@@ -127,19 +136,6 @@ public class maintain_status extends abstract_status {
 		System.out.println(">>>Core script updated...");
 	}	
 	
-	private void implements_suspend_action(){
-		//Show Detail info
-		System.out.println(">>>MEM:" + machine_sync.get_mem_usage());
-		System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
-		System.out.println(">>>Space:" + machine_sync.get_disk_left());
-		//run cpu usage check
-		client_cpu_action();
-		//run mem usage check
-		client_mem_action();
-		//run disk left check
-		client_space_action();
-	}
-	
 	private void client_mem_action(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		int counter = 0;
@@ -150,7 +146,7 @@ public class maintain_status extends abstract_status {
 				break;
 			}	
 			system_data.putAll(client.client_info.get_client_system_data());
-			//run cpu usage check
+			//run mem usage check
 			if (!system_data.containsKey("mem")){
 				break;
 			}
