@@ -321,7 +321,7 @@ public class switch_data {
 	}	
 	
 	//client_house_keeping
-	public void set_client_house_keeping(Boolean new_status) {
+	public void set_client_maintain_house_keeping(Boolean new_status) {
 		rw_lock.writeLock().lock();
 		try {
 			this.client_house_keeping = new_status;
@@ -330,7 +330,7 @@ public class switch_data {
 		}
 	}
 
-	public Boolean get_client_house_keeping() {
+	public Boolean get_client_maintain_house_keeping() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
 		try {

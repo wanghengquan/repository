@@ -235,7 +235,7 @@ class file_pane extends JPanel implements ActionListener{
 		close.setToolTipText("Close this window");
 		close.addActionListener(this);
 		p2.add(close);		
-		apply = new JButton("Applay");
+		apply = new JButton("Apply");
 		apply.setToolTipText("Implements the imports");
 		apply.addActionListener(this);
 		p2.add(apply);		
@@ -483,7 +483,7 @@ class path_pane extends JPanel implements ActionListener{
 		close.setToolTipText("Close this window");
 		close.addActionListener(this);
 		p2.add(close);		
-		apply = new JButton("Applay");
+		apply = new JButton("Apply");
 		apply.setToolTipText("Implements the imports");
 		apply.addActionListener(this);
 		p2.add(apply);

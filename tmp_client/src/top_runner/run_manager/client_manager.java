@@ -73,7 +73,7 @@ public class client_manager extends Thread  {
 		if(client_sts.get_current_status().equals("work_status")){
 			return false; //already in work status
 		}
-		if(switch_info.get_client_house_keeping()){
+		if(switch_info.get_client_maintain_house_keeping()){
 			return false;
 		} else {
 			return true;

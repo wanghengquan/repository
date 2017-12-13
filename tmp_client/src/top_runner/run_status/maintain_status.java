@@ -60,7 +60,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		client.switch_info.set_client_house_keeping(true);
+		client.switch_info.set_client_maintain_house_keeping(true);
 		maintain_enum maintain_entry = client.switch_info.get_client_maintain_reason();
 		System.out.println(">>>Info:Maintain Entry is: " + maintain_entry.get_description());
 		switch (maintain_entry){
@@ -86,7 +86,7 @@ public class maintain_status extends abstract_status {
 		default:
 			break;
 		}
-		client.switch_info.set_client_house_keeping(false);
+		client.switch_info.set_client_maintain_house_keeping(false);
 	}	
 	
 	//=============================================================
