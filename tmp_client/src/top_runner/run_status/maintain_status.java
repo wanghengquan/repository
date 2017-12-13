@@ -20,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 
 import data_center.public_data;
 import env_monitor.core_update;
+import env_monitor.machine_sync;
 import flow_control.import_data;
 import self_update.app_update;
 import utility_funcs.deep_clone;
@@ -127,6 +128,10 @@ public class maintain_status extends abstract_status {
 	}	
 	
 	private void implements_suspend_action(){
+		//Show Detail info
+		System.out.println(">>>MEM:" + machine_sync.get_mem_usage());
+		System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
+		System.out.println(">>>Space:" + machine_sync.get_disk_left());
 		//run cpu usage check
 		client_cpu_action();
 		//run mem usage check

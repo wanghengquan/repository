@@ -178,7 +178,7 @@ public class client_manager extends Thread  {
 			}
 			// task 2 : maintenance mode calculate
 			maintain_enum maintain_entry = start_maintenance_mode(client_sts);
-			if(!maintain_entry.equals(maintain_enum.unknown)){
+			if(maintain_entry.equals(maintain_enum.idle) || maintain_entry.equals(maintain_enum.suspend)){
 				switch_info.set_client_maintain_reason(maintain_entry);
 				client_sts.to_maintain_status();
 				client_sts.do_state_things();

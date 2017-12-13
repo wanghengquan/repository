@@ -474,9 +474,6 @@ public class data_server extends Thread {
 		}		
 		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
 			return status_enum.SUSPEND;
-		}
-		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
-			return status_enum.SUSPEND;
 		}		
 		if (cpu_used_int > public_data.RUN_LIMITATION_CPU / 2){
 			return status_enum.BUSY;

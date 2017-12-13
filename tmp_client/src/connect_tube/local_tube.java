@@ -838,7 +838,7 @@ public class local_tube {
 		local_file = local_file.replaceAll("\\$unit_path", public_data.DOC_EIT_PATH);
 		//excel file sanity check
 		if(!suite_file_sanity_check(local_file)){
-			LOCAL_TUBE_LOGGER.warn("Suite file wrong format:" + local_file);
+			LOCAL_TUBE_LOGGER.warn("Suite file wrong format/not exists:" + local_file);
 			return;			
 		}
 		//get excel file destination

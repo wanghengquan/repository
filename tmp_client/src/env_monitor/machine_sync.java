@@ -98,7 +98,7 @@ public class machine_sync extends Thread {
 		return os_name;
 	}
 
-	private String get_disk_left() {
+	public static String get_disk_left() {
 		File file = new File("..");
 		String disk_left = new String();
 		// long total_space = file.getTotalSpace();
@@ -108,7 +108,7 @@ public class machine_sync extends Thread {
 		return disk_left;
 	}
 
-	private String get_cpu_usage() {
+	public static String get_cpu_usage() {
 		String systemType = System.getProperties().getProperty("os.name");
 		String cpu_usage = new String();
 		if (systemType.contains("Windows")) {
@@ -131,7 +131,7 @@ public class machine_sync extends Thread {
 		}
 	}
 
-	private String get_mem_usage() {
+	public static String get_mem_usage() {
 		String systemType = System.getProperties().getProperty("os.name");
 		String mem_usage = new String();
 		if (systemType.contains("Windows")) {
