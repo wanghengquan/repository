@@ -27,6 +27,7 @@ import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import utility_funcs.des_encode;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 import data_center.public_data;
@@ -145,8 +146,8 @@ public class hall_manager extends Thread {
 		run_summary.put(task_enum.TIMEOUT, timeout_num.toString());
 		run_summary.put(task_enum.OTHERS, others_num.toString() );
 		return run_summary;
-	}
-
+	}	
+	
 	private void generate_console_report() {
 		// report processing queue list
 		int show_queue_number = 6;
@@ -221,7 +222,7 @@ public class hall_manager extends Thread {
 		}
 		//make exit report
 		local_cmd_exit_counter++;
-		if (local_cmd_exit_counter < 5){ //4 * base_interval
+		if (local_cmd_exit_counter < 2){ //4 * base_interval
 			return;
 		}
 		generate_exit_report();
@@ -379,6 +380,79 @@ public class hall_manager extends Thread {
 		return report_file_path;
 	}
 	
+	private String get_run_suite_data_string(
+			String queue_name){
+		String result_string = new String("");
+		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
+		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
+		if (summary_map.containsKey(queue_name)){
+			run_queue_data.putAll(summary_map.get(queue_name));
+		} else {
+			HALL_MANAGER_LOGGER.warn("No run data found for :" + queue_name);
+			return result_string;
+		}
+		result_string = run_queue_data.toString();
+		return result_string;
+	}
+	
+	private String get_run_suite_final_result(
+			String queue_name){
+		String run_result = new String("");
+		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
+		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
+		if (summary_map.containsKey(queue_name)){
+			run_queue_data.putAll(summary_map.get(queue_name));
+		} else {
+			HALL_MANAGER_LOGGER.warn("No run data found for :" + queue_name);
+			return run_result;
+		}
+		Integer pass_num = run_queue_data.getOrDefault(task_enum.PASSED, 0);
+		Integer fail_num = run_queue_data.getOrDefault(task_enum.FAILED, 0);
+		Integer tbd_num = run_queue_data.getOrDefault(task_enum.TBD, 0);
+		Integer timeout_num = run_queue_data.getOrDefault(task_enum.TIMEOUT, 0);
+		Integer others_num = run_queue_data.getOrDefault(task_enum.OTHERS, 0);
+		Integer total_num = pass_num + fail_num + tbd_num + timeout_num + others_num;
+		if (total_num < 1){
+			run_result = "Unknown";
+		}else if (fail_num > 0){
+			run_result = "Failed";
+		}else if (pass_num < 1){
+			run_result = "Failed";
+		} else {
+			run_result = "Passed";
+		}
+		return run_result;
+	}
+	
+	private String get_task_queue_run_id(
+			String queue_name){
+		String run_id = new String("Unknown Issue");
+		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+		admin_data.putAll(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
+		if (admin_data.isEmpty()){
+			admin_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
+		}
+		if (admin_data.isEmpty()){
+			HALL_MANAGER_LOGGER.warn("No queue data found for Run ID generate:" + queue_name);
+			run_id = "No queue data found for Run ID generate.";
+			return run_id;			
+		}
+		String run_suite_name = admin_data.get("ID").get("suite");
+		String run_suite_result = get_run_suite_final_result(queue_name);
+		String encode_string = run_suite_name + "_" + get_run_suite_data_string(queue_name) + "_" + time_info.get_date_time();
+		String encryption_code = "unknown";
+		try {
+			encryption_code = des_encode.encrypt(encode_string, public_data.ENCRY_KEY);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		run_id = run_suite_name + "_" + run_suite_result + "_<" + encryption_code + ">";
+		return run_id;
+	}
+	
 	private void generate_exit_report() {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
@@ -388,6 +462,8 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
 		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
 			HALL_MANAGER_LOGGER.info(">>>"+ queue_name + ":" + get_report_file_path(queue_name));
+			HALL_MANAGER_LOGGER.info(">>>Run ID:" + get_task_queue_run_id(queue_name));
+			HALL_MANAGER_LOGGER.info(">>>"+"");
 		}
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + run_summary);

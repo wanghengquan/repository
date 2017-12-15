@@ -19,6 +19,7 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
@@ -40,7 +41,7 @@ public class client_dialog extends JDialog implements ActionListener {
 	private Vector<String> client_private = new Vector<String>();
 	private Vector<String> unattended = new Vector<String>();
 	
-	private JButton discard, apply;
+	private JButton discard, apply, close;
 	private JTable client_table;
 
 	public client_dialog(main_frame main_view, switch_data switch_info, client_data client_info) {
@@ -56,7 +57,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		container.add(table_head, BorderLayout.NORTH);
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(400, 250);
+		this.setSize(450, 250);
 	}
 
 	public void reset_table_data() {
@@ -97,13 +98,17 @@ public class client_dialog extends JDialog implements ActionListener {
 	}
 
 	public JPanel construct_action_panel() {
-		JPanel action = new JPanel(new GridLayout(1, 2, 5, 5));
+		JPanel action = new JPanel(new GridLayout(1, 4, 5, 5));
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
 		apply.addActionListener(this);
+		close = new JButton("Close");
+		close.addActionListener(this);		
 		action.add(discard);
+		action.add(new JLabel(""));
 		action.add(apply);
+		action.add(close);
 		return action;
 	}
 
@@ -113,7 +118,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		if (arg0.getSource().equals(discard)) {
 			reset_table_data();
 			client_table.updateUI();		
-		}
+		}		
 		if (arg0.getSource().equals(apply)) {
 			HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
 			update_data.putAll(client_info.get_client_data());
@@ -128,6 +133,9 @@ public class client_dialog extends JDialog implements ActionListener {
 			client_info.set_client_data(update_data);
 			switch_info.set_client_updated();			
 		}
+		if (arg0.getSource().equals(close)) {
+			this.dispose();		
+		}		
 	}
 
 	public static void main(String[] args) {

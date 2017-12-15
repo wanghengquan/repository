@@ -55,6 +55,7 @@ public class work_panel extends JSplitPane implements Runnable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private static final Logger WORK_PANEl_LOGGER = LogManager.getLogger(work_panel.class.getName());
+	private main_frame main_view;
 	private view_data view_info;
 	private task_data task_info;
 	private client_data client_info;
@@ -62,8 +63,9 @@ public class work_panel extends JSplitPane implements Runnable{
 	private Vector<String> work_column = new Vector<String>();
 	private Vector<Vector<String>> work_data = new Vector<Vector<String>>(); //show on table
 
-	public work_panel(view_data view_info, client_data client_info, task_data task_info) {
+	public work_panel(main_frame main_view, view_data view_info, client_data client_info, task_data task_info) {
 		super();//default constructor
+		this.main_view = main_view;
 		this.view_info = view_info;
 		this.client_info = client_info;
 		this.task_info = task_info;
@@ -88,10 +90,10 @@ public class work_panel extends JSplitPane implements Runnable{
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
-		queue_panel admin_insts = new queue_panel(view_info, client_info, task_info);
-		this.setLeftComponent(admin_insts);
+		queue_panel task_view = new queue_panel(this.main_view, view_info, client_info, task_info);
+		this.setLeftComponent(task_view);
 		this.setRightComponent(panel_right_component());
-		new Thread(admin_insts).start();
+		new Thread(task_view).start();
 	}
 
 	private int get_processing_lines(panel_table work_table){
