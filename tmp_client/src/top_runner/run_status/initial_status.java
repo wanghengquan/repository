@@ -31,7 +31,7 @@ class initial_status extends abstract_status {
 
 	public void to_work() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: initializing...");
+		System.out.println(">>>Info: Initializing...");
 		// task 1: launch GUI if in GUI mode
 		launch_main_gui();
 		// task 2: get and wait client data ready 
@@ -49,13 +49,13 @@ class initial_status extends abstract_status {
 		// task 8: get hall manager ready
 		get_hall_manager_reay();
 		//waiting for all waiter ready
+		System.out.println(">>>Info: Working...");
 		try {
 			Thread.sleep(1000 * 2 * public_data.PERF_THREAD_BASE_INTERVAL);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(">>>Info: working...");
 		client.set_current_status(client.WORK);
 	}
 
@@ -91,7 +91,7 @@ class initial_status extends abstract_status {
 	private void get_core_script_update(){
 		core_update my_core = new core_update();
 		my_core.update(client.client_info.get_client_preference_data().get("work_path"));
-		System.out.println(">>>Info: Default Core Script updated.");
+		System.out.println(">>>Info: Core Script updated.");
 	}	
 	//self update
 	private void get_client_self_update(){ 

@@ -675,7 +675,11 @@ public class task_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 			task_data.putAll(get_final_task_data(queue_name, admin_data));
 			if (task_data.isEmpty()) {
-				TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
+				if (switch_info.get_local_console_mode()){
+					TASK_WAITER_LOGGER.debug(waiter_name + ":Try change queue to finished status:" + queue_name);
+				} else {
+					TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
+				}
 				task_info.decrease_processing_admin_queue_list(queue_name);
 				task_info.decrease_running_admin_queue_list(queue_name);
 				// move queue form received to processed admin queue treemap
@@ -702,11 +706,19 @@ public class task_waiter extends Thread {
 			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id,
 					task_data);
 			if (register_status) {
-				TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
+				if (switch_info.get_local_console_mode()){
+					TASK_WAITER_LOGGER.debug(waiter_name + ":Launched " + queue_name + "," + case_id);
+				} else {
+					TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
+				}
 				// start running this queue.
 				task_info.increase_running_admin_queue_list(queue_name);
 			} else {
-				TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
+				if (switch_info.get_local_console_mode()){
+					TASK_WAITER_LOGGER.debug(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
+				} else {
+					TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
+				}
 				client_info.release_use_soft_insts(software_cost);
 				pool_info.release_used_thread(1);
 				continue;// register false, someone register this case already.

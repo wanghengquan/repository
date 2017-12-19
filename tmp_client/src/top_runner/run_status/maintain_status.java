@@ -54,7 +54,7 @@ public class maintain_status extends abstract_status {
 
 	public void to_maintain() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: already in maintain");
+		System.out.println(">>>Info: Already in maintain");
 		System.out.println("");
 		client.set_current_status(client.MAINTAIN);
 	}

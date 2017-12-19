@@ -250,7 +250,8 @@ public class result_waiter extends Thread {
 		return release_status;
 	}
 
-	private Boolean update_client_run_case_summary(HashMap<String, HashMap<String, Object>> call_status_map,
+	private Boolean update_client_run_case_summary(
+			HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, Object>> case_report_map) {
 		Boolean update_status = new Boolean(true);
 		Iterator<String> call_map_it = call_status_map.keySet().iterator();
@@ -530,7 +531,7 @@ public class result_waiter extends Thread {
 			if (call_status.equals(call_enum.DONE)) {
 				cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("cmd_output"));
 				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("cmd_output"));
-				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("cmd_output")));
+				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("cmd_output")));				
 			} else if (call_status.equals(call_enum.TIMEOUT)) {
 				cmd_status = task_enum.TIMEOUT;
 				cmd_reason = "Timeout";
@@ -775,6 +776,32 @@ public class result_waiter extends Thread {
 		return copy_status;
 	}
 
+	private void generate_console_report(
+			String waiter_name,
+			HashMap<String, HashMap<String, Object>> call_status_map,
+			HashMap<String, HashMap<String, Object>> case_report_map){
+		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			call_enum call_status = (call_enum) one_call_data.get("call_status");
+			// only done call will be release. timeout call will be get in
+			// the next cycle(at that time status will be done)
+			if (!call_status.equals(call_enum.DONE)) {
+				continue;
+			}
+			String queue_name = (String) one_call_data.get("queue_name");
+			String case_id = (String) one_call_data.get("case_id");
+			task_enum status = (task_enum) case_report_map.get(call_index).get("status");
+			String location = (String) case_report_map.get(call_index).get("location");
+			if (switch_info.get_local_console_mode()){
+				RESULT_WAITER_LOGGER.info(waiter_name + ": " + case_id + "," + status.get_description() + "," + location);
+			} else {
+				RESULT_WAITER_LOGGER.info(waiter_name + ": " + queue_name + "," + case_id + "," + status.get_description());
+			}
+		}
+	}	
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -829,7 +856,9 @@ public class result_waiter extends Thread {
 			dump_finished_queue_data(call_status);
 			// following actions based on a non-empty call back.
 			if (call_status.size() < 1) {
-				RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
+				if(!switch_info.get_local_console_mode()){
+					RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
+				}
 				continue;
 			}
 			// task 4 : cancel running call:1. time out, 2. user terminate
@@ -843,6 +872,7 @@ public class result_waiter extends Thread {
 					call_status);
 			Boolean send_runtime_status = send_runtime_report(case_runtime_log_data);
 			// task 7 : update memory case run summary
+			generate_console_report(waiter_name, call_status, case_report_data);
 			update_client_run_case_summary(call_status, case_report_data);
 			// task 8 : update processed task data info
 			Boolean update_task_data_status = update_processed_task_data(call_status, case_report_data);
