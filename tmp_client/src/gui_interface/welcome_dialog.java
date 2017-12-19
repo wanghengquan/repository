@@ -40,7 +40,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 	private client_data client_info;
 	private JTextField jt_work, jt_save;
 	private JCheckBox jc_welcome;
-	private JButton jb_discard, jb_apply;
+	private JButton jb_discard, jb_apply, jb_close;
 	private String line_separator = System.getProperty("line.separator");
 
 	public welcome_dialog(main_frame main_view, switch_data switch_info, client_data client_info) {
@@ -130,8 +130,12 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		jb_discard.addActionListener(this);
 		jb_apply = new JButton("Apply");
 		jb_apply.addActionListener(this);
+		jb_close = new JButton("Close");
+		jb_close.addActionListener(this);		
 		button_panel.add(jb_discard);
+		button_panel.add(new JLabel(""));
 		button_panel.add(jb_apply);
+		button_panel.add(jb_close);
 		// package
 		jb_apply_panel.add(check_panel, BorderLayout.NORTH);
 		jb_apply_panel.add(button_panel, BorderLayout.SOUTH);

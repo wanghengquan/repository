@@ -95,7 +95,7 @@ public class submit_dialog extends JDialog implements ActionListener {
 	
 	private String get_run_suite_final_result(
 			String queue_name){
-		String run_result = new String("");
+		String run_result = new String("Unknown");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
 		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();

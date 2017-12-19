@@ -79,7 +79,7 @@ public class software_dialog extends JDialog implements ChangeListener{
 			ImageIcon icon_image = new ImageIcon(public_data.ICON_SOFTWARE_TAB_PNG);
 			String shown_tab_name = new String();
 			shown_tab_name = section_name.substring(0, 1).toUpperCase() + section_name.substring(1);
-			tabbed_pane.addTab(shown_tab_name, icon_image, new value_pane(section_name, switch_info, client_info), "Click and show");
+			tabbed_pane.addTab(shown_tab_name, icon_image, new value_pane(section_name, switch_info, client_info, this), "Click and show");
 		}
 		return tabbed_pane;
 	}
@@ -107,17 +107,19 @@ class value_pane extends JPanel implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
 	private switch_data switch_info;
+	private software_dialog sw_dialog;
 	private String tab_name;
 	private JTable build_table;
 	private JTextField jt_max_insts, jt_scan_dir;
 	private Vector<String> table_column = new Vector<String>();
 	private Vector<Vector<String>> table_data = new Vector<Vector<String>>();	
-	private JButton discard, apply;
+	private JButton discard, apply, close;
 	
-	public value_pane(String tab_name, switch_data switch_info, client_data client_info){
+	public value_pane(String tab_name, switch_data switch_info, client_data client_info, software_dialog sw_dialog){
 		this.tab_name = tab_name;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.sw_dialog = sw_dialog;
 		this.setLayout(new BorderLayout());
 		this.add(construct_top_panel(), BorderLayout.NORTH);
 		this.add(construct_center_panel(), BorderLayout.CENTER);
@@ -180,13 +182,17 @@ class value_pane extends JPanel implements ActionListener{
 	}
 	
 	private JPanel construct_south_panel(){
-		JPanel south_panel = new JPanel(new GridLayout(1,2,5,20));
+		JPanel south_panel = new JPanel(new GridLayout(1,4,5,20));
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
 		apply.addActionListener(this);
+		close = new JButton("Close");
+		close.addActionListener(this);		
 		south_panel.add(discard);
+		south_panel.add(new JLabel(""));
 		south_panel.add(apply);
+		south_panel.add(close);
 		return south_panel;
 	}
 
@@ -250,5 +256,8 @@ class value_pane extends JPanel implements ActionListener{
 			client_info.update_software_data(tab_name, new_data);
 			switch_info.set_client_updated();
 		}
+		if (arg0.getSource().equals(close)) {
+			sw_dialog.dispose();		
+		}		
 	}
 }

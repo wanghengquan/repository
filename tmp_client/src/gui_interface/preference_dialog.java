@@ -51,7 +51,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel;
 	private JCheckBox ignore_software, ignore_system, ignore_machine;
 	private JTextField thread_text, jt_work_path, jt_save_path;
-	private JButton discard, apply;
+	private JButton discard, apply, close;
 
 	public preference_dialog(main_frame main_view, switch_data switch_info, pool_data pool_info, client_data client_info){
 		super(main_view, "Preference Setting", true);
@@ -173,13 +173,17 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		input6_s.weighty=0;
 		input6_layout.setConstraints(jt_save_path, input6_s);		
 		//Step 3 : bottom line
-		JPanel jp_bottom = new JPanel(new GridLayout(1,2,5,10));
+		JPanel jp_bottom = new JPanel(new GridLayout(1,4,5,10));
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
 		apply.addActionListener(this);
+		close = new JButton("Close");
+		close.addActionListener(this);		
 		jp_bottom.add(discard);
+		jp_bottom.add(new JLabel(""));
 		jp_bottom.add(apply);
+		jp_bottom.add(close);
 		//final package
 		preference_panel.add(jp_title);
 		preference_panel.add(jp_center1);
