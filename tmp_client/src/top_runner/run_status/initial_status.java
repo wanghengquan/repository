@@ -9,6 +9,8 @@
  */
 package top_runner.run_status;
 
+import java.util.HashMap;
+
 import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
@@ -22,7 +24,7 @@ class initial_status extends abstract_status {
 
 	public void to_stop() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to stop");
+		System.out.println(">>>Info: Go to stop");
 		System.out.println("");		
 		client.set_current_status(client.STOP);		
 	}
@@ -42,7 +44,9 @@ class initial_status extends abstract_status {
 		get_core_script_update();
 		// task 6: client self update
 		get_client_self_update();
-		// task 7: get hall manager ready
+		// task 7: client run mode recognize
+		client_local_console_run_recognize();		
+		// task 8: get hall manager ready
 		get_hall_manager_reay();
 		//waiting for all waiter ready
 		try {
@@ -56,12 +60,12 @@ class initial_status extends abstract_status {
 	}
 
 	public void to_maintain() {
-		System.out.println("Go to maintain");
+		System.out.println(">>>Info: Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
 	public void do_state_things(){
-		System.out.println("Run state things");
+		System.out.println(">>>Info: Run state things");
 	}	
 	//=============================================================
 	//methods for locals
@@ -77,7 +81,7 @@ class initial_status extends abstract_status {
 		client.data_runner.start();
 		while(true){
 			if (client.switch_info.get_data_server_power_up()){
-				System.out.println(">>>Data server power up.");
+				System.out.println(">>>Info: Data server power up.");
 				break;
 			}
 		}		
@@ -87,7 +91,7 @@ class initial_status extends abstract_status {
 	private void get_core_script_update(){
 		core_update my_core = new core_update();
 		my_core.update(client.client_info.get_client_preference_data().get("work_path"));
-		System.out.println(">>>Default Core Script updated.");
+		System.out.println(">>>Info: Default Core Script updated.");
 	}	
 	//self update
 	private void get_client_self_update(){ 
@@ -117,7 +121,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>TMP client updated.");
+		System.out.println(">>>Info: TMP client updated.");
 	}
 	
 	//get daemon process ready
@@ -131,16 +135,31 @@ class initial_status extends abstract_status {
 		client.tube_runner.start();
 		while(true){
 			if (client.switch_info.get_tube_server_power_up()){
-				System.out.println(">>>Tube server power up.");
+				System.out.println(">>>Info: Tube server power up.");
 				break;
 			}
 		}		
 	}
 	
+	//client_local_console_run_recognize
+	private void client_local_console_run_recognize(){
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client.client_info.get_client_preference_data());
+		String link_mode = new String("");
+		String cmd_gui = new String("");
+		link_mode = preference_data.getOrDefault("link_mode", public_data.DEF_CLIENT_LINK_MODE);
+		cmd_gui = preference_data.getOrDefault("cmd_gui", "");
+		if(link_mode.equalsIgnoreCase("local") && cmd_gui.equalsIgnoreCase("cmd")){
+			client.switch_info.set_local_console_mode(true);
+		} else {
+			client.switch_info.set_local_console_mode(false);
+		}
+	}
+	
 	//get_hall_manager_reay
 	private void get_hall_manager_reay(){
 		client.hall_runner.start();
-		System.out.println(">>>Hall manager power up.");
+		System.out.println(">>>Info: Hall manager power up.");
 	}
 	
 }

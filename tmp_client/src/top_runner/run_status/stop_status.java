@@ -26,22 +26,22 @@ class stop_status extends abstract_status {
 	}
 
 	public void to_stop() {
-		System.out.println("Go to stop");
+		System.out.println(">>>Info: Go to stop");
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
-		System.out.println("Go to work");
+		System.out.println(">>>Info: Go to work");
 		client.set_current_status(client.WORK);
 	}
 
 	public void to_maintain() {
-		System.out.println("Go to maintain");
+		System.out.println(">>>Info: Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
 	public void do_state_things(){
-		System.out.println(">>>Info:Run state things");
+		System.out.println(">>>Info: Run state things");
 		report_processed_data();
 		dump_finished_data();
 		dump_memory_data();		

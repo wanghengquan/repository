@@ -128,11 +128,11 @@ public class top_launcher {
 		System.out.println("");
 		System.out.println(">>>Info: Launch dir:" + System.getProperty("user.dir").replaceAll("\\\\", "/"));
 		initial_log_config();
-		TOP_LAUNCHER_LOGGER.debug("Debug output test");
-		TOP_LAUNCHER_LOGGER.info("Info output test");
-		TOP_LAUNCHER_LOGGER.warn("Warn output test");
-		TOP_LAUNCHER_LOGGER.error("Error output test");
-		TOP_LAUNCHER_LOGGER.fatal("Fatal output test");
+		//TOP_LAUNCHER_LOGGER.debug("Debug output testing...");
+		//TOP_LAUNCHER_LOGGER.info("Info output testing...");
+		//TOP_LAUNCHER_LOGGER.warn("Warn output testing...");
+		//TOP_LAUNCHER_LOGGER.error("Error output testing...");
+		//TOP_LAUNCHER_LOGGER.fatal("Fatal output testing...");
 		// initial 1 : Get data ready
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
@@ -143,7 +143,7 @@ public class top_launcher {
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		// initial 2 : run self check
 		if (!run_self_check()) {
-			TOP_LAUNCHER_LOGGER.error(">>>Self check failed.");
+			TOP_LAUNCHER_LOGGER.error("Self check failed.");
 			System.exit(exit_enum.RUNENV.get_index());
 		}
 		// initial 3 : run client instances check

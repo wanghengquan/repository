@@ -35,11 +35,11 @@ public class shut_down extends Thread {
 	public void run() {
 		try {
 			SHUT_DOWN_LOGGER.info("shut_down hook called.");
-			System.out.println(">>>Info: Shut down hook called.");
+			// System.out.println(">>>Info: Shut down hook called.");
 			// shut down task 1:
 			switch_info.decrease_system_client_insts();
-			int start_insts = switch_info.get_system_client_insts();
-			System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched now.");
+			// int start_insts = switch_info.get_system_client_insts();
+			// System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched now.");
 			// shut down task 2:
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();			

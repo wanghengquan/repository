@@ -22,14 +22,14 @@ public class work_status extends abstract_status {
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to stop");
+		System.out.println(">>>Info: Go to stop");
 		System.out.println("");		
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:already in work status");
+		System.out.println(">>>Info: Already in work status");
 		System.out.println("");			
 		client.set_current_status(client.WORK);
 	}
@@ -46,13 +46,13 @@ public class work_status extends abstract_status {
 			e.printStackTrace();
 		}		
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to maintain");
+		System.out.println(">>>Info: Go to maintain");
 		System.out.println("");		
 		client.set_current_status(client.MAINTAIN);
 	}
 	
 	public void do_state_things(){
-		System.out.println(">>>Info:No extra thing to do, already running");
+		System.out.println(">>>Info: No extra thing to do, already running");
 	}	
 	
 	//=============================================================

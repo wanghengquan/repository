@@ -202,10 +202,7 @@ public class hall_manager extends Thread {
 	}
 	
 	private void local_cmd_mode_exit_check(){
-		if (!client_info.get_client_preference_data().get("link_mode").equals("local")){
-			return;
-		}
-		if (client_info.get_client_preference_data().get("cmd_gui").equals("gui")){
+		if (!switch_info.get_local_console_mode()){
 			return;
 		}
 		if (task_info.get_local_file_finished_task_map().size() < task_info.get_local_file_imported_task_map().size()){
@@ -545,8 +542,10 @@ public class hall_manager extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update running task waiters
 			start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
-			// task 2 : make general report
-			generate_console_report();
+			// task 2 : make general report for non local console mode
+			if(!switch_info.get_local_console_mode()){
+				generate_console_report();
+			}
 			// task 3 : exit apply for local command line mode
 			local_cmd_mode_exit_check();
 			// task 4 : Maximum threads adjustment

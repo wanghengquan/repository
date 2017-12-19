@@ -620,7 +620,11 @@ public class task_waiter extends Thread {
 			}
 			if (task_info.get_processing_admin_queue_list().size() < 1) {
 				if (waiter_name.equalsIgnoreCase("tw_0")){
-					TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+					if (switch_info.get_local_console_mode()){
+						TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
+					} else {
+						TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+					}
 				}
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
 				continue;
@@ -632,7 +636,11 @@ public class task_waiter extends Thread {
 			if (queue_name.equals("") || queue_name == null) {
 				//only TW_0 can report out when there is no work queue finid.
 				if (waiter_name.equalsIgnoreCase("tw_0")){
-					TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
+					if (switch_info.get_local_console_mode()){
+						TASK_WAITER_LOGGER.debug(waiter_name + ":No matched queue found.");
+					} else {
+						TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
+					}
 				}
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No matched queue found.");
 				continue;

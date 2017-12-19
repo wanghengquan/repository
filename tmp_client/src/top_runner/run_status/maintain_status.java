@@ -37,14 +37,14 @@ public class maintain_status extends abstract_status {
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();		
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to stop");
+		System.out.println(">>>Info: Go to stop");
 		System.out.println("");		
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:Go to work");
+		System.out.println(">>>Info: Go to work");
 		System.out.println("");	
 		client.data_runner.wake_request();
 		client.tube_runner.wake_request();
@@ -54,7 +54,7 @@ public class maintain_status extends abstract_status {
 
 	public void to_maintain() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info:already in maintain");
+		System.out.println(">>>Info: already in maintain");
 		System.out.println("");
 		client.set_current_status(client.MAINTAIN);
 	}
@@ -107,7 +107,7 @@ public class maintain_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>TMP Client updated...");		
+		System.out.println(">>>Info: TMP Client updated...");		
 	}
 	
 	private void implements_core_script_update(){
@@ -116,7 +116,7 @@ public class maintain_status extends abstract_status {
 		while(true){
 			counter++;
 			if(counter > 10){
-				System.out.println(">>>Core script update failed...");
+				System.out.println(">>>Info: Core script update failed...");
 				return;
 			}
 			if (client.pool_info.get_pool_used_threads() > 0){
@@ -133,7 +133,7 @@ public class maintain_status extends abstract_status {
 		}
 		core_update my_core = new core_update();
 		my_core.update(client.client_info.get_client_preference_data().get("work_path"));
-		System.out.println(">>>Core script updated...");
+		System.out.println(">>>Info: Core script updated...");
 	}	
 	
 	private void client_mem_action(){
@@ -142,7 +142,7 @@ public class maintain_status extends abstract_status {
 		while(true){
 			counter++;
 			if(counter > 5){
-				System.out.println(">>>MEM maintain timeout...");
+				System.out.println(">>>Info: MEM maintain timeout...");
 				break;
 			}	
 			system_data.putAll(client.client_info.get_client_system_data());
@@ -178,7 +178,7 @@ public class maintain_status extends abstract_status {
 		while(true){
 			counter++;
 			if(counter > 5){
-				System.out.println(">>>CPU maintain timeout...");
+				System.out.println(">>>Info: CPU maintain timeout...");
 				break;
 			}	
 			system_data.putAll(client.client_info.get_client_system_data());
@@ -219,7 +219,7 @@ public class maintain_status extends abstract_status {
 			if(preference_data.get("cmd_gui").equals("gui")){
 				client.view_info.set_space_cleanup_apply(true);
 			} else {
-				System.out.println(">>>Manually Work Space cleanup needed...");
+				System.out.println(">>>Info: Manually Work Space cleanup needed...");
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {
@@ -239,7 +239,7 @@ public class maintain_status extends abstract_status {
 		finished_list.addAll(client.task_info.get_finished_admin_queue_list());
 		String earliest_date = get_earliest_task_date(finished_list);
 		if (earliest_date.equals(time_info.get_date_year())){
-			System.out.println(">>>Manually Disk cleanup needed...");
+			System.out.println(">>>Info: Manually Disk cleanup needed...");
 			try {
 				Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 			} catch (InterruptedException e) {
@@ -295,9 +295,9 @@ public class maintain_status extends abstract_status {
 			File result_url_fobj = new File(result_url);
 			if (result_url_fobj.exists()){
 				if(FileUtils.deleteQuietly(result_url_fobj)){
-					System.out.println(">>>Result path cleanup Pass:" + result_url);
+					System.out.println(">>>Info: Result path cleanup Pass:" + result_url);
 				} else {
-					System.out.println(">>>Result path cleanup Fail:" + result_url);
+					System.out.println(">>>Info: Result path cleanup Fail:" + result_url);
 				}
 			}
 		}

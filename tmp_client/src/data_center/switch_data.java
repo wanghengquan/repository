@@ -43,6 +43,7 @@ public class switch_data {
 	private Boolean data_server_power_up = new Boolean(false);
 	private Boolean tube_server_power_up = new Boolean(false);
 	private Boolean hall_server_power_up = new Boolean(false);
+	private Boolean local_console_mode = new Boolean(false);
 	// suite file updating
 	// private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
@@ -299,6 +300,36 @@ public class switch_data {
 		}
 		return status;
 	}
+	
+	public void set_local_console_mode() {
+		rw_lock.writeLock().lock();
+		try {
+			this.local_console_mode = true;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public void set_local_console_mode(Boolean run_mode) {
+		rw_lock.writeLock().lock();
+		try {
+			this.local_console_mode = run_mode;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_local_console_mode() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.local_console_mode;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
 	//app_update_running
 	public void set_client_console_updating(Boolean new_status) {
 		rw_lock.writeLock().lock();
