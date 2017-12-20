@@ -458,9 +458,10 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
 		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
-			HALL_MANAGER_LOGGER.info(">>>"+ queue_name + ":" + get_report_file_path(queue_name));
-			HALL_MANAGER_LOGGER.info(">>>Run ID:" + get_task_queue_run_id(queue_name));
-			HALL_MANAGER_LOGGER.info(">>>"+"");
+			HALL_MANAGER_LOGGER.info(">>>Run    Task:" + queue_name);
+			HALL_MANAGER_LOGGER.info(">>>Task Report:" + get_report_file_path(queue_name));
+			HALL_MANAGER_LOGGER.info(">>>Submit Code:" + get_task_queue_run_id(queue_name));
+			HALL_MANAGER_LOGGER.info(">>>");
 		}
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + run_summary);
@@ -471,7 +472,7 @@ public class hall_manager extends Thread {
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Client will exit with code 0.");
 		}
-		HALL_MANAGER_LOGGER.info(">>>==================================");
+		HALL_MANAGER_LOGGER.info(">>>===============================");
 	}
 	
 	private void stop_sub_threads() {

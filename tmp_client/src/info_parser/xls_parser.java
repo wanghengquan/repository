@@ -60,7 +60,7 @@ public class xls_parser {
 	private Workbook openWorkbook(File file) throws FileNotFoundException, IOException {
 		FileInputStream fis = null;
 		try {
-			System.out.println("INFO : Opening workbook [" + file.getName() + "]");
+			System.out.println(">>>Info: Opening workbook [" + file.getName() + "]");
 			String[] file_name = file.getName().split("\\.");
 			int ExcelFormat = 0;
 			if (file_name[1].equalsIgnoreCase("xlsx")) {
