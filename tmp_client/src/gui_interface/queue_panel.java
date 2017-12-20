@@ -473,7 +473,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		details.addActionListener(this);
 		results = new JMenuItem("Results");
 		results.addActionListener(this);
-		submit = new JMenuItem("Submit Code");
+		submit = new JMenuItem("Submit");
 		submit.addActionListener(this);		
 		this.add(details);
 		this.add(results);

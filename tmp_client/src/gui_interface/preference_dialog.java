@@ -302,6 +302,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			jt_work_path.setText(preference_data.get("work_path"));
 			jt_save_path.setText(preference_data.get("save_path"));
 		}
+		if (arg0.getSource().equals(close)) {
+			this.dispose();		
+		}
 		if(arg0.getSource().equals(apply)){
 			//link mode
 			if(link_both.isSelected()){
