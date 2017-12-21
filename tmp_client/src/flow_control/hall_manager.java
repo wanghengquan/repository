@@ -159,7 +159,7 @@ public class hall_manager extends Thread {
 		ArrayList<String> captured_queue_list = new ArrayList<String>();
 		captured_queue_list.addAll(task_info.get_captured_admin_queues_treemap().keySet());
 		if (captured_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Captured queue:" + captured_queue_list.subList(0, 6).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Captured queue:" + captured_queue_list.subList(0, 3).toString() + "...");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Captured queue:" + captured_queue_list.toString());
 		}
@@ -167,7 +167,7 @@ public class hall_manager extends Thread {
 		ArrayList<String> processing_queue_list = new ArrayList<String>();
 		processing_queue_list.addAll(task_info.get_processing_admin_queue_list());
 		if (processing_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Processing queue:" + processing_queue_list.subList(0, 6).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Processing queue:" + processing_queue_list.subList(0, 3).toString() + "...");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Processing queue:" + processing_queue_list.toString());
 		}
@@ -175,7 +175,7 @@ public class hall_manager extends Thread {
 		ArrayList<String> running_queue_list = new ArrayList<String>();
 		running_queue_list.addAll(task_info.get_running_admin_queue_list());
 		if (running_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Running queue:" + running_queue_list.subList(0, 6).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Running queue:" + running_queue_list.subList(0, 3).toString() + "...");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Running queue:" + running_queue_list.toString());
 		}
@@ -183,7 +183,7 @@ public class hall_manager extends Thread {
 		ArrayList<String> finished_queue_list = new ArrayList<String>();
 		finished_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		if (finished_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Finished queue:" + finished_queue_list.subList(0, 6).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Finished queue:" + finished_queue_list.subList(0, 3).toString() + "...");
 		} else {
 			HALL_MANAGER_LOGGER.info(">>>Finished queue:" + finished_queue_list.toString());
 		}
