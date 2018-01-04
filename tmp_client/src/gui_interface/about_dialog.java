@@ -114,7 +114,7 @@ public class about_dialog extends JDialog implements ActionListener {
 			return "NA";
 		}
 		String current_time = String.valueOf(System.currentTimeMillis() / 1000);
-		return time_info.get_runtime_string(start_time, current_time);	
+		return time_info.get_runtime_string_dhms(start_time, current_time);	
 	}
 	
 	@Override

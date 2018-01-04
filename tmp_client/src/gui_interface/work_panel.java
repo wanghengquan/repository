@@ -74,7 +74,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_column.add("Design");
 		work_column.add("Status");
 		work_column.add("Reason");
-		work_column.add("Time");
+		work_column.add("Elapsed Time");
 		work_table = new panel_table(work_data, work_column);
 		work_table.getColumn("ID").setMinWidth(50);
 		work_table.getColumn("ID").setMaxWidth(150);
@@ -84,8 +84,8 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_table.getColumn("Status").setMinWidth(100);
 		work_table.getColumn("Status").setMaxWidth(200);
 		work_table.getColumn("Reason").setMinWidth(100);
-		work_table.getColumn("Time").setMinWidth(150);
-		work_table.getColumn("Time").setMaxWidth(200);
+		work_table.getColumn("Elapsed Time").setMinWidth(150);
+		work_table.getColumn("Elapsed Time").setMaxWidth(200);
 		this.setDividerLocation(300);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);

@@ -117,7 +117,7 @@ public class hall_manager extends Thread {
 			return "NA";
 		}
 		String current_time = String.valueOf(System.currentTimeMillis() / 1000);
-		return time_info.get_runtime_string(start_time, current_time);	
+		return time_info.get_runtime_string_dhms(start_time, current_time);	
 	}
 	
 	private HashMap<task_enum, String> get_client_run_case_summary(){

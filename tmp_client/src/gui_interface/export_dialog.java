@@ -346,7 +346,7 @@ class title_pane extends JPanel implements ActionListener{
 		title_items.add("Design");
 		title_items.add("Status");
 		title_items.add("Reason");
-		title_items.add("Time");
+		title_items.add("RunTime");
 		int show_id = 1;
 		for (String item : title_items){
 			Vector<Object> initial_line = new Vector<Object>();
@@ -522,7 +522,7 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 					case "Reason":
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("cmd_reason", "NA"));
 						break;
-					case "Time":
+					case "RunTime":
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("run_time", "NA"));
 						break;
 					default:
@@ -825,7 +825,7 @@ class generate_pane extends JPanel implements ActionListener{
 					case "Reason":
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("cmd_reason", "NA"));
 						break;
-					case "Time":
+					case "RunTime":
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("run_time", "NA"));
 						break;
 					default:

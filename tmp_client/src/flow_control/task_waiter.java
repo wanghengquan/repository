@@ -437,11 +437,13 @@ public class task_waiter extends Thread {
 		String cmd_reason = new String("");
 		String location = new String("");
 		String run_time = new String("");
+		String update_time = new String("");
 		status_hash.put("admin_status", admin_status);
 		status_hash.put("cmd_status", cmd_status);
 		status_hash.put("cmd_reason", cmd_reason);
 		status_hash.put("location", location);
 		status_hash.put("run_time", run_time);
+		status_hash.put("update_time", update_time);
 		if (case_data.containsKey("Status")) {
 			status_hash.putAll(case_data.get("Status"));
 		}

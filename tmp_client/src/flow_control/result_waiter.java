@@ -110,8 +110,10 @@ public class result_waiter extends Thread {
 			file_action.append_file(local_case_report, line_separator + "[Run]" + line_separator);
 			file_action.append_file(local_case_report, String.join(line_separator, cmd_output_list));
 			// task 1 : final running process clean up
-			run_status = final_cleanup(case_work_path);
-			// task 2 : zip case to save path
+			run_status = run_post_process_cleanup(case_work_path);
+			// task 2 : time out extra process to run, run program in case folder
+			// run_status = run_timeout_extra_process(case_path);			
+			// task 3 : zip case to save path
 			String result_keep = (String) one_call_data.get("result_keep");
 			if (case_work_path.contains(save_path)) {
 				// case save path same with work path no need to copy
@@ -316,12 +318,14 @@ public class result_waiter extends Thread {
 			String case_id = (String) call_status_map.get(call_index).get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
-			HashMap<String, String> case_status = case_data.get("Status");
+			HashMap<String, String> case_status = new HashMap<String, String>();
+			case_status.putAll(case_data.get("Status"));
 			case_status.put("cmd_status",
 					((task_enum) case_report_map.get(call_index).get("status")).get_description());
 			case_status.put("cmd_reason", (String) case_report_map.get(call_index).get("reason"));
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
-			case_status.put("run_time", time_info.get_man_date_time());
+			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
+			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
 			case_data.put("Status", case_status);
 			task_info.update_case_to_processed_task_queues_map(queue_name, case_id, case_data);
 		}
@@ -543,11 +547,15 @@ public class result_waiter extends Thread {
 			hash_data.put("reason", cmd_reason);
 			String work_path = (String) one_call_data.get("case_dir");
 			hash_data.put("location", work_path);
+			long start_time = (long) one_call_data.get("start_time");
+			long current_time = System.currentTimeMillis() / 1000;
+			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
+			hash_data.put("update_time", time_info.get_man_date_time());
 			case_data.put(call_index, hash_data);
 		}
 		return case_data;
 	}
-
+	
 	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output) {
 		HashMap<String, String> report_data = new HashMap<String, String>();
 		for (String line : cmd_output) {
@@ -698,7 +706,7 @@ public class result_waiter extends Thread {
 		return return_call_map;
 	}
 
-	public static Boolean final_cleanup(String clean_work_path) {
+	public static Boolean run_post_process_cleanup(String clean_work_path) {
 		String cmd = "python " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
