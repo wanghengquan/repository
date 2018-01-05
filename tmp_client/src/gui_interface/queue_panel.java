@@ -160,6 +160,20 @@ public class queue_panel extends JSplitPane implements Runnable {
 		return run_status;
 	}
 	
+	private Boolean is_selected_queue_submitable(){
+		Boolean run_status = new Boolean(false);
+		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
+		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
+		if(!status.equals(queue_enum.FINISHED.get_description())){
+			return run_status;
+		}
+		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+			return run_status;
+		}
+		run_status = true;
+		return run_status;
+	}
+	
 	private Component panel_bottom_component() {
 		JPanel capture_panel = new JPanel(new BorderLayout());
 		capture_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -175,7 +189,13 @@ public class queue_panel extends JSplitPane implements Runnable {
 						} else {
 							capture_menu.disable_delete_item();
 						}
-						//2. play stop pause setting
+						//2. submit setting
+						if (is_selected_queue_submitable()){
+							capture_menu.enable_submit_item();
+						} else {
+							capture_menu.disable_submit_item();
+						}
+						//3. play stop pause setting
 						String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
 						// queue_enum status = queue_enum.valueOf((String) capture_table.getValueAt(capture_table.getSelectedRow(), 1));
 						capture_menu.initial_queue_available_actions(status);
@@ -194,8 +214,14 @@ public class queue_panel extends JSplitPane implements Runnable {
 							capture_menu.enable_delete_item();
 						} else {
 							capture_menu.disable_delete_item();
-						}	
-						//2. play stop pause setting
+						}
+						//2. submit setting
+						if (is_selected_queue_submitable()){
+							capture_menu.enable_submit_item();
+						} else {
+							capture_menu.disable_submit_item();
+						}						
+						//3. play stop pause setting
 						String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
 						capture_menu.initial_queue_available_actions(status);						
 						capture_menu.show(e.getComponent(), e.getX(), e.getY());
@@ -488,6 +514,14 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		return this;
 	}
 
+	public void disable_submit_item() {
+		submit.setEnabled(false);
+	}
+
+	public void enable_submit_item() {
+		submit.setEnabled(true);
+	}	
+	
 	public void disable_delete_item() {
 		delete.setEnabled(false);
 	}
