@@ -52,7 +52,7 @@ public class upload_dialog extends JFrame{
 	private JTextArea output_area = new JTextArea(">" + line_separator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
-	String work_path = new String();
+	String work_space = new String();
 	
 	public upload_dialog(client_data client_info){
 		//super(main_view, "Suite Upload", true);
@@ -160,15 +160,15 @@ public class upload_dialog extends JFrame{
 		//this.setLocationRelativeTo(null);
 		//this.setLocation(600,600);
 		if(client_info.get_client_data().containsKey("preference")){
-			work_path = client_info.get_client_data().get("preference").get("work_path") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
+			work_space = client_info.get_client_data().get("preference").get("work_space") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
 		} else {
-			work_path = public_data.DEF_WORK_PATH;
+			work_space = public_data.DEF_WORK_SPACE;
 		}		
 	}
 	
 	class open_action implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			JFileChooser import_file =  new JFileChooser(work_path); 
+			JFileChooser import_file =  new JFileChooser(work_space); 
 			import_file.setDialogTitle("Select Upload Suite file");
 			int return_value = import_file.showOpenDialog(null);
 			if (return_value == JFileChooser.APPROVE_OPTION){
@@ -200,7 +200,7 @@ public class upload_dialog extends JFrame{
 				return;
 			}
 
-			new Thread(new run_cmd(user, pswd, file, work_path)).start();
+			new Thread(new run_cmd(user, pswd, file, work_space)).start();
 			upload_button.setEnabled(false);
 		}
 	}
@@ -209,13 +209,13 @@ public class upload_dialog extends JFrame{
 		private String user = new String();
 		private String pswd = new String();
 		private String file = new String();
-		private String work_path = new String();
+		private String work_space = new String();
 		
-		public run_cmd(String user, String pswd, String file, String work_path){
+		public run_cmd(String user, String pswd, String file, String work_space){
 			this.user = user;
 			this.pswd = pswd;
 			this.file = file;
-			this.work_path = work_path;
+			this.work_space = work_space;
 		}
 
 		@Override
@@ -234,20 +234,20 @@ public class upload_dialog extends JFrame{
 			output_area.append(line_separator);
 			ProcessBuilder pb = new ProcessBuilder(cmd_args);
 			pb.redirectErrorStream(true);
-			File work_dobj = new File(work_path);
+			File work_dobj = new File(work_space);
 			if (!work_dobj.exists() || !work_dobj.isDirectory()){
 				try {
 					FileUtils.forceMkdir(work_dobj);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					UPLOAD_DIALOG_LOGGER.warn("Error:Can not create directory:" + work_path);
+					UPLOAD_DIALOG_LOGGER.warn("Error:Can not create directory:" + work_space);
 					return;
 				}
 			}
 			try {
 				pb.directory(work_dobj);
 			} catch (Exception e) {
-				UPLOAD_DIALOG_LOGGER.warn("Error:Can not find directory:" + work_path);
+				UPLOAD_DIALOG_LOGGER.warn("Error:Can not find directory:" + work_space);
 				return;
 			}
 			Map<String, String> env = pb.environment();

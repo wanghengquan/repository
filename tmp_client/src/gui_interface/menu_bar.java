@@ -44,7 +44,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	private task_data task_info;
 	private pool_data pool_info;
 	private view_data view_info;
-	String work_path = new String();
+	String work_space = new String();
 	JMenuItem imports, import_user_suite, import_unit_suite, exports, exit;
 	JMenuItem view_all, view_waiting, view_processing, view_passed, view_failed, view_tbd, view_timeout;
 	JMenuItem play, pause, stop;
@@ -74,9 +74,9 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		this.add(construct_setting_menu());
 		this.add(construct_help_menu());
 		if (client_info.get_client_data().containsKey("preference")) {
-			work_path = client_info.get_client_data().get("preference").get("work_path");
+			work_space = client_info.get_client_data().get("preference").get("work_space");
 		} else {
-			work_path = public_data.DEF_WORK_PATH;
+			work_space = public_data.DEF_WORK_SPACE;
 		}
 	}
 

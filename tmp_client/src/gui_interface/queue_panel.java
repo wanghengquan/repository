@@ -578,7 +578,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		}
 		//get work_space
 		String work_space = new String();
-		work_space = client_info.get_client_preference_data().getOrDefault("work_path", "");
+		work_space = client_info.get_client_preference_data().getOrDefault("work_space", "");
 		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 		String run_dir_name = "run" + admin_data.get("ID").get("run");

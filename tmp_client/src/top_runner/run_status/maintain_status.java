@@ -257,7 +257,7 @@ public class maintain_status extends abstract_status {
 			if (client.client_info.get_client_data().containsKey("preference")) {
 				work_path = client.client_info.get_client_data().get("preference").get("work_path");
 			} else {
-				work_path = public_data.DEF_WORK_PATH;
+				work_path = public_data.DEF_WORK_SPACE;
 			}
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 			admin_data.putAll(deep_clone.clone(client.task_info.get_queue_data_from_received_admin_queues_treemap(queue_name)));

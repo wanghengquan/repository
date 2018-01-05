@@ -39,19 +39,19 @@ public class case_prepare {
 
 	protected String get_working_dir(
 			HashMap<String, HashMap<String, String>> task_data, 
-			String work_dir)
+			String work_space)
 			throws IOException {
 		String work_dir_ready = new String("");
-		File work_dir_fobj = new File(work_dir);
+		File work_dir_fobj = new File(work_space);
 		if (!work_dir_fobj.exists()) {
-			CASE_PREPARE_LOGGER.warn("Work space do not exists:" + work_dir);
+			CASE_PREPARE_LOGGER.warn("Work space do not exists:" + work_space);
 			return work_dir_ready;
 		}
 		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 		String prj_dir_name = "prj" + task_data.get("ID").get("project");
 		String run_dir_name = "run" + task_data.get("ID").get("run");
 		String case_dir_name = "T" + task_data.get("ID").get("id");
-		String[] path_array = new String[] { work_dir, tmp_result_dir, prj_dir_name, run_dir_name, case_dir_name };
+		String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name, case_dir_name };
 		String case_work_path = String.join(file_seprator, path_array);
 		case_work_path = case_work_path.replaceAll("\\\\", "/");
 		File case_work_path_fobj = new File(case_work_path);
@@ -167,7 +167,7 @@ public class case_prepare {
 	protected String[] get_run_command(
 			HashMap<String, HashMap<String, String>> task_data,
 			String case_work_path,
-			String work_path
+			String work_space
 			) {
 		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
 		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
@@ -175,7 +175,7 @@ public class case_prepare {
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		String case_path = case_work_path + "/" + design_base_name;
-		script_addr = script_addr.replaceAll("\\$work_path", work_path);// = work_space
+		script_addr = script_addr.replaceAll("\\$work_path", work_space);// = work_space
 		script_addr = script_addr.replaceAll("\\$case_path", case_path);
 		script_addr = script_addr.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		// user command used
@@ -186,14 +186,14 @@ public class case_prepare {
 		// core script will be export to work space
 		Pattern patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe))", Pattern.CASE_INSENSITIVE);
 		if (launch_cmd.contains("$work_path")){
-			launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_path);
+			launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_space);
 		} else if (launch_cmd.contains("$case_path")){
 			launch_cmd = launch_cmd.replaceAll("\\$case_path", " " + case_path);
 		} else if (launch_cmd.contains("$tool_path")){	
 			launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		} else {
 			Matcher match = patt.matcher(launch_cmd);
-			launch_cmd = match.replaceFirst(" " + work_path + "/$1");
+			launch_cmd = match.replaceFirst(" " + work_space + "/$1");
 		}
 		// add default --deisgn option
 		String[] cmd_list;

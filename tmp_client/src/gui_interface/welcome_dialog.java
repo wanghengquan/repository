@@ -100,7 +100,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		if (preference_data == null) {
 			jt_work.setText("Test");
 		} else {
-			jt_work.setText(preference_data.get("work_path"));
+			jt_work.setText(preference_data.get("work_space"));
 		}
 		// save space
 		JLabel jl_save = new JLabel("Save Space");
@@ -108,7 +108,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		if (preference_data == null) {
 			jt_save.setText("Test");
 		} else {
-			jt_save.setText(preference_data.get("save_path"));
+			jt_save.setText(preference_data.get("save_space"));
 		}
 		// package
 		initial_panel.add(jl_work);
@@ -154,41 +154,41 @@ public class welcome_dialog extends JDialog implements ActionListener {
 				jt_work.setText("Test");
 				jt_save.setText("Test");
 			} else {
-				jt_work.setText(preference_data.get("work_path"));
-				jt_save.setText(preference_data.get("save_path"));
+				jt_work.setText(preference_data.get("work_space"));
+				jt_save.setText(preference_data.get("save_space"));
 			}
 		}
 		if (arg0.getSource().equals(jb_apply)) {
 			if (jc_welcome.isSelected()) {
 				preference_data.put("show_welcome", "0");
 			}
-			// work path
+			// work space
 			if (jt_work.getText().trim().equals("")) {
 				String message = new String("Empty work path found.");
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			} else {
 				File work_dobj = new File(jt_work.getText().trim());
-				String message = new String("work path Not Exists.");
+				String message = new String("Work Space Not Exists.");
 				if (work_dobj.exists()) {
-					preference_data.put("work_path", jt_work.getText().trim().replaceAll("\\\\", "/"));
+					preference_data.put("work_space", jt_work.getText().trim().replaceAll("\\\\", "/"));
 				} else {
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:",
 							JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 			}
-			// save path
-			String save_path = new String();
+			// save space
+			String save_space = new String();
 			if (jt_save.getText().trim().equals("")) {
-				save_path = jt_work.getText().trim().replaceAll("\\\\", "/");
+				save_space = jt_work.getText().trim().replaceAll("\\\\", "/");
 			} else {
-				save_path = jt_save.getText().trim().replaceAll("\\\\", "/");
+				save_space = jt_save.getText().trim().replaceAll("\\\\", "/");
 			}
-			File save_dobj = new File(save_path);
-			String message = new String("save path Not Exists.");
+			File save_dobj = new File(save_space);
+			String message = new String("save space Not Exists.");
 			if (save_dobj.exists()) {
-				preference_data.put("save_path", save_path);
+				preference_data.put("save_space", save_space);
 			} else {
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;

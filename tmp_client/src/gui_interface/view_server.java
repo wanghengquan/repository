@@ -276,11 +276,11 @@ public class view_server extends Thread {
 		delete_list.addAll(view_info.impl_delete_finished_queue());
 		for (String queue_name : delete_list) {
 			// public info for implementation
-			String work_path = new String();
+			String work_space = new String();
 			if (client_info.get_client_data().containsKey("preference")) {
-				work_path = client_info.get_client_data().get("preference").get("work_path");
+				work_space = client_info.get_client_data().get("preference").get("work_space");
 			} else {
-				work_path = public_data.DEF_WORK_PATH;
+				work_space = public_data.DEF_WORK_SPACE;
 			}
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 			admin_data.putAll(deep_clone.clone(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name)));
@@ -300,8 +300,8 @@ public class view_server extends Thread {
 			task_info.remove_finished_admin_queue_list(queue_name);
 			// delete log in disk
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
-			File admin_path = new File(work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
-			File task_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
+			File admin_path = new File(work_space + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
+			File task_path = new File(work_space + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
 			if (admin_path.exists() && admin_path.isFile()) {
 				admin_path.delete();
 			}
@@ -312,7 +312,7 @@ public class view_server extends Thread {
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 			String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 			String run_dir_name = "run" + admin_data.get("ID").get("run");
-			String[] path_array = new String[] { work_path, tmp_result_dir, prj_dir_name, run_dir_name };
+			String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name };
 			String result_url = String.join(file_seprator, path_array);	
 			File result_url_fobj = new File(result_url);
 			Thread del_result = new Thread(){
@@ -447,7 +447,7 @@ public class view_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") + "/"
+			String dump_path = client_info.get_client_data().get("preference").get("work_space") + "/"
 					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);

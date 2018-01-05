@@ -352,7 +352,7 @@ public class hall_manager extends Thread {
 			String queue_name){
 		//get report file path
 		String report_file_path = new String("");
-		String work_space = new String(client_info.get_client_preference_data().get("work_path"));
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
 		File work_space_fobj = new File(work_space);
 		if (!work_space_fobj.exists()) {
 			HALL_MANAGER_LOGGER.warn("Work space do not exists:" + work_space);
@@ -505,7 +505,7 @@ public class hall_manager extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_space") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);

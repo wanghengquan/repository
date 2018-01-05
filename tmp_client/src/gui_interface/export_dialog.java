@@ -644,7 +644,7 @@ class generate_pane extends JPanel implements ActionListener{
 		GridBagLayout layout = new GridBagLayout();
 		JPanel top_panel = new JPanel(layout);
 		if (client_info.get_client_data().containsKey("preference")){
-			file_path.setText(client_info.get_client_data().get("preference").get("work_path"));
+			file_path.setText(client_info.get_client_preference_data().get("work_space"));
 		} else {
 			file_path.setText("NA");
 		}
@@ -878,8 +878,8 @@ class generate_pane extends JPanel implements ActionListener{
 			tabbed_pane.close_dialog();
 		}		
 		if(arg0.getSource().equals(open)){
-			//JFileChooser import_file =  new JFileChooser(work_path);
-			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_PATH);
+			//JFileChooser import_file =  new JFileChooser(work_space);
+			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_SPACE);
 			import_path.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//
 			import_path.setDialogTitle("Select Export Folder");
 			int return_value = import_path.showOpenDialog(null);

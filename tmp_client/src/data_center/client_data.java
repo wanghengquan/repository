@@ -36,9 +36,9 @@ public class client_data {
 	 * private int pool_current_size =
 	 * Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);//dup with pool_data,
 	 * for data dump private String client_link_mode =
-	 * public_data.DEF_CLIENT_LINK_MODE; private String client_work_path =
-	 * public_data.DEF_WORK_PATH; private String client_save_path =
-	 * public_data.DEF_SAVE_PATH;
+	 * public_data.DEF_CLIENT_LINK_MODE; private String client_work_space =
+	 * public_data.DEF_WORK_SPACE; private String client_save_space =
+	 * public_data.DEF_SAVE_SPACE;
 	 */
 	// public function
 	// protected function

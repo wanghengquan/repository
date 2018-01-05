@@ -75,7 +75,7 @@ public class public_data {
 	public final static String UPDATE_URL_DEV = "http://d50534/test/job_1/client_update/update_dev.xml";
 	
 	// ========================
-	// workspace folder configuration, real path = work_path + following folder
+	// workspace folder configuration, real path = work_space + following folder
 	// name
 	public final static String WORKSPACE_RESULT_DIR = "results";
 	public final static String WORKSPACE_UPLOAD_DIR = "uploads";
@@ -175,8 +175,8 @@ public class public_data {
 	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"software", "system", "machine"
 	public final static String DEF_POOL_CURRENT_SIZE = "5";
 	public final static String DEF_SHOW_WELCOME = "1";
-	public final static String DEF_WORK_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
-	public final static String DEF_SAVE_PATH = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	public final static String DEF_SAVE_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 
 	public public_data() {
 	}

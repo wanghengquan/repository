@@ -44,9 +44,9 @@ public class export_data {
 			task_data task_info){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		received_admin_queues_treemap.putAll(task_info.get_received_admin_queues_treemap());
-		String work_path = client_info.get_client_preference_data().get("work_path");
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "/retrieve/received_admin";
+		String dump_path = work_space + "/" + log_folder + "/retrieve/received_admin";
 		Iterator<String> queue_it = received_admin_queues_treemap.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -66,9 +66,9 @@ public class export_data {
 			task_data task_info){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> processed_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		processed_admin_queues_treemap.putAll(task_info.get_processed_admin_queues_treemap());
-		String work_path = client_info.get_client_preference_data().get("work_path");
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "/retrieve/processed_admin";
+		String dump_path = work_space + "/" + log_folder + "/retrieve/processed_admin";
 		Iterator<String> queue_it = processed_admin_queues_treemap.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -88,9 +88,9 @@ public class export_data {
 			task_data task_info){
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		received_task_queues_map.putAll(task_info.get_received_task_queues_map());
-		String work_path = client_info.get_client_preference_data().get("work_path");
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "/retrieve/received_task";
+		String dump_path = work_space + "/" + log_folder + "/retrieve/received_task";
 		Iterator<String> queue_it = received_task_queues_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -110,9 +110,9 @@ public class export_data {
 			task_data task_info){
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
-		String work_path = client_info.get_client_preference_data().get("work_path");
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "/retrieve/processed_task";
+		String dump_path = work_space + "/" + log_folder + "/retrieve/processed_task";
 		Iterator<String> queue_it = processed_task_queues_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -138,9 +138,9 @@ public class export_data {
 		} else {
 			return dump_status;
 		}
-		String work_path = client_info.get_client_preference_data().get("work_path");
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "/finished/admin";
+		String dump_path = work_space + "/" + log_folder + "/finished/admin";
 		dump_status = export_admin_data(queue_name, admin_data, dump_path);
 		return dump_status;
 	}	
@@ -156,9 +156,9 @@ public class export_data {
 		} else {
 			return dump_status;
 		}
-		String work_path = client_info.get_client_preference_data().get("work_path");
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_path = work_path + "/" + log_folder + "/finished/task";
+		String dump_path = work_space + "/" + log_folder + "/finished/task";
 		dump_status = export_task_data(queue_name, task_data, dump_path);
 		return dump_status;
 	}
@@ -168,10 +168,10 @@ public class export_data {
 		client_data client_info,
 		task_data task_info){
 		Boolean export_status = new Boolean(false);	
-		String work_dir = new String(client_info.get_client_preference_data().get("work_path"));
-		File work_dir_fobj = new File(work_dir);
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		File work_dir_fobj = new File(work_space);
 		if (!work_dir_fobj.exists()) {
-			EXPORT_DATA_LOGGER.warn("Work space do not exists:" + work_dir);
+			EXPORT_DATA_LOGGER.warn("Work space do not exists:" + work_space);
 			return export_status;
 		}
 		//get report file path
@@ -188,7 +188,7 @@ public class export_data {
 		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 		String run_dir_name = "run" + admin_data.get("ID").get("run");
 		String report_name = run_dir_name + ".csv";
-		String[] path_array = new String[] { work_dir, tmp_result_dir, prj_dir_name, run_dir_name, report_name};
+		String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name, report_name};
 		String report_file_path = String.join(System.getProperty("file.separator"), path_array);
 		report_file_path = report_file_path.replaceAll("\\\\", "/");
 		//get report file content

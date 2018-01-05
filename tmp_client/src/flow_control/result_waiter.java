@@ -100,8 +100,8 @@ public class result_waiter extends Thread {
 			String prj_dir_name = "prj" + case_report_map.get(call_index).get("projectId");
 			String run_dir_name = "run" + case_report_map.get(call_index).get("runId");
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
-			String save_path = client_info.get_client_data().get("preference").get("save_path").replaceAll("\\\\", "/");
-			String[] path_array = new String[] { save_path, tmp_result_dir, prj_dir_name, run_dir_name };
+			String save_space = client_info.get_client_preference_data().get("save_space").replaceAll("\\\\", "/");
+			String[] path_array = new String[] { save_space, tmp_result_dir, prj_dir_name, run_dir_name };
 			String case_save_path = String.join(file_separator, path_array);
 			case_save_path = case_save_path.replaceAll("\\\\", "/");
 			// public data for every case end
@@ -115,11 +115,11 @@ public class result_waiter extends Thread {
 			// run_status = run_timeout_extra_process(case_path);			
 			// task 3 : zip case to save path
 			String result_keep = (String) one_call_data.get("result_keep");
-			if (case_work_path.contains(save_path)) {
+			if (case_work_path.contains(save_space)) {
 				// case save path same with work path no need to copy
 				continue;
 			}
-			if (save_path.trim().equals("")) {
+			if (save_space.trim().equals("")) {
 				// no save path, skip copy
 				continue;
 			}
@@ -815,7 +815,7 @@ public class result_waiter extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_path") + "/"
+			String dump_path = client_info.get_client_data().get("preference").get("work_space") + "/"
 					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);

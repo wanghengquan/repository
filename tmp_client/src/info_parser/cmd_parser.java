@@ -132,11 +132,11 @@ public class cmd_parser {
 		}
 		// 3.12 work path
 		if (commandline_obj.hasOption('w')) {
-			cmd_hash.put("work_path", commandline_obj.getOptionValue('w').replaceAll("\\\\", "/"));
+			cmd_hash.put("work_space", commandline_obj.getOptionValue('w').replaceAll("\\\\", "/"));
 		}
 		// 3.13 save path
 		if (commandline_obj.hasOption('s')) {
-			cmd_hash.put("save_path", commandline_obj.getOptionValue('s').replaceAll("\\\\", "/"));
+			cmd_hash.put("save_space", commandline_obj.getOptionValue('s').replaceAll("\\\\", "/"));
 		}
 		// 3.14 max threads
 		if (commandline_obj.hasOption('t')) {
@@ -190,10 +190,10 @@ public class cmd_parser {
 				.desc("Task level extra environment setting.").build());
 		options_obj.addOption(Option.builder("E").longOpt("client-environ").hasArg()
 				.desc("Client/global level extra environment setting, will affect all tasks.").build());
-		options_obj.addOption(Option.builder("w").longOpt("work-path").hasArg()
+		options_obj.addOption(Option.builder("w").longOpt("work-space").hasArg()
 				.desc("Case run place, if not present will use current launch path").build());
-		options_obj.addOption(Option.builder("s").longOpt("save-path").hasArg()
-				.desc("Storage place for case remote store, if not present will use current work_path").build());
+		options_obj.addOption(Option.builder("s").longOpt("save-space").hasArg()
+				.desc("Storage place for case remote store, if not present will use current work_space").build());
 		options_obj.addOption(
 				Option.builder("t").longOpt("max-threads").hasArg().desc("Client will launch $t threads").build());
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());

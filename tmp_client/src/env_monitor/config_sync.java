@@ -47,8 +47,8 @@ import data_center.switch_data;
  *tmp_preference:	thread_mode = auto, manual
  *					task_mode = auto, parallel, serial
  * 					max_threads = 5
- * 					work_path=	xxx
- * 					save_path=	xxx
+ * 					work_space =	xxx
+ * 					save_space =	xxx
  * 					
  */
 public class config_sync extends Thread {
@@ -162,8 +162,8 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("task_mode", write_data.get("preference").get("task_mode"));
 		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));
-		tmp_preference_data.put("work_path", write_data.get("preference").get("work_path"));
-		tmp_preference_data.put("save_path", write_data.get("preference").get("save_path"));
+		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
+		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
@@ -239,7 +239,7 @@ public class config_sync extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_space") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);

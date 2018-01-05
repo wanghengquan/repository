@@ -137,7 +137,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		JPanel jp_center5 = new JPanel(input5_layout);
 		jl_work_path = new JLabel("Work Space:");
 		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
-		jt_work_path = new JTextField(preference_data.get("work_path"));
+		jt_work_path = new JTextField(preference_data.get("work_space"));
 		jp_center5.add(jl_work_path);
 		jp_center5.add(jt_work_path);
 		GridBagConstraints input5_s = new GridBagConstraints();
@@ -157,7 +157,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		JPanel jp_center6 = new JPanel(input6_layout);
 		jl_save_path = new JLabel("Save Space:");
 		jl_save_path.setToolTipText("Client try to copy task case to this place, if same as \"Work Space\" client will skip copy action.");
-		jt_save_path = new JTextField(preference_data.get("save_path"));
+		jt_save_path = new JTextField(preference_data.get("save_space"));
 		jp_center6.add(jl_save_path);
 		jp_center6.add(jt_save_path);
 		GridBagConstraints input6_s = new GridBagConstraints();
@@ -299,8 +299,8 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			initial_task_default_value(preference_data.get("task_mode"));
 			initial_ignore_default_value(preference_data.get("ignore_request"));
 			thread_text.setText(preference_data.get("max_threads"));
-			jt_work_path.setText(preference_data.get("work_path"));
-			jt_save_path.setText(preference_data.get("save_path"));
+			jt_work_path.setText(preference_data.get("work_space"));
+			jt_save_path.setText(preference_data.get("save_space"));
 		}
 		if (arg0.getSource().equals(close)) {
 			this.dispose();		
@@ -348,32 +348,32 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				ignore_list.add("software");
 			}
 			preference_data.put("ignore_request", String.join(",", ignore_list));
-			//work path
+			//work space
 			if(jt_work_path.getText().trim().equals("")){
-				String message = new String("Empty work path found.");
+				String message = new String("Empty work space found.");
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;				
 			} else {
 				File work_dobj = new File(jt_work_path.getText().trim());
-				String message = new String("work path Not Exists.");
+				String message = new String("work space Not Exists.");
 				if(work_dobj.exists()){
-					preference_data.put("work_path", jt_work_path.getText().trim().replaceAll("\\\\", "/"));
+					preference_data.put("work_space", jt_work_path.getText().trim().replaceAll("\\\\", "/"));
 				} else {
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;					
 				}
 			}
-			// save path
-			String save_path = new String();
+			// save space
+			String save_space = new String();
 			if (jt_save_path.getText().trim().equals("")) {
-				save_path = jt_work_path.getText().trim().replaceAll("\\\\", "/");
+				save_space = jt_work_path.getText().trim().replaceAll("\\\\", "/");
 			} else {
-				save_path = jt_save_path.getText().trim().replaceAll("\\\\", "/");
+				save_space = jt_save_path.getText().trim().replaceAll("\\\\", "/");
 			}
-			File save_dobj = new File(save_path);
-			String message = new String("save path Not Exists.");
+			File save_dobj = new File(save_space);
+			String message = new String("save space Not Exists.");
 			if (save_dobj.exists()) {
-				preference_data.put("save_path", save_path);
+				preference_data.put("save_space", save_space);
 			} else {
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;

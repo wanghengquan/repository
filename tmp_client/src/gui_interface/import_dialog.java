@@ -289,13 +289,13 @@ class file_pane extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		if(arg0.getSource().equals(jb_user_file)){
-			String work_path = new String();
+			String work_space = new String();
 			if (client_info.get_client_data().containsKey("preference")) {
-				work_path = client_info.get_client_data().get("preference").get("work_path");
+				work_space = client_info.get_client_preference_data().get("work_space");
 			} else {
-				work_path = public_data.DEF_WORK_PATH;
+				work_space = public_data.DEF_WORK_SPACE;
 			}			
-			JFileChooser import_file = new JFileChooser(work_path);
+			JFileChooser import_file = new JFileChooser(work_space);
 			import_file.setDialogTitle("Select Test Suite File");
 			int return_value = import_file.showOpenDialog(null);
 			if (return_value == JFileChooser.APPROVE_OPTION) {
@@ -543,7 +543,7 @@ class path_pane extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub  
 		if(arg0.getSource().equals(jb_suite_path)){
-			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_PATH);
+			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_SPACE);
 			import_path.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//
 			import_path.setDialogTitle("Select Suite Path");
 			int return_value = import_path.showOpenDialog(null);

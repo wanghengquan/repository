@@ -62,8 +62,8 @@ import utility_funcs.time_info;
  * 					link_mode = both (from command line)
  * 					max_threads = xx
  *                  show_welcome = xx
- * 					work_path = xx
- * 					save_path = xx
+ * 					work_space = xx
+ * 					save_space = xx
  */
 public class data_server extends Thread {
 	// public property
@@ -212,8 +212,8 @@ public class data_server extends Thread {
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
-		preference_data.put("work_path", public_data.DEF_WORK_PATH);
-		preference_data.put("save_path", public_data.DEF_SAVE_PATH);
+		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
+		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		preference_data.putAll(config_hash.get("tmp_preference"));
 		preference_data.putAll(cmd_hash);
 		client_data.put("preference", preference_data);
@@ -336,7 +336,7 @@ public class data_server extends Thread {
 	private HashMap<String, String> get_scan_cmd_build(String scan_cmd) {
 		HashMap<String, String> extra_dirs = new HashMap<String, String>();
 		ArrayList<String> cmd_output = new ArrayList<String>();
-		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_preference_data().get("work_path"));
+		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_preference_data().get("work_space"));
 		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		try {
 			cmd_output.addAll(system_cmd.run(scan_cmd));
@@ -487,7 +487,7 @@ public class data_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_space") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
