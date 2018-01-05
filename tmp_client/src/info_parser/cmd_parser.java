@@ -142,12 +142,26 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}
-		// 3.15 debug model
+		// 3.15 debug mode
 		if (commandline_obj.hasOption('d')) {
 			cmd_hash.put("debug", "true");
 		} else {
 			cmd_hash.put("debug", "false");
 		}
+		// 3.16 case mode
+		if (commandline_obj.hasOption('K')) {
+			cmd_hash.put("case_mode", "keep_case");
+		}		
+		if (commandline_obj.hasOption('C')) {
+			cmd_hash.put("case_mode", "copy_case");
+		}	
+		// 3.17 case mode
+		if (commandline_obj.hasOption('H')) {
+			cmd_hash.put("structure", "true");
+		}		
+		if (commandline_obj.hasOption('F')) {
+			cmd_hash.put("structure", "false");
+		}		
 		// 3.16 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
@@ -182,6 +196,18 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("k").longOpt("key-file").hasArg()
 				.desc("The key file to help client consider the path is a case path, Work with -p(suite path)")
 				.build());
+		options_obj.addOption(Option.builder("K").longOpt("keep-case")
+				.desc("Case mode:Keep case in it's original path(depot space) and run it in that place")
+				.build());
+		options_obj.addOption(Option.builder("C").longOpt("copy-case")
+				.desc("Case mode:Copy case to client work space and run it in this new place")
+				.build());
+		options_obj.addOption(Option.builder("H").longOpt("hierarchical")
+				.desc("Keep the original directory tree structure(which will have a potential issue about overwite results)")
+				.build());
+		options_obj.addOption(Option.builder("F").longOpt("flattened")
+				.desc("Flatten original test suite into one by one in the same folder")
+				.build());
 		options_obj.addOption(Option.builder("x").longOpt("exe-file").hasArg()
 				.desc("The execute file in every case path, Work with -p(suite path)").build());
 		options_obj.addOption(Option.builder("a").longOpt("arguments").hasArg()
@@ -205,7 +231,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] \n [-c|-g] [-A|-U] \n [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] \n [-e|E <env1=value1,env2=value2...>]\n [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-c|-g] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
