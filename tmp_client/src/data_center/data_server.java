@@ -294,6 +294,10 @@ public class data_server extends Thread {
 			return scan_dirs;
 		}	
 		File[] all_handlers = scan_handler.listFiles();
+		if (all_handlers == null){
+			DATA_SERVER_LOGGER.warn("Scan path have null sub paths:" + scan_path);
+			return scan_dirs;
+		}		
 		for (File sub_handler : all_handlers) {
 			String build_name = sub_handler.getName();
 			if (!sub_handler.isDirectory()) {
