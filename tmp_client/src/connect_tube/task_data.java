@@ -479,9 +479,8 @@ public class task_data {
 				} else {
 					status_data.put("cmd_status", "Processing");
 					return_id_case_data.put(case_id, case_data);
-					received_task_queues_map.put(queue_name, received_task_data);// update
-																					// received
-																					// queue
+					//update received queue
+					received_task_queues_map.put(queue_name, received_task_data);
 					break;
 				}
 			}

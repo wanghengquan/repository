@@ -294,26 +294,28 @@ public class client_data {
 	}
 
 	// release 1 usage for every software
-	public Boolean release_use_soft_insts(HashMap<String, String> release_data) {
+	public Boolean release_used_soft_insts(HashMap<String, String> release_data) {
 		rw_lock.writeLock().lock();
 		Boolean release_result = new Boolean(true);
 		try {
-			HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
-			future_soft_insts.putAll(use_soft_insts);
-			Set<String> release_data_set = release_data.keySet();
-			Iterator<String> release_data_it = release_data_set.iterator();
-			while (release_data_it.hasNext()) {
-				String sw_name = release_data_it.next();
-				Integer sw_insts = future_soft_insts.get(sw_name);
-				sw_insts = sw_insts - 1;
-				if (sw_insts < 0) {
-					sw_insts = 0;
-					release_result = false;
-					CLIENT_DATA_LOGGER.warn("Release warnning found for " + sw_name);
+			if(!release_data.isEmpty() && release_data != null){
+				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
+				future_soft_insts.putAll(use_soft_insts);
+				Set<String> release_data_set = release_data.keySet();
+				Iterator<String> release_data_it = release_data_set.iterator();
+				while (release_data_it.hasNext()) {
+					String sw_name = release_data_it.next();
+					Integer sw_insts = future_soft_insts.get(sw_name);
+					sw_insts = sw_insts - 1;
+					if (sw_insts < 0) {
+						sw_insts = 0;
+						release_result = false;
+						CLIENT_DATA_LOGGER.warn("Release warnning found for " + sw_name);
+					}
+					future_soft_insts.put(sw_name, sw_insts);
 				}
-				future_soft_insts.put(sw_name, sw_insts);
+				use_soft_insts.putAll(future_soft_insts);				
 			}
-			use_soft_insts.putAll(future_soft_insts);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
@@ -348,31 +350,33 @@ public class client_data {
 
 	// software name , build
 	// booking 1 usage for every used software
-	public Boolean booking_use_soft_insts(HashMap<String, String> booking_data) {
+	public Boolean booking_used_soft_insts(HashMap<String, String> booking_data) {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
-			HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
-			future_soft_insts.putAll(use_soft_insts);
-			Set<String> booking_data_set = booking_data.keySet();
-			Iterator<String> booking_data_it = booking_data_set.iterator();
-			while (booking_data_it.hasNext()) {
-				String sw_name = booking_data_it.next();
-				Integer sw_insts = new Integer(0);
-				if (future_soft_insts.containsKey(sw_name)) {
-					sw_insts = future_soft_insts.get(sw_name);
+			if(!booking_data.isEmpty() && booking_data != null){
+				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
+				future_soft_insts.putAll(use_soft_insts);
+				Set<String> booking_data_set = booking_data.keySet();
+				Iterator<String> booking_data_it = booking_data_set.iterator();
+				while (booking_data_it.hasNext()) {
+					String sw_name = booking_data_it.next();
+					Integer sw_insts = new Integer(0);
+					if (future_soft_insts.containsKey(sw_name)) {
+						sw_insts = future_soft_insts.get(sw_name);
+					}
+					Integer sw_max_insts = max_soft_insts.get(sw_name);
+					sw_insts = sw_insts + 1; // booking 1 usage for every software
+					if (sw_insts > sw_max_insts) {
+						booking_result = false;
+						break;
+					} else {
+						future_soft_insts.put(sw_name, sw_insts);
+					}
 				}
-				Integer sw_max_insts = max_soft_insts.get(sw_name);
-				sw_insts = sw_insts + 1; // booking 1 usage for every software
-				if (sw_insts > sw_max_insts) {
-					booking_result = false;
-					break;
-				} else {
-					future_soft_insts.put(sw_name, sw_insts);
-				}
-			}
-			if (booking_result) {
-				use_soft_insts.putAll(future_soft_insts);
+				if (booking_result) {
+					use_soft_insts.putAll(future_soft_insts);
+				}				
 			}
 		} finally {
 			rw_lock.writeLock().unlock();
@@ -380,28 +384,30 @@ public class client_data {
 		return booking_result;
 	}
 
-	public Boolean booking_use_soft_insts_multi(HashMap<String, Integer> booking_data) {
+	public Boolean booking_used_soft_insts_multi(HashMap<String, Integer> booking_data) {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
-			HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
-			future_soft_insts.putAll(use_soft_insts);
-			Set<String> future_keys_set = future_soft_insts.keySet();
-			Iterator<String> future_keys_it = future_keys_set.iterator();
-			while (future_keys_it.hasNext()) {
-				String sw_name = future_keys_it.next();
-				Integer sw_insts = future_soft_insts.get(sw_name);
-				Integer sw_max_insts = max_soft_insts.get(sw_name);
-				sw_insts = sw_insts + booking_data.get(sw_name);
-				if (sw_insts > sw_max_insts) {
-					booking_result = false;
-					break;
-				} else {
-					future_soft_insts.put(sw_name, sw_insts);
+			if(!booking_data.isEmpty() && booking_data != null){
+				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
+				future_soft_insts.putAll(use_soft_insts);
+				Set<String> future_keys_set = future_soft_insts.keySet();
+				Iterator<String> future_keys_it = future_keys_set.iterator();
+				while (future_keys_it.hasNext()) {
+					String sw_name = future_keys_it.next();
+					Integer sw_insts = future_soft_insts.get(sw_name);
+					Integer sw_max_insts = max_soft_insts.get(sw_name);
+					sw_insts = sw_insts + booking_data.get(sw_name);
+					if (sw_insts > sw_max_insts) {
+						booking_result = false;
+						break;
+					} else {
+						future_soft_insts.put(sw_name, sw_insts);
+					}
 				}
-			}
-			if (booking_result) {
-				use_soft_insts.putAll(future_soft_insts);
+				if (booking_result) {
+					use_soft_insts.putAll(future_soft_insts);
+				}				
 			}
 		} finally {
 			rw_lock.writeLock().unlock();

@@ -246,8 +246,7 @@ public class result_waiter extends Thread {
 			String case_id = (String) call_status_map.get(call_index).get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
-			HashMap<String, String> software_cost = case_data.get("Software");
-			release_status = client_info.release_use_soft_insts(software_cost);
+			release_status = client_info.release_used_soft_insts(case_data.get("Software"));
 		}
 		return release_status;
 	}

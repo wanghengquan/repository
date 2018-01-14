@@ -64,6 +64,7 @@ import utility_funcs.time_info;
  *                  show_welcome = xx
  * 					work_space = xx
  * 					save_space = xx
+ *                  data from command line
  */
 public class data_server extends Thread {
 	// public property
@@ -208,12 +209,21 @@ public class data_server extends Thread {
 		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
 		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
-		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
+		preference_data.put("case_mode", public_data.DEF_CLIENT_CASE_MODE);
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
+		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);
+		preference_data.put("path_keep", public_data.DEF_COPY_PATH_KEEP);
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
+		//the following two are for history name support
+		if(config_hash.get("tmp_preference").containsKey("work_path")){
+			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path"));
+		}
+		if(config_hash.get("tmp_preference").containsKey("save_path")){
+			preference_data.put("save_space", config_hash.get("tmp_preference").get("save_path"));
+		}		
 		preference_data.putAll(config_hash.get("tmp_preference"));
 		preference_data.putAll(cmd_hash);
 		client_data.put("preference", preference_data);

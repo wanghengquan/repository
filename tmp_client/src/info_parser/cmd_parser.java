@@ -157,12 +157,16 @@ public class cmd_parser {
 		}	
 		// 3.17 case mode
 		if (commandline_obj.hasOption('H')) {
-			cmd_hash.put("structure", "true");
+			cmd_hash.put("path_keep", "true");
 		}		
 		if (commandline_obj.hasOption('F')) {
-			cmd_hash.put("structure", "false");
-		}		
-		// 3.16 help definition
+			cmd_hash.put("path_keep", "false");
+		}	
+		// 3.18 result keep value
+		if (commandline_obj.hasOption('R')) {
+			cmd_hash.put("result_keep", commandline_obj.getOptionValue('R'));
+		}	
+		// 3.19 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
@@ -200,14 +204,16 @@ public class cmd_parser {
 				.desc("Case mode:Keep case in it's original path(depot space) and run it in that place")
 				.build());
 		options_obj.addOption(Option.builder("C").longOpt("copy-case")
-				.desc("Case mode:Copy case to client work space and run it in this new place")
+				.desc("Case mode:Copy case to client work space and run it in this new place, Default")
 				.build());
 		options_obj.addOption(Option.builder("H").longOpt("hierarchical")
 				.desc("Keep the original directory tree structure(which will have a potential issue about overwite results)")
 				.build());
 		options_obj.addOption(Option.builder("F").longOpt("flattened")
-				.desc("Flatten original test suite into one by one in the same folder")
+				.desc("Flatten original hierarchical path into one folder with the name of task id")
 				.build());
+		options_obj.addOption(Option.builder("R").longOpt("result-keep").hasArg()
+				.desc("How to save the run results, available value: auto, zipped, unzipped").build());		
 		options_obj.addOption(Option.builder("x").longOpt("exe-file").hasArg()
 				.desc("The execute file in every case path, Work with -p(suite path)").build());
 		options_obj.addOption(Option.builder("a").longOpt("arguments").hasArg()

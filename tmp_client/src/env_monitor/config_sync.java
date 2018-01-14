@@ -160,6 +160,9 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("ignore_request", write_data.get("preference").get("ignore_request"));
 		tmp_preference_data.put("thread_mode", write_data.get("preference").get("thread_mode"));
 		tmp_preference_data.put("task_mode", write_data.get("preference").get("task_mode"));
+		tmp_preference_data.put("case_mode", write_data.get("preference").get("case_mode"));
+		tmp_preference_data.put("result_keep", write_data.get("preference").get("result_keep"));
+		tmp_preference_data.put("path_keep", write_data.get("preference").get("path_keep"));
 		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));
 		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
