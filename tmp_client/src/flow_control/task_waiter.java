@@ -9,6 +9,7 @@
  */
 package flow_control;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public class task_waiter extends Thread {
 	private client_data client_info;
 	private switch_data switch_info;
 	private String line_separator = System.getProperty("line.separator");
-	// private String file_seprator = System.getProperty("file.separator");
+	private String file_seprator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// public function
 	// protected function
@@ -565,7 +566,7 @@ public class task_waiter extends Thread {
 	private HashMap<String, HashMap<String, String>> update_task_data_path_info(
 			HashMap<String, HashMap<String, String>> case_data,
 			HashMap<String, String> preference_data) {	
-		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 		String depot_space = new String("");// repository + suite path
 		String case_path = new String("");
 		String task_path = new String("");
@@ -573,8 +574,84 @@ public class task_waiter extends Thread {
 		String script_path = new String("");
 		String launch_path = new String("");
 		//initialize all data
-		return_data.putAll(deep_clone.clone(case_data));
-		return return_data;
+		task_data.putAll(deep_clone.clone(case_data));
+		HashMap<String, String> paths_hash = new HashMap<String, String>();
+		paths_hash.putAll(task_data.get("Paths"));
+		// common info prepare
+		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim();
+		String repository = task_data.get("CaseInfo").get("repository").trim();	
+		String suite_path = task_data.get("CaseInfo").get("suite_path").trim();	
+		String design_name = task_data.get("CaseInfo").get("design_name").trim();
+		String launch_dir = task_data.get("LaunchCommand").get("dir").trim();
+		String tmp_result = public_data.WORKSPACE_RESULT_DIR;
+		String prj_name = "prj" + task_data.get("ID").get("project");
+		String run_name = "run" + task_data.get("ID").get("run");
+		String task_name = "T" + task_data.get("ID").get("id");
+		String work_space = preference_data.get("work_space");
+		String save_space = preference_data.get("save_space");
+		String case_mode = preference_data.get("case_mode");
+		String path_keep = preference_data.get("path_keep");
+		File design_name_fobj = new File(design_name);
+		String design_base_name = design_name_fobj.getName();
+		//get depot_space
+		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
+		depot_space = repository + "/" + suite_path;
+		paths_hash.put("depot_space", depot_space);
+		//get case_path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			case_path = repository + "/" + suite_path + "/" + design_name;
+		} else {
+			if(path_keep.equalsIgnoreCase("true")){
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name };
+				case_path = String.join(file_seprator, path_array);
+			} else {
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name,  design_base_name};
+				case_path = String.join(file_seprator, path_array);
+			}	
+		}
+		paths_hash.put("case_path", case_path);
+		//get task_path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			task_path = repository + "/" + suite_path;
+		} else {
+			if(path_keep.equalsIgnoreCase("true")){
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
+				task_path = String.join(file_seprator, path_array);
+			} else {
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name};
+				task_path = String.join(file_seprator, path_array);
+			}
+		}
+		paths_hash.put("task_path", task_path);
+		//get save_path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			save_path = repository + "/" + suite_path + "/" + design_name;
+		} else {
+			if(path_keep.equalsIgnoreCase("true")){
+				String[] path_array = new String[] { save_space, tmp_result, prj_name, run_name, design_name };
+				save_path = String.join(file_seprator, path_array);
+			} else {
+				String[] path_array = new String[] { save_space, tmp_result, prj_name, run_name, task_name};
+				save_path = String.join(file_seprator, path_array);
+			}
+		}
+		paths_hash.put("save_path", save_path);	
+		//get script_path
+		script_path = task_data.get("CaseInfo").get("script_address").trim();
+		script_path = script_path.replaceAll("\\$work_path", work_space);// = work_space
+		script_path = script_path.replaceAll("\\$case_path", case_path);
+		script_path = script_path.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
+		paths_hash.put("script_path", script_path);
+		//get launch_path
+		if ( launch_dir != ""){
+			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
+		} else {
+			launch_path = task_path;
+		}
+		paths_hash.put("launch_path", launch_path);
+		//push back
+		task_data.put("Paths", paths_hash);
+		return task_data;
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_merged_local_task_info(
@@ -629,7 +706,7 @@ public class task_waiter extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_space") + "/"
+			String dump_path = client_info.get_client_preference_data().get("work_space") + "/"
 					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
