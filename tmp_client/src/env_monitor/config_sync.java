@@ -168,6 +168,8 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
+		cfg_preference_data.put("work_space", write_data.get("preference").get("work_space"));
+		cfg_preference_data.put("save_space", write_data.get("preference").get("save_space"));		
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));

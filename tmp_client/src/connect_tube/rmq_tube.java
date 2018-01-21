@@ -49,6 +49,8 @@ public class rmq_tube {
 		this.task_info = task_info;
 	}
 
+	public rmq_tube() {
+	}
 	// protected function
 	// private function
 

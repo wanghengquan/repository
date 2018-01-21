@@ -18,8 +18,9 @@ public enum task_enum {
 	TIMEOUT(5, "Timeout"),
 	CASEISSUE(6, "Case Issue"),
 	SWISSUE(7, "SW Issue"),
-	OTHERS(8, "Others"),
-	UNKNOWN(9, "Unknown");
+	BLOCKED(8,"Blocked"),
+	OTHERS(9, "Others"),
+	UNKNOWN(10, "Unknown");
 	private int index;
 	private String description;
 	

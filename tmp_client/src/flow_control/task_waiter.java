@@ -568,11 +568,13 @@ public class task_waiter extends Thread {
 			HashMap<String, String> preference_data) {	
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 		String depot_space = new String("");// repository + suite path
+		String design_source = new String("");
 		String case_path = new String("");
 		String task_path = new String("");
 		String save_path = new String("");
-		String script_path = new String("");
+		String script_source = new String("");
 		String launch_path = new String("");
+		String report_path = new String(""); //also named location in Status
 		//initialize all data
 		task_data.putAll(deep_clone.clone(case_data));
 		HashMap<String, String> paths_hash = new HashMap<String, String>();
@@ -596,10 +598,13 @@ public class task_waiter extends Thread {
 		//get depot_space
 		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
 		depot_space = repository + "/" + suite_path;
-		paths_hash.put("depot_space", depot_space);
+		paths_hash.put("depot_space", depot_space.replaceAll("\\\\", "/"));
+		//get source_path
+		design_source = repository + "/" + suite_path + "/" + design_name;
+		paths_hash.put("design_source", design_source.replaceAll("\\\\", "/"));
 		//get case_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
-			case_path = repository + "/" + suite_path + "/" + design_name;
+			case_path = design_source;
 		} else {
 			if(path_keep.equalsIgnoreCase("true")){
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name };
@@ -609,7 +614,7 @@ public class task_waiter extends Thread {
 				case_path = String.join(file_seprator, path_array);
 			}	
 		}
-		paths_hash.put("case_path", case_path);
+		paths_hash.put("case_path", case_path.replaceAll("\\\\", "/"));
 		//get task_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			task_path = repository + "/" + suite_path;
@@ -622,7 +627,7 @@ public class task_waiter extends Thread {
 				task_path = String.join(file_seprator, path_array);
 			}
 		}
-		paths_hash.put("task_path", task_path);
+		paths_hash.put("task_path", task_path.replaceAll("\\\\", "/"));
 		//get save_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;
@@ -635,20 +640,31 @@ public class task_waiter extends Thread {
 				save_path = String.join(file_seprator, path_array);
 			}
 		}
-		paths_hash.put("save_path", save_path);	
-		//get script_path
-		script_path = task_data.get("CaseInfo").get("script_address").trim();
-		script_path = script_path.replaceAll("\\$work_path", work_space);// = work_space
-		script_path = script_path.replaceAll("\\$case_path", case_path);
-		script_path = script_path.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
-		paths_hash.put("script_path", script_path);
+		paths_hash.put("save_path", save_path.replaceAll("\\\\", "/"));	
+		//get script_source
+		script_source = task_data.get("CaseInfo").get("script_address").trim();
+		script_source = script_source.replaceAll("\\$work_path", work_space);// = work_space
+		script_source = script_source.replaceAll("\\$case_path", case_path);
+		script_source = script_source.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
+		paths_hash.put("script_source", script_source.replaceAll("\\\\", "/"));
 		//get launch_path
 		if ( launch_dir != ""){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
 		} else {
 			launch_path = task_path;
 		}
-		paths_hash.put("launch_path", launch_path);
+		paths_hash.put("launch_path", launch_path.replaceAll("\\\\", "/"));
+		//get report_path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			report_path = case_path;
+		} else {
+			if(path_keep.equalsIgnoreCase("true")){
+				report_path = case_path;
+			} else {
+				report_path = task_path;
+			}
+		}
+		paths_hash.put("report_path", report_path.replaceAll("\\\\", "/"));
 		//push back
 		task_data.put("Paths", paths_hash);
 		return task_data;
@@ -700,7 +716,76 @@ public class task_waiter extends Thread {
 		}
 		return Integer.parseInt(time_out);
 	}
-
+	
+	private String get_last_error_msg(ArrayList<String> message_list){
+		String return_string = new String("NA");
+		// <status>Passed</status>
+		Pattern p = Pattern.compile("^error", Pattern.CASE_INSENSITIVE);		
+		for (String line : message_list) {
+			Matcher m = p.matcher(line);
+			if (m.find()) {
+				return_string = line;
+			}
+		}		
+		return return_string;
+	}
+	
+	private void run_pre_launch_reporting(
+			String queue_name, 
+			String case_id,			
+			HashMap<String, HashMap<String, String>> task_data,
+			task_prepare prepare_obj,
+			task_report report_obj,
+			Boolean prepare_ok
+			){
+		//synchronized (this.getClass()) {}
+		//prepare common inform
+		String run_time = new String("NA");
+		String update_time = new String(time_info.get_man_date_time());
+		String cmd_status = new String(task_enum.OTHERS.get_description());
+		if (prepare_ok){
+			cmd_status = task_enum.PROCESSING.get_description();
+		} else {
+			cmd_status = task_enum.BLOCKED.get_description();
+		}
+		ArrayList<String> task_prepare_info_list = new ArrayList<String>();
+		task_prepare_info_list.addAll(prepare_obj.task_prepare_info);
+		String cmd_reason = new String("NA");
+		cmd_reason = get_last_error_msg(task_prepare_info_list);
+		String report_path = new String("NA");
+		report_path = task_data.get("Paths").get("report_path");
+		//task 1 update processed task data info 
+		HashMap<String, String> status_data = task_data.get("Status");
+		status_data.put("run_time", run_time);
+		status_data.put("update_time", update_time);
+		status_data.put("cmd_status", cmd_status);
+		status_data.put("cmd_reason", cmd_reason);
+		status_data.put("location", report_path);
+		task_info.update_case_to_processed_task_queues_map(queue_name, case_id, task_data);
+		//task 2 send case report to local disk
+		ArrayList<String> title_list = new ArrayList<String>();
+		title_list.add("");
+		title_list.add("[Export]");
+		report_obj.dump_disk_task_report_data(report_path, title_list);
+		report_obj.dump_disk_task_report_data(report_path, task_prepare_info_list);
+		//task 3 send case report to tube
+		HashMap<String, HashMap<String, Object>> report_data = new HashMap<String, HashMap<String, Object>>();
+		HashMap<String, Object> hash_data = new HashMap<String, Object>();
+		String task_index = case_id + "#" + queue_name;
+		hash_data.put("testId", task_data.get("ID").get("id"));
+		hash_data.put("suiteId", task_data.get("ID").get("suite"));
+		hash_data.put("runId", task_data.get("ID").get("run"));
+		hash_data.put("projectId", task_data.get("ID").get("project"));
+		hash_data.put("design", task_data.get("CaseInfo").get("design_name"));		
+		hash_data.put("status", cmd_status);
+		hash_data.put("reason", cmd_reason);
+		hash_data.put("location", report_path);
+		hash_data.put("run_time", run_time);
+		hash_data.put("update_time", update_time);
+		report_data.put(task_index, hash_data);
+		report_obj.send_tube_task_data_report(report_data, false);
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -718,7 +803,7 @@ public class task_waiter extends Thread {
 			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}
-
+	
 	private void monitor_run() {
 		// ============== All static job start from here ==============
 		// initial 1 : import_history_finished_admin_queue
@@ -726,6 +811,7 @@ public class task_waiter extends Thread {
 		// initial 2 : retrieve previously dumping working queues
 		retrieve_queues_into_memory();
 		// initial end
+		task_report report_obj = new task_report(pool_info, client_info);
 		waiter_thread = Thread.currentThread();
 		while (!stop_request) {
 			if (wait_request) {
@@ -817,7 +903,7 @@ public class task_waiter extends Thread {
 				// move queue form received to processed admin queue treemap
 				move_finished_admin_queue_from_tube(queue_name);
 				move_finished_task_queue_from_tube(queue_name);
-				//update finished list must be placed here to avoid multi threadsrisk
+				//update finished list must be placed here to avoid multi threads risk
 				task_info.update_finished_admin_queue_list(queue_name);
 				// release booking info
 				client_info.release_used_soft_insts(admin_data.get("Software"));
@@ -854,9 +940,24 @@ public class task_waiter extends Thread {
 				pool_info.release_used_thread(1);
 				continue;// register false, someone register this case already.
 			}
-			// task 7 : get test case ready and initial case report
-			// ======================>key variable 4: case_work_path ready
-			case_prepare prepare_obj = new case_prepare();
+			// task 7 : get test case ready
+			task_prepare prepare_obj = new task_prepare();
+			Boolean task_case_ok = prepare_obj.get_task_case_ready(task_data, client_info.get_client_preference_data());
+			if (!task_case_ok){
+				client_info.release_used_soft_insts(admin_data.get("Software"));
+				pool_info.release_used_thread(1);
+				continue;			
+			} 
+			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_case_ok);
+			// task 8 : launch info prepare
+			String launch_path = task_data.get("Paths").get("launch_path").trim();
+			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
+			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
+			// task 9 : launch
+			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
+			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_time_out);
+			/*
 			ArrayList<String> case_prepare_list = new ArrayList<String>();
 			String case_work_path = new String();
 			try {
@@ -889,6 +990,7 @@ public class task_waiter extends Thread {
 			String result_keep = task_data.get("CaseInfo").get("result_keep");
 			system_call sys_call = new system_call(run_cmd, run_env, run_dir, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out, result_keep);
+			*/
 		}
 	}
 

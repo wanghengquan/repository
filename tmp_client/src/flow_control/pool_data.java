@@ -93,20 +93,18 @@ public class pool_data {
 			Callable<?> sys_call, 
 			String queue_name, 
 			String case_id, 
-			String case_work_dir,
-			int time_out,
-			String result_keep) {
+			String launch_path,
+			int time_out) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
 		HashMap<String, Object> sys_call_value = new HashMap<String, Object>();
 		sys_call_value.put("call_back", future_call_back);
 		sys_call_value.put("queue_name", queue_name);
 		sys_call_value.put("case_id", case_id);
-		sys_call_value.put("case_dir", case_work_dir);
+		sys_call_value.put("launch_path", launch_path);
 		long start_time = System.currentTimeMillis() / 1000;
 		sys_call_value.put("start_time", start_time);
 		sys_call_value.put("time_out", time_out);
-		sys_call_value.put("result_keep", result_keep);
 		call_map.put(sys_call_key, sys_call_value);
 	}
 

@@ -77,6 +77,7 @@ public class task_detail extends JFrame {
 		items.add("System");
 		items.add("Machine");
 		items.add("Status");
+		items.add("Paths");
 		Iterator<String> item_it = items.iterator();
 		while(item_it.hasNext()){
 			String item = item_it.next();
