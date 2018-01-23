@@ -165,6 +165,7 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("path_keep", write_data.get("preference").get("path_keep"));
 		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));
+		tmp_preference_data.put("stable_version", write_data.get("preference").get("stable_version"));
 		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
@@ -174,7 +175,6 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
-		tmp_machine_data.put("stable_version", write_data.get("Machine").get("stable_version"));
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");

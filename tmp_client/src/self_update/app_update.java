@@ -43,8 +43,8 @@ public class app_update implements UpdatedApplication  {
 	
 	public void gui_manual_update(){
 		String stable_version = new String(public_data.DEF_STABLE_VERSION);
-		if(client_info.get_client_data().containsKey("Machine")){
-			stable_version = client_info.get_client_data().get("Machine").getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
+		if(client_info.get_client_preference_data() != null){
+			stable_version = client_info.get_client_preference_data().getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
 		}
 		String update_path = new String(public_data.UPDATE_URL);
 		if(stable_version.equals("0")){
@@ -79,8 +79,8 @@ public class app_update implements UpdatedApplication  {
 	public void smart_update(){
 		//stable version
 		String stable_version = new String(public_data.DEF_STABLE_VERSION);
-		if(client_info.get_client_data().containsKey("Machine")){
-			stable_version = client_info.get_client_data().get("Machine").getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
+		if(client_info.get_client_preference_data() != null){
+			stable_version = client_info.get_client_preference_data().getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
 		}
 		String update_path = new String(public_data.UPDATE_URL);
 		if(stable_version.equals("0")){

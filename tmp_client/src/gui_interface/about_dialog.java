@@ -80,15 +80,13 @@ public class about_dialog extends JDialog implements ActionListener {
 
 	public JPanel construct_action_panel() {
 		JPanel action = new JPanel(new GridLayout(2, 1, 5, 5));
-		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		client_data.putAll(client_info.get_client_data());
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client_info.get_client_preference_data());
 		//join internal test
 		jc_test = new JCheckBox("Join internal test and Get latest developing version.");
 		action.add(jc_test);
 		String config_value = new String(public_data.DEF_STABLE_VERSION);
-		if(client_data.containsKey("Machine")){
-			config_value = client_data.get("Machine").getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
-		}
+		config_value = preference_data.getOrDefault("stable_version", public_data.DEF_STABLE_VERSION);
 		if(config_value.equals("1")){
 			jc_test.setSelected(false);
 		} else {
@@ -121,16 +119,15 @@ public class about_dialog extends JDialog implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		// dump check box first
-		HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
-		update_data.putAll(client_info.get_client_data());
-		if (update_data.containsKey("Machine")) {
-			HashMap<String, String> machine_data = update_data.get("Machine");
+		HashMap<String, String> update_data = new HashMap<String, String>();
+		update_data.putAll(client_info.get_client_preference_data());
+		if (update_data != null) {
 			if(jc_test.isSelected()){
-				machine_data.put("stable_version", "0");
+				update_data.put("stable_version", "0");
 			} else {
-				machine_data.put("stable_version", "1");
+				update_data.put("stable_version", "1");
 			}
-			client_info.set_client_data(update_data);
+			client_info.set_client_preference_data(update_data);
 			switch_info.set_client_updated();			
 		}
 		// action perform
