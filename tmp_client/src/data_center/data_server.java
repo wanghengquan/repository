@@ -196,7 +196,6 @@ public class data_server extends Thread {
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
-		machine_data.put("stable_version", public_data.DEF_STABLE_VERSION);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
 		if(cmd_hash.containsKey("unattended")){				// add command line data
@@ -210,6 +209,7 @@ public class data_server extends Thread {
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
 		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
 		preference_data.put("case_mode", public_data.DEF_CLIENT_CASE_MODE);
+		preference_data.put("stable_version", public_data.DEF_STABLE_VERSION);
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);
 		preference_data.put("path_keep", public_data.DEF_COPY_PATH_KEEP);
@@ -234,6 +234,10 @@ public class data_server extends Thread {
 	private void dynamic_merge_system_data(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(machine_sync.machine_hash.get("System"));
+		String current_work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		if(current_work_space != null && !current_work_space.trim().equals("")){
+			system_data.put("space", machine_sync.get_disk_left(current_work_space));
+		}		
 		client_info.update_system_data(system_data);
 	}
 	
@@ -294,6 +298,10 @@ public class data_server extends Thread {
 
 	private HashMap<String, String> get_scan_dir_build(String scan_path) {
 		HashMap<String, String> scan_dirs = new HashMap<String, String>();
+		if(scan_path == null || scan_path.trim().equals("")){
+			DATA_SERVER_LOGGER.warn("Illegal Scan path find, skip");
+			return scan_dirs;
+		}
 		File scan_handler = new File(scan_path);
 		if(!scan_handler.exists()){
 			DATA_SERVER_LOGGER.warn("Scan path not exist:" + scan_path);
@@ -349,6 +357,10 @@ public class data_server extends Thread {
 
 	private HashMap<String, String> get_scan_cmd_build(String scan_cmd) {
 		HashMap<String, String> extra_dirs = new HashMap<String, String>();
+		if(scan_cmd == null || scan_cmd.trim().equals("")){
+			DATA_SERVER_LOGGER.warn("Illegal Scan cmd find, skip");
+			return extra_dirs;
+		}		
 		ArrayList<String> cmd_output = new ArrayList<String>();
 		scan_cmd = scan_cmd.replaceAll("\\$work_path", client_info.get_client_preference_data().get("work_space"));
 		scan_cmd = scan_cmd.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
