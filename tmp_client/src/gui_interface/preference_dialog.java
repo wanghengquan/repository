@@ -47,9 +47,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	private client_data client_info;
 	private pool_data pool_info;
 	private JPanel preference_panel;
-	private JLabel jl_link_mode, jl_max_threads, jl_task_assign, jl_ignore_request, jl_work_path, jl_save_path;
-	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel;
-	private JCheckBox ignore_software, ignore_system, ignore_machine;
+	private JLabel jl_link_mode, jl_max_threads, jl_task_assign, jl_case_mode, jl_ignore_request, jl_work_path, jl_save_path;
+	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel, keep_case, copy_case;
+	private JCheckBox path_keep, ignore_software, ignore_system, ignore_machine;
 	private JTextField thread_text, jt_work_path, jt_save_path;
 	private JButton discard, apply, close;
 
@@ -62,13 +62,13 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		container.add(construct_preference_panel());
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(550, 350);
+		this.setSize(650, 480);
 	}
 	
 	private JPanel construct_preference_panel(){
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.putAll(client_info.get_client_preference_data());
-		preference_panel = new JPanel(new GridLayout(8,1,5,5));
+		preference_panel = new JPanel(new GridLayout(9,1,5,5));
 		//step 0 : Title line
 		JPanel jp_title = new JPanel(new GridLayout(1,1,5,5));
 		jp_title.add(new JLabel("Preference items:"));
@@ -119,59 +119,74 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jp_center3.add(jl_task_assign);
 		jp_center3.add(task_auto);
 		jp_center3.add(task_serial);
-		jp_center3.add(task_parallel);	
-		//step 4 : input 4th 
+		jp_center3.add(task_parallel);
+		//step 4 : input 4th
 		JPanel jp_center4 = new JPanel(new GridLayout(1,4,5,5));
+		jl_case_mode = new JLabel("Case Mode:");
+		jl_case_mode.setToolTipText("The method for Client processing case, copy first or just run in that place.");
+		keep_case = new JRadioButton("Keep Case");
+		copy_case = new JRadioButton("Copy Case");
+		ButtonGroup case_group = new ButtonGroup();
+		case_group.add(keep_case);
+		case_group.add(copy_case);
+		path_keep = new JCheckBox("Keep Structure");
+		initial_case_default_value(preference_data.get("case_mode"), preference_data.get("path_keep"));
+		jp_center4.add(jl_case_mode);
+		jp_center4.add(keep_case);
+		jp_center4.add(copy_case);
+		jp_center4.add(path_keep);
+		//step 5 : input 5th 
+		JPanel jp_center5 = new JPanel(new GridLayout(1,4,5,5));
 		jl_ignore_request = new JLabel("Ignore Request:");
 		jl_ignore_request.setToolTipText("Client will ignore/skip the task requirements check.");
 		ignore_software = new JCheckBox("Software");
 		ignore_system = new JCheckBox("System");
 		ignore_machine = new JCheckBox("Machine");
 		initial_ignore_default_value(preference_data.get("ignore_request"));
-		jp_center4.add(jl_ignore_request);
-		jp_center4.add(ignore_software);
-		jp_center4.add(ignore_system);
-		jp_center4.add(ignore_machine);		
-		//step 5 : input 5th line
-		GridBagLayout input5_layout = new GridBagLayout();
-		JPanel jp_center5 = new JPanel(input5_layout);
-		jl_work_path = new JLabel("Work Space:");
-		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
-		jt_work_path = new JTextField(preference_data.get("work_space"));
-		jp_center5.add(jl_work_path);
-		jp_center5.add(jt_work_path);
-		GridBagConstraints input5_s = new GridBagConstraints();
-		//for jl_work_path
-		input5_s.fill = GridBagConstraints.BOTH;
-		input5_s.gridwidth=1;
-		input5_s.weightx = 0;
-		input5_s.weighty=0;
-		input5_layout.setConstraints(jl_work_path, input5_s);	
-		//for jt_work_path
-		input5_s.gridwidth=0;
-		input5_s.weightx = 1;
-		input5_s.weighty=0;
-		input5_layout.setConstraints(jt_work_path, input5_s);		
+		jp_center5.add(jl_ignore_request);
+		jp_center5.add(ignore_software);
+		jp_center5.add(ignore_system);
+		jp_center5.add(ignore_machine);		
 		//step 6 : input 6th line
 		GridBagLayout input6_layout = new GridBagLayout();
 		JPanel jp_center6 = new JPanel(input6_layout);
-		jl_save_path = new JLabel("Save Space:");
-		jl_save_path.setToolTipText("Client try to copy task case to this place, if same as \"Work Space\" client will skip copy action.");
-		jt_save_path = new JTextField(preference_data.get("save_space"));
-		jp_center6.add(jl_save_path);
-		jp_center6.add(jt_save_path);
+		jl_work_path = new JLabel("Work Space:");
+		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
+		jt_work_path = new JTextField(preference_data.get("work_space"));
+		jp_center6.add(jl_work_path);
+		jp_center6.add(jt_work_path);
 		GridBagConstraints input6_s = new GridBagConstraints();
 		//for jl_work_path
 		input6_s.fill = GridBagConstraints.BOTH;
 		input6_s.gridwidth=1;
 		input6_s.weightx = 0;
 		input6_s.weighty=0;
-		input6_layout.setConstraints(jl_save_path, input6_s);	
+		input6_layout.setConstraints(jl_work_path, input6_s);	
 		//for jt_work_path
 		input6_s.gridwidth=0;
 		input6_s.weightx = 1;
 		input6_s.weighty=0;
-		input6_layout.setConstraints(jt_save_path, input6_s);		
+		input6_layout.setConstraints(jt_work_path, input6_s);		
+		//step 7 : input 7th line
+		GridBagLayout input7_layout = new GridBagLayout();
+		JPanel jp_center7 = new JPanel(input7_layout);
+		jl_save_path = new JLabel("Save Space:");
+		jl_save_path.setToolTipText("Client try to copy task case to this place, if same as \"Work Space\" client will skip copy action.");
+		jt_save_path = new JTextField(preference_data.get("save_space"));
+		jp_center7.add(jl_save_path);
+		jp_center7.add(jt_save_path);
+		GridBagConstraints input7_s = new GridBagConstraints();
+		//for jl_work_path
+		input7_s.fill = GridBagConstraints.BOTH;
+		input7_s.gridwidth=1;
+		input7_s.weightx = 0;
+		input7_s.weighty=0;
+		input7_layout.setConstraints(jl_save_path, input7_s);	
+		//for jt_work_path
+		input7_s.gridwidth=0;
+		input7_s.weightx = 1;
+		input7_s.weighty=0;
+		input7_layout.setConstraints(jt_save_path, input7_s);		
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,4,5,10));
 		discard = new JButton("Discard");
@@ -192,6 +207,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		preference_panel.add(jp_center4);
 		preference_panel.add(jp_center5);
 		preference_panel.add(jp_center6);
+		preference_panel.add(jp_center7);
 		preference_panel.add(jp_bottom);
 		return preference_panel;
 	}
@@ -230,6 +246,24 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			thread_manual.setSelected(true);
 			thread_text.setEnabled(true);			
 		}
+	}
+	
+	private void initial_case_default_value(String case_mode, String keep_structure){
+		if(case_mode.equalsIgnoreCase("keep_case")){
+			keep_case.setSelected(true);
+			copy_case.setSelected(false);
+			path_keep.setEnabled(false);
+		} else {
+			keep_case.setSelected(false);
+			copy_case.setSelected(true);
+			path_keep.setEnabled(true);
+			if (keep_structure.equalsIgnoreCase("true")){
+				path_keep.setSelected(true);
+			} else {
+				path_keep.setSelected(false);
+			}
+		}
+		
 	}
 	
 	private void initial_ignore_default_value(String ignore_request){
@@ -336,6 +370,17 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			} else {
 				preference_data.put("task_mode", "parallel");
 			}
+			//case mode
+			if(keep_case.isSelected()){
+				preference_data.put("case_mode", "keep_case");
+			} else {
+				preference_data.put("case_mode", "copy_case");
+				if(path_keep.isSelected()){
+					preference_data.put("path_keep", "true");
+				} else {
+					preference_data.put("path_keep", "false");
+				}
+			}
 			//ignore request
 			ArrayList<String> ignore_list = new ArrayList<String>();
 			if (ignore_machine.isSelected()){
@@ -396,6 +441,17 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				if(thread_auto.isSelected() && thread_text.isEnabled()){
 					thread_text.setEnabled(false);
 				}
+				if(copy_case.isSelected() && !path_keep.isEnabled()){
+					path_keep.setEnabled(true);
+					if (client_info.get_client_preference_data().get("path_keep").equalsIgnoreCase("true")){
+						path_keep.setSelected(true);
+					} else {
+						path_keep.setSelected(false);
+					}
+				}				
+				if(keep_case.isSelected() && path_keep.isEnabled()){
+					path_keep.setEnabled(false);
+				}
 			} else {
 				SwingUtilities.invokeLater(new Runnable(){
 					@Override
@@ -407,7 +463,18 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 						}
 						if(thread_auto.isSelected() && thread_text.isEnabled()){
 							thread_text.setEnabled(false);
-						}						
+						}
+						if(copy_case.isSelected() && !path_keep.isEnabled()){
+							path_keep.setEnabled(true);
+							if (client_info.get_client_preference_data().get("path_keep").equalsIgnoreCase("true")){
+								path_keep.setSelected(true);
+							} else {
+								path_keep.setSelected(false);
+							}
+						}				
+						if(keep_case.isSelected() && path_keep.isEnabled()){
+							path_keep.setEnabled(false);
+						}
 					}
 				});
 			}

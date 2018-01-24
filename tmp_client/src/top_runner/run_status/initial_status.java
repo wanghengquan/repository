@@ -90,7 +90,7 @@ class initial_status extends abstract_status {
 	//core script update
 	private void get_core_script_update(){
 		core_update my_core = new core_update();
-		my_core.update(client.client_info.get_client_preference_data().get("work_path"));
+		my_core.update(client.client_info.get_client_preference_data().getOrDefault("work_space", public_data.DEF_WORK_SPACE));
 		System.out.println(">>>Info: Core Script updated.");
 	}	
 	//self update
