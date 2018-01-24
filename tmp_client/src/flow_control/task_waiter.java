@@ -648,7 +648,7 @@ public class task_waiter extends Thread {
 		script_source = script_source.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
 		paths_hash.put("script_source", script_source.replaceAll("\\\\", "/"));
 		//get launch_path
-		if ( launch_dir != ""){
+		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
 		} else {
 			launch_path = task_path;

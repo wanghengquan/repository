@@ -314,7 +314,7 @@ public class task_prepare {
 			exe_path = match.group();
 			File exe_fobj = new File(exe_path);
 			if (!exe_fobj.exists()){
-				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path);
+				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path.trim());
 				//launch_cmd = match.replaceFirst(" " + work_space + "/$1");
 			}
 		}	

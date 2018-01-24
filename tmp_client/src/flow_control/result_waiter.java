@@ -710,7 +710,7 @@ public class result_waiter extends Thread {
 					// e.printStackTrace();
 					RESULT_WAITER_LOGGER.warn("Get call result exception.");
 					ArrayList<String> default_output = new ArrayList<String>();
-					default_output.add("NA");
+					default_output.add("N/A");
 					hash_data.put("cmd_output", default_output);
 				}
 			} else if (current_time - start_time > time_out + 5) {

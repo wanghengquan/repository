@@ -150,6 +150,7 @@ public class system_cmd {
 		ArrayList<String> string_list = new ArrayList<String>();
 		string_list.add("Environments :" + envs.toString());
 		string_list.add("LaunchCommand:" + String.join(" ", cmds));
+		string_list.add("LaunchDir:" + directory);
 		ProcessBuilder pb = new ProcessBuilder(cmds);
 		pb.redirectErrorStream(true);
 		File run_dir = new File(directory);
