@@ -193,6 +193,7 @@ def create_case_data(raw_string):
    'TestLevel': '1', 'Update': '', 'Order': '20', 'Create': ''}
 
     """
+    raw_string = re.sub("FEN_HAO", ";", raw_string)
     raw_dict = eval(raw_string)
     design_name = raw_dict.get("design_name")
     design_name = re.sub("//", "/", design_name)

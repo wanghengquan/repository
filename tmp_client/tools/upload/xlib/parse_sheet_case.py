@@ -162,7 +162,8 @@ def get_section_ini_lines(case_csv, suite_csv):
                 if not section_name:
                     xTools.say_it("  Warning. Use default Section name for design: %s!" % design_name)
                     section_name = "Test Cases"
-                my_case = "   %s %s %s" % (xTools.start_mark, item, xTools.end_mark)
+                new_item = re.sub(";", "FEN_HAO", str(item))
+                my_case = "   %s %s %s" % (xTools.start_mark, new_item, xTools.end_mark)
                 if section_dict.has_key(section_name):
                     section_dict[section_name].append(my_case)
                 else:
