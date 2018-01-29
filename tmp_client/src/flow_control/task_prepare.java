@@ -43,7 +43,7 @@ public class task_prepare {
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, String> client_preference_data
 			){
-		task_prepare_info.add(line_separator + ">>>Prepare task path:");
+		task_prepare_info.add(">>>Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
 		File task_path_dobj = new File(task_path);
@@ -297,7 +297,7 @@ public class task_prepare {
 	protected String[] get_launch_command(
 			HashMap<String, HashMap<String, String>> task_data
 			) {
-		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
+		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim().replaceAll("\\\\", "/");
 		String launch_path = task_data.get("Paths").get("launch_path").trim();
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
@@ -311,10 +311,13 @@ public class task_prepare {
 		Matcher match = patt.matcher(launch_cmd);
 		String exe_path = new String("");
 		if (match.find()){
-			exe_path = match.group();
-			File exe_fobj = new File(exe_path);
-			if (!exe_fobj.exists()){
-				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path.trim());
+			exe_path = match.group().trim();
+			//abs path
+			File exe1_fobj = new File(exe_path);
+			//ref path
+			File exe2_fobj = new File(launch_path + "/" + exe_path);
+			if (!exe1_fobj.exists() && !exe2_fobj.exists()){
+				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path);
 				//launch_cmd = match.replaceFirst(" " + work_space + "/$1");
 			}
 		}	

@@ -580,11 +580,11 @@ public class task_waiter extends Thread {
 		HashMap<String, String> paths_hash = new HashMap<String, String>();
 		paths_hash.putAll(task_data.get("Paths"));
 		// common info prepare
-		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim();
-		String repository = task_data.get("CaseInfo").get("repository").trim();	
-		String suite_path = task_data.get("CaseInfo").get("suite_path").trim();	
-		String design_name = task_data.get("CaseInfo").get("design_name").trim();
-		String launch_dir = task_data.get("LaunchCommand").get("dir").trim();
+		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim().replaceAll("\\\\", "/");
+		String repository = task_data.get("CaseInfo").get("repository").trim().replaceAll("\\\\", "/");	
+		String suite_path = task_data.get("CaseInfo").get("suite_path").trim().replaceAll("\\\\", "/");	
+		String design_name = task_data.get("CaseInfo").get("design_name").trim().replaceAll("\\\\", "/");
+		String launch_dir = task_data.get("LaunchCommand").get("dir").trim().replaceAll("\\\\", "/");
 		String tmp_result = public_data.WORKSPACE_RESULT_DIR;
 		String prj_name = "prj" + task_data.get("ID").get("project");
 		String run_name = "run" + task_data.get("ID").get("run");
@@ -604,56 +604,56 @@ public class task_waiter extends Thread {
 		paths_hash.put("design_source", design_source.replaceAll("\\\\", "/"));
 		//get case_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
-			case_path = design_source;
+			case_path = design_source.replaceAll("\\\\", "/");
 		} else {
 			if(path_keep.equalsIgnoreCase("true")){
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name };
-				case_path = String.join(file_seprator, path_array);
+				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name,  design_base_name};
-				case_path = String.join(file_seprator, path_array);
+				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			}	
 		}
-		paths_hash.put("case_path", case_path.replaceAll("\\\\", "/"));
+		paths_hash.put("case_path", case_path);
 		//get task_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			task_path = repository + "/" + suite_path;
 		} else {
 			if(path_keep.equalsIgnoreCase("true")){
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
-				task_path = String.join(file_seprator, path_array);
+				task_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name};
-				task_path = String.join(file_seprator, path_array);
+				task_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			}
 		}
-		paths_hash.put("task_path", task_path.replaceAll("\\\\", "/"));
+		paths_hash.put("task_path", task_path);
 		//get save_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;
 		} else {
 			if(path_keep.equalsIgnoreCase("true")){
 				String[] path_array = new String[] { save_space, tmp_result, prj_name, run_name, design_name };
-				save_path = String.join(file_seprator, path_array);
+				save_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
 				String[] path_array = new String[] { save_space, tmp_result, prj_name, run_name, task_name};
-				save_path = String.join(file_seprator, path_array);
+				save_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			}
 		}
-		paths_hash.put("save_path", save_path.replaceAll("\\\\", "/"));	
+		paths_hash.put("save_path", save_path);	
 		//get script_source
-		script_source = task_data.get("CaseInfo").get("script_address").trim();
+		script_source = task_data.get("CaseInfo").get("script_address").trim().replaceAll("\\\\", "/");
 		script_source = script_source.replaceAll("\\$work_path", work_space);// = work_space
 		script_source = script_source.replaceAll("\\$case_path", case_path);
 		script_source = script_source.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
-		paths_hash.put("script_source", script_source.replaceAll("\\\\", "/"));
+		paths_hash.put("script_source", script_source);
 		//get launch_path
 		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
 		} else {
 			launch_path = task_path;
 		}
-		paths_hash.put("launch_path", launch_path.replaceAll("\\\\", "/"));
+		paths_hash.put("launch_path", launch_path);
 		//get report_path
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			report_path = case_path;
@@ -664,7 +664,7 @@ public class task_waiter extends Thread {
 				report_path = task_path;
 			}
 		}
-		paths_hash.put("report_path", report_path.replaceAll("\\\\", "/"));
+		paths_hash.put("report_path", report_path);
 		//push back
 		task_data.put("Paths", paths_hash);
 		return task_data;
@@ -943,12 +943,12 @@ public class task_waiter extends Thread {
 			// task 7 : get test case ready
 			task_prepare prepare_obj = new task_prepare();
 			Boolean task_case_ok = prepare_obj.get_task_case_ready(task_data, client_info.get_client_preference_data());
+			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_case_ok);
 			if (!task_case_ok){
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_used_thread(1);
 				continue;			
 			} 
-			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_case_ok);
 			// task 8 : launch info prepare
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String[] launch_cmd = prepare_obj.get_launch_command(task_data);

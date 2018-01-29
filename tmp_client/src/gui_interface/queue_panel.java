@@ -576,26 +576,40 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;	
 		}
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client_info.get_client_preference_data());
 		//get work_space
-		String work_space = new String();
-		work_space = client_info.get_client_preference_data().getOrDefault("work_space", "");
-		String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
-		String prj_dir_name = "prj" + admin_data.get("ID").get("project");
-		String run_dir_name = "run" + admin_data.get("ID").get("run");
-		String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name };
-		String task_work_path = String.join(file_seprator, path_array);
-		task_work_path = task_work_path.replaceAll("\\\\", "/");		
-		File task_work_path_fobj = new File(task_work_path);
-		if(!task_work_path_fobj.exists()){
-			message = "Cannot open run DIR, "+ task_work_path + " not exists." + line_separator;
+		// common info prepare
+		String xlsx_dest = admin_data.get("CaseInfo").get("xlsx_dest").trim();
+		String repository = admin_data.get("CaseInfo").get("repository").trim();	
+		String suite_path = admin_data.get("CaseInfo").get("suite_path").trim();	
+		String tmp_result = public_data.WORKSPACE_RESULT_DIR;
+		String prj_name = "prj" + admin_data.get("ID").get("project");
+		String run_name = "run" + admin_data.get("ID").get("run");
+		String work_space = preference_data.get("work_space");
+		String case_mode = preference_data.get("case_mode");
+		String task_path = new String("");
+		//get depot_space
+		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
+		String depot_space = repository + "/" + suite_path;
+		//get work_path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			task_path = depot_space;
+		} else {
+			String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
+			task_path = String.join(file_seprator, path_array);	
+		}	
+		File task_path_fobj = new File(task_path);
+		if(!task_path_fobj.exists()){
+			message = "Cannot open run DIR, "+ task_path + " not exists." + line_separator;
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;			
 		}
-		message = "Can not open path with system register browser" + line_separator + task_work_path;
+		message = "Can not open path with system register browser" + line_separator + task_path;
 		if(Desktop.isDesktopSupported()){
 			Desktop desktop = Desktop.getDesktop();
 			try {
-				desktop.open(task_work_path_fobj);
+				desktop.open(task_path_fobj);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

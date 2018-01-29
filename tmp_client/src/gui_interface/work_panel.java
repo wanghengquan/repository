@@ -482,19 +482,19 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 			case_id = prefer_id;
 		}
 		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
-		String work_path = new String();
+		String case_path = new String();
 		try{
 			case_data.putAll(task_info.get_case_from_processed_task_queues_map(watching_queue, case_id));
-			work_path = case_data.get("Status").get("location");
+			case_path = case_data.get("Paths").get("case_path");
 		} catch (Exception e){
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
-		message = "Can not open path with system register browser" + line_separator + work_path;
+		message = "Can not open path with system register browser" + line_separator + case_path;
 		if(Desktop.isDesktopSupported()){
 			Desktop desktop = Desktop.getDesktop();
 			try {
-				desktop.open(new File(work_path));
+				desktop.open(new File(case_path));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
