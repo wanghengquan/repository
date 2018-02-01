@@ -47,7 +47,7 @@ public class task_report {
 			String report_path,
 			ArrayList<String> report_list
 			){
-		String report_file = report_path + "/" + public_data.WORKSPACE_CASE_REPORT_NAME;
+		String report_file = report_path + "/" + public_data.CASE_REPORT_NAME;
 		File report_fobj = new File(report_file);
 		if (!report_fobj.exists()){
 			file_action.append_file(report_file, "Client Version:" + public_data.BASE_CURRENTVERSION + line_separator);
@@ -156,7 +156,8 @@ public class task_report {
 					pool_info.update_history_send_data(case_index, history_case_data);
 					continue;
 				}
-				if ((Integer) history_case_data.get("counter") > 10) {
+				int interval = public_data.PERF_DUP_REPORT_INTERVAL / public_data.PERF_THREAD_BASE_INTERVAL;
+				if ((Integer) history_case_data.get("counter") > interval) {
 					remote_send_data.put(case_index, case_data);
 					history_case_data.put("counter", 0);
 				} else {

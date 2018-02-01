@@ -9,17 +9,22 @@
  */
 package flow_control;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.Callable;
 //import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.system_cmd;
 
 public class pool_data {
 	// public property
@@ -94,24 +99,127 @@ public class pool_data {
 			String queue_name, 
 			String case_id, 
 			String launch_path,
+			String case_path,
 			int time_out) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
-		HashMap<String, Object> sys_call_value = new HashMap<String, Object>();
-		sys_call_value.put("call_back", future_call_back);
-		sys_call_value.put("queue_name", queue_name);
-		sys_call_value.put("case_id", case_id);
-		sys_call_value.put("launch_path", launch_path);
+		HashMap<String, Object> sys_call_data = new HashMap<String, Object>();
+		sys_call_data.put("call_back", future_call_back);
+		sys_call_data.put("queue_name", queue_name);
+		sys_call_data.put("case_id", case_id);
+		sys_call_data.put("launch_path", launch_path);
+		sys_call_data.put("case_path", case_path);
 		long start_time = System.currentTimeMillis() / 1000;
-		sys_call_value.put("start_time", start_time);
-		sys_call_value.put("time_out", time_out);
-		call_map.put(sys_call_key, sys_call_value);
+		sys_call_data.put("start_time", start_time);
+		sys_call_data.put("time_out", time_out);
+		sys_call_data.put("call_canceled", false);
+		sys_call_data.put("call_timeout", false);
+		sys_call_data.put("call_terminate", false);
+		sys_call_data.put("call_status", call_enum.INITIATE);
+		ArrayList<String> call_output = new ArrayList<String>();
+		sys_call_data.put("call_output", call_output);
+		call_map.put(sys_call_key, sys_call_data);
 	}
 
-	public synchronized HashMap<String, HashMap<String, Object>> get_sys_call() {
+	@SuppressWarnings("unchecked")
+	public synchronized void fresh_sys_call() {		
+		Iterator<String> call_map_it = call_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<String, Object> hash_data = call_map.get(call_index);
+			// put call_status
+			Future<?> call_back = (Future<?>) hash_data.get("call_back");
+			long current_time = System.currentTimeMillis() / 1000;
+			long start_time = (long) hash_data.get("start_time");
+			int time_out = (int) hash_data.get("time_out");
+			// timeout task cancel
+			if (current_time - start_time > time_out + 5) {
+				hash_data.put("call_timeout", true);
+				hash_data.put("call_canceled", call_back.cancel(true));
+			}			
+			// run report action
+			Boolean call_done = call_back.isDone();
+			if (call_done) {
+				hash_data.put("call_status", call_enum.DONE);
+				ArrayList<String> call_output = (ArrayList<String>) hash_data.get("call_output");
+				try {
+					call_output.addAll((Collection<? extends String>) call_back.get(10, TimeUnit.SECONDS));
+				} catch (Exception e) {
+					// e.printStackTrace();
+					THREAD_POOL_LOGGER.warn("Get call result exception.");
+					call_output.add("Get call result exception.");
+				}
+				if((boolean) hash_data.get("call_canceled")){
+					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get("case_path")));
+				}
+			} else {
+				hash_data.put("call_status", call_enum.PROCESSIONG);
+			}
+		}
+	}	
+	
+	public synchronized Boolean terminate_sys_call(String call_index) {
+		Boolean cancel_status = new Boolean(true);
+		HashMap<String, Object> hash_data = call_map.get(call_index);
+		Future<?> call_back = (Future<?>) hash_data.get("call_back");
+		hash_data.put("call_terminate", true);
+		cancel_status = call_back.cancel(true);
+		hash_data.put("call_canceled", cancel_status);		
+		return cancel_status;
+	}	
+	
+	private ArrayList<String> get_cancel_extra_run_output(
+			String case_path){
+		ArrayList<String> output_data = new ArrayList<String>();
+		String run_cmd = new String("python " + public_data.CASE_TIMEOUT_RUN);
+		try {
+			output_data.addAll(system_cmd.run(run_cmd, case_path));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			output_data.add("Run cancel extra run Failed.");
+		}
+		return output_data;
+	}
+	
+	public synchronized HashMap<String, HashMap<String, Object>> get_sys_call_copy() {
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		Iterator<String> call_map_it = call_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<String, Object> one_call_data = call_map.get(call_index);
+			HashMap<String, Object> return_data = call_map.get(call_index);
+			Iterator<String> one_call_it = one_call_data.keySet().iterator();
+			while (one_call_it.hasNext()){
+				String call_key = one_call_it.next();
+				if (call_key.equals("call_back")){
+					continue;
+				}
+				return_data.put(call_key, one_call_data.get(call_key));
+			}
+			call_data.put(call_index, return_data);
+		}
+		return call_data;
+	}
+
+	public synchronized HashMap<String, HashMap<String, Object>> get_sys_call_link() {
 		return this.call_map;
+	}	
+	
+	public synchronized Boolean update_sys_call(
+			String sys_call_key,
+			HashMap<String, Object> update_data
+			) {
+		Boolean update_status = new Boolean(true);
+		HashMap<String, Object> call_data = new HashMap<String, Object>();
+		if (call_map.containsKey(sys_call_key)) {
+			call_data.putAll(call_map.get(sys_call_key));
+		} 
+		call_data.putAll(update_data);
+		call_map.put(sys_call_key, call_data);
+		return update_status;
 	}
-
+	
 	public synchronized Boolean remove_sys_call(String sys_call_key) {
 		Boolean remove_result = new Boolean(true);
 		if (call_map.containsKey(sys_call_key)) {

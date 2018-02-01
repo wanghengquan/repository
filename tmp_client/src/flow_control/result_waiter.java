@@ -15,11 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,18 +71,18 @@ public class result_waiter extends Thread {
 	 */
 	@SuppressWarnings("unchecked")
 	private Boolean run_post_process(
-			HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, Object>> case_report_map,
 			task_report report_obj) {
 		Boolean run_status = new Boolean(true);
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			ArrayList<String> cmd_output_list = new ArrayList<String>();
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
-			// only done call will be release. timeout call will be get in
-			// the next cycle(at that time status will be done)
+			// only done call will be release.
 			if (!call_status.equals(call_enum.DONE)) {
 				continue;
 			}
@@ -137,30 +132,23 @@ public class result_waiter extends Thread {
 		return run_status;
 	}
 
-	private void update_thread_pool_running_queue(HashMap<String, HashMap<String, Object>> call_status_map) {
+	private void update_thread_pool_running_queue() {
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			String queue_name = (String) one_call_data.get("queue_name");
 			running_queue_in_pool.add(queue_name);
 		}
 		task_info.set_thread_pool_admin_queue_list(running_queue_in_pool);
 	}
 
-	private void report_finished_queue_data(
-			HashMap<String, HashMap<String, Object>> call_status_map
-			) {
+	private void report_finished_queue_data() {
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
-		while (call_map_it.hasNext()) {
-			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
-			String queue_name = (String) one_call_data.get("queue_name");
-			running_queue_in_pool.add(queue_name);
-		}
-		// task 3 : dump finished task queue data to csv file, save memory
+		running_queue_in_pool.addAll(task_info.get_thread_pool_admin_queue_list());
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
@@ -184,16 +172,10 @@ public class result_waiter extends Thread {
 		}
 	}
 
-	private Boolean dump_finished_queue_data(HashMap<String, HashMap<String, Object>> call_status_map) {
+	private Boolean dump_finished_queue_data() {
 		Boolean dump_status = new Boolean(true);
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
-		while (call_map_it.hasNext()) {
-			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
-			String queue_name = (String) one_call_data.get("queue_name");
-			running_queue_in_pool.add(queue_name);
-		}
+		running_queue_in_pool.addAll(task_info.get_thread_pool_admin_queue_list());
 		// task 3 : dump finished task queue data to xml file, save memory
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
@@ -228,31 +210,33 @@ public class result_waiter extends Thread {
 		return dump_status;
 	}
 
-	private Boolean release_resource_usage(HashMap<String, HashMap<String, Object>> call_status_map){
+	private Boolean release_resource_usage(){
 		//release software usage
-		Boolean software_release = release_software_usage(call_status_map);
+		Boolean software_release = release_software_usage();
 		//release thread usage
-		Boolean thread_release = release_thread_usage(call_status_map);
+		Boolean thread_release = release_thread_usage();
 		if (software_release && thread_release){
 			return true;
 		} else 
 			return false;
 	}
 	
-	private Boolean release_software_usage(HashMap<String, HashMap<String, Object>> call_status_map) {
+	private Boolean release_software_usage() {
 		Boolean release_status = new Boolean(true);
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
 			// only done call will be release. timeout call will be get in
 			// the next cycle(at that time status will be done)
 			if (!call_status.equals(call_enum.DONE)) {
 				continue;
 			}
-			String queue_name = (String) call_status_map.get(call_index).get("queue_name");
-			String case_id = (String) call_status_map.get(call_index).get("case_id");
+			String queue_name = (String) one_call_data.get("queue_name");
+			String case_id = (String) one_call_data.get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			release_status = client_info.release_used_soft_insts(case_data.get("Software"));
@@ -260,12 +244,14 @@ public class result_waiter extends Thread {
 		return release_status;
 	}
 
-	private Boolean release_thread_usage(HashMap<String, HashMap<String, Object>> call_status_map) {
+	private Boolean release_thread_usage() {
 		Boolean release_status = new Boolean(true);
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
 			// only done call have runtime results. timeout call will be get in
 			// the next cycle(at that time status will be done)
@@ -281,13 +267,14 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean update_client_run_case_summary(
-			HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, Object>> case_report_map) {
 		Boolean update_status = new Boolean(true);
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
 			// only done call will be release. timeout call will be get in
 			// the next cycle(at that time status will be done)
@@ -316,14 +303,17 @@ public class result_waiter extends Thread {
 		return update_status;
 	}
 
-	private Boolean update_processed_task_data(HashMap<String, HashMap<String, Object>> call_status_map,
-			HashMap<String, HashMap<String, Object>> case_report_map) {
+	private Boolean update_processed_task_data(
+			HashMap<String, HashMap<String, Object>> case_report_map
+			) {
 		Boolean update_status = new Boolean(true);
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			String queue_name = (String) call_status_map.get(call_index).get("queue_name");
-			String case_id = (String) call_status_map.get(call_index).get("case_id");
+			String queue_name = (String) call_data.get(call_index).get("queue_name");
+			String case_id = (String) call_data.get(call_index).get("case_id");
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			HashMap<String, String> case_status = new HashMap<String, String>();
@@ -341,23 +331,22 @@ public class result_waiter extends Thread {
 	}
 
 	@SuppressWarnings("unchecked")
-	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data(
-			HashMap<String, HashMap<String, Object>> call_status_map) {
+	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data() {
 		HashMap<String, HashMap<String, String>> runtime_data = new HashMap<String, HashMap<String, String>>();
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
+			String queue_name = (String) one_call_data.get("queue_name");
+			String case_id = (String) one_call_data.get("case_id");
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
-			// only done call have runtime results. timeout call will be get in
-			// the next cycle(at that time status will be done)
+			// only done call have runtime results.
 			if (!call_status.equals(call_enum.DONE)) {
 				continue;
 			}
 			HashMap<String, String> hash_data = new HashMap<String, String>();
-			// call_index format case_id@queue_name
-			String queue_name = call_index.split("#")[1];
-			String case_id = call_index.split("#")[0];
 			HashMap<String, HashMap<String, String>> task_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			hash_data.put("testId", task_data.get("ID").get("id"));
@@ -371,7 +360,7 @@ public class result_waiter extends Thread {
 			runlog.append("Run with TMP client:" + public_data.BASE_CURRENTVERSION + line_separator);
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get("launch_path");
-			runlog.append("Runtime Location ==> " + host_name + ":" + run_path + line_separator);
+			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
 			String detail_path = new String();
 			detail_path = "/prj" + task_data.get("ID").get("project") + "/run" + task_data.get("ID").get("run") + "/T"
 					+ task_data.get("ID").get("id");
@@ -391,7 +380,7 @@ public class result_waiter extends Thread {
 					+ line_separator);
 			runlog.append(line_separator);
 			runlog.append(line_separator);
-			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("cmd_output");
+			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("call_output");
 			runlog.append(String.join(line_separator, runtime_output_list));
 			runlog.append(line_separator);
 			String runlog_str = runlog.toString();
@@ -410,17 +399,20 @@ public class result_waiter extends Thread {
 	}
 
 	@SuppressWarnings("unchecked")
-	private HashMap<String, HashMap<String, Object>> generate_case_report_data(
-			HashMap<String, HashMap<String, Object>> call_status_map) {
+	private HashMap<String, HashMap<String, Object>> generate_case_report_data() {
 		HashMap<String, HashMap<String, Object>> case_data = new HashMap<String, HashMap<String, Object>>();
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
+			String queue_name = (String) one_call_data.get("queue_name");
+			String case_id = (String) one_call_data.get("case_id");
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
+			Boolean call_timeout = (Boolean) one_call_data.get("call_timeout");
+			Boolean call_terminate = (Boolean) one_call_data.get("call_terminate");
 			HashMap<String, Object> hash_data = new HashMap<String, Object>();
-			String queue_name = call_index.split("#")[1];
-			String case_id = call_index.split("#")[0];
 			HashMap<String, HashMap<String, String>> task_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			hash_data.put("testId", task_data.get("ID").get("id"));
@@ -432,20 +424,20 @@ public class result_waiter extends Thread {
 			String cmd_reason = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_enum.DONE)) {
-				cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("cmd_output"));
-				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("cmd_output"));
-				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("cmd_output")));				
-			} else if (call_status.equals(call_enum.TIMEOUT)) {
-				cmd_status = task_enum.TIMEOUT;
-				cmd_reason = "Timeout";
-			} else {
+				if(call_timeout || call_terminate){
+					cmd_status = task_enum.TIMEOUT;
+				} else {
+					cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("call_output"));
+				}
+				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("call_output"));
+				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("call_output")));				
+			}  else {
 				cmd_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
 			hash_data.put("status", cmd_status);
 			hash_data.put("reason", cmd_reason);
-			String work_path = (String) one_call_data.get("launch_path");
-			hash_data.put("location", work_path);
+			hash_data.put("location", (String) one_call_data.get("launch_path"));
 			long start_time = (long) one_call_data.get("start_time");
 			long current_time = System.currentTimeMillis() / 1000;
 			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
@@ -503,6 +495,9 @@ public class result_waiter extends Thread {
 
 	private String get_cmd_reason(ArrayList<String> cmd_output) {
 		String reason = new String("NA");
+		if(cmd_output == null || cmd_output.isEmpty()){
+			return reason;
+		}
 		// <status>Passed</status>
 		Pattern p = Pattern.compile("reason>(.+?)</");		
 		for (String line : cmd_output) {
@@ -517,46 +512,21 @@ public class result_waiter extends Thread {
 		return reason;
 	}
 
-	private Boolean cancel_running_call_status(HashMap<String, HashMap<String, Object>> call_status_map){
-		//cancel timeout call
-		Boolean timeout_cancel = cancel_timeout_call(call_status_map);
-		//cancel gui request call
-		Boolean request_cancel = cancel_request_call(call_status_map);
-		if (timeout_cancel && request_cancel){
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	private Boolean cancel_timeout_call(HashMap<String, HashMap<String, Object>> call_status_map) {
-		Boolean cancel_status = new Boolean(true);
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
-		while (call_map_it.hasNext()) {
-			String call_index = call_map_it.next();
-			call_enum status = (call_enum) call_status_map.get(call_index).get("call_status");
-			if (!status.equals(call_enum.TIMEOUT)) {
-				continue;
-			}
-			Future<?> call_back = (Future<?>) call_status_map.get(call_index).get("call_back");
-			cancel_status = call_back.cancel(true);
-		}
-		return cancel_status;
-	}
-
-	private Boolean cancel_request_call(HashMap<String, HashMap<String, Object>> call_status_map) {
+	private Boolean terminate_request_call() {
 		Boolean cancel_status = new Boolean(true);
 		if (!view_info.impl_stop_case_request()) {
 			return cancel_status;
 		}
 		String queue_name = view_info.get_watching_queue();
 		List<String> select_task_case = view_info.get_select_task_case();
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			String call_name = (String) call_status_map.get(call_index).get("queue_name");
-			String call_id = (String) call_status_map.get(call_index).get("case_id");
-			call_enum call_status = (call_enum) call_status_map.get(call_index).get("call_status");
+			String call_name = (String) call_data.get(call_index).get("queue_name");
+			String call_id = (String) call_data.get(call_index).get("case_id");
+			call_enum call_status = (call_enum) call_data.get(call_index).get("call_status");
 			if (!call_name.equalsIgnoreCase(queue_name)) {
 				continue;
 			}
@@ -566,13 +536,10 @@ public class result_waiter extends Thread {
 			if (!call_status.equals(call_enum.PROCESSIONG)) {
 				continue;
 			}
-			Future<?> call_back = (Future<?>) call_status_map.get(call_index).get("call_back");
-			cancel_status = call_back.cancel(true);
+			cancel_status = pool_info.terminate_sys_call(call_index);
 		}
 		return cancel_status;
 	}
-
-
 
 	public static Boolean post_process_cleanup(String clean_work_path) {
 		String cmd = "python " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
@@ -654,12 +621,13 @@ public class result_waiter extends Thread {
 
 	private void generate_console_report(
 			String waiter_name,
-			HashMap<String, HashMap<String, Object>> call_status_map,
 			HashMap<String, HashMap<String, Object>> case_report_map){
-		Iterator<String> call_map_it = call_status_map.keySet().iterator();
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		Iterator<String> call_map_it = call_data.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_status_map.get(call_index);
+			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
 			// only done call will be release. timeout call will be get in
 			// the next cycle(at that time status will be done)
@@ -676,52 +644,7 @@ public class result_waiter extends Thread {
 				RESULT_WAITER_LOGGER.info(waiter_name + ": " + queue_name + "," + case_id + "," + status.get_description());
 			}
 		}
-	}	
-	
-	/*
-	 * call status map: {case_id@queue_name:{"call_back":call_back,
-	 * "queue_name":queue_name, "case_id":case_id, "launch_path":launch_path,
-	 * "start_time":start_time, "time_out":time_out, "result_keep", result_keep,
-	 * "cmd_output":cmd_output, //new added "call_status": call_status //new
-	 * added: done, timeout, processing } }
-	 */
-	private HashMap<String, HashMap<String, Object>> get_call_status_map() {
-		HashMap<String, HashMap<String, Object>> return_call_map = new HashMap<String, HashMap<String, Object>>();
-		// scan calls update return_call_map with call_status, cmd_status,
-		// cmd_output
-		HashMap<String, HashMap<String, Object>> system_call_map = pool_info.get_sys_call();
-		Iterator<String> system_call_map_it = system_call_map.keySet().iterator();
-		while (system_call_map_it.hasNext()) {
-			String call_index = system_call_map_it.next();
-			HashMap<String, Object> hash_data = new HashMap<String, Object>();
-			hash_data.putAll(system_call_map.get(call_index));
-			// put call_status
-			Future<?> call_back = (Future<?>) hash_data.get("call_back");
-			Boolean call_done = call_back.isDone();
-			long current_time = System.currentTimeMillis() / 1000;
-			long start_time = (long) hash_data.get("start_time");
-			int time_out = (int) hash_data.get("time_out");
-			// run report action
-			if (call_done) {
-				hash_data.put("call_status", call_enum.DONE);
-				try {
-					hash_data.put("cmd_output", call_back.get(10, TimeUnit.SECONDS));
-				} catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
-					// e.printStackTrace();
-					RESULT_WAITER_LOGGER.warn("Get call result exception.");
-					ArrayList<String> default_output = new ArrayList<String>();
-					default_output.add("N/A");
-					hash_data.put("cmd_output", default_output);
-				}
-			} else if (current_time - start_time > time_out + 5) {
-				hash_data.put("call_status", call_enum.TIMEOUT);
-			} else {
-				hash_data.put("call_status", call_enum.PROCESSIONG);
-			}
-			return_call_map.put(call_index, hash_data);
-		}
-		return return_call_map;
-	}	
+	}
 	
 	public void run() {
 		try {
@@ -743,6 +666,7 @@ public class result_waiter extends Thread {
 
 	private void monitor_run() {
 		// ============== All static job start from here ==============
+		// this run cannot launch multiple threads
 		result_thread = Thread.currentThread();
 		String waiter_name = "RW_0";
 		task_report report_obj = new task_report(pool_info, client_info);
@@ -761,45 +685,41 @@ public class result_waiter extends Thread {
 			}
 			// take a rest
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			// ============== All dynamic job start from here ==============
-			// use call_status and case_report_data for all tasks
-			HashMap<String, HashMap<String, Object>> call_status = new HashMap<String, HashMap<String, Object>>();
-			// task 1 : get call map status
-			call_status = get_call_status_map();
-			// task 2 : update running queue in thread pool
-			update_thread_pool_running_queue(call_status);
-			// task 3 : dump finished queue:report and data
-			report_finished_queue_data(call_status);
-			dump_finished_queue_data(call_status);
+			// task 1 : report/dump finished queue:report and data
+			report_finished_queue_data();
+			dump_finished_queue_data();
 			// following actions based on a non-empty call back.
-			if (call_status.size() < 1) {
+			if (pool_info.get_sys_call_link() == null || pool_info.get_sys_call_link().size() < 1) {
 				if(!switch_info.get_local_console_mode()){
 					RESULT_WAITER_LOGGER.info(waiter_name + ":Thread Pool Empty...");
 				}
 				continue;
 			}
-			// task 4 : cancel running call:1. time out, 2. user terminate
-			Boolean cancel_status = cancel_running_call_status(call_status);
-			// task 5 : general and send task report
-			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data(call_status);
-			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(
-					call_status);
+			pool_info.fresh_sys_call();
+			// task 2 : update running queue in thread pool
+			update_thread_pool_running_queue();			
+			// task 3 : terminate running call
+			Boolean cancel_status = terminate_request_call();
+			// task 4 : general and send task report
+			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
+			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data();
 			report_obj.send_tube_task_data_report(case_report_data, true);			
 			report_obj.send_tube_task_runtime_report(case_runtime_log_data);
-			// task 6 : update memory case run summary
-			generate_console_report(waiter_name, call_status, case_report_data);
-			update_client_run_case_summary(call_status, case_report_data);
-			// task 7 : update processed task data info
-			update_processed_task_data(call_status, case_report_data);
-			// task 8 : release occupied resource
-			Boolean release_status = release_resource_usage(call_status);
-			// task 9 : post process
-			Boolean post_status = run_post_process(call_status, case_report_data, report_obj);
+			// task 5 : update memory case run summary
+			generate_console_report(waiter_name, case_report_data);
+			update_client_run_case_summary(case_report_data);
+			// task 6 : update processed task data info
+			update_processed_task_data(case_report_data);
+			// task 7 : release occupied resource
+			Boolean release_status = release_resource_usage();
+			// task 8 : post process
+			Boolean post_status = run_post_process(case_report_data, report_obj);
 			if (cancel_status && release_status && post_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": Work fine.");
 			} else {

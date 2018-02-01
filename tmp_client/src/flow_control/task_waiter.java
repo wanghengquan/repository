@@ -951,12 +951,13 @@ public class task_waiter extends Thread {
 			} 
 			// task 8 : launch info prepare
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
+			String case_path = task_data.get("Paths").get("case_path").trim();
 			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
 			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
 			// task 9 : launch
 			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
-			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_time_out);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, case_time_out);
 			/*
 			ArrayList<String> case_prepare_list = new ArrayList<String>();
 			String case_work_path = new String();

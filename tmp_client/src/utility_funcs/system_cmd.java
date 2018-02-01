@@ -33,7 +33,7 @@ public class system_cmd {
 
 	}
 
-	// run0 command single string
+	// run0 command single string, export case, scripts
 	public static ArrayList<String> run(String cmd) throws IOException, InterruptedException {
 		/*
 		 * a command line will be execute.
@@ -60,31 +60,33 @@ public class system_cmd {
 		return string_list;
 	}
 	
-	// run1 command single string
+	// run1 run command with in 60 seconds
 	public static ArrayList<String> run(String cmd, String work_path) throws IOException {
 		/*
 		 * a command line will be execute.
 		 */
+		ArrayList<String> string_list = new ArrayList<String>();
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
+		string_list.add("Run CMD: " + cmd);
 		String[] cmd_list = cmd.split("\\s+");
 		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
 		proce_build.redirectErrorStream(true);
 		File run_dir = new File(work_path);
-		if (run_dir.exists()) {
-			proce_build.directory(run_dir);
-		}		
+		if (!run_dir.exists()) {
+			string_list.add("Run Dir not exists : " + work_path);
+			return string_list;
+		}
+		proce_build.directory(run_dir);
 		Process process = proce_build.start();
-		ArrayList<String> string_list = new ArrayList<String>();
 		InputStream fis = process.getInputStream();
 		BufferedReader bri = new BufferedReader(new InputStreamReader(fis));
-		string_list.add(cmd);
 		String line = null;
 		while ((line = bri.readLine()) != null) {
 			string_list.add(line);
 		}
 		bri.close();
 		try {
-			process.waitFor();
+			process.waitFor((long) 1*60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -93,7 +95,7 @@ public class system_cmd {
 			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e2.toString());
 		}
 		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
-		SYSTEM_CMD_LOGGER.debug("Exit Code:" + string_list);
+		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
 		process.destroy();
 		return string_list;
 	}	

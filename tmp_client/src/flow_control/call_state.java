@@ -9,14 +9,14 @@
  */
 package flow_control;
 
-public enum call_enum {
+public enum call_state {
 	INITIATE(0, "Initiate"),
 	PROCESSIONG(1, "Processing"),
 	DONE(2, "Done");
 	private int index;
 	private String description;
 	
-	private call_enum(int index, String description){
+	private call_state(int index, String description){
 		this.index = index;
 		this.description = description;
 	}

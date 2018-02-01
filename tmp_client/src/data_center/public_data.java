@@ -80,7 +80,12 @@ public class public_data {
 	public final static String WORKSPACE_RESULT_DIR = "results";
 	public final static String WORKSPACE_UPLOAD_DIR = "uploads";
 	public final static String WORKSPACE_LOG_DIR = "logs";
-	public final static String WORKSPACE_CASE_REPORT_NAME = "case_report.txt";
+	
+	// ========================
+	// case folder configuration
+	// name	
+	public final static String CASE_REPORT_NAME = "case_report.txt";
+	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
 
 	// ========================
 	// external tools based on software bin path
@@ -146,6 +151,7 @@ public class public_data {
 	// ========================
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
+	public final static int PERF_DUP_REPORT_INTERVAL = 60;   //Case same status report interval
 	public final static int PERF_POOL_MAXIMUM_SIZE = 30;
 	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
