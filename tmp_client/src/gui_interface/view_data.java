@@ -26,7 +26,7 @@ public class view_data {
 	private watch_enum watching_queue_area = watch_enum.UNKNOWN;
 	private retest_enum retest_queue_area = retest_enum.UNKNOWN;
 	private int stop_case_request = 0;
-	private List<String> delete_finished_queue = new ArrayList<String>();
+	private List<String> delete_request_queue = new ArrayList<String>();
 	private String select_rejected_queue_name = new String();
 	private String select_captured_queue_name = new String();
 	private queue_enum select_captured_queue_status = queue_enum.UNKNOWN;
@@ -170,21 +170,21 @@ public class view_data {
 		return stop_request;
 	}
 
-	public void add_delete_finished_queue(String queue_name) {
+	public void add_delete_request_queue(String queue_name) {
 		rw_lock.writeLock().lock();
 		try {
-			this.delete_finished_queue.add(queue_name);
+			this.delete_request_queue.add(queue_name);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public List<String> impl_delete_finished_queue() {
+	public List<String> impl_delete_request_queue() {
 		List<String> delete_list = new ArrayList<String>();
 		rw_lock.writeLock().lock();
 		try {
-			delete_list.addAll(delete_finished_queue);
-			this.delete_finished_queue.clear();
+			delete_list.addAll(delete_request_queue);
+			this.delete_request_queue.clear();
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

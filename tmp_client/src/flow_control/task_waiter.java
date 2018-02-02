@@ -742,11 +742,11 @@ public class task_waiter extends Thread {
 		//prepare common inform
 		String run_time = new String("NA");
 		String update_time = new String(time_info.get_man_date_time());
-		String cmd_status = new String(task_enum.OTHERS.get_description());
+		task_enum cmd_status = task_enum.OTHERS;
 		if (prepare_ok){
-			cmd_status = task_enum.PROCESSING.get_description();
+			cmd_status = task_enum.PROCESSING;
 		} else {
-			cmd_status = task_enum.BLOCKED.get_description();
+			cmd_status = task_enum.BLOCKED;
 		}
 		ArrayList<String> task_prepare_info_list = new ArrayList<String>();
 		task_prepare_info_list.addAll(prepare_obj.task_prepare_info);
@@ -758,7 +758,7 @@ public class task_waiter extends Thread {
 		HashMap<String, String> status_data = task_data.get("Status");
 		status_data.put("run_time", run_time);
 		status_data.put("update_time", update_time);
-		status_data.put("cmd_status", cmd_status);
+		status_data.put("cmd_status", cmd_status.get_description());
 		status_data.put("cmd_reason", cmd_reason);
 		status_data.put("location", report_path);
 		task_info.update_case_to_processed_task_queues_map(queue_name, case_id, task_data);

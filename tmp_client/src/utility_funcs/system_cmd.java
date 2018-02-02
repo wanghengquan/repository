@@ -48,7 +48,7 @@ public class system_cmd {
 		InputStream out_str = process.getInputStream();
 		StreamGobbler read_out = new StreamGobbler(out_str, "OUTPUT", false);
 		read_out.start();
-		process.waitFor((long) 10*60, TimeUnit.SECONDS);
+		process.waitFor((long) 5*60, TimeUnit.SECONDS);
 		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
 		string_list.add("Exit Code:" + process.exitValue());

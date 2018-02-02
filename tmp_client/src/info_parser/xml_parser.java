@@ -64,7 +64,9 @@ public class xml_parser {
 		return text;
 	}
 
-	public String create_result_document_string(HashMap<String, HashMap<String, Object>> xml_data, String ip,
+	public String create_result_document_string(
+			HashMap<String, HashMap<String, Object>> xml_data, 
+			String ip,
 			String machine) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("CaseResults");

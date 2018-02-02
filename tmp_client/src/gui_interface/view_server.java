@@ -270,15 +270,15 @@ public class view_server extends Thread {
 		return import_status;
 	}
 
-	private void implements_del_finished_request() {
+	private void implements_user_del_request() {
 		// get delete list
 		List<String> delete_list = new ArrayList<String>();
-		delete_list.addAll(view_info.impl_delete_finished_queue());
+		delete_list.addAll(view_info.impl_delete_request_queue());
 		for (String queue_name : delete_list) {
 			// public info for implementation
 			String work_space = new String();
 			if (client_info.get_client_data().containsKey("preference")) {
-				work_space = client_info.get_client_data().get("preference").get("work_space");
+				work_space = client_info.get_client_preference_data().get("work_space");
 			} else {
 				work_space = public_data.DEF_WORK_SPACE;
 			}
@@ -491,7 +491,7 @@ public class view_server extends Thread {
 			// task 2 : run "run" action implements
 			implements_run_action_request();
 			// task 3 : delete finished queue data
-			implements_del_finished_request();
+			implements_user_del_request();
 			try {
 				Thread.sleep(base_interval * 1 * 100);
 			} catch (InterruptedException e) {

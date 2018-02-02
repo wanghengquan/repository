@@ -97,7 +97,7 @@ public class result_waiter extends Thread {
 			String report_path = task_data.get("Paths").get("report_path");
 			String result_keep = task_data.get("CaseInfo").get("result_keep");
 			task_enum cmd_status = (task_enum) case_report_map.get(call_index).get("status");
-			cmd_output_list = (ArrayList<String>) one_call_data.get("cmd_output");
+			cmd_output_list = (ArrayList<String>) one_call_data.get("call_output");
 			// task 0 : case local report generate
 			ArrayList<String> title_list = new ArrayList<String>();
 			title_list.add("");
@@ -463,12 +463,12 @@ public class result_waiter extends Thread {
 	private task_enum get_cmd_status(ArrayList<String> cmd_output) {
 		task_enum task_status = task_enum.OTHERS;
 		String status = new String("NA");
+		// <status>Passed</status>
+		Pattern p = Pattern.compile("status>(.+?)</");
 		for (String line : cmd_output) {
 			if (!line.contains("<status>")) {
 				continue;
 			}
-			// <status>Passed</status>
-			Pattern p = Pattern.compile("status>(.+?)</");
 			Matcher m = p.matcher(line);
 			if (m.find()) {
 				status = m.group(1);
@@ -692,6 +692,7 @@ public class result_waiter extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : report/dump finished queue:report and data
+			update_thread_pool_running_queue();	
 			report_finished_queue_data();
 			dump_finished_queue_data();
 			// following actions based on a non-empty call back.
@@ -701,25 +702,23 @@ public class result_waiter extends Thread {
 				}
 				continue;
 			}
-			pool_info.fresh_sys_call();
-			// task 2 : update running queue in thread pool
-			update_thread_pool_running_queue();			
-			// task 3 : terminate running call
+			pool_info.fresh_sys_call();	
+			// task 2 : terminate running call
 			Boolean cancel_status = terminate_request_call();
-			// task 4 : general and send task report
+			// task 3 : general and send task report
 			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data();
 			report_obj.send_tube_task_data_report(case_report_data, true);			
 			report_obj.send_tube_task_runtime_report(case_runtime_log_data);
-			// task 5 : update memory case run summary
+			// task 4 : update memory case run summary
 			generate_console_report(waiter_name, case_report_data);
 			update_client_run_case_summary(case_report_data);
-			// task 6 : update processed task data info
+			// task 5 : update processed task data info
 			update_processed_task_data(case_report_data);
-			// task 7 : release occupied resource
-			Boolean release_status = release_resource_usage();
-			// task 8 : post process
+			// task 6 : post process
 			Boolean post_status = run_post_process(case_report_data, report_obj);
+			// task 7 : release occupied resource
+			Boolean release_status = release_resource_usage();			
 			if (cancel_status && release_status && post_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": Work fine.");
 			} else {

@@ -150,13 +150,23 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Boolean run_status = new Boolean(false);
 		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
-		if(!status.equals(queue_enum.FINISHED.get_description())){
-			return run_status;
-		}
 		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
 			return run_status;
 		}
-		run_status = true;
+		switch (queue_enum.valueOf(status.toUpperCase())) {
+		case FINISHED :
+			run_status = true;
+			break;
+		case STOPPED :
+			run_status = true;
+			break;
+		case PAUSED :
+			run_status = true;
+			break;			
+		default:
+			run_status = false;
+			break;
+		}
 		return run_status;
 	}
 	
@@ -670,7 +680,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 				return;
 			}
 			String queue_name = (String) table.getValueAt(select_index, 0);
-			view_info.add_delete_finished_queue(queue_name);
+			view_info.add_delete_request_queue(queue_name);
 		}		
 	}
 

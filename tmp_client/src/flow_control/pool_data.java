@@ -19,6 +19,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -150,6 +152,11 @@ public class pool_data {
 					call_output.add("Get call result exception.");
 				}
 				if((boolean) hash_data.get("call_canceled")){
+					call_output.add(">>>Timeout extra run:");
+					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get("case_path")));
+				}
+				if (is_child_process_timeout(call_output)){
+					call_output.add(">>>Timeout extra run:");
 					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get("case_path")));
 				}
 			} else {
@@ -157,6 +164,24 @@ public class pool_data {
 			}
 		}
 	}	
+	
+	private Boolean is_child_process_timeout(ArrayList<String> cmd_output) {
+		if (cmd_output == null | cmd_output.isEmpty()){
+			return false;
+		}
+		// <status>Timeout</status>
+		Pattern p = Pattern.compile("status>(.+?)</", Pattern.CASE_INSENSITIVE);
+		for (String line : cmd_output) {
+			if (!line.contains("<status>")) {
+				continue;
+			}
+			Matcher m = p.matcher(line);
+			if (m.find() && m.group(1).trim().equalsIgnoreCase("timeout")) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public synchronized Boolean terminate_sys_call(String call_index) {
 		Boolean cancel_status = new Boolean(true);
