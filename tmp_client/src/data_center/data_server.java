@@ -62,6 +62,7 @@ import utility_funcs.time_info;
  * 					link_mode = both (from command line)
  * 					max_threads = xx
  *                  show_welcome = xx
+ *                  auto_restart = xx
  * 					work_space = xx
  * 					save_space = xx
  *                  data from command line
@@ -215,6 +216,7 @@ public class data_server extends Thread {
 		preference_data.put("path_keep", public_data.DEF_COPY_PATH_KEEP);
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
+		preference_data.put("auto_restart", public_data.DEF_AUTO_RESTART);
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		//the following two are for history name support

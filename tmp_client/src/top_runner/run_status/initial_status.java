@@ -40,13 +40,15 @@ class initial_status extends abstract_status {
 		get_daemon_process_ready();
 		// task 4: get tube server ready
 		get_tube_server_ready();
-		// task 5 : core script update 
+		// task 5: auto restart warning message print
+		release_auto_restart_msg();		
+		// task 6 : core script update 
 		get_core_script_update();
-		// task 6: client self update
+		// task 7: client self update
 		get_client_self_update();
-		// task 7: client run mode recognize
+		// task 8: client run mode recognize
 		client_local_console_run_recognize();		
-		// task 8: get hall manager ready
+		// task 9: get hall manager ready
 		get_hall_manager_reay();
 		//waiting for all waiter ready
 		System.out.println(">>>Info: Working...");
@@ -141,6 +143,15 @@ class initial_status extends abstract_status {
 		}		
 	}
 	
+	//print auto restart message
+	private void release_auto_restart_msg(){
+		String unattend_mode = client.client_info.get_client_machine_data().get("unattended");
+		String auto_restart = client.client_info.get_client_preference_data().get("auto_restart");
+		if (unattend_mode.equals("1") && auto_restart.equals("1")){
+			System.out.println(">>>Warn: Auto Restart sensed, will restart Client Machine every Sunday,12:00");
+		}
+	}	
+	
 	//client_local_console_run_recognize
 	private void client_local_console_run_recognize(){
 		HashMap<String, String> preference_data = new HashMap<String, String>();
@@ -161,6 +172,5 @@ class initial_status extends abstract_status {
 		client.hall_runner.start();
 		System.out.println(">>>Info: Hall manager power up.");
 	}
-	
 }
 

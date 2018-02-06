@@ -63,6 +63,16 @@ public class time_info {
 		return formatter.format(date);
 	}
 	
+	public static String get_week_day_name() {
+		SimpleDateFormat formatter=new SimpleDateFormat("E");
+		return formatter.format(new Date());
+	}
+	
+	public static String get_week_day_num() {
+		SimpleDateFormat formatter=new SimpleDateFormat("u");
+		return formatter.format(new Date());
+	}	
+	
 	public static Timestamp get_time_stamp() {
 		return new Timestamp(new Date().getTime());
 	}
@@ -112,7 +122,8 @@ public class time_info {
 	public static void main(String[] argv) {
 		System.out.println(get_time_hhmm());
 		System.out.println(System.currentTimeMillis() / 1000); 
-		System.out.println(get_time_stamp().toString());	
+		System.out.println(get_time_stamp().toString());
+		System.out.println(get_week_day_num());
 	}
 
 }

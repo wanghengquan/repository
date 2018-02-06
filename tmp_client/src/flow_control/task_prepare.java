@@ -297,7 +297,7 @@ public class task_prepare {
 	protected String[] get_launch_command(
 			HashMap<String, HashMap<String, String>> task_data
 			) {
-		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim();
+		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim().replaceAll("\\\\", "/");
 		String launch_path = task_data.get("Paths").get("launch_path").trim();
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
@@ -311,22 +311,26 @@ public class task_prepare {
 		Matcher match = patt.matcher(launch_cmd);
 		String exe_path = new String("");
 		if (match.find()){
-			exe_path = match.group();
-			File exe_fobj = new File(exe_path);
-			if (!exe_fobj.exists()){
+			exe_path = match.group().trim();
+			//abs path
+			File exe1_fobj = new File(exe_path);
+			//ref path
+			File exe2_fobj = new File(launch_path + "/" + exe_path);
+			if (!exe1_fobj.exists() && !exe2_fobj.exists()){
 				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path);
 				//launch_cmd = match.replaceFirst(" " + work_space + "/$1");
 			}
 		}
 		// replace blank space in ""
-		// python --option1="test1  test2   test3" --option2="test1   test3" --test
-		Pattern patt2 = Pattern.compile("\\S+?\".+?\"", Pattern.CASE_INSENSITIVE);
+		String tmp_str = new String("@#@");
+		// python --option1="test1  test2   test3" -o "test1   test3" --test
+		Pattern patt2 = Pattern.compile("\\s(\\S+?)?\".+?\"", Pattern.CASE_INSENSITIVE);
 		Matcher match2 = patt2.matcher(launch_cmd);
 		while(match2.find()){
-			String match_str = new String(match2.group());
-			launch_cmd = launch_cmd.replaceAll(match_str, match_str.replaceAll("\\s+", "@#@"));
+			String match_str = new String(match2.group().trim());
+			launch_cmd = launch_cmd.replaceAll(match_str, match_str.replaceAll("\\s+", tmp_str));
 		}
-		// python --option1="test1@@@test2@@@test3" --option2="test1@@@test3" --test
+		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		// add default --design option for Core scripts
 		String[] cmd_list = null;
 		if (launch_cmd.contains("run_lattice.py"))
@@ -343,10 +347,10 @@ public class task_prepare {
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else
 			cmd_list = launch_cmd.split("\\s+");
-		// get back the @@@
+		// replace the @#@
 		String array[] = new String[cmd_list.length];              
 		for(int j =0;j<cmd_list.length;j++){
-		  array[j] = cmd_list[j].replaceAll("@#@", " ");
+		  array[j] = cmd_list[j].replaceAll(tmp_str, " ");
 		}
 		return array;
 	}	

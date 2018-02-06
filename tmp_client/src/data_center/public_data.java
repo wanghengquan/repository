@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.06.23"; //2.06.12 External.Internal.DEV
-	public final static int BASE_CURRENTVERSION_INT = 20623; // version for code use
-	public final static String BASE_BUILDDATE = "2018/02/05";
+	public final static String BASE_CURRENTVERSION = "2.07.01"; //2.06.12 External.Internal.DEV
+	public final static int BASE_CURRENTVERSION_INT = 20701; // version for code use
+	public final static String BASE_BUILDDATE = "2018/02/06";
 	public final static String BASE_SUITEFILEVERSION = "1.09";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -181,6 +181,8 @@ public class public_data {
 	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"software", "system", "machine"
 	public final static String DEF_POOL_CURRENT_SIZE = "5";
 	public final static String DEF_SHOW_WELCOME = "1";
+	public final static String DEF_AUTO_RESTART = "0";
+	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 

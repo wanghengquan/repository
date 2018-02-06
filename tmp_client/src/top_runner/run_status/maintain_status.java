@@ -24,6 +24,7 @@ import env_monitor.machine_sync;
 import flow_control.import_data;
 import self_update.app_update;
 import utility_funcs.deep_clone;
+import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
 public class maintain_status extends abstract_status {
@@ -67,6 +68,7 @@ public class maintain_status extends abstract_status {
 		case idle:
 			implements_self_quiet_update();
 			implements_core_script_update();
+			implements_auto_restart_action();
 			break;
 		case update:
 			implements_core_script_update();
@@ -93,7 +95,7 @@ public class maintain_status extends abstract_status {
 	//methods for locals
 	private void implements_self_quiet_update(){
 		//self update only work in unattended mode
-		String unattended_mode = client.client_info.get_client_data().get("Machine").get("unattended");  
+		String unattended_mode = client.client_info.get_client_machine_data().get("unattended");  
 		if (!unattended_mode.equalsIgnoreCase("1")){ 
 			return;
 		}
@@ -135,6 +137,38 @@ public class maintain_status extends abstract_status {
 		my_core.update(client.client_info.get_client_preference_data().get("work_space"));
 		System.out.println(">>>Info: Core script updated...");
 	}	
+	
+	private void implements_auto_restart_action(){
+		String unattend_mode = client.client_info.get_client_machine_data().get("unattended");
+		String auto_restart = client.client_info.get_client_preference_data().get("auto_restart");
+		String os_type = client.client_info.get_client_system_data().get("os_type");
+		if(!unattend_mode.equals("1") || !auto_restart.equals("1")){
+			return;
+		}
+		if(!os_type.equals("windows")){
+			return;
+		}
+		String week_day = new String("");
+		week_day = time_info.get_week_day_num();
+		if (!week_day.equals(public_data.DEF_AUTO_RESTART_DAY)){
+			return;
+		}
+		String current_time = new String("");
+		current_time = time_info.get_time_hhmm();
+		Pattern patt = Pattern.compile("120\\d", Pattern.CASE_INSENSITIVE);
+		Matcher match = patt.matcher(current_time);
+		String run_cmd = new String("shutdown -r");
+		if(match.find()){
+			System.out.println(">>>Warn: System restarting...");
+			try {
+				system_cmd.run(run_cmd);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				System.out.println(">>>Warn: System Failed...");
+			}
+		}
+	}
 	
 	private void client_mem_action(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
