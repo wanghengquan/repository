@@ -111,7 +111,7 @@ public class task_waiter extends Thread {
 		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
 	}
 
-	private void update_running_queue_list() {
+	private void sync_running_queue_list() {
 		ArrayList<String> running_admin_queue_list = new ArrayList<String>();
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		running_admin_queue_list.addAll(task_info.get_running_admin_queue_list());
@@ -127,8 +127,9 @@ public class task_waiter extends Thread {
 
 	private void reload_finished_queue_data() {
 		synchronized (this.getClass()) {
-			ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
+			//must do with following order to avoid multi thread issue
 			ArrayList<String> finished_queue_list = task_info.get_finished_admin_queue_list();
+			ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
 			for (String queue_name : processing_queue_list) {
 				if (!finished_queue_list.contains(queue_name)) {
 					continue;
@@ -839,7 +840,7 @@ public class task_waiter extends Thread {
 			// task 0 : initial preparing, update processing queues and load
 			// task data for re-processing queues
 			update_processing_queue_list();
-			update_running_queue_list();
+			sync_running_queue_list();
 			// reload finished task data if queue changed to processing from finished
 			reload_finished_queue_data();
 			// task 1 : check available work thread and task queue 
@@ -898,12 +899,19 @@ public class task_waiter extends Thread {
 				} else {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
 				}
-				task_info.decrease_processing_admin_queue_list(queue_name);
-				task_info.decrease_running_admin_queue_list(queue_name);
 				// move queue form received to processed admin queue treemap
 				move_finished_admin_queue_from_tube(queue_name);
 				move_finished_task_queue_from_tube(queue_name);
-				//update finished list must be placed here to avoid multi threads risk
+				//update list must be placed here to avoid multi threads risk
+				try {
+					Thread.sleep(10);// make the thread safe
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					// e.printStackTrace();
+					TASK_WAITER_LOGGER.info(waiter_name + ":Sleep error out");
+				}
+				task_info.decrease_processing_admin_queue_list(queue_name);
+				task_info.decrease_running_admin_queue_list(queue_name);				
 				task_info.update_finished_admin_queue_list(queue_name);
 				// release booking info
 				client_info.release_used_soft_insts(admin_data.get("Software"));
