@@ -62,7 +62,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		container.add(construct_preference_panel());
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(650, 450);
+		this.setSize(650, 400);
 	}
 	
 	private JPanel construct_preference_panel(){

@@ -9,13 +9,16 @@ public class queue_compare implements Comparator<String> {
 	public int compare(String queue_name1, String queue_name2) {
 		// priority:match/assign task:job_from@run_number
 		int int_pri1 = 0, int_pri2 = 0;
+		int int_year1 = 0, int_year2 = 0;
 		int int_date1 = 0, int_date2 = 0;
 		int int_time1 = 0, int_time2 = 0;
 		try {
 			int_pri1 = get_srting_int(queue_name1, "^(\\d+)@");
 			int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
-			int_date1 = get_srting_int(queue_name1, "_(\\d+)_\\d+$");
-			int_date2 = get_srting_int(queue_name2, "_(\\d+)_\\d+$");
+			int_year1 = get_srting_int(queue_name1, "_\\d+?(\\d\\d)_\\d+$");
+			int_year2 = get_srting_int(queue_name2, "_\\d+?(\\d\\d)_\\d+$");			
+			int_date1 = get_srting_int(queue_name1, "_(\\d+?)\\d\\d_\\d+$");
+			int_date2 = get_srting_int(queue_name2, "_(\\d+?)\\d\\d_\\d+$");
 			int_time1 = get_srting_int(queue_name1, "_(\\d+)$");
 			int_time2 = get_srting_int(queue_name2, "_(\\d+)$");
 		} catch (Exception e) {
@@ -26,18 +29,24 @@ public class queue_compare implements Comparator<String> {
 		} else if (int_pri1 < int_pri2) {
 			return -1;
 		} else {
-			if (int_date1 < int_date2) {
+			if (int_year1 < int_year2){
 				return 1;
-			} else if (int_date1 > int_date2) {
+			} else if (int_year1 > int_year2) {
 				return -1;
 			} else {
-				if (int_time1 < int_time2){
+				if (int_date1 < int_date2) {
 					return 1;
-				} else if (int_time1 > int_time2){
+				} else if (int_date1 > int_date2) {
 					return -1;
 				} else {
-					return queue_name1.compareTo(queue_name2);
-				}
+					if (int_time1 < int_time2){
+						return 1;
+					} else if (int_time1 > int_time2){
+						return -1;
+					} else {
+						return queue_name1.compareTo(queue_name2);
+					}
+				}				
 			}
 		}
 	}
