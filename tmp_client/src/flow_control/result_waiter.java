@@ -424,8 +424,10 @@ public class result_waiter extends Thread {
 			String cmd_reason = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_enum.DONE)) {
-				if(call_timeout || call_terminate){
+				if(call_timeout){
 					cmd_status = task_enum.TIMEOUT;
+				} else if(call_terminate) {
+					cmd_status = task_enum.HALTED;
 				} else {
 					cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("call_output"));
 				}

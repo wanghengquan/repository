@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -253,7 +252,8 @@ public class data_server extends Thread {
 		Iterator<String> section = client_data.keySet().iterator();
 		while(section.hasNext()){
 			String section_name = section.next();
-			HashMap<String, String> section_data = client_data.get(section_name);
+			HashMap<String, String> section_data = new HashMap<String, String>();
+			section_data.putAll(client_data.get(section_name));
 			if (section_name.equals("System") || section_name.equals("Machine") || section_name.equals("preference")){
 				continue;
 			}
@@ -331,12 +331,7 @@ public class data_server extends Thread {
 			ini_parser build_parser = new ini_parser(success_file.getAbsolutePath().replaceAll("\\\\", "/"));
 			HashMap<String, HashMap<String, String>> build_data = new HashMap<String, HashMap<String, String>>();
 			try {
-				build_data = build_parser.read_ini_data();
-			} catch (ConfigurationException e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				DATA_SERVER_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
-				continue;
+				build_data.putAll(build_parser.read_ini_data());
 			} catch (Exception e) {
 				DATA_SERVER_LOGGER.warn("Wrong format for:" + success_file.getAbsolutePath() + ", skipped.");
 				continue;				

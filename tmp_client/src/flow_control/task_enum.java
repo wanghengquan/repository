@@ -16,11 +16,12 @@ public enum task_enum {
 	FAILED(3, "Failed"),
 	TBD(4, "TBD"),
 	TIMEOUT(5, "Timeout"),
-	CASEISSUE(6, "Case Issue"),
-	SWISSUE(7, "SW Issue"),
-	BLOCKED(8,"Blocked"),
-	OTHERS(9, "Others"),
-	UNKNOWN(10, "Unknown");
+	HALTED(6, "Halted"),
+	CASEISSUE(7, "Case Issue"),
+	SWISSUE(8, "SW Issue"),
+	BLOCKED(9,"Blocked"),
+	OTHERS(10, "Others"),
+	UNKNOWN(11, "Unknown");
 	private int index;
 	private String description;
 	
