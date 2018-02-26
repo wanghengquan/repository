@@ -222,22 +222,33 @@ public class view_server extends Thread {
 			VIEW_SERVER_LOGGER.debug(">>>illegal run, queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
 			return action_status;
 		}
-		if(run_action.equals(queue_enum.STOPPED)){
-			if(task_info.get_finished_admin_queue_list().contains(queue_name)){
-				if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
-					Boolean import_admin_status = import_disk_admin_data_to_processed_data(queue_name);
-					Boolean import_task_status = import_disk_task_data_to_processed_data(queue_name);
-					if (!import_admin_status || !import_task_status){
-						VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action.get_description());
-						return action_status;
-					}
+		if(task_info.get_finished_admin_queue_list().contains(queue_name)){
+			if(!task_info.get_processed_admin_queues_treemap().containsKey(queue_name)){
+				Boolean import_admin_status = import_disk_admin_data_to_processed_data(queue_name);
+				Boolean import_task_status = import_disk_task_data_to_processed_data(queue_name);
+				if (!import_admin_status || !import_task_status){
+					VIEW_SERVER_LOGGER.warn("Import xml data failed, Skip run action:" + run_action.get_description());
+					return action_status;
 				}
-				task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
-				task_info.remove_finished_admin_queue_list(queue_name);
 			}
-			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
-			task_info.mark_task_queue_for_processed_task_queues_map(queue_name, task_enum.WAITING);
+			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+			task_info.remove_finished_admin_queue_list(queue_name);
 		}
+		switch (run_action){
+		case STOPPED:
+			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
+			task_info.mark_task_queue_for_processed_task_queues_map(queue_name, task_enum.HALTED);
+			break;
+		case PROCESSING:
+			task_info.update_task_queue_for_processed_task_queues_map(queue_name, task_enum.HALTED, task_enum.WAITING);
+			break;
+		case PAUSED:
+			task_info.update_task_queue_for_processed_task_queues_map(queue_name, task_enum.WAITING, task_enum.HALTED);
+			break;
+		default:
+			VIEW_SERVER_LOGGER.debug(">>>illegal run, queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
+			return action_status;				
+		}		
 		task_info.mark_queue_in_received_admin_queues_treemap(queue_name, run_action);
 		return action_status;
 	}

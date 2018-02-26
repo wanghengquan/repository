@@ -310,13 +310,21 @@ public class task_prepare {
 		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		Matcher match = patt.matcher(launch_cmd);
 		String exe_path = new String("");
+		Boolean abs_path_ok = new Boolean(false);
+		Boolean ref_path_ok = new Boolean(false);
 		if (match.find()){
 			exe_path = match.group().trim();
 			//abs path
 			File exe1_fobj = new File(exe_path);
+			if (exe1_fobj.exists() && exe1_fobj.isAbsolute()){
+				abs_path_ok = true;
+			}
 			//ref path
 			File exe2_fobj = new File(launch_path + "/" + exe_path);
-			if (!exe1_fobj.exists() && !exe2_fobj.exists()){
+			if (exe2_fobj.exists()){
+				ref_path_ok = true;
+			}
+			if (!abs_path_ok && !ref_path_ok){
 				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path);
 				//launch_cmd = match.replaceFirst(" " + work_space + "/$1");
 			}

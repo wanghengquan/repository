@@ -641,6 +641,38 @@ public class task_data {
 		return mark_status;
 	}
 
+	public Boolean update_task_queue_for_processed_task_queues_map(
+			String queue_name, 
+			task_enum ori_status,
+			task_enum new_status) {
+		rw_lock.writeLock().lock();
+		Boolean mark_status = new Boolean(true);
+		try {
+			if (processed_task_queues_map.containsKey(queue_name)) {
+				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+				processed_queue_data.putAll(processed_task_queues_map.get(queue_name));
+				Iterator<String> processed_queue_data_it = processed_queue_data.keySet().iterator();
+				while (processed_queue_data_it.hasNext()) {
+					HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+					String case_id = processed_queue_data_it.next();
+					task_data = processed_queue_data.get(case_id);
+					HashMap<String, String> status_data = task_data.get("Status");
+					if (!status_data.containsKey("cmd_status")){
+						continue;
+					}
+					if (status_data.get("cmd_status").equalsIgnoreCase(ori_status.get_description())){
+						status_data.put("cmd_status", new_status.get_description());
+					}
+				}
+			} else {
+				mark_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return mark_status;
+	}	
+	
 	public void update_processed_task_queues_map(
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues) {
 		rw_lock.writeLock().lock();
