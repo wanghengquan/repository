@@ -204,10 +204,10 @@ public class config_sync extends Thread {
 		String pri1_conf_path = public_data.CONF_ROOT_PATH + "/" + user_name + "_" + terminal + ".ini";
 		File pri0_fobj = new File(pri0_conf_path);
 		File pri1_fobj = new File(pri1_conf_path);
-		if(pri1_fobj.exists()){
+		if(pri1_fobj.exists() && pri1_fobj.canRead()){
 			conf_path = pri1_conf_path;
 		}		
-		if(pri0_fobj.exists()){
+		if(pri0_fobj.exists() && pri0_fobj.canRead()){
 			conf_path = pri0_conf_path;
 		}
 		return conf_path;
