@@ -64,6 +64,8 @@ public class task_data {
 	// processing: all captured queue with status in processing(value form TMP
 	// platform)
 	private ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
 	// ====updated by waiters====
 	// running: working queue updated by task waiter
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
@@ -820,6 +822,48 @@ public class task_data {
 		}
 		return decrease_status;
 	}	
+	
+	public void set_paused_admin_queue_list(ArrayList<String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.paused_admin_queue_list.clear();
+			this.paused_admin_queue_list.addAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public ArrayList<String> get_paused_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.paused_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
+	public void set_stopped_admin_queue_list(ArrayList<String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.stopped_admin_queue_list.clear();
+			this.stopped_admin_queue_list.addAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public ArrayList<String> get_stopped_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.stopped_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
 	
 	// not used
 	public ArrayList<String> get_pending_admin_queue_list() {

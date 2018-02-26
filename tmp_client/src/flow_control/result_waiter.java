@@ -514,7 +514,7 @@ public class result_waiter extends Thread {
 		return reason;
 	}
 
-	private Boolean terminate_request_call() {
+	private Boolean terminate_user_request_running_call() {
 		Boolean cancel_status = new Boolean(true);
 		if (!view_info.impl_stop_case_request()) {
 			return cancel_status;
@@ -543,6 +543,28 @@ public class result_waiter extends Thread {
 		return cancel_status;
 	}
 
+	private Boolean terminate_stopped_queue_running_call() {
+		Boolean cancel_status = new Boolean(true);
+		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
+		stopped_admin_queue_list.addAll(task_info.get_stopped_admin_queue_list());
+		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			String call_name = (String) call_data.get(call_index).get("queue_name");
+			call_enum call_status = (call_enum) call_data.get(call_index).get("call_status");
+			if(!stopped_admin_queue_list.contains(call_name)){
+				continue;
+			}
+			if (!call_status.equals(call_enum.PROCESSIONG)) {
+				continue;
+			}
+			cancel_status = pool_info.terminate_sys_call(call_index);
+		}
+		return cancel_status;
+	}	
+	
 	public static Boolean post_process_cleanup(String clean_work_path) {
 		String cmd = "python " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
 		ArrayList<String> excute_retruns = new ArrayList<String>();
@@ -706,7 +728,8 @@ public class result_waiter extends Thread {
 			}
 			pool_info.fresh_sys_call();	
 			// task 2 : terminate running call
-			Boolean cancel_status = terminate_request_call();
+			terminate_user_request_running_call();
+			terminate_stopped_queue_running_call();
 			// task 3 : general and send task report
 			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data();
@@ -721,7 +744,7 @@ public class result_waiter extends Thread {
 			Boolean post_status = run_post_process(case_report_data, report_obj);
 			// task 7 : release occupied resource
 			Boolean release_status = release_resource_usage();			
-			if (cancel_status && release_status && post_status) {
+			if (release_status && post_status) {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ": Work fine.");
 			} else {
 				RESULT_WAITER_LOGGER.info(waiter_name + ": Get some warning process. please check.");

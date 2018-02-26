@@ -91,24 +91,40 @@ public class task_waiter extends Thread {
 		}
 	}
 
-	private void update_processing_queue_list() {
+	private void update_captured_queue_detail_lists() {
 		Set<String> captured_admin_queue_set = new HashSet<String>();
 		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
 		Iterator<String> captured_it = captured_admin_queue_set.iterator();
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
+		ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
+		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
-			if (queue_data.isEmpty()) {
+			if (queue_data == null || queue_data.isEmpty()) {
 				continue; // some one delete this queue already
 			}
 			String status = queue_data.get("Status").get("admin_status");
-			if (status.equalsIgnoreCase(queue_enum.PROCESSING.get_description())) {
+			if (status.equals(queue_enum.PROCESSING.get_description())) {
 				processing_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.REMOTEPROCESSIONG.get_description())){
+				processing_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.PAUSED.get_description())){
+				paused_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.REMOTEPAUSED.get_description())){
+				paused_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.STOPPED.get_description())){
+				stopped_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.REMOTESTOPED.get_description())){
+				stopped_admin_queue_list.add(queue_name);
+			} else {
+				continue;
 			}
 		}
 		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
+		task_info.set_paused_admin_queue_list(paused_admin_queue_list);
+		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
 	}
 
 	private void sync_running_queue_list() {
@@ -839,7 +855,7 @@ public class task_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 0 : initial preparing, update processing queues and load
 			// task data for re-processing queues
-			update_processing_queue_list();
+			update_captured_queue_detail_lists();
 			sync_running_queue_list();
 			// reload finished task data if queue changed to processing from finished
 			reload_finished_queue_data();
@@ -857,9 +873,9 @@ public class task_waiter extends Thread {
 			}
 			// task 2 : get working queue ======================>key variable 1:
 			// queue_name OK now
-			String queue_name = new String();
+			String queue_name = new String("");
 			queue_name = get_right_task_queue();
-			if (queue_name.equals("") || queue_name == null) {
+			if (queue_name == null || queue_name.equals("")) {
 				//only TW_0 can report out when there is no work queue found.
 				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 					TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
