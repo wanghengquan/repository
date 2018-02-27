@@ -46,9 +46,9 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	private view_data view_info;
 	String work_space = new String();
 	JMenuItem imports, import_user_suite, import_unit_suite, exports, exit;
-	JMenuItem view_all, view_waiting, view_processing, view_passed, view_failed, view_tbd, view_timeout;
+	JMenuItem view_all, view_waiting, view_processing, view_passed, view_failed, view_tbd, view_timeout, view_halted;
 	JMenuItem play, pause, stop;
-	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout;
+	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout, retest_halted;
 	JMenuItem upload, key_gen;
 	JMenuItem client, software, preference;
 	JMenuItem usage, client_help, tmp_doc, tmp_example, contact, about;
@@ -123,6 +123,8 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		view_tbd.addActionListener(this);
 		view_timeout = new JMenuItem(watch_enum.TIMEOUT.get_description());
 		view_timeout.addActionListener(this);
+		view_halted = new JMenuItem(watch_enum.HALTED.get_description());
+		view_halted.addActionListener(this);		
 		view.add(view_all);
 		view.add(view_waiting);
 		view.add(view_processing);
@@ -130,6 +132,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		view.add(view_passed);
 		view.add(view_tbd);
 		view.add(view_timeout);
+		view.add(view_halted);
 		return view;
 	}
 
@@ -157,12 +160,15 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		retest_tbd.addActionListener(this);
 		retest_timeout = new JMenuItem(retest_enum.TIMEOUT.get_description());
 		retest_timeout.addActionListener(this);
+		retest_halted = new JMenuItem(retest_enum.HALTED.get_description());
+		retest_halted.addActionListener(this);		
 		retest.add(retest_all);
 		retest.add(retest_selected);
 		retest.add(retest_failed);
 		retest.add(retest_passed);
 		retest.add(retest_tbd);
 		retest.add(retest_timeout);
+		retest.add(retest_halted);
 		run.addSeparator();
 		run.add(retest);
 		return run;
@@ -264,6 +270,10 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			MENU_BAR_LOGGER.warn("view_timeout clicked");
 			view_info.set_watching_queue_area(watch_enum.TIMEOUT);
 		}
+		if (e.getSource().equals(view_halted)) {
+			MENU_BAR_LOGGER.warn("view_halted clicked");
+			view_info.set_watching_queue_area(watch_enum.HALTED);
+		}		
 		if (e.getSource().equals(play)) {
 			MENU_BAR_LOGGER.warn("play clicked");
 			view_info.set_run_action_request(queue_enum.PROCESSING);
@@ -300,6 +310,10 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			MENU_BAR_LOGGER.warn("retest_timeout clicked");
 			view_info.set_retest_queue_area(retest_enum.TIMEOUT);
 		}
+		if (e.getSource().equals(retest_halted)) {
+			MENU_BAR_LOGGER.warn("retest_halted clicked");
+			view_info.set_retest_queue_area(retest_enum.HALTED);
+		}		
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.warn("upload clicked");
 			upload_dialog upload_view = new upload_dialog(client_info);

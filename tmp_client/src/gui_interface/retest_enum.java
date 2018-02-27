@@ -16,11 +16,12 @@ public enum retest_enum {
 	FAILED(3, "Failed"),
 	TBD(4, "TBD"),
 	TIMEOUT(5, "Timeout"),
-	CASEISSUE(6, "Case Issue"),
-	SWISSUE(7, "SW Issue"),
-	OTHERS(8, "Others"),
-	UNKNOWN(9, "Unknown"),
-	ALL(10, "All"),
+	HALTED(6, "Halted"),
+	CASEISSUE(7, "Case Issue"),
+	SWISSUE(8, "SW Issue"),
+	OTHERS(9, "Others"),
+	UNKNOWN(10, "Unknown"),
+	ALL(11, "All"),
 	SELECTED(11, "Selected");
 	private int index;
 	private String description;

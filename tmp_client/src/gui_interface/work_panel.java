@@ -209,6 +209,11 @@ public class work_panel extends JSplitPane implements Runnable{
 			if (!design_data.get("Status").get("cmd_status").equals(task_enum.WAITING.get_description())){
 				return add_line;//non-waiting line which will be ignore
 			}
+		}	
+		if(watching_area.equals(watch_enum.HALTED)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.HALTED.get_description())){
+				return add_line;//non-tbd line which will be ignore
+			}
 		}		
 		if (design_data.get("ID").containsKey("id")) {
 			add_line.add(design_data.get("ID").get("id"));
@@ -406,7 +411,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	private JMenuItem terminate;
 	private view_data view_info;
 	private task_data task_info;
-	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout;
+	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout, view_halted;
 	private JMenuItem details, results;
 	private String line_separator = System.getProperty("line.separator");
 
@@ -434,6 +439,8 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		view_tbd.addActionListener(this);		
 		view_timeout = new JMenuItem(watch_enum.TIMEOUT.get_description());
 		view_timeout.addActionListener(this);
+		view_halted = new JMenuItem(watch_enum.HALTED.get_description());
+		view_halted.addActionListener(this);
 		view.add(view_all);
 		view.add(view_waiting);
 		view.add(view_processing);
@@ -441,6 +448,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		view.add(view_passed);
 		view.add(view_tbd);
 		view.add(view_timeout);
+		view.add(view_halted);
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
 		results = new JMenuItem("Results");
@@ -546,6 +554,10 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(view_timeout)) {
 			System.out.println("view timeout");
 			view_info.set_watching_queue_area(watch_enum.TIMEOUT);
+		}
+		if (arg0.getSource().equals(view_halted)) {
+			System.out.println("view halted");
+			view_info.set_watching_queue_area(watch_enum.HALTED);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("details clicked");
