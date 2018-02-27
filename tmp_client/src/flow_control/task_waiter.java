@@ -782,6 +782,7 @@ public class task_waiter extends Thread {
 		//task 2 send case report to local disk
 		ArrayList<String> title_list = new ArrayList<String>();
 		title_list.add("");
+		title_list.add("============================================================");
 		title_list.add("[Export]");
 		report_obj.dump_disk_task_report_data(report_path, title_list);
 		report_obj.dump_disk_task_report_data(report_path, task_prepare_info_list);

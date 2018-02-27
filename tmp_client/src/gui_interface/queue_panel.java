@@ -590,7 +590,10 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		preference_data.putAll(client_info.get_client_preference_data());
 		//get work_space
 		// common info prepare
-		String xlsx_dest = admin_data.get("CaseInfo").get("xlsx_dest").trim();
+		String xlsx_dest = new String("NA");
+		if (admin_data.get("CaseInfo").containsKey("xlsx_dest")){
+			xlsx_dest = admin_data.get("CaseInfo").get("xlsx_dest").trim();
+		}
 		String repository = admin_data.get("CaseInfo").get("repository").trim();	
 		String suite_path = admin_data.get("CaseInfo").get("suite_path").trim();	
 		String tmp_result = public_data.WORKSPACE_RESULT_DIR;
