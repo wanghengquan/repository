@@ -282,7 +282,7 @@ public class client_data {
 		}
 	}
 
-	public HashMap<String, Integer> get_use_soft_insts() {
+	public HashMap<String, Integer> get_used_soft_insts() {
 		rw_lock.readLock().lock();
 		HashMap<String, Integer> temp = new HashMap<String, Integer>();
 		try {
@@ -322,7 +322,7 @@ public class client_data {
 		return release_result;
 	}
 
-	public Boolean release_use_soft_insts_multi(HashMap<String, Integer> release_data) {
+	public Boolean release_used_soft_insts_multi(HashMap<String, Integer> release_data) {
 		rw_lock.writeLock().lock();
 		Boolean release_result = new Boolean(true);
 		try {

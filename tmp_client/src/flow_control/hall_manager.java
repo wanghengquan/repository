@@ -195,7 +195,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.debug(task_info.get_received_admin_queues_treemap().toString());
-		HALL_MANAGER_LOGGER.debug(client_info.get_use_soft_insts());
+		HALL_MANAGER_LOGGER.debug(client_info.get_used_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_max_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_client_data().toString());
