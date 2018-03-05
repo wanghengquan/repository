@@ -213,7 +213,7 @@ public class pool_data {
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
 			HashMap<String, Object> one_call_data = call_map.get(call_index);
-			HashMap<String, Object> return_data = call_map.get(call_index);
+			HashMap<String, Object> return_data = new HashMap<String, Object>();
 			Iterator<String> one_call_it = one_call_data.keySet().iterator();
 			while (one_call_it.hasNext()){
 				String call_key = one_call_it.next();
