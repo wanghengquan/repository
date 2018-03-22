@@ -247,7 +247,7 @@ public class task_prepare {
 						// pscp -r -p -l jwang1 -pw lattice1
 						// lsh-comedy:/public/jason_test/temp/src
 						// c:/users\jwang1\Desktop
-						cmd_array.add(public_data.TOOLS_PSCP + " -r -p -l -batch" + user_name + " -pw " + pass_word + " "
+						cmd_array.add(public_data.TOOLS_PSCP + " -r -p -batch -l " + user_name + " -pw " + pass_word + " "
 								+ case_url + " " + case_dir);
 					} else {
 						// 2 windows run windows src
