@@ -80,12 +80,16 @@ public class result_waiter extends Thread {
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
 			HashMap<String, Object> one_call_data = call_data.get(call_index);
-			ArrayList<String> cmd_output_list = new ArrayList<String>();
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
+			// remove call added after case_report_map generate
+			if(!case_report_map.containsKey(call_index)){
+				continue;
+			}
 			// only done call will be release.
 			if (!call_status.equals(call_enum.DONE)) {
 				continue;
 			}
+			ArrayList<String> cmd_output_list = new ArrayList<String>();
 			String queue_name = (String) one_call_data.get("queue_name");
 			String case_id = (String) one_call_data.get("case_id");
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
@@ -176,7 +180,7 @@ public class result_waiter extends Thread {
 		Boolean dump_status = new Boolean(true);
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
 		running_queue_in_pool.addAll(task_info.get_thread_pool_admin_queue_list());
-		// task 3 : dump finished task queue data to xml file, save memory
+		// dump finished task queue data to xml file, save memory
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		for (String dump_queue : finished_admin_queue_list) {
@@ -276,6 +280,10 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
+			//remove call added after case_report_map generate
+			if(!case_report_map.containsKey(call_index)){
+				continue;
+			}			
 			// only done call will be release. timeout call will be get in
 			// the next cycle(at that time status will be done)
 			if (!call_status.equals(call_enum.DONE)) {
@@ -314,6 +322,10 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			String queue_name = (String) call_data.get(call_index).get("queue_name");
 			String case_id = (String) call_data.get(call_index).get("case_id");
+			//remove call added after case_report_map generate
+			if(!case_report_map.containsKey(call_index)){
+				continue;
+			}					
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			HashMap<String, String> case_status = new HashMap<String, String>();
@@ -591,6 +603,9 @@ public class result_waiter extends Thread {
 
 	public Boolean copy_case_to_save_path(String case_path, String save_path, String copy_type) {
 		Boolean copy_status = new Boolean(true);
+		if (case_path.equalsIgnoreCase(save_path)){
+			return copy_status;
+		}
 		File save_path_fobj = new File(save_path);
 		if (!save_path_fobj.exists()) {
 			try {
@@ -653,11 +668,15 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<String, Object> one_call_data = call_data.get(call_index);
 			call_enum call_status = (call_enum) one_call_data.get("call_status");
+			//remove call added after case_report_map generate
+			if(!case_report_map.containsKey(call_index)){
+				continue;
+			}			
 			// only done call will be release. timeout call will be get in
 			// the next cycle(at that time status will be done)
 			if (!call_status.equals(call_enum.DONE)) {
 				continue;
-			}
+			}			
 			String queue_name = (String) one_call_data.get("queue_name");
 			String case_id = (String) one_call_data.get("case_id");
 			task_enum status = (task_enum) case_report_map.get(call_index).get("status");
@@ -717,8 +736,8 @@ public class result_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : report/dump finished queue:report and data
 			update_thread_pool_running_queue();	
-			report_finished_queue_data();
-			dump_finished_queue_data();
+			report_finished_queue_data(); //generate csv report
+			dump_finished_queue_data(); //to log dir xml file save memory
 			// following actions based on a non-empty call back.
 			if (pool_info.get_sys_call_link() == null || pool_info.get_sys_call_link().size() < 1) {
 				if(!switch_info.get_local_console_mode()){
