@@ -219,7 +219,7 @@ public class hall_manager extends Thread {
 		}
 		//make exit report
 		local_cmd_exit_counter++;
-		if (local_cmd_exit_counter < 2){ //4 * base_interval
+		if (local_cmd_exit_counter < 3){ //4 * base_interval
 			return;
 		}
 		generate_exit_report();
