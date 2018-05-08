@@ -38,15 +38,13 @@ public class maintain_status extends abstract_status {
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();		
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: Go to stop");
-		System.out.println("");		
+		client.STATUS_LOGGER.warn("Go to stop");	
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: Go to work");
-		System.out.println("");	
+		client.STATUS_LOGGER.warn("Go to work");
 		client.data_runner.wake_request();
 		client.tube_runner.wake_request();
 		client.hall_runner.wake_request();
@@ -55,12 +53,12 @@ public class maintain_status extends abstract_status {
 
 	public void to_maintain() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: Already in maintain");
-		System.out.println("");
+		client.STATUS_LOGGER.warn("Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
 	public void do_state_things(){
+		client.STATUS_LOGGER.info("Run state things");
 		client.switch_info.set_client_maintain_house_keeping(true);
 		maintain_enum maintain_entry = client.switch_info.get_client_maintain_reason();
 		System.out.println(">>>Info:Maintain Entry is: " + maintain_entry.get_description());
@@ -160,12 +158,14 @@ public class maintain_status extends abstract_status {
 		String run_cmd = new String("shutdown -r");
 		if(match.find()){
 			System.out.println(">>>Warn: System restarting...");
+			client.STATUS_LOGGER.warn("System restarting...");
 			try {
 				system_cmd.run(run_cmd);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				System.out.println(">>>Warn: System Failed...");
+				System.out.println(">>>Warn: System restart Failed...");
+				client.STATUS_LOGGER.warn("System restart Failed...");
 			}
 		}
 	}

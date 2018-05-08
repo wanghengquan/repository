@@ -151,6 +151,7 @@ public class hall_manager extends Thread {
 	private void generate_console_report() {
 		// report processing queue list
 		int show_queue_number = 6;
+		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
 		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
@@ -219,7 +220,7 @@ public class hall_manager extends Thread {
 		}
 		//make exit report
 		local_cmd_exit_counter++;
-		if (local_cmd_exit_counter < 2){ //4 * base_interval
+		if (local_cmd_exit_counter < 3){ //3 * 2 * base_interval
 			return;
 		}
 		generate_exit_report();

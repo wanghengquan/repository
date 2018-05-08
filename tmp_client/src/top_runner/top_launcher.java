@@ -126,7 +126,9 @@ public class top_launcher {
 		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
 		System.out.println(">>>Info: Contact us:" + public_data.BASE_CONTACT_MAIL);
 		System.out.println("");
-		System.out.println(">>>Info: Launch dir:" + System.getProperty("user.dir").replaceAll("\\\\", "/"));
+		String current_dir = new String(System.getProperty("user.dir").replaceAll("\\\\", "/"));
+		System.out.println(">>>Info: Launch dir:" + current_dir);
+		System.setProperty("log_path", current_dir);
 		initial_log_config();
 		//TOP_LAUNCHER_LOGGER.debug("Debug output testing...");
 		//TOP_LAUNCHER_LOGGER.info("Info output testing...");
