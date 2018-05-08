@@ -12,6 +12,9 @@ package top_runner.run_status;
 import java.util.HashMap;
 import java.util.Observable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import connect_tube.task_data;
 import connect_tube.tube_server;
 import data_center.client_data;
@@ -42,6 +45,7 @@ public class client_status extends Observable  {
 	protected tube_server tube_runner;
 	protected data_server data_runner;
 	protected hall_manager hall_runner;
+	protected final Logger STATUS_LOGGER = LogManager.getLogger(client_status.class.getName());
     private abstract_status current_status = INITIAL; 
     
     public client_status(){

@@ -7,7 +7,7 @@
 		<Console name="Console_simple" target="SYSTEM_OUT">
 			<PatternLayout pattern="%-5level\: %msg%n" />
 		</Console> 
-        <File name="logfile" fileName="logs/client.log">  
+        <File name="logfile" fileName="${sys:log_path:-./}/logs/console.log">  
             <PatternLayout pattern="[%-5level]-%d{HH:mm:ss}-%logger{36}-%t : %msg%n" />  
         </File>        
 	</Appenders>
@@ -19,6 +19,10 @@
 		<Logger name="top_runner.top_launcher" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />
 		</Logger>
+		<Logger name="top_runner.run_status.client_status" level="INFO" additivity="false">
+			<AppenderRef ref="Console_simple" />
+			<AppenderRef ref="logfile" />
+		</Logger>		
 		<Logger name="flow_control.hall_manager" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />
 		</Logger> 

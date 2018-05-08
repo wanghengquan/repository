@@ -24,14 +24,13 @@ class initial_status extends abstract_status {
 
 	public void to_stop() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: Go to stop");
-		System.out.println("");		
+		client.STATUS_LOGGER.warn("Go to stop");
 		client.set_current_status(client.STOP);		
 	}
 
 	public void to_work() {
 		System.out.println(">>>####################");
-		System.out.println(">>>Info: Initializing...");
+		client.STATUS_LOGGER.warn("Initializing...");
 		// task 1: launch GUI if in GUI mode
 		launch_main_gui();
 		// task 2: get and wait client data ready 
@@ -62,12 +61,12 @@ class initial_status extends abstract_status {
 	}
 
 	public void to_maintain() {
-		System.out.println(">>>Info: Go to maintain");
+		client.STATUS_LOGGER.warn("Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
 	public void do_state_things(){
-		System.out.println(">>>Info: Run state things");
+		client.STATUS_LOGGER.info("Run state things");
 	}	
 	//=============================================================
 	//methods for locals

@@ -184,6 +184,9 @@ public class result_waiter extends Thread {
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		for (String dump_queue : finished_admin_queue_list) {
+			if (switch_info.get_local_console_mode()){
+				continue;// in local console mode no dumping
+			}			
 			if (running_queue_in_pool.contains(dump_queue)) {
 				continue;// queue not finished
 			}
@@ -200,6 +203,7 @@ public class result_waiter extends Thread {
 				continue;// no need to dump to increase the performance > don't
 							// forget dump when shutdown client
 			}
+			RESULT_WAITER_LOGGER.warn("Dumping admin queue:" + dump_queue);
 			// dumping task queue
 			Boolean admin_dump = export_data.export_disk_finished_admin_queue_data(dump_queue, client_info, task_info);
 			Boolean task_dump = export_data.export_disk_finished_task_queue_data(dump_queue, client_info, task_info);
