@@ -98,9 +98,10 @@ public class client_manager extends Thread  {
 			return maintain_enum.idle;
 		}
 		//scenario 2: system suspend, cpu, mem, space exceed the maximum usage
+		String work_space = client_info.get_client_preference_data().get("work_space");
 		String cpu_used = machine_sync.get_cpu_usage();
 		String mem_used = machine_sync.get_mem_usage();
-		String space_left = machine_sync.get_disk_left();
+		String space_left = machine_sync.get_disk_left(work_space);
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
