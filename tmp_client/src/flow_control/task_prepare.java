@@ -265,7 +265,7 @@ public class task_prepare {
 					// 2 linux run windows src
 					// ./conf/sshpass/sshpass -p "lattice" scp -r -l jwang1
 					// D27639:M:/test.txt ./
-					cmd_array.add(public_data.TOOLS_SSHPASS + " -p \"" + pass_word + "\" scp -r -p " + user_name + "@"
+					cmd_array.add(public_data.TOOLS_SSHPASS + " -p " + pass_word + " scp -r -p " + user_name + "@"
 							+ case_url + " " + case_dir);
 				}
 			}
