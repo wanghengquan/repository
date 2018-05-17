@@ -467,7 +467,7 @@ public class data_server extends Thread {
 	
 	private status_enum calculate_client_current_status(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
-		system_data.putAll(machine_sync.machine_hash.get("System"));
+		system_data.putAll(client_info.get_client_system_data());
 		String cpu_used = system_data.get("cpu");
 		String mem_used = system_data.get("mem");
 		String space_left = system_data.get("space");
