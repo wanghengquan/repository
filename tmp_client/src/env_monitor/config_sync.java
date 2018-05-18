@@ -204,10 +204,10 @@ public class config_sync extends Thread {
 		String pri1_conf_path = public_data.CONF_ROOT_PATH + "/" + user_name + "_" + terminal + ".ini";
 		File pri0_fobj = new File(pri0_conf_path);
 		File pri1_fobj = new File(pri1_conf_path);
-		if(pri1_fobj.exists() && pri1_fobj.canRead()){
+		if(pri1_fobj.exists() && pri1_fobj.canRead() && pri1_fobj.length() > 0){
 			conf_path = pri1_conf_path;
 		}		
-		if(pri0_fobj.exists() && pri0_fobj.canRead()){
+		if(pri0_fobj.exists() && pri0_fobj.canRead() && pri0_fobj.length() > 0){
 			conf_path = pri0_conf_path;
 		}
 		return conf_path;
@@ -222,20 +222,28 @@ public class config_sync extends Thread {
 		File def_fobj = new File(def_conf_path);
 		File pri0_fobj = new File(pri0_conf_path);
 		File pri1_fobj = new File(pri1_conf_path);
-		try {
-			FileUtils.copyFile(def_fobj, pri0_fobj);
-			final_conf_path = pri0_conf_path;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
+		if (!pri0_fobj.exists()){
+			try {
+				FileUtils.copyFile(def_fobj, pri0_fobj);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				CONFIG_SYNC_LOGGER.warn("Create default pri0 ini file failed");
+			}
+		}
+		if (!pri1_fobj.exists()){
 			try {
 				FileUtils.copyFile(def_fobj, pri1_fobj);
-				final_conf_path = pri1_conf_path;
-			} catch (IOException e1) {
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				// e1.printStackTrace();
-				final_conf_path = def_conf_path;
+				CONFIG_SYNC_LOGGER.warn("Create default pri1 ini file failed");
 			}
+		}		
+		if(pri0_fobj.exists() && pri0_fobj.canWrite()){
+			final_conf_path = pri0_conf_path;
+		} else if (pri1_fobj.exists() && pri1_fobj.canWrite()){
+			final_conf_path = pri1_conf_path;
+		} else {
+			final_conf_path = def_conf_path;
 		}
         return final_conf_path;
 	}
@@ -286,7 +294,7 @@ public class config_sync extends Thread {
 				}
 			} else {
 				CONFIG_SYNC_LOGGER.debug("config sync Thread running...");
-				// CONFIG_SYNC_LOGGER.debug(config_hash.toString()); java.util.ConcurrentModificationException
+				// CONFIG_SYNC_LOGGER.debug(config_hash.toString());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : dump configuration updating

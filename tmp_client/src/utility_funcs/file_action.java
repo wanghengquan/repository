@@ -49,7 +49,7 @@ public class file_action {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			FILE_ACTION_LOGGER.warn("Write file exception");
+			FILE_ACTION_LOGGER.warn("Write file exception:" + file_path);
 			return 2;
 		}
 	}
@@ -75,7 +75,7 @@ public class file_action {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			FILE_ACTION_LOGGER.warn("Write file exception");
+			FILE_ACTION_LOGGER.warn("Write file exception:" + file_path);
 			return 1;
 		}
 	}	

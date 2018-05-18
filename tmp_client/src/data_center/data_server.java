@@ -467,7 +467,7 @@ public class data_server extends Thread {
 	
 	private status_enum calculate_client_current_status(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
-		system_data.putAll(machine_sync.machine_hash.get("System"));
+		system_data.putAll(client_info.get_client_system_data());
 		String cpu_used = system_data.get("cpu");
 		String mem_used = system_data.get("mem");
 		String space_left = system_data.get("space");
@@ -503,6 +503,11 @@ public class data_server extends Thread {
 		} else {
 			return status_enum.IDLE;
 		}
+	}
+	
+	private void update_system_property_data(){
+		//1. set system log_path data (log4j 2 use)
+		System.setProperty("log_path", client_info.get_client_preference_data().get("work_space"));
 	}
 	
 	public void run() {
@@ -571,9 +576,11 @@ public class data_server extends Thread {
 			remove_invalid_build_path();
 			// task 5: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
+			// task 6: update system property data
+			update_system_property_data();
 			// HashMap<String, Integer> soft_ware =
 			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
-			DATA_SERVER_LOGGER.debug(client_info.get_use_soft_insts());
+			DATA_SERVER_LOGGER.debug(client_info.get_used_soft_insts());
 			DATA_SERVER_LOGGER.debug(client_info.get_client_data());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);

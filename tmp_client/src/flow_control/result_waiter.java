@@ -203,6 +203,7 @@ public class result_waiter extends Thread {
 				continue;// no need to dump to increase the performance > don't
 						 // forget dump when shutdown client
 			}
+			RESULT_WAITER_LOGGER.warn("Dumping admin queue:" + dump_queue);
 			// dumping task queue
 			RESULT_WAITER_LOGGER.warn("Dumping admin queue:" + dump_queue);
 			Boolean admin_dump = export_data.export_disk_finished_admin_queue_data(dump_queue, client_info, task_info);

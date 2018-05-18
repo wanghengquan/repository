@@ -128,7 +128,8 @@ def execute_action(raw_dict, key_word, suite_content):
             continue
         # key == key_word
         if key == "LaunchCommand":
-            new_dict[key] = merge_cmd(value, suite_content)
+            new_dict[key] = merge_cmd(suite_content, value)
+            # put case cmd strings after macro cmd strings
         elif key in ("CaseInfo", "Environment", "Software", "System", "Machine"):
             value = value.strip()
             if not value:
@@ -162,7 +163,8 @@ def get_section_ini_lines(case_csv, suite_csv):
                 if not section_name:
                     xTools.say_it("  Warning. Use default Section name for design: %s!" % design_name)
                     section_name = "Test Cases"
-                new_item = re.sub(";", "FEN_HAO", str(item))
+
+                new_item = re.sub(";", "FEN_HAO", dict2string(item))
                 my_case = "   %s %s %s" % (xTools.start_mark, new_item, xTools.end_mark)
                 if section_dict.has_key(section_name):
                     section_dict[section_name].append(my_case)
@@ -173,6 +175,12 @@ def get_section_ini_lines(case_csv, suite_csv):
                         section_dict[section_name].append("%s = %s" % (a, b))
                     section_dict[section_name].append("case_list = %s" % my_case)
     return section_dict
+
+def dict2string(a_dict):
+    keys = a_dict.keys()
+    keys.sort()
+    a_list = ["'%s': '%s'" % (k, re.sub("'", "\\'", a_dict.get(k))) for k in keys]
+    return "{%s}" % ", ".join(a_list)
 
 if __name__ == "__main__":
     bb = get_section_ini_lines("test/case.csv", "test/suite.csv")
