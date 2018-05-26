@@ -504,7 +504,10 @@ public class result_waiter extends Thread {
 			break;
 		case "Timeout":
 			task_status = task_enum.TIMEOUT;
-			break;			
+			break;	
+		case "Blocked":
+			task_status = task_enum.BLOCKED;
+			break;
 		default:
 			task_status = task_enum.OTHERS;
 		}

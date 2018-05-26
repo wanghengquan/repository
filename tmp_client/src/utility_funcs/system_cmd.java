@@ -34,7 +34,8 @@ public class system_cmd {
 	}
 
 	// run0 command single string, export case, scripts
-	public static ArrayList<String> run(String cmd) throws IOException, InterruptedException {
+	public static ArrayList<String> run(
+			String cmd) throws IOException, InterruptedException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -61,7 +62,9 @@ public class system_cmd {
 	}
 	
 	// run1 run command with in 60 seconds
-	public static ArrayList<String> run(String cmd, String work_path) throws IOException {
+	public static ArrayList<String> run(
+			String cmd, 
+			String work_path) throws IOException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -101,7 +104,9 @@ public class system_cmd {
 	}	
 
 	// run2 command with environment
-	public static ArrayList<String> run(String[] cmds, Map<String, String> envs) throws InterruptedException {
+	public static ArrayList<String> run(
+			String[] cmds, 
+			Map<String, String> envs) throws InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */
@@ -144,8 +149,11 @@ public class system_cmd {
 	}
 
 	// run3 command with environment for a specific case
-	public static ArrayList<String> run(String[] cmds, Map<String, String> envs, String directory, int timeout)
-			throws IOException, InterruptedException {
+	public static ArrayList<String> run(
+			String[] cmds, 
+			Map<String, String> envs, 
+			String directory, 
+			int timeout) throws IOException, InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */
@@ -206,8 +214,11 @@ public class system_cmd {
 	}
 
 	// run4 command with environment for a specific case
-	public static ArrayList<String> run4(String[] cmds, Map<String, String> envs, String directory, int timeout)
-			throws InterruptedException {
+	public static ArrayList<String> run4(
+			String[] cmds, 
+			Map<String, String> envs, 
+			String directory, 
+			int timeout) throws InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */

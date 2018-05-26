@@ -968,55 +968,22 @@ public class task_waiter extends Thread {
 			// task 7 : get test case ready
 			task_prepare prepare_obj = new task_prepare();
 			Boolean task_case_ok = prepare_obj.get_task_case_ready(task_data, client_info.get_client_preference_data());
+			// task 8 : launch info prepare
+			String launch_path = task_data.get("Paths").get("launch_path").trim();
+			String case_path = task_data.get("Paths").get("case_path").trim();
+			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
+			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
+			// task 9 : launch or exit
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_case_ok);
 			if (!task_case_ok){
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_used_thread(1);
 				continue;			
 			} 
-			// task 8 : launch info prepare
-			String launch_path = task_data.get("Paths").get("launch_path").trim();
-			String case_path = task_data.get("Paths").get("case_path").trim();
-			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
-			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
-			// task 9 : launch
+			// task 10 : launch
 			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, case_time_out);
-			/*
-			ArrayList<String> case_prepare_list = new ArrayList<String>();
-			String case_work_path = new String();
-			try {
-				case_work_path = prepare_obj.get_working_dir(task_data,
-						client_info.get_client_preference_data().get("work_space"));
-				case_prepare_list = prepare_obj.get_case_ready(task_data, case_work_path);
-			} catch (Exception e) {
-				e.printStackTrace();
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Case prepare failed, skip this case.");
-				client_info.release_used_soft_insts(admin_data.get("Software"));
-				pool_info.release_used_thread(1);
-				continue;
-			}
-			String local_case_report = case_work_path + "/" + public_data.WORKSPACE_CASE_REPORT_NAME;
-			file_action.append_file(local_case_report,
-					"Client Version:" + public_data.BASE_CURRENTVERSION + line_separator);
-			file_action.append_file(local_case_report, "[Export]" + line_separator);
-			file_action.append_file(local_case_report, String.join(line_separator, case_prepare_list) + line_separator);
-			// task 8 : launch cmd
-			String[] run_cmd = prepare_obj.get_run_command(
-					task_data,
-					case_work_path,
-					client_info.get_client_preference_data().get("work_space"));
-			// task 9 : launch env
-			Map<String, String> run_env = prepare_obj.get_run_environment(task_data, client_info.get_client_data());
-			// task 10: launch dir by-default use case work path
-			String run_dir = prepare_obj.get_run_directory(task_data, case_work_path);
-			// task 11 : launch (add case info to task data)
-			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
-			String result_keep = task_data.get("CaseInfo").get("result_keep");
-			system_call sys_call = new system_call(run_cmd, run_env, run_dir, case_time_out);
-			pool_info.add_sys_call(sys_call, queue_name, case_id, case_work_path, case_time_out, result_keep);
-			*/
 		}
 	}
 

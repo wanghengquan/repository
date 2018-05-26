@@ -148,8 +148,9 @@ public class pool_data {
 					call_output.addAll((Collection<? extends String>) call_back.get(10, TimeUnit.SECONDS));
 				} catch (Exception e) {
 					// e.printStackTrace();
-					THREAD_POOL_LOGGER.warn("Get call result exception.");
-					call_output.add("Get call result exception.");
+					THREAD_POOL_LOGGER.warn("Get task call exception.");
+					call_output.add(">>>Error:Get task call exception.");
+					call_output.add("<status>Blocked</status>");
 				}
 				if((boolean) hash_data.get("call_canceled")){
 					call_output.add(">>>Timeout extra run:");

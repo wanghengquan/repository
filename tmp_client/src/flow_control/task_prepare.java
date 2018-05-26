@@ -12,6 +12,7 @@ package flow_control;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -360,6 +361,9 @@ public class task_prepare {
 		for(int j =0;j<cmd_list.length;j++){
 		  array[j] = cmd_list[j].replaceAll(tmp_str, " ");
 		}
+		// local report 
+		task_prepare_info.add(line_separator + ">>>Prepare launch CMD:");
+		task_prepare_info.add(Arrays.toString(array));
 		return array;
 	}	
 	
@@ -390,6 +394,9 @@ public class task_prepare {
 			String env_value = task_data.get("Environment").get(env_name);
 			run_env.put(env_name, env_value);
 		}
+		// local report 
+		task_prepare_info.add(line_separator + ">>>Prepare launch ENV:");
+		task_prepare_info.add(run_env.toString());
 		return run_env;
 	}	
 
