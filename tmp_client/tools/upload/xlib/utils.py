@@ -221,7 +221,9 @@ def create_case_data(raw_string):
     string_text_values = [("Family", "custom_fpga_family"),
                           ("Flow", "custom_fpga_flow"),
                           ("Description", "custom_description"),
-                          ("TestScenarios", "custom_scenarios"),]
+                          ("TestScenarios", "custom_scenarios"),
+                          ("CRs", "custom_fpga_cr"),
+                          ]
     for (db_column, column) in string_text_values:
         item = raw_dict.get(db_column)
         if item:

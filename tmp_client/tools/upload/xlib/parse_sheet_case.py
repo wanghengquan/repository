@@ -63,14 +63,15 @@ def _cmd2dict(raw_cmd):
 def merge_cmd(old_cmd, new_cmd):
     old_cmd_dict = _cmd2dict(old_cmd)
     new_cmd_dict = _cmd2dict(new_cmd)
-    for key, value in old_cmd_dict.items():
-        if new_cmd_dict.has_key(key):
-            if key == "cmd":
-                new_cmd_dict[key] = value + " " + new_cmd_dict.get(key)
+    if new_cmd_dict.get("override") != "local":
+        for key, value in old_cmd_dict.items():
+            if new_cmd_dict.has_key(key):
+                if key == "cmd":
+                    new_cmd_dict[key] = value + " " + new_cmd_dict.get(key)
+                else:
+                    pass
             else:
-                pass
-        else:
-            new_cmd_dict[key] = value
+                new_cmd_dict[key] = value
     new_line = list()
     for key, value in new_cmd_dict.items():
         new_line.append("%s = %s" % (key, value))
