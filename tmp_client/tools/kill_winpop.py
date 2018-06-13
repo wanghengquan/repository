@@ -23,6 +23,7 @@ p_cancel = [re.compile('edif2ngd\.exe', re.I),
             re.compile('timing\.exe', re.I),
             re.compile('^lattice\ssemiconductor$', re.I),
             re.compile('vsimk\.exe', re.I),
+            re.compile('^\s*Active-HDL\s+[\d\.]+\s*$', re.I)
            ]
 def kill_error_box(break_title=""):
     #print 'check all commands status....'
@@ -70,4 +71,3 @@ def kill_error_box(break_title=""):
 if __name__ == "__main__":
     kill_error_box()
 
-        

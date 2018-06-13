@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.11"; //main.xx.build. xx:odd for stable, even for develop 
-	public final static int BASE_CURRENTVERSION_INT = 20811; // version for code use
-	public final static String BASE_BUILDDATE = "2018/05/28";
+	public final static String BASE_CURRENTVERSION = "2.08.12"; //main.xx.build. xx:odd for stable, even for develop 
+	public final static int BASE_CURRENTVERSION_INT = 20812; // version for code use
+	public final static String BASE_BUILDDATE = "2018/06/13";
 	public final static String BASE_SUITEFILEVERSION = "1.10";
 	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -166,7 +166,7 @@ public class public_data {
 	// Software GUI have higher priority
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	public final static int DEF_SCAN_CMD_TAKE_LINE = 10;
-	public final static int DEF_GUI_BUILD_SHOW_LINE = 30;
+	public final static int DEF_GUI_BUILD_SHOW_LINE = 50;
 	// Machine
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
@@ -184,7 +184,7 @@ public class public_data {
 	public final static String DEF_AUTO_RESTART = "0";
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
-	public final static String DEF_SAVE_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	public final static String DEF_SAVE_SPACE = "";
 
 	public public_data() {
 	}

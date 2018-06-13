@@ -392,8 +392,10 @@ public class result_waiter extends Thread {
 					detail_path, detail_path);
 			runlog.append("Unified Location(Win LSH Access) ==> " + win_link + line_separator);
 			runlog.append("Unified Location(Lin LSH Access) ==> " + lin_link + line_separator);
-			runlog.append("Note: If the link above not work, please copy it to your file explorer manually."
+			runlog.append("Note: 1. If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);
+			runlog.append("    : 2. For windows, we can also use \\\\machine\\Disk_Partition$\\run_path to access directly."
+					+ line_separator);			
 			runlog.append(line_separator);
 			runlog.append(line_separator);
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get("call_output");
