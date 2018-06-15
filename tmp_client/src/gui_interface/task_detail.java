@@ -51,7 +51,7 @@ public class task_detail extends JFrame {
 		container.add(construct_table_panel(), BorderLayout.CENTER);
 		JTableHeader table_head = detail_table.getTableHeader();
 		container.add(table_head, BorderLayout.NORTH);
-		container.add(construct_bottom_panel(), BorderLayout.SOUTH);
+		//container.add(construct_bottom_panel(), BorderLayout.SOUTH);
 		this.setLocation(600, 400);
 		//this.setLocationRelativeTo(null);
 		this.setSize(800, 500);
@@ -115,13 +115,15 @@ public class task_detail extends JFrame {
 		//insert table
 		JPanel table_panel = new JPanel(new BorderLayout());
 		JScrollPane scroll_panel = new JScrollPane(detail_table);
+		//scroll_panel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		//scroll_panel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		table_panel.add(scroll_panel);
 		return table_panel;
 	}
 
 	public JPanel construct_bottom_panel() {
 		JPanel jp_info = new JPanel(new BorderLayout());
-		JLabel jl_info = new JLabel(" ");
+		JLabel jl_info = new JLabel("");
 		jp_info.add(jl_info, BorderLayout.WEST);
 		return jp_info;
 	}

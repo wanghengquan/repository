@@ -74,7 +74,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		letter_area
 				.append("Please setting your 'Work Space' and 'Save Space' in following Text Fields." + line_separator);
 		letter_area.append("Work Space: Where TMP Client store runtime result locally" + line_separator);
-		letter_area.append("Save Space: Where TMP Client copy local result to (Also called 'Unify result store space')"
+		letter_area.append("Save Space: Where TMP Client make a copy of local results (Also called 'Unify result store space')"
 				+ line_separator);
 		letter_area
 				.append("By default:'Save Space' will be same with 'Work Space' which means TMP Client will not copy the local result to remote space."
@@ -196,6 +196,9 @@ public class welcome_dialog extends JDialog implements ActionListener {
 			client_info.set_client_data(client_data);
 			switch_info.set_client_updated();
 		}
+		if(arg0.getSource().equals(jb_close)){
+			this.dispose();
+		}		
 	}
 
 	public static void main(String[] args) {

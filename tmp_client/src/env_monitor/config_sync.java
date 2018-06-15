@@ -210,6 +210,7 @@ public class config_sync extends Thread {
 		if(pri0_fobj.exists() && pri0_fobj.canRead() && pri0_fobj.length() > 0){
 			conf_path = pri0_conf_path;
 		}
+		CONFIG_SYNC_LOGGER.warn("TMP Client reading config:" + conf_path);
 		return conf_path;
 	}
 	
@@ -245,6 +246,7 @@ public class config_sync extends Thread {
 		} else {
 			final_conf_path = def_conf_path;
 		}
+		CONFIG_SYNC_LOGGER.warn("TMP Client dumping config:" + final_conf_path);
         return final_conf_path;
 	}
 	

@@ -149,7 +149,7 @@ public class xml_parser {
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			XML_PARSER_LOGGER.warn("Wrong/empty xml format received, skip.");
+			XML_PARSER_LOGGER.info("Wrong/empty xml format received, skip.");
 			return level1_data;
 		}
 		Element root_node = xml_doc.getRootElement();
