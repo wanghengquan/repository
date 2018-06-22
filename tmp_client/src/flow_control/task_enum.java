@@ -17,8 +17,8 @@ public enum task_enum {
 	TBD(4, "TBD"),
 	TIMEOUT(5, "Timeout"),
 	HALTED(6, "Halted"),
-	CASEISSUE(7, "Case Issue"),
-	SWISSUE(8, "SW Issue"),
+	CASEISSUE(7, "Case_Issue"),
+	SWISSUE(8, "SW_Issue"),
 	BLOCKED(9,"Blocked"),
 	OTHERS(10, "Others"),
 	UNKNOWN(11, "Unknown");

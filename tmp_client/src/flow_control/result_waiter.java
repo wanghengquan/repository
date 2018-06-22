@@ -511,6 +511,12 @@ public class result_waiter extends Thread {
 		case "Blocked":
 			task_status = task_enum.BLOCKED;
 			break;
+		case "Case_Issue":
+			task_status = task_enum.CASEISSUE;
+			break;
+		case "SW_Issue":
+			task_status = task_enum.SWISSUE;
+			break;			
 		default:
 			task_status = task_enum.OTHERS;
 		}
