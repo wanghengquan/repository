@@ -130,13 +130,19 @@ public class system_cmd {
 					reason = line;
 			}
 			br.close();
-			int exit = p.waitFor();
-			if (exit == 0) {
+			int exit_value = p.waitFor();
+			if (exit_value == 200) {
 				string_list.add("<status>Passed</status>");
-			} else if (exit == 1) {
-				string_list.add("<status>Failed</status>");
-			} else {
+			} else if (exit_value == 201) {
+				string_list.add("<status>SW_Issue</status>");
+			} else if (exit_value == 202) {
 				string_list.add("<status>TBD</status>");
+			} else if (exit_value == 203) {
+				string_list.add("<status>Failed</status>");
+			} else if (exit_value == 204) {
+				string_list.add("<status>Case_Issue</status>");
+			} else {
+				string_list.add("<status>Blocked</status>");
 			}
 			if (reason.length() > 1)
 				string_list.add("<reason>" + reason.trim() + "</reason>");
@@ -180,12 +186,18 @@ public class system_cmd {
 		read_out.stopGobbling();
 		if (exit_status) {
 			int exit_value = p.exitValue();
-			if (exit_value == 0) {
+			if (exit_value == 200) {
 				string_list.add("<status>Passed</status>");
-			} else if (exit_value == 1) {
-				string_list.add("<status>Failed</status>");
-			} else {
+			} else if (exit_value == 201) {
+				string_list.add("<status>SW_Issue</status>");
+			} else if (exit_value == 202) {
 				string_list.add("<status>TBD</status>");
+			} else if (exit_value == 203) {
+				string_list.add("<status>Failed</status>");
+			} else if (exit_value == 204) {
+				string_list.add("<status>Case_Issue</status>");
+			} else {
+				string_list.add("<status>Blocked</status>");
 			}
 		} else {
 			SYSTEM_CMD_LOGGER.warn("Timeout task cleanup.");
@@ -275,12 +287,18 @@ public class system_cmd {
 			}
 			if (exit_status) {
 				int exit_value = p.exitValue();
-				if (exit_value == 0) {
+				if (exit_value == 200) {
 					string_list.add("<status>Passed</status>");
-				} else if (exit_value == 1) {
-					string_list.add("<status>Failed</status>");
-				} else {
+				} else if (exit_value == 201) {
+					string_list.add("<status>SW_Issue</status>");
+				} else if (exit_value == 202) {
 					string_list.add("<status>TBD</status>");
+				} else if (exit_value == 203) {
+					string_list.add("<status>Failed</status>");
+				} else if (exit_value == 204) {
+					string_list.add("<status>Case_Issue</status>");
+				} else {
+					string_list.add("<status>Blocked</status>");
 				}
 				if (reason.length() > 1)
 					string_list.add("<reason>" + reason.trim() + "</reason>");
