@@ -34,7 +34,8 @@ public class system_cmd {
 	}
 
 	// run0 command single string, export case, scripts
-	public static ArrayList<String> run(String cmd) throws IOException, InterruptedException {
+	public static ArrayList<String> run(
+			String cmd) throws IOException, InterruptedException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -61,7 +62,9 @@ public class system_cmd {
 	}
 	
 	// run1 run command with in 60 seconds
-	public static ArrayList<String> run(String cmd, String work_path) throws IOException {
+	public static ArrayList<String> run(
+			String cmd, 
+			String work_path) throws IOException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -101,7 +104,9 @@ public class system_cmd {
 	}	
 
 	// run2 command with environment
-	public static ArrayList<String> run(String[] cmds, Map<String, String> envs) throws InterruptedException {
+	public static ArrayList<String> run(
+			String[] cmds, 
+			Map<String, String> envs) throws InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */
@@ -125,13 +130,25 @@ public class system_cmd {
 					reason = line;
 			}
 			br.close();
-			int exit = p.waitFor();
-			if (exit == 0) {
+			int exit_value = p.waitFor();
+			if (exit_value == 0) {
 				string_list.add("<status>Passed</status>");
-			} else if (exit == 1) {
+			} else if (exit_value == 1) {
+				string_list.add("<status>Failed</status>");	
+			} else if (exit_value == 2) {
+				string_list.add("<status>TBD</status>");					
+			} else if (exit_value == 200) {
+				string_list.add("<status>Passed</status>");				
+			} else if (exit_value == 201) {
 				string_list.add("<status>Failed</status>");
-			} else {
+			} else if (exit_value == 202) {
 				string_list.add("<status>TBD</status>");
+			} else if (exit_value == 203) {
+				string_list.add("<status>Case_Issue</status>");
+			} else if (exit_value == 204) {
+				string_list.add("<status>SW_Issue</status>");
+			} else {
+				string_list.add("<status>Blocked</status>");
 			}
 			if (reason.length() > 1)
 				string_list.add("<reason>" + reason.trim() + "</reason>");
@@ -144,8 +161,11 @@ public class system_cmd {
 	}
 
 	// run3 command with environment for a specific case
-	public static ArrayList<String> run(String[] cmds, Map<String, String> envs, String directory, int timeout)
-			throws IOException, InterruptedException {
+	public static ArrayList<String> run(
+			String[] cmds, 
+			Map<String, String> envs, 
+			String directory, 
+			int timeout) throws IOException, InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */
@@ -175,9 +195,21 @@ public class system_cmd {
 			if (exit_value == 0) {
 				string_list.add("<status>Passed</status>");
 			} else if (exit_value == 1) {
+				string_list.add("<status>Failed</status>");	
+			} else if (exit_value == 2) {
+				string_list.add("<status>TBD</status>");					
+			} else if (exit_value == 200) {
+				string_list.add("<status>Passed</status>");				
+			} else if (exit_value == 201) {
 				string_list.add("<status>Failed</status>");
-			} else {
+			} else if (exit_value == 202) {
 				string_list.add("<status>TBD</status>");
+			} else if (exit_value == 203) {
+				string_list.add("<status>Case_Issue</status>");
+			} else if (exit_value == 204) {
+				string_list.add("<status>SW_Issue</status>");
+			} else {
+				string_list.add("<status>Blocked</status>");
 			}
 		} else {
 			SYSTEM_CMD_LOGGER.warn("Timeout task cleanup.");
@@ -206,8 +238,11 @@ public class system_cmd {
 	}
 
 	// run4 command with environment for a specific case
-	public static ArrayList<String> run4(String[] cmds, Map<String, String> envs, String directory, int timeout)
-			throws InterruptedException {
+	public static ArrayList<String> run4(
+			String[] cmds, 
+			Map<String, String> envs, 
+			String directory, 
+			int timeout) throws InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */
@@ -267,9 +302,21 @@ public class system_cmd {
 				if (exit_value == 0) {
 					string_list.add("<status>Passed</status>");
 				} else if (exit_value == 1) {
+					string_list.add("<status>Failed</status>");	
+				} else if (exit_value == 2) {
+					string_list.add("<status>TBD</status>");					
+				} else if (exit_value == 200) {
+					string_list.add("<status>Passed</status>");				
+				} else if (exit_value == 201) {
 					string_list.add("<status>Failed</status>");
-				} else {
+				} else if (exit_value == 202) {
 					string_list.add("<status>TBD</status>");
+				} else if (exit_value == 203) {
+					string_list.add("<status>Case_Issue</status>");
+				} else if (exit_value == 204) {
+					string_list.add("<status>SW_Issue</status>");
+				} else {
+					string_list.add("<status>Blocked</status>");
 				}
 				if (reason.length() > 1)
 					string_list.add("<reason>" + reason.trim() + "</reason>");

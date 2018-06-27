@@ -57,6 +57,8 @@ class initial_status extends abstract_status {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//client initial updated, dump data needed
+		client.switch_info.set_client_updated();
 		client.set_current_status(client.WORK);
 	}
 
@@ -127,8 +129,11 @@ class initial_status extends abstract_status {
 	
 	//get daemon process ready
 	private void get_daemon_process_ready(){
-		kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
-		my_kill.start();
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
+			my_kill.start();			
+		}
 	}
 	
 	//get tube server start and wait it ready
