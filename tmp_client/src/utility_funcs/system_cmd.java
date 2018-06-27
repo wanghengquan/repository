@@ -131,16 +131,22 @@ public class system_cmd {
 			}
 			br.close();
 			int exit_value = p.waitFor();
-			if (exit_value == 200) {
+			if (exit_value == 0) {
 				string_list.add("<status>Passed</status>");
+			} else if (exit_value == 1) {
+				string_list.add("<status>Failed</status>");	
+			} else if (exit_value == 2) {
+				string_list.add("<status>TBD</status>");					
+			} else if (exit_value == 200) {
+				string_list.add("<status>Passed</status>");				
 			} else if (exit_value == 201) {
-				string_list.add("<status>SW_Issue</status>");
+				string_list.add("<status>Failed</status>");
 			} else if (exit_value == 202) {
 				string_list.add("<status>TBD</status>");
 			} else if (exit_value == 203) {
-				string_list.add("<status>Failed</status>");
-			} else if (exit_value == 204) {
 				string_list.add("<status>Case_Issue</status>");
+			} else if (exit_value == 204) {
+				string_list.add("<status>SW_Issue</status>");
 			} else {
 				string_list.add("<status>Blocked</status>");
 			}
@@ -186,16 +192,22 @@ public class system_cmd {
 		read_out.stopGobbling();
 		if (exit_status) {
 			int exit_value = p.exitValue();
-			if (exit_value == 200) {
+			if (exit_value == 0) {
 				string_list.add("<status>Passed</status>");
+			} else if (exit_value == 1) {
+				string_list.add("<status>Failed</status>");	
+			} else if (exit_value == 2) {
+				string_list.add("<status>TBD</status>");					
+			} else if (exit_value == 200) {
+				string_list.add("<status>Passed</status>");				
 			} else if (exit_value == 201) {
-				string_list.add("<status>SW_Issue</status>");
+				string_list.add("<status>Failed</status>");
 			} else if (exit_value == 202) {
 				string_list.add("<status>TBD</status>");
 			} else if (exit_value == 203) {
-				string_list.add("<status>Failed</status>");
-			} else if (exit_value == 204) {
 				string_list.add("<status>Case_Issue</status>");
+			} else if (exit_value == 204) {
+				string_list.add("<status>SW_Issue</status>");
 			} else {
 				string_list.add("<status>Blocked</status>");
 			}
@@ -287,16 +299,22 @@ public class system_cmd {
 			}
 			if (exit_status) {
 				int exit_value = p.exitValue();
-				if (exit_value == 200) {
+				if (exit_value == 0) {
 					string_list.add("<status>Passed</status>");
+				} else if (exit_value == 1) {
+					string_list.add("<status>Failed</status>");	
+				} else if (exit_value == 2) {
+					string_list.add("<status>TBD</status>");					
+				} else if (exit_value == 200) {
+					string_list.add("<status>Passed</status>");				
 				} else if (exit_value == 201) {
-					string_list.add("<status>SW_Issue</status>");
+					string_list.add("<status>Failed</status>");
 				} else if (exit_value == 202) {
 					string_list.add("<status>TBD</status>");
 				} else if (exit_value == 203) {
-					string_list.add("<status>Failed</status>");
-				} else if (exit_value == 204) {
 					string_list.add("<status>Case_Issue</status>");
+				} else if (exit_value == 204) {
+					string_list.add("<status>SW_Issue</status>");
 				} else {
 					string_list.add("<status>Blocked</status>");
 				}
