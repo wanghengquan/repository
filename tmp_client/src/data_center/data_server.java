@@ -96,7 +96,7 @@ public class data_server extends Thread {
 		this.task_info = task_info;
 		this.pool_info = pool_info;
 		this.config_runner = new config_sync(switch_info, client_info);
-		this.machine_runner = new machine_sync(switch_info);
+		this.machine_runner = new machine_sync(switch_info, client_info);
 	}
 
 	private void impoart_suite_file_task_data(
@@ -519,7 +519,8 @@ public class data_server extends Thread {
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			file_action.append_file(dump_path, " " + line_separator);
 			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, time_info.get_date_time() + line_separator);			
+			file_action.append_file(dump_path, "Date   :" + time_info.get_date_time() + line_separator);
+			file_action.append_file(dump_path, "Version:" + public_data.BASE_CURRENTVERSION + line_separator);			
 			file_action.append_file(dump_path, run_exception.toString() + line_separator);
 			for(Object item: run_exception.getStackTrace()){
 				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
