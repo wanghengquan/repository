@@ -337,6 +337,8 @@ public class result_waiter extends Thread {
 			case_status.put("cmd_status",
 					((task_enum) case_report_map.get(call_index).get("status")).get_description());
 			case_status.put("cmd_reason", (String) case_report_map.get(call_index).get("reason"));
+			case_status.put("milestone", (String) case_report_map.get(call_index).get("milestone"));
+			case_status.put("key_check", (String) case_report_map.get(call_index).get("key_check"));
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
 			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
@@ -441,6 +443,8 @@ public class result_waiter extends Thread {
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
 			task_enum cmd_status = task_enum.OTHERS;
 			String cmd_reason = new String("NA");
+			String milestone = new String("NA");
+			String key_check = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_enum.DONE)) {
 				if(call_timeout){
@@ -451,11 +455,15 @@ public class result_waiter extends Thread {
 					cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get("call_output"));
 				}
 				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("call_output"));
+				milestone = get_milestone_info((ArrayList<String>) one_call_data.get("call_output"));
+				key_check = get_key_check_info((ArrayList<String>) one_call_data.get("call_output"));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("call_output")));				
 			}  else {
 				cmd_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
+			hash_data.put("milestone", milestone);
+			hash_data.put("key_check", key_check);
 			hash_data.put("status", cmd_status);
 			hash_data.put("reason", cmd_reason);
 			hash_data.put("location", (String) one_call_data.get("launch_path"));
@@ -542,6 +550,38 @@ public class result_waiter extends Thread {
 		return reason;
 	}
 
+	private String get_milestone_info(ArrayList<String> cmd_output) {
+		String milestone = new String("NA");
+		if(cmd_output == null || cmd_output.isEmpty()){
+			return milestone;
+		}
+		// <status>Passed</status>
+		Pattern p = Pattern.compile("milestone\\s*>\\s*(.+?)$");
+		for (String line : cmd_output) {
+			Matcher m = p.matcher(line);
+			if (m.find()) {
+				milestone = m.group(1);
+			}
+		}
+		return milestone;
+	}	
+	
+	private String get_key_check_info(ArrayList<String> cmd_output) {
+		String key_check = new String("NA");
+		if(cmd_output == null || cmd_output.isEmpty()){
+			return key_check;
+		}
+		// <status>Passed</status>
+		Pattern p = Pattern.compile("key_check\\s*>\\s*(.+?)$");
+		for (String line : cmd_output) {
+			Matcher m = p.matcher(line);
+			if (m.find()) {
+				key_check = m.group(1);
+			}
+		}
+		return key_check;
+	}
+	
 	private Boolean terminate_user_request_running_call() {
 		Boolean cancel_status = new Boolean(true);
 		if (!view_info.impl_stop_case_request()) {
