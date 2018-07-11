@@ -536,15 +536,27 @@ public class result_waiter extends Thread {
 		if(cmd_output == null || cmd_output.isEmpty()){
 			return reason;
 		}
-		// <status>Passed</status>
-		Pattern p = Pattern.compile("reason>(.+?)</");		
+		// get failed check points :  <section result>
+		Pattern section_patt = Pattern.compile("<\\s*?section\\s*?result\\s*?>\\s*?(.+?)\\s*?:\\s*?failed", Pattern.CASE_INSENSITIVE);
+		ArrayList<String> failed_array = new ArrayList<String>();
+		for (String line : cmd_output) {
+			Matcher section_match = section_patt.matcher(line);
+			if (section_match.find()){
+				failed_array.add(section_match.group(1));
+			}
+		}
+		if (failed_array.size() > 0){
+			reason = "FC(s):" + String.join(",", failed_array);
+		}
+		// get failed error messages
+		Pattern reason_patt = Pattern.compile("reason>(.+?)</");		
 		for (String line : cmd_output) {
 			if (!line.contains("<reason>")) {
 				continue;
 			}
-			Matcher m = p.matcher(line);
-			if (m.find()) {
-				reason = m.group(1);
+			Matcher reason_match = reason_patt.matcher(line);
+			if (reason_match.find()) {
+				reason = reason_match.group(1);
 			}
 		}
 		return reason;
