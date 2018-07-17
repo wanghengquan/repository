@@ -172,21 +172,29 @@ public class main_frame extends JFrame {
 
 	private PopupMenu pop_menu() {
 		PopupMenu menu = new PopupMenu();
-		MenuItem close = new MenuItem("Close");
-		close.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ex) {
-				switch_info.set_client_stop_request(exit_enum.NORMAL);
-			}
-		});
 		MenuItem open = new MenuItem("Open");
 		open.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ex) {
 				show_main_view();
 			}
 		});
+		MenuItem close = new MenuItem("Close");
+		close.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ex) {
+				hide_main_view();
+			}
+		});	
+		MenuItem exit = new MenuItem("Exit");
+		exit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ex) {
+				hide_main_view();
+				switch_info.set_client_stop_request(exit_enum.NORMAL);
+			}
+		});		
 		menu.add(open);
-		menu.addSeparator();
 		menu.add(close);
+		menu.addSeparator();
+		menu.add(exit);
 		return menu;
 	}
 
@@ -198,6 +206,12 @@ public class main_frame extends JFrame {
 			this.toFront();
 		}
 	}
+	
+	private void hide_main_view(){
+		if (this.isVisible()) {
+			this.setVisible(false);
+		}
+	}	
 	
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();
