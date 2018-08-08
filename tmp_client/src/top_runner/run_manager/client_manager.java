@@ -97,6 +97,13 @@ public class client_manager extends Thread  {
 			idle_counter = 0;
 			return maintain_enum.idle;
 		}
+
+        // dev need update
+        if(switch_info.dev_need_update()){
+		    while(pool_info.get_pool_used_threads() != 0);
+		    return maintain_enum.update;
+        }
+
 		//scenario 2: system suspend, cpu, mem, space exceed the maximum usage
 		String work_space = client_info.get_client_preference_data().get("work_space");
 		String cpu_used = machine_sync.get_cpu_usage();
@@ -130,6 +137,7 @@ public class client_manager extends Thread  {
 			return maintain_enum.space;
 		}
 		return maintain_enum.unknown;
+
 	}
 	
 	public void run() {

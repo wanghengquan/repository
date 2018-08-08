@@ -57,8 +57,37 @@ public class switch_data {
 	//private String client_info_message = new String("");
 	//private String client_warn_message = new String("");
 	//private String client_error_message = new String("");
-	
-	
+
+    private boolean dev_check_need_update = false;
+    private boolean dev_update_done = false;
+
+    public boolean dev_update_done(){
+        return this.dev_update_done;
+    }
+
+    public void set_dev_update_done()
+    {
+        this.dev_update_done = true;
+    }
+
+    public void clear_dev_update_done()
+    {
+        this.dev_update_done = false;
+    }
+
+    public boolean dev_need_update(){
+        return this.dev_check_need_update;
+    }
+
+
+    public void set_dev_need_update(){
+        this.dev_check_need_update = true;
+    }
+
+    public void clear_dev_need_update(){
+        this.dev_check_need_update = false;
+    }
+
 	// public function
 	public switch_data() {
 

@@ -855,6 +855,23 @@ public class task_waiter extends Thread {
 				e.printStackTrace();
 			}
 			// ============== All dynamic job start from here ==============
+
+            // if DEV need update, stop all job
+            if(switch_info.dev_need_update())
+            {
+                TASK_WAITER_LOGGER.info("stop all task, waiting for DEV updating...");
+                while(!switch_info.dev_update_done()){
+                    try {
+                        Thread.sleep(base_interval * 1 * 1000);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                };
+                switch_info.clear_dev_update_done();
+                TASK_WAITER_LOGGER.info(">>>DEV update done, continue to work.");
+            }
+
 			// task 0 : initial preparing, update processing queues and load
 			// task data for re-processing queues
 			update_captured_queue_detail_lists();

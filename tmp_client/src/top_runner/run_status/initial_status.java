@@ -15,6 +15,7 @@ import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
 import self_update.app_update;
+import env_monitor.dev_check;
 
 class initial_status extends abstract_status {
 	
@@ -134,6 +135,8 @@ class initial_status extends abstract_status {
 			kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
 			my_kill.start();			
 		}
+		dev_check dev_check = new dev_check(this.client.switch_info);
+		dev_check.start();
 	}
 	
 	//get tube server start and wait it ready
