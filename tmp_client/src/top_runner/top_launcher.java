@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Properties;
 //import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -45,18 +46,21 @@ public class top_launcher {
 
 	}
 
-	public static String get_bin_path() {
-		String class_path = System.getProperty("java.class.path");
-		String path_split = System.getProperty("path.separator");
-		String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
-		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")
-				|| bin_path.endsWith(".so")) {
-			bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
-		}
-		File file = new File(bin_path);
-		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
-		return bin_path;
-	}
+    public static String get_bin_path() {
+        String class_path = System.getProperty("java.class.path");
+        if(System.getProperty("user.name").equals("ywang4")) {
+            class_path = System.getProperty("user.dir") + "/bin";
+        }
+        String path_split = System.getProperty("path.separator");
+        String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
+        if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")
+                || bin_path.endsWith(".so")) {
+            bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
+        }
+        File file = new File(bin_path);
+        bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
+        return bin_path;
+    }
 
 	private static void initial_log_config() {
 		ConfigurationSource source;

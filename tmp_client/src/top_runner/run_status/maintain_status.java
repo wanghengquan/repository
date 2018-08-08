@@ -70,7 +70,10 @@ public class maintain_status extends abstract_status {
 			implements_auto_restart_action();
 			break;
 		case update:
+		    System.out.println(">>>Info: Begin to update DEV...");
 			implements_core_script_update();
+			client.switch_info.set_dev_update_done();
+			client.switch_info.clear_dev_need_update();
 			break;
 		case cpu:
 			System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
