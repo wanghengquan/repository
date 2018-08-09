@@ -445,6 +445,8 @@ public class result_waiter extends Thread {
 			String cmd_reason = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
+			String defects = new String("NA");
+			String defects_history = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_enum.DONE)) {
 				if(call_timeout){
@@ -457,11 +459,15 @@ public class result_waiter extends Thread {
 				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("call_output"));
 				milestone = get_milestone_info((ArrayList<String>) one_call_data.get("call_output"));
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get("call_output"));
+				defects = get_defects_info((ArrayList<String>) one_call_data.get("call_output"));
+				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get("call_output"));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("call_output")));				
 			}  else {
 				cmd_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
+			hash_data.put("defects", defects);
+			hash_data.put("defects_history", defects_history);
 			hash_data.put("milestone", milestone);
 			hash_data.put("key_check", key_check);
 			hash_data.put("status", cmd_status);
@@ -593,7 +599,39 @@ public class result_waiter extends Thread {
 		}
 		return key_check;
 	}
-	
+
+    private String get_defects_info(ArrayList<String> cmd_output) {
+        String defects = new String("NA");
+        if(cmd_output == null || cmd_output.isEmpty()){
+            return defects;
+        }
+        // <status>Passed</status>
+        Pattern p = Pattern.compile("defects\\s*>\\s*(.+?)$");
+        for (String line : cmd_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+                defects = m.group(1);
+            }
+        }
+        return defects;
+    }
+
+    private String get_defects_history_info(ArrayList<String> cmd_output) {
+        String defects_history = new String("NA");
+        if (cmd_output == null || cmd_output.isEmpty()) {
+            return defects_history;
+        }
+        // <status>Passed</status>
+        Pattern p = Pattern.compile("defects_history\\s*>\\s*(.+?)$");
+        for (String line : cmd_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+                defects_history = m.group(1);
+            }
+        }
+        return defects_history;
+    }
+
 	private Boolean terminate_user_request_running_call() {
 		Boolean cancel_status = new Boolean(true);
 		if (!view_info.impl_stop_case_request()) {

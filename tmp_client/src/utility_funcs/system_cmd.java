@@ -225,12 +225,6 @@ public class system_cmd {
 			String line = line_it.next();
 			if (line.toLowerCase().startsWith("error"))
 				reason = line;
-			else if (line.indexOf("##CR_NOTE_BEGIN##") > 0)
-				TBD_flag = true;
-			else if (line.indexOf("#CR_NOTE_END#") > 0)
-				TBD_flag = false;
-			else if (TBD_flag)
-				reason = line;
 		}
 		if (reason.length() > 1)
 			string_list.add("<reason>" + reason.trim() + "</reason>");
@@ -289,12 +283,6 @@ public class system_cmd {
 			while (line_it.hasNext()) {
 				String line = line_it.next();
 				if (line.toLowerCase().startsWith("error"))
-					reason = line;
-				else if (line.indexOf("##CR_NOTE_BEGIN##") > 0)
-					TBD_flag = true;
-				else if (line.indexOf("#CR_NOTE_END#") > 0)
-					TBD_flag = false;
-				else if (TBD_flag)
 					reason = line;
 			}
 			if (exit_status) {
