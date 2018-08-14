@@ -12,6 +12,8 @@ public class dev_check extends Thread {
     private switch_data switch_info;
     private String core_addr;
     private String core_UUID;
+    private String svn_user = public_data.SVN_USER;
+    private String svn_pwd = public_data.SVN_PWD;
 
     public dev_check(switch_data switch_info) {
         this.switch_info = switch_info;
@@ -33,7 +35,9 @@ public class dev_check extends Thread {
     private String getCore_UUID()
     {
         try {
-            ArrayList<String> info_return = system_cmd.run("svn info " + core_addr);
+            String svn_info = "svn info " + core_addr +  " --username="
+                                + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
+            ArrayList<String> info_return = system_cmd.run(svn_info);
             for(String revision:info_return) {
                 String uuid = get_revision(revision);
                 if (!uuid.equals("not found")) {
@@ -64,13 +68,12 @@ public class dev_check extends Thread {
 
     private void check_dev_need_update(switch_data switch_info)
     {
-        System.out.println("INFO : >>>current version is: " + core_UUID);
         String new_version = getCore_UUID();
         if (!core_UUID.equals(new_version)) {
-            System.out.println("INFO : >>>new version found: " + new_version);
+            System.out.println("INFO : >>>current Core script version(DEV) is: " + core_UUID);
+            System.out.println("INFO : >>>new Core script version(DEV) found: " + new_version);
             core_UUID = new_version;
             switch_info.set_dev_need_update();
-            System.out.println("INFO : >>>DEV need update");
             while(!switch_info.dev_update_done());
             System.out.println("INFO : >>>Update DEV completed!");
         }

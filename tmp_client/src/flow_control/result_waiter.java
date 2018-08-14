@@ -342,6 +342,8 @@ public class result_waiter extends Thread {
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
 			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
+            case_status.put("defects", (String) case_report_map.get(call_index).get("defects"));
+            case_status.put("defects_history", (String) case_report_map.get(call_index).get("defects_history"));
 			case_data.put("Status", case_status);
 			task_info.update_case_to_processed_task_queues_map(queue_name, case_id, case_data);
 		}
@@ -414,7 +416,7 @@ public class result_waiter extends Thread {
 	private String remove_xml_modifier(String xml_string) {
 		xml_string = xml_string.replaceAll("\"", "&quot;");
 		xml_string = xml_string.replaceAll("&", "&amp;");
-		xml_string = xml_string.replaceAll("<", "&lt;");
+		xml_string = xml_string.replaceAll("<", "&lt;&nbsp;");
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
 	}
