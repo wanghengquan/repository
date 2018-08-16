@@ -416,7 +416,7 @@ public class result_waiter extends Thread {
 	private String remove_xml_modifier(String xml_string) {
 		xml_string = xml_string.replaceAll("\"", "&quot;");
 		xml_string = xml_string.replaceAll("&", "&amp;");
-		xml_string = xml_string.replaceAll("<", "&lt;&nbsp;");
+		xml_string = xml_string.replaceAll("<", "&lt;");
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
 	}
