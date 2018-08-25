@@ -91,7 +91,7 @@ public class maintain_status extends abstract_status {
 			break;
 		}
 		client.switch_info.set_client_maintain_house_keeping(false);
-	}	
+	}
 	
 	//=============================================================
 	//methods for locals
@@ -293,7 +293,7 @@ public class maintain_status extends abstract_status {
 			}
 			String work_path = new String();
 			if (client.client_info.get_client_data().containsKey("preference")) {
-				work_path = client.client_info.get_client_data().get("preference").get("work_path");
+				work_path = client.client_info.get_client_preference_data().get("work_space");
 			} else {
 				work_path = public_data.DEF_WORK_SPACE;
 			}

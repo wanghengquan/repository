@@ -106,9 +106,7 @@ public class machine_sync extends Thread {
 	public static String get_disk_left() {
 		File file = new File("..");
 		String disk_left = new String();
-		// long total_space = file.getTotalSpace();
 		long free_space = file.getFreeSpace();
-		// long used_space = total_space - free_space;
 		disk_left = free_space / 1024 / 1024 / 1024 + "";
 		return disk_left;
 	}
@@ -116,13 +114,27 @@ public class machine_sync extends Thread {
 	public static String get_disk_left(String work_space) {
 		File file = new File(work_space);
 		String disk_left = new String();
-		// long total_space = file.getTotalSpace();
 		long free_space = file.getFreeSpace();
-		// long used_space = total_space - free_space;
 		disk_left = free_space / 1024 / 1024 / 1024 + "";
 		return disk_left;
 	}	
 
+	public static String get_avail_space() {
+		File file = new File("..");
+		String disk_avail = new String();
+		long free_space = file.getUsableSpace();
+		disk_avail = free_space / 1024 / 1024 / 1024 + "";
+		return disk_avail;
+	}
+	
+	public static String get_avail_space(String work_space) {
+		File file = new File(work_space);
+		String disk_avail = new String();
+		long free_space = file.getUsableSpace();
+		disk_avail = free_space / 1024 / 1024 / 1024 + "";
+		return disk_avail;
+	}
+	
 	public static String get_cpu_usage() {
 		String systemType = System.getProperties().getProperty("os.name");
 		String cpu_usage = new String();
@@ -247,7 +259,7 @@ public class machine_sync extends Thread {
 	private void update_dynamic_data() {
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(machine_hash.get("System"));
-		String space = get_disk_left();
+		String space = get_avail_space();
 		String cpu = get_cpu_usage();
 		String mem = get_mem_usage();
 		system_data.put("space", space);

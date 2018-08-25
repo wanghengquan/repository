@@ -64,6 +64,8 @@ import utility_funcs.time_info;
  *                  auto_restart = xx
  * 					work_space = xx
  * 					save_space = xx
+ *                  dev_mails = xx
+ *                  opr_mails = xx
  *                  data from command line
  */
 public class data_server extends Thread {
@@ -191,7 +193,7 @@ public class data_server extends Thread {
 		// 2. merge System data
 		client_data.put("System", machine_hash.get("System"));
 		// 3. merge Machine data:
-		// configuration data > scan data > default data
+		// command data > configuration data > scan data > default data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
@@ -203,7 +205,7 @@ public class data_server extends Thread {
 		}
 		client_data.put("Machine", machine_data);
 		// 4. merge preference data (for software use):
-		// command data > config data > default data in public_data
+		// command data > configuration data > default data in public_data
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
@@ -216,6 +218,9 @@ public class data_server extends Thread {
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("auto_restart", public_data.DEF_AUTO_RESTART);
+		preference_data.put("dev_mails", public_data.BASE_DEVELOPER_MAIL);
+		preference_data.put("opr_mails", public_data.BASE_OPERATOR_MAIL);
+		preference_data.put("space_reserve", public_data.RUN_LIMITATION_SPACE);
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		//the following two are for history name support
@@ -237,7 +242,7 @@ public class data_server extends Thread {
 		system_data.putAll(machine_sync.machine_hash.get("System"));
 		String current_work_space = new String(client_info.get_client_preference_data().get("work_space"));
 		if(current_work_space != null && !current_work_space.trim().equals("")){
-			system_data.put("space", machine_sync.get_disk_left(current_work_space));
+			system_data.put("space", machine_sync.get_avail_space(current_work_space));
 		}		
 		client_info.update_system_data(system_data);
 	}
@@ -470,7 +475,8 @@ public class data_server extends Thread {
 		system_data.putAll(client_info.get_client_system_data());
 		String cpu_used = system_data.get("cpu");
 		String mem_used = system_data.get("mem");
-		String space_left = system_data.get("space");
+		String space_available = system_data.get("space");
+		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
@@ -483,9 +489,11 @@ public class data_server extends Thread {
 		} catch (Exception e) {
 			return status_enum.UNKNOWN;
 		}
-		int space_left_int = 0;
+		int space_available_int = 0;
+		int space_reserve_int = 0;
 		try{
-			space_left_int = Integer.parseInt(space_left);
+			space_available_int = Integer.parseInt(space_available);
+			space_reserve_int = Integer.parseInt(space_reserve);
 		} catch (Exception e) {
 			return status_enum.UNKNOWN;
 		}
@@ -495,7 +503,7 @@ public class data_server extends Thread {
 		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
 			return status_enum.SUSPEND;
 		}		
-		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
+		if (space_available_int < space_reserve_int){
 			return status_enum.SUSPEND;
 		}		
 		if (cpu_used_int > public_data.RUN_LIMITATION_CPU / 2){

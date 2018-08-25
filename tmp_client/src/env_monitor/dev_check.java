@@ -11,7 +11,7 @@ import java.util.regex.*;
 public class dev_check extends Thread {
     private switch_data switch_info;
     private String core_addr;
-    private String core_UUID;
+    private String core_UUID = new String("");
     private String svn_user = public_data.SVN_USER;
     private String svn_pwd = public_data.SVN_PWD;
 

@@ -167,6 +167,9 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));
 		tmp_preference_data.put("auto_restart", write_data.get("preference").get("auto_restart"));
 		tmp_preference_data.put("stable_version", write_data.get("preference").get("stable_version"));
+		tmp_preference_data.put("dev_mails", write_data.get("preference").get("dev_mails"));
+		tmp_preference_data.put("opr_mails", write_data.get("preference").get("opr_mails"));
+		tmp_preference_data.put("space_reserve", write_data.get("preference").get("space_reserve"));
 		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
