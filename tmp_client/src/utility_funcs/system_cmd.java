@@ -220,7 +220,7 @@ public class system_cmd {
 		// Start processing return string list
 		Iterator<String> line_it = string_list.iterator();
 		String reason = new String();
-		Boolean TBD_flag = new Boolean(false);
+		//Boolean TBD_flag = new Boolean(false);
 		while (line_it.hasNext()) {
 			String line = line_it.next();
 			if (line.toLowerCase().startsWith("error"))
@@ -278,7 +278,7 @@ public class system_cmd {
 			read_log.start();
 			boolean exit_status = p.waitFor((long) timeout, TimeUnit.SECONDS);
 			String reason = new String("");
-			Boolean TBD_flag = false;
+			//Boolean TBD_flag = false;
 			Iterator<String> line_it = string_list.iterator();
 			while (line_it.hasNext()) {
 				String line = line_it.next();

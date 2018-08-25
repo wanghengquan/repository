@@ -108,7 +108,8 @@ public class client_manager extends Thread  {
 		String work_space = client_info.get_client_preference_data().get("work_space");
 		String cpu_used = machine_sync.get_cpu_usage();
 		String mem_used = machine_sync.get_mem_usage();
-		String space_left = machine_sync.get_disk_left(work_space);
+		String space_available = machine_sync.get_avail_space(work_space);
+		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
@@ -121,9 +122,11 @@ public class client_manager extends Thread  {
 		} catch (Exception e) {
 			return maintain_enum.unknown;
 		}
-		int space_left_int = 0;
+		int space_available_int = 0;
+		int space_reserve_int = 0;
 		try{
-			space_left_int = Integer.parseInt(space_left);
+			space_available_int = Integer.parseInt(space_available);
+			space_reserve_int = Integer.parseInt(space_reserve);
 		} catch (Exception e) {
 			return maintain_enum.unknown;
 		}
@@ -133,7 +136,7 @@ public class client_manager extends Thread  {
 		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
 			return maintain_enum.mem;
 		}		
-		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
+		if (space_available_int < space_reserve_int){
 			return maintain_enum.space;
 		}
 		return maintain_enum.unknown;

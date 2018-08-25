@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
@@ -341,7 +342,7 @@ public class view_server extends Thread {
 		}
 	}
 
-	private void start_main_gui() {
+	private main_frame start_main_gui() {
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
 				break;
@@ -369,6 +370,7 @@ public class view_server extends Thread {
 				}
 			});
 		}
+		return top_view;
 	}
 
 	private void start_progress_show() {
@@ -390,6 +392,31 @@ public class view_server extends Thread {
 		start_prepare.dispose();
 	}
 
+	private void implements_message_prompt(main_frame top_view){
+		//message 1. space alert
+		space_reservation_alert(top_view);
+	}
+	
+	private void space_reservation_alert(main_frame top_view){
+		if (!view_info.get_space_cleanup_apply()){
+			return;
+		}
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		String available_space = new String(client_info.get_client_system_data().get("space"));
+		String space_reserve = new String(client_info.get_client_preference_data().get("space_reserve"));
+		StringBuilder message = new StringBuilder("");
+		message.append("Work space :" + work_space + " have a lower space left.");
+		message.append(line_separator);
+		message.append("Available Space: "+ available_space + "G, Reserved space: " + space_reserve + "G.");
+		message.append(line_separator);
+		message.append("");
+		message.append(line_separator);
+		message.append("Manually 'Work Space' clean up needed.");
+		String title = new String("Warning:Low space alert.");
+		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
+		view_info.set_space_cleanup_apply(new Boolean(false));
+	}
+	
 	private void run_system_client_insts_check() {
 		switch_info.increase_system_client_insts();
 		/*
@@ -479,7 +506,7 @@ public class view_server extends Thread {
 		// initial 1 : start progress
 		start_progress_show();
 		// initial 2 : start GUI
-		start_main_gui();
+		main_frame top_view = start_main_gui();
 		// initial 3 : Announce main GUI ready
 		switch_info.set_main_gui_power_up();
 		// ======================================
@@ -504,6 +531,8 @@ public class view_server extends Thread {
 			implements_run_action_request();
 			// task 3 : delete finished queue data
 			implements_user_del_request();
+			// task 4 : prompt message windows
+			implements_message_prompt(top_view);
 			try {
 				Thread.sleep(base_interval * 1 * 100);
 			} catch (InterruptedException e) {

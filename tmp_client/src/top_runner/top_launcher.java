@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.Properties;
+//import java.util.Properties;
 //import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -128,7 +128,7 @@ public class top_launcher {
 	public static void main(String[] args) {
 		System.out.println(">>>Info: Current Version:" + public_data.BASE_CURRENTVERSION);
 		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
-		System.out.println(">>>Info: Contact us:" + public_data.BASE_CONTACT_MAIL);
+		System.out.println(">>>Info: Contact us:" + public_data.BASE_DEVELOPER_MAIL);
 		System.out.println("");
 		String current_dir = new String(System.getProperty("user.dir").replaceAll("\\\\", "/"));
 		System.out.println(">>>Info: Launch dir:" + current_dir);
