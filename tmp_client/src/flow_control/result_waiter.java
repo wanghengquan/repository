@@ -308,6 +308,15 @@ public class result_waiter extends Thread {
 			case TBD:
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TBD, 1);
 				break;
+			case BLOCKED:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
+				break;	
+			case SWISSUE:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.SWISSUE, 1);
+				break;	
+			case CASEISSUE:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.CASEISSUE, 1);
+				break;				
 			default:
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.OTHERS, 1);
 			}

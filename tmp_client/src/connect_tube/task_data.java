@@ -66,6 +66,7 @@ public class task_data {
 	private ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> warned_task_queue_list = new ArrayList<String>();
 	// ====updated by waiters====
 	// running: working queue updated by task waiter
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
@@ -1229,6 +1230,45 @@ public class task_data {
 		}
 	}	
 	
+	public ArrayList<String> get_warned_task_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(warned_task_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public Boolean update_warned_task_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		Boolean update_status = new Boolean(true);
+		try {
+			if (warned_task_queue_list.contains(queue_name)) {
+				update_status = false;
+			} else {
+				warned_task_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+
+	public void update_warned_task_queue_list(ArrayList<String> queue_list) {
+		rw_lock.writeLock().lock();
+		try {
+			for (String queue_name : queue_list) {
+				if (!warned_task_queue_list.contains(queue_name)) {
+					warned_task_queue_list.add(queue_name);
+				}
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
 	/*
 	 * main entry for test
 	 */

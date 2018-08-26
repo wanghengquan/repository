@@ -29,6 +29,7 @@ import gui_interface.view_server;
 import info_parser.cmd_parser;
 import utility_funcs.des_encode;
 import utility_funcs.file_action;
+import utility_funcs.mail_action;
 import utility_funcs.time_info;
 import data_center.public_data;
 
@@ -118,6 +119,49 @@ public class hall_manager extends Thread {
 		}
 		String current_time = String.valueOf(System.currentTimeMillis() / 1000);
 		return time_info.get_runtime_string_dhms(start_time, current_time);	
+	}
+	
+	private void implement_task_blocker_warnning(){
+		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
+		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		Iterator<String> queue_it = summary_map.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			Integer block_num = new Integer(0);
+			HashMap<task_enum, Integer> queue_data = new HashMap<task_enum, Integer>();
+			queue_data.putAll(summary_map.get(queue_name));
+			block_num = queue_data.getOrDefault(task_enum.BLOCKED, 0);
+			if (block_num < public_data.SEND_MAIL_TASK_BLOCK){
+				continue;
+			}
+			if (task_info.get_warned_task_queue_list().contains(queue_name)){
+				continue;
+			}
+			task_info.update_warned_task_queue_list(queue_name);
+			send_warnning_mail(queue_name);
+		}
+	}
+	
+	private void send_warnning_mail(String queue_name){
+		String events = new String("Too many run blocks encountered.");
+		StringBuilder message = new StringBuilder("");
+		message.append("Hi TMP Operators:" + line_separator);
+		message.append("This Mail is send to you automatically due to ");
+		message.append("TMP Client encountered too many blocks in one task queue.");
+		message.append(line_separator);
+		message.append("Machine:" + client_info.get_client_machine_data().get("terminal"));
+		message.append(line_separator);
+		message.append("Task Queue:" + queue_name + line_separator);
+		message.append("Possible Reasons: System resource issue, Case issue..." + line_separator);
+		message.append(line_separator);
+		message.append(line_separator);
+		message.append("Please have time to check this issue." + line_separator);
+		message.append(line_separator);
+		message.append("Thanks" + line_separator);
+		message.append("TMP Client" + line_separator);
+		String to_str = new String(public_data.BASE_OPERATOR_MAIL);
+		to_str = client_info.get_client_preference_data().get("opr_mails");
+		mail_action.simple_event_mail(events, to_str, message.toString());
 	}
 	
 	private HashMap<task_enum, String> get_client_run_case_summary(){
@@ -553,6 +597,8 @@ public class hall_manager extends Thread {
 			local_cmd_mode_exit_check();
 			// task 4 : Maximum threads adjustment
 			thread_auto_adjustment();
+			// task 5 : Send mail for task queue with too many blockers
+			implement_task_blocker_warnning();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

@@ -59,7 +59,7 @@ public class maintain_status extends abstract_status {
 	
 	public void do_state_things(){
 		client.STATUS_LOGGER.info("Run state things");
-		client.switch_info.set_client_maintain_house_keeping(true);
+		client.switch_info.set_client_maintain_keeping(true);
 		maintain_enum maintain_entry = client.switch_info.get_client_maintain_reason();
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
 		System.out.println(">>>Info:Maintain Entry is: " + maintain_entry.get_description());
@@ -70,7 +70,7 @@ public class maintain_status extends abstract_status {
 			implements_auto_restart_action();
 			break;
 		case update:
-		    System.out.println(">>>Info: Begin to update DEV...");
+		    System.out.println(">>>Update: Begin to update DEV...");
 			implements_core_script_update();
 			client.switch_info.set_dev_update_done();
 			client.switch_info.clear_dev_need_update();
@@ -90,7 +90,7 @@ public class maintain_status extends abstract_status {
 		default:
 			break;
 		}
-		client.switch_info.set_client_maintain_house_keeping(false);
+		client.switch_info.set_client_maintain_keeping(false);
 	}
 	
 	//=============================================================

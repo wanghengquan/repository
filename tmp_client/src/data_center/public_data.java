@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.25"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20825; // version for code use
-	public final static String BASE_BUILDDATE = "2018/08/24";
+	public final static String BASE_CURRENTVERSION = "2.08.26"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20826; // version for code use
+	public final static String BASE_BUILDDATE = "2018/08/25";
 	public final static String BASE_SUITEFILEVERSION = "1.10";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -54,6 +54,10 @@ public class public_data {
 	public final static String MAIL_SERVER = "LSHMAIL1.latticesemi.com";
 	public final static String MAIL_SERVER_USERNAME = "jwang1";
 	public final static String MAIL_SERVER_PASSWORD = "Quan@123";
+
+	// ========================
+	// send email preference setting
+	public final static int SEND_MAIL_TASK_BLOCK = 10;	
 	
 	// ========================
 	// external configure based on software bin path

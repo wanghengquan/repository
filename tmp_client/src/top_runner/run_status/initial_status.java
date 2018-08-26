@@ -49,7 +49,7 @@ class initial_status extends abstract_status {
 		// task 8: client run mode recognize
 		client_local_console_run_recognize();		
 		// task 9: get hall manager ready
-		get_hall_manager_reay();
+		get_hall_manager_ready();
 		//waiting for all waiter ready
 		System.out.println(">>>Info: Working...");
 		try {
@@ -175,7 +175,7 @@ class initial_status extends abstract_status {
 	}
 	
 	//get_hall_manager_reay
-	private void get_hall_manager_reay(){
+	private void get_hall_manager_ready(){
 		client.hall_runner.start();
 		System.out.println(">>>Info: Hall manager power up.");
 	}

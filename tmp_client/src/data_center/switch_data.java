@@ -51,7 +51,7 @@ public class switch_data {
 	// Client console updating
 	private Boolean client_console_updating = new Boolean(false);
 	// Client maintains mode (house keeping) assertion
-	private Boolean client_house_keeping = new Boolean(false);
+	private Boolean client_maintain_keeping = new Boolean(false);
 	private maintain_enum client_maintain_reason = maintain_enum.unknown;
 	// system level message
 	//private String client_info_message = new String("");
@@ -381,20 +381,20 @@ public class switch_data {
 	}	
 	
 	//client_house_keeping
-	public void set_client_maintain_house_keeping(Boolean new_status) {
+	public void set_client_maintain_keeping(Boolean new_status) {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_house_keeping = new_status;
+			this.client_maintain_keeping = new_status;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public Boolean get_client_maintain_house_keeping() {
+	public Boolean get_client_maintain_keeping() {
 		Boolean status = new Boolean(false);
 		rw_lock.readLock().lock();
 		try {
-			status = this.client_house_keeping;
+			status = this.client_maintain_keeping;
 		} finally {
 			rw_lock.readLock().unlock();
 		}

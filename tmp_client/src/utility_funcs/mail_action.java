@@ -24,30 +24,28 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
-import data_center.client_data;
 
 public class mail_action {
 	// public property
 	// protected property
 	// private property
-	private client_data client_info;
 	private static final Logger MAIL_ACTION_LOGGER = LogManager.getLogger(mail_action.class.getName());
-    private String mail_server = public_data.MAIL_SERVER;
-    private String def_operator = public_data.BASE_OPERATOR_MAIL;
-    private String def_deveoper = public_data.BASE_DEVELOPER_MAIL;
-    private String line_separator = System.getProperty("line.separator");
+    private static String mail_server = public_data.MAIL_SERVER;
+    private static String def_operator = public_data.BASE_OPERATOR_MAIL;
+    private static String def_deveoper = public_data.BASE_DEVELOPER_MAIL;
+    private static String line_separator = System.getProperty("line.separator");
     
     		
-	public mail_action(client_data client_info) {
-		this.client_info = client_info;
+	public mail_action() {
+		
 	}
 	
-	protected void simple_dump_mail(
-			String message
+	public static void simple_dump_mail(
+			String to_str,
+			String cc_str,
+			String message,
+			String machine
 			){
-		String machine = client_info.get_client_machine_data().get("terminal");
-		String to_str = client_info.get_client_preference_data().get("dev_mails");
-		String cc_str = client_info.get_client_preference_data().get("opr_mails");
 		StringBuilder send_massage = new StringBuilder("");
 		String current_time = time_info.get_date_time();
 		send_massage.append("Time:" + current_time);
@@ -74,12 +72,11 @@ public class mail_action {
 		}		
 	}
 	
-	
-	protected void simple_event_mail(
+	public static void simple_event_mail(
 			String events,
+			String to_str,
 			String message
 			){
-		String to_str = client_info.get_client_preference_data().get("opr_mails");
 		String send_massage = new String(message);
 		try {
 			Email simple_mail = new SimpleEmail();
@@ -96,12 +93,13 @@ public class mail_action {
 		}			
 	}
 	
-	protected void multipart_attached_mail(
+	public static void multipart_attached_mail(
 			String events,
+			String to_str,
 			String file_path,
+			String work_space,
 			String message
 			){
-		String to_str = client_info.get_client_preference_data().get("opr_mails");
 		String send_url = new String(file_path);
 		File attach_file = new File(file_path);
 		if (!attach_file.exists()){
@@ -109,7 +107,7 @@ public class mail_action {
 			return;
 		}
 		if (attach_file.isDirectory()){
-			send_url = get_zipped_file(file_path);
+			send_url = get_zipped_file(file_path, work_space);
 		}
 		File url_fobj = new File(send_url);
 		String attach_name = new String("NA");
@@ -137,11 +135,13 @@ public class mail_action {
 		}		
 	}
 	
-	private String get_zipped_file(String dir_path){
+	private static String get_zipped_file(
+			String dir_path,
+			String work_space
+			){
 		String zip_file = new String("");
 		File dir_fobj = new File(dir_path);
 		String base_name = dir_fobj.getName();
-		String work_space = client_info.get_client_preference_data().get("work_space");
 		String zip_path = work_space + "/" + public_data.WORKSPACE_TEMP_DIR;
 		File zip_path_fobj = new File(zip_path);
 		if (!zip_path_fobj.exists()) {
@@ -163,7 +163,7 @@ public class mail_action {
 		return zip_file;		
 	}
 	
-	private ArrayList<InternetAddress> prepare_send_list(String to_string){
+	private static ArrayList<InternetAddress> prepare_send_list(String to_string){
 		Pattern mail_patt = Pattern.compile("(\\w)+(.\\w+)*@(\\w)+((.\\w+)+)", Pattern.CASE_INSENSITIVE);
 		ArrayList<InternetAddress> mail_array = new ArrayList<InternetAddress>();
 		for (String mail_addr : to_string.split(",|;")) {
@@ -183,8 +183,6 @@ public class mail_action {
 	
 	public static void main(String[] args) {
 		System.out.println("Please start from:top_runner/top_launcher");
-		client_data client_info = new client_data();
-		mail_action mail = new mail_action(client_info);
-		mail.multipart_attached_mail("events", "D:/tmp_work_space/results/prj9/runtotal_eit_suites_122717_141445/Tm1_1_", "testing...");
+		mail_action.multipart_attached_mail("events", "jason.wang@latticesemi.com", "D:/tmp_work_space/results/prj9/runtotal_eit_suites_122717_141445/Tm1_1_", ".", "testing...");
 	}
 }
