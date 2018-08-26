@@ -996,6 +996,7 @@ public class task_waiter extends Thread {
 			if (!task_case_ok){
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_used_thread(1);
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
 				continue;			
 			} 
 			// task 10 : launch
