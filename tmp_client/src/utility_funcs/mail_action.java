@@ -60,14 +60,14 @@ public class mail_action {
 			simple_mail.setHostName(mail_server);
 			simple_mail.setFrom(def_operator);
 			simple_mail.setTo(prepare_send_list(to_str));			
-			simple_mail.setSubject("TMP client dumpped.");
+			simple_mail.setSubject("TMP client dumped.");
 			simple_mail.setCc(prepare_send_list(cc_str));
 			simple_mail.addBcc(def_deveoper);			
 			simple_mail.setMsg(send_massage.toString());
 			simple_mail.send();
 		} catch (EmailException e) {
 			// TODO Auto-generated catch block
-			//  e.printStackTrace();
+			e.printStackTrace();
 			MAIL_ACTION_LOGGER.error("Send client dump message error out.");
 		}		
 	}
@@ -176,6 +176,15 @@ public class mail_action {
 					// e.printStackTrace();
 					MAIL_ACTION_LOGGER.error("Wrong mail address parsed for: " + mail_addr);
 				}
+			}
+		}
+		if (mail_array.isEmpty()){
+			try {
+				mail_array.add(new InternetAddress(public_data.BASE_OPERATOR_MAIL));
+			} catch (AddressException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				MAIL_ACTION_LOGGER.error("Add default mail address failed: " + public_data.BASE_OPERATOR_MAIL);
 			}
 		}
 		return mail_array;

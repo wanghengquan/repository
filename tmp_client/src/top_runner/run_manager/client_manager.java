@@ -28,8 +28,6 @@ import gui_interface.view_data;
 import gui_interface.view_server;
 import top_runner.run_status.client_status;
 import top_runner.run_status.maintain_enum;
-import utility_funcs.file_action;
-import utility_funcs.time_info;
 
 
 public class client_manager extends Thread  {
@@ -41,7 +39,7 @@ public class client_manager extends Thread  {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread current_thread;
-	private String line_separator = System.getProperty("line.separator");
+	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
 	private switch_data switch_info;
 	private client_data client_info;
@@ -149,17 +147,9 @@ public class client_manager extends Thread  {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_path") 
-					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
-			file_action.append_file(dump_path, " " + line_separator);
-			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, "Date   :" + time_info.get_date_time() + line_separator);
-			file_action.append_file(dump_path, "Version:" + public_data.BASE_CURRENTVERSION + line_separator);			
-			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for(Object item: run_exception.getStackTrace()){
-				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}			
-			System.exit(exit_enum.DUMP.get_index());
+			switch_info.set_client_stop_exception(run_exception);
+			switch_info.set_client_stop_request(exit_enum.DUMP);			
+			//System.exit(exit_enum.DUMP.get_index());
 		}
 	}
 
