@@ -37,6 +37,7 @@ public class switch_data {
 	// client house keep request
 	private int house_keep_request = 0;
 	private HashMap<exit_enum, Integer> client_stop_request = new HashMap<exit_enum, Integer>();
+	private Exception client_stop_exception = new Exception();
 	// Thread start sequence
 	private Boolean start_progress_power_up = new Boolean(false);
 	private Boolean main_gui_power_up = new Boolean(false);
@@ -229,6 +230,26 @@ public class switch_data {
 		}
 		return result;
 	}
+
+	public void set_client_stop_exception(Exception dump_exception) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_stop_exception = dump_exception;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Exception get_client_stop_exception() {
+		Exception result = new Exception();
+		rw_lock.readLock().lock();
+		try {
+			result = this.client_stop_exception;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}	
 
 	public void set_main_gui_power_up() {
 		rw_lock.writeLock().lock();
