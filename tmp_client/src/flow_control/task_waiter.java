@@ -728,9 +728,15 @@ public class task_waiter extends Thread {
 		if (m.find())
 			time_out = "3600";
 		if (time_out.equals("0")) {
-			time_out = "36000";
+			time_out = "2147483647";
 		}
-		return Integer.parseInt(time_out);
+		Integer data = new Integer(3600);
+		try {
+			data = Integer.parseInt(time_out);
+		} catch (NumberFormatException e){
+			TASK_WAITER_LOGGER.warn("Wrong timeout value found, will use default:3600 seconds");
+		}
+		return data;
 	}
 	
 	private String get_last_error_msg(ArrayList<String> message_list){
