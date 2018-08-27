@@ -456,7 +456,7 @@ public class result_waiter extends Thread {
 			String cmd_reason = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
-			String defects = new String("NA");
+			String defects = new String("");
 			String defects_history = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_enum.DONE)) {
@@ -612,7 +612,7 @@ public class result_waiter extends Thread {
 	}
 
     private String get_defects_info(ArrayList<String> cmd_output) {
-        String defects = new String("NA");
+        String defects = new String("");
         if(cmd_output == null || cmd_output.isEmpty()){
             return defects;
         }
