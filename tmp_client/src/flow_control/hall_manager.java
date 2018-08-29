@@ -120,7 +120,7 @@ public class hall_manager extends Thread {
 		return time_info.get_runtime_string_dhms(start_time, current_time);	
 	}
 	
-	private void implement_task_blocker_warnning(){
+	private void implement_task_blocker_actions(){
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
 		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
@@ -137,6 +137,10 @@ public class hall_manager extends Thread {
 				continue;
 			}
 			task_info.update_warned_task_queue_list(queue_name);
+			//try to pause current running task
+			task_info.update_task_queue_for_processed_task_queues_map(queue_name, task_enum.WAITING, task_enum.HALTED);
+			task_info.mark_queue_in_received_admin_queues_treemap(queue_name, queue_enum.PAUSED);
+			//send warnning mail
 			send_warnning_mail(queue_name);
 		}
 	}
@@ -154,6 +158,7 @@ public class hall_manager extends Thread {
 		message.append("Possible Reasons: System resource issue, Case issue..." + line_separator);
 		message.append(line_separator);
 		message.append(line_separator);
+		message.append("TMP client will try to pause it locally." + line_separator);
 		message.append("Please have time to check this issue." + line_separator);
 		message.append(line_separator);
 		message.append("Thanks" + line_separator);
@@ -588,7 +593,7 @@ public class hall_manager extends Thread {
 			// task 4 : Maximum threads adjustment
 			thread_auto_adjustment();
 			// task 5 : Send mail for task queue with too many blockers
-			implement_task_blocker_warnning();
+			implement_task_blocker_actions();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

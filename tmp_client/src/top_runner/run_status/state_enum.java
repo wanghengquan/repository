@@ -10,7 +10,7 @@
 package top_runner.run_status;
 
 public enum state_enum {
-	initial(1, "Initialize"),
+	initial(1, "Initializing"),
 	work(2, "Working"),
 	maintain(3, "Maintaining"),
 	stop(4, "Stopped"),

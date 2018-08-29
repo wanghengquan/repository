@@ -26,8 +26,8 @@ import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
+import env_monitor.env_checker;
 import env_monitor.machine_sync;
-import env_monitor.self_check;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
@@ -81,7 +81,7 @@ public class top_launcher {
 	}
 
 	private static Boolean run_self_check() {
-		self_check my_check = new self_check();
+		env_checker my_check = new env_checker();
 		return my_check.do_self_check();
 	}
 

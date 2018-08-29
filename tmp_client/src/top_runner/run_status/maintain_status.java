@@ -46,8 +46,8 @@ public class maintain_status extends abstract_status {
 	public void to_work() {
 		System.out.println(">>>####################");
 		client.STATUS_LOGGER.warn("Go to work");
-		client.data_runner.wake_request();
-		client.tube_runner.wake_request();
+		//client.data_runner.wake_request();
+		//client.tube_runner.wake_request();
 		client.hall_runner.wake_request();
 		client.set_current_status(client.WORK);
 	}
@@ -313,9 +313,17 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private void run_space_clean_up(){
+		int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
 		int maximum_remove_round = 5;
 		int remove_round = 0;
 		while(true){
+			del_finished_results();
+			try {
+				Thread.sleep(base_interval * 1 *1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			state_enum client_state = client.switch_info.get_client_run_state();
 			if (!client_state.equals(state_enum.maintain)){
 				break;
@@ -323,7 +331,6 @@ public class maintain_status extends abstract_status {
 			if (remove_round > maximum_remove_round){
 				break;
 			}
-			del_finished_results();
 			remove_round++;
 		}
 		if (get_space_overload()){

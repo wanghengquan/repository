@@ -24,6 +24,7 @@ import env_monitor.machine_sync;
 import flow_control.pool_data;
 import info_parser.cmd_parser;
 import info_parser.ini_parser;
+import top_runner.run_status.state_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
@@ -472,39 +473,18 @@ public class data_server extends Thread {
 	private status_enum calculate_client_current_status(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(client_info.get_client_system_data());
+		
+		state_enum client_state = switch_info.get_client_run_state();
+		if (client_state.equals(state_enum.maintain)){
+			return status_enum.SUSPEND;
+		}
 		String cpu_used = system_data.get("cpu");
-		String mem_used = system_data.get("mem");
-		String space_available = system_data.get("space");
-		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
 		} catch (Exception e) {
 			return status_enum.UNKNOWN;
 		}
-		int mem_used_int = 0;
-		try{
-			mem_used_int = Integer.parseInt(mem_used);
-		} catch (Exception e) {
-			return status_enum.UNKNOWN;
-		}
-		int space_available_int = 0;
-		int space_reserve_int = 0;
-		try{
-			space_available_int = Integer.parseInt(space_available);
-			space_reserve_int = Integer.parseInt(space_reserve);
-		} catch (Exception e) {
-			return status_enum.UNKNOWN;
-		}
-		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
-			return status_enum.SUSPEND;
-		}
-		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
-			return status_enum.SUSPEND;
-		}		
-		if (space_available_int < space_reserve_int){
-			return status_enum.SUSPEND;
-		}		
 		if (cpu_used_int > public_data.RUN_LIMITATION_CPU / 2){
 			return status_enum.BUSY;
 		} else {

@@ -193,10 +193,6 @@ public class client_manager extends Thread  {
 		return true;
 	}
 	
-	private void impl_client_status_report(client_status client_sts){
-		switch_info.set_client_run_state(client_sts.get_current_status());
-	}
-	
 	private String get_dump_string(Exception dump_exception){
 		StringBuilder message = new StringBuilder("");
 		String line_separator = System.getProperty("line.separator");
@@ -288,7 +284,6 @@ public class client_manager extends Thread  {
 				client_sts.do_state_things();
 			} 
 			// task 4 : 
-			impl_client_status_report(client_sts);
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

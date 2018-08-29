@@ -131,7 +131,7 @@ public class main_frame extends JFrame {
 		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info, pool_info, task_info));
 		work_panel task_insts = new work_panel(this, view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
-		status_bar status_insts = new status_bar(client_info, pool_info);
+		status_bar status_insts = new status_bar(client_info, switch_info, pool_info);
 		new Thread(status_insts).start();
 		this.getContentPane().add(status_insts, BorderLayout.SOUTH);
 		this.getContentPane().setBackground(Color.white);

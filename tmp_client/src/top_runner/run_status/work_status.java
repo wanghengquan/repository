@@ -35,8 +35,8 @@ public class work_status extends abstract_status {
 	public void to_maintain() {
 		// task 1: stop runner
 		client.hall_runner.wait_request();
-		client.tube_runner.wait_request();
-		client.data_runner.wait_request();
+		//client.tube_runner.wait_request();
+		//client.data_runner.wait_request();
 		try {
 			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 1000 * 2);
 		} catch (InterruptedException e) {

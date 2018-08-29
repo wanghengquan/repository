@@ -76,21 +76,25 @@ public class client_status extends Observable  {
 	}	
 	
 	public void set_current_status(abstract_status new_status) {  
-        this.current_status = new_status;  
+        this.current_status = new_status;
+        switch_info.set_client_run_state(current_status.get_current_status());
         setChanged();  
         notifyObservers();  
     } 
 
-    public void to_work_status() {  
+    public void to_work_status() { 
     	current_status.to_work(); 
+    	switch_info.set_client_run_state(state_enum.work);
     }  
 
     public void to_maintain_status() {  
-    	current_status.to_maintain();  
+    	current_status.to_maintain(); 
+    	switch_info.set_client_run_state(state_enum.maintain);
     } 
     
     public void to_stop_status() {  
-    	current_status.to_stop();  
+    	current_status.to_stop(); 
+    	switch_info.set_client_run_state(state_enum.stop);
     }
     
     public void do_state_things(){

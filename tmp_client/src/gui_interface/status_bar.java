@@ -23,7 +23,9 @@ import javax.swing.SwingUtilities;
 
 import data_center.client_data;
 import data_center.public_data;
+import data_center.switch_data;
 import flow_control.pool_data;
+import top_runner.run_status.state_enum;
 
 public class status_bar extends JPanel implements Runnable{
 	/**
@@ -31,15 +33,17 @@ public class status_bar extends JPanel implements Runnable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
+	private switch_data switch_info;
 	private pool_data pool_info;
-	JTextField jt_thread, jt_link, jt_cpu, jt_mem;
+	JTextField jt_thread, jt_link, jt_state, jt_cpu, jt_mem;
 	JLabel icon_belong,icon_mode;	
 	ImageIcon engineer_image, robot_image, private_image, public_image;
 
 
-	public status_bar(client_data client_info, pool_data pool_info){
+	public status_bar(client_data client_info, switch_data switch_info, pool_data pool_info){
 		this.pool_info = pool_info;
 		this.client_info = client_info;
+		this.switch_info = switch_info;
 		engineer_image = new ImageIcon(public_data.ICON_ATTENDED_MODE);
 		robot_image = new ImageIcon(public_data.ICON_UNATTENDED_MODE);
 		private_image = new ImageIcon(public_data.ICON_PRIVATE_MODE);
@@ -57,11 +61,14 @@ public class status_bar extends JPanel implements Runnable{
 		jt_link.setEditable(false);
 		bar_panel.add(jl_link);
 		bar_panel.add(jt_link);
-		//blank cell1
-		JPanel blank_cell1 = new JPanel();
-		bar_panel.add(blank_cell1);
+		//work state
+		JLabel jl_state = new JLabel("State:");
+		jt_state = new JTextField();
+		jt_state.setEditable(false);
+		bar_panel.add(jl_state);
+		bar_panel.add(jt_state);		
 		//working threads part
-		JLabel jl_thread = new JLabel("Working Thread(s):");
+		JLabel jl_thread = new JLabel("Thread(s):");
 		jt_thread = new JTextField();
 		jt_thread.setEditable(false);
 		bar_panel.add(jl_thread);
@@ -128,11 +135,16 @@ public class status_bar extends JPanel implements Runnable{
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
 		status_layout.setConstraints(jt_link, layout_s);	
-		//for blank_cell1
+		//for jl_state
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
-		status_layout.setConstraints(blank_cell1, layout_s);
+		status_layout.setConstraints(jl_state, layout_s);
+		//for jt_state
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		status_layout.setConstraints(jt_state, layout_s);		
 		//for jl_thread
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
@@ -201,6 +213,12 @@ public class status_bar extends JPanel implements Runnable{
 		jt_link.setText(link_info.substring(0, 1).toUpperCase() + link_info.substring(1));
 	}
 	
+	private void update_state_data(){
+		state_enum state_info = switch_info.get_client_run_state();
+		String state_str = state_info.get_description();
+		jt_state.setText(state_str.substring(0, 1).toUpperCase() + state_str.substring(1));
+	}	
+	
 	private void update_thread_data(){
 		int max_thread = pool_info.get_pool_current_size();
 		int use_thread = pool_info.get_pool_used_threads();
@@ -265,6 +283,7 @@ public class status_bar extends JPanel implements Runnable{
 		while (true) {
 			if (SwingUtilities.isEventDispatchThread()) {
 				update_link_data();
+				update_state_data();
 				update_thread_data();
 				update_system_data();
 				update_belong_data();
@@ -275,6 +294,7 @@ public class status_bar extends JPanel implements Runnable{
 					public void run() {
 						// TODO Auto-generated method stub
 						update_link_data();
+						update_state_data();
 						update_thread_data();
 						update_system_data();
 						update_belong_data();
