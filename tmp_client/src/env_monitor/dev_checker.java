@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.*;
 
-public class dev_check extends Thread {
+public class dev_checker extends Thread {
     private switch_data switch_info;
     private String core_addr;
     private String core_UUID = new String("");
     private String svn_user = public_data.SVN_USER;
     private String svn_pwd = public_data.SVN_PWD;
 
-    public dev_check(switch_data switch_info) {
+    public dev_checker(switch_data switch_info) {
         this.switch_info = switch_info;
         this.core_addr = public_data.CORE_SCRIPT_ADDR;
         this.core_UUID = getCore_UUID();
@@ -81,7 +81,7 @@ public class dev_check extends Thread {
 
     public static void main(String[] argvs)
     {
-        dev_check dc = new dev_check(null);
+        dev_checker dc = new dev_checker(null);
         System.out.println(dc.core_UUID);
     }
 }

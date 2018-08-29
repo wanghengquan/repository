@@ -97,7 +97,7 @@ public class client_status extends Observable  {
     	current_status.do_state_things();
 	}    
     
-    public String get_current_status() {  
+    public state_enum get_current_status() {  
     	return current_status.get_current_status();  
     }
  
@@ -106,7 +106,7 @@ public class client_status extends Observable  {
     
     public static void main(String[] args){  
     	client_status client =new client_status();    
-    	System.out.println(client.get_current_status()); 
+    	System.out.println(client.get_current_status().get_description()); 
     	try {
 			Thread.sleep(1000 * 5);
 		} catch (InterruptedException e) {
@@ -114,6 +114,6 @@ public class client_status extends Observable  {
 			e.printStackTrace();
 		}
     	client.to_stop_status();          
-    	System.out.println(client.get_current_status());
+    	System.out.println(client.get_current_status().get_description());
     }
 }

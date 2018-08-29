@@ -73,7 +73,7 @@ public class mail_action {
 	}
 	
 	public static void simple_event_mail(
-			String events,
+			String subject,
 			String to_str,
 			String message
 			){
@@ -83,7 +83,7 @@ public class mail_action {
 			simple_mail.setHostName(mail_server);
 			simple_mail.setFrom(def_operator);
 			simple_mail.setTo(prepare_send_list(to_str));			
-			simple_mail.setSubject("TMP client : " + events);			
+			simple_mail.setSubject(subject);			
 			simple_mail.setMsg(send_massage);
 			simple_mail.send();
 		} catch (EmailException e) {

@@ -10,10 +10,11 @@
 package top_runner.run_status;
 
 public enum state_enum {
-	initialize(1, "initialize"),
-	working(2, "working"),
-	maintaining(3, "maintaining"),
-	stopped(4, "stopped");
+	initial(1, "Initialize"),
+	work(2, "Working"),
+	maintain(3, "Maintaining"),
+	stop(4, "Stopped"),
+	unknown(5, "Unknown");
 	private int index;
 	private String description;
 	

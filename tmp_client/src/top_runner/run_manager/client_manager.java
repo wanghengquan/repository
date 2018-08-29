@@ -28,6 +28,9 @@ import gui_interface.view_data;
 import gui_interface.view_server;
 import top_runner.run_status.client_status;
 import top_runner.run_status.maintain_enum;
+import top_runner.run_status.state_enum;
+import utility_funcs.file_action;
+import utility_funcs.time_info;
 
 
 public class client_manager extends Thread  {
@@ -47,7 +50,7 @@ public class client_manager extends Thread  {
 	private view_data view_info;
 	private pool_data pool_info;
 	private HashMap<String, String> cmd_info;
-	private int idle_counter = 0;
+	private int idle_counter = 0;	
 	// public function
 	// protected function
 	// private function	
@@ -67,24 +70,8 @@ public class client_manager extends Thread  {
 		this.cmd_info = cmd_info;
 	}
 	
-	private Boolean start_work_mode(client_status client_sts){
-		if(client_sts.get_current_status().equals("work_status")){
-			return false; //already in work status
-		}
-		if(switch_info.get_client_maintain_keeping()){
-			return false;
-		} else {
-			return true;
-		}
-	}
-	
-	private maintain_enum start_maintenance_mode(client_status client_sts){
-		if(client_sts.get_current_status().equals("maintain_status")){
-			return maintain_enum.unknown; //already in maintain_status
-		}		
-		//maintenance start by any of following:
-		//scenario 1: idle for a long time
-		//String current_hall_status = switch_info.get_client_hall_status();
+	private Boolean get_system_idle(){
+		Boolean status = new Boolean(false);
 		if(pool_info.get_pool_used_threads() == 0){
 			idle_counter ++;
 		} else {
@@ -93,52 +80,137 @@ public class client_manager extends Thread  {
 		if (idle_counter > 60){
 			//cycle is base_interval * 1 * 60 = 5 minutes
 			idle_counter = 0;
-			return maintain_enum.idle;
+			status = true;
 		}
-
-        // dev need update
+		return status;
+	}
+	
+	private Boolean get_update_request(){
+		Boolean status = new Boolean(false);
         if(switch_info.dev_need_update()){
 		    while(pool_info.get_pool_used_threads() != 0);
-		    return maintain_enum.update;
+		    status = true;
         }
-
-		//scenario 2: system suspend, cpu, mem, space exceed the maximum usage
-		String work_space = client_info.get_client_preference_data().get("work_space");
+		return status;
+	}
+	
+	private Boolean get_environ_issue(){
+		Boolean status = new Boolean(false);
+		if(switch_info.get_client_environ_issue()){
+			status = true;
+		}
+		return status;
+	}
+	
+	private Boolean get_cpu_overload(){
+		Boolean status = new Boolean(false);
 		String cpu_used = machine_sync.get_cpu_usage();
-		String mem_used = machine_sync.get_mem_usage();
-		String space_available = machine_sync.get_avail_space(work_space);
-		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
 		} catch (Exception e) {
-			return maintain_enum.unknown;
+			return false;
 		}
+		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
+			status = true;
+		}
+		return status;
+	}
+	
+	private Boolean get_mem_overload(){
+		Boolean status = new Boolean(false);
+		String mem_used = machine_sync.get_mem_usage();
 		int mem_used_int = 0;
 		try{
 			mem_used_int = Integer.parseInt(mem_used);
 		} catch (Exception e) {
-			return maintain_enum.unknown;
+			return false;
 		}
+		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
+			status = true;
+		}
+		return status;
+	}
+	
+	private Boolean get_space_overload(){
+		Boolean status = new Boolean(false);
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String space_available = machine_sync.get_avail_space(work_space);
+		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
 		int space_available_int = 0;
 		int space_reserve_int = 0;
 		try{
 			space_available_int = Integer.parseInt(space_available);
 			space_reserve_int = Integer.parseInt(space_reserve);
 		} catch (Exception e) {
-			return maintain_enum.unknown;
-		}
-		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
-			return maintain_enum.cpu;
-		}
-		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
-			return maintain_enum.mem;
-		}		
+			return false;
+		}	
 		if (space_available_int < space_reserve_int){
-			return maintain_enum.space;
+			status = true;
 		}
-		return maintain_enum.unknown;
-
+		return status;
+	}
+	
+	private void impl_current_info_update(){
+		switch_info.clear_client_maintain_list();
+		if (get_system_idle()){
+			switch_info.update_client_maintain_list(maintain_enum.idle);
+		}
+		if (get_update_request()){
+			switch_info.update_client_maintain_list(maintain_enum.update);
+		}
+		if (get_environ_issue()){
+			switch_info.update_client_maintain_list(maintain_enum.environ);
+		}		
+		if (get_cpu_overload()){
+			switch_info.update_client_maintain_list(maintain_enum.cpu);
+		}
+		if (get_mem_overload()){
+			switch_info.update_client_maintain_list(maintain_enum.mem);
+		}
+		if (get_space_overload()){
+			switch_info.update_client_maintain_list(maintain_enum.space);
+		}		
+	}
+	
+	private Boolean start_work_mode(client_status client_sts){
+		if(client_sts.get_current_status().equals(state_enum.work)){
+			return false; //already in work status
+		}		
+		if(!switch_info.get_client_maintain_list().isEmpty()){
+			return false;
+		}
+		return true;
+	}
+	
+	private Boolean start_maintenance_mode(client_status client_sts){
+		if(client_sts.get_current_status().equals(state_enum.maintain)){
+			return false; //already in maintain_status
+		}
+		if(switch_info.get_client_maintain_list().isEmpty()){
+			return false;
+		}
+		return true;
+	}
+	
+	private void impl_client_status_report(client_status client_sts){
+		switch_info.set_client_run_state(client_sts.get_current_status());
+	}
+	
+	private String get_dump_string(Exception dump_exception){
+		StringBuilder message = new StringBuilder("");
+		String line_separator = System.getProperty("line.separator");
+		if (dump_exception == null){
+			return message.toString();
+		}
+		message.append("####################" + line_separator);
+		message.append("Date   :" + time_info.get_date_time() + line_separator);
+		message.append("Version:" + public_data.BASE_CURRENTVERSION + line_separator);
+		message.append(dump_exception.toString() + line_separator);
+		for(Object item: dump_exception.getStackTrace()){
+			message.append("    at " + item.toString() + line_separator);
+		}
+		return message.toString();
 	}
 	
 	public void run() {
@@ -147,9 +219,11 @@ public class client_manager extends Thread  {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			switch_info.set_client_stop_exception(run_exception);
-			switch_info.set_client_stop_request(exit_enum.DUMP);			
-			//System.exit(exit_enum.DUMP.get_index());
+			String dump_path = client_info.get_client_preference_data().get("work_path") 
+					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+			String dump_message = get_dump_string(run_exception);
+			file_action.append_file(dump_path, dump_message);
+			System.exit(exit_enum.DUMP.get_index());
 		}
 	}
 
@@ -196,24 +270,25 @@ public class client_manager extends Thread  {
 				CLIENT_MANAGER_LOGGER.debug("Client Thread running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1 : return to work status
+			// task 0 : current misc info update
+			impl_current_info_update();
+			// task 1 : start work status
 			if (start_work_mode(client_sts)){
 				client_sts.to_work_status();
 				client_sts.do_state_things();
 			}
 			// task 2 : maintenance mode calculate
-			maintain_enum maintain_entry = start_maintenance_mode(client_sts);
-			if(!maintain_entry.equals(maintain_enum.unknown)){
-				switch_info.set_client_maintain_reason(maintain_entry);
+			if(start_maintenance_mode(client_sts)){
 				client_sts.to_maintain_status();
 				client_sts.do_state_things();
 			}
 			// task 3 :
-			if (switch_info.get_client_stop_request().size() > 0){
+			if (!switch_info.get_client_stop_request().isEmpty()){
 				client_sts.to_stop_status();
 				client_sts.do_state_things();
 			} 
 			// task 4 : 
+			impl_client_status_report(client_sts);
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

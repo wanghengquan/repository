@@ -9,6 +9,7 @@
  */
 package data_center;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -19,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import env_monitor.machine_sync;
 import top_runner.run_status.maintain_enum;
+import top_runner.run_status.state_enum;
 
 public class switch_data {
 	// public property
@@ -52,13 +54,16 @@ public class switch_data {
 	// Client console updating
 	private Boolean client_console_updating = new Boolean(false);
 	// Client maintains mode (house keeping) assertion
-	private Boolean client_maintain_keeping = new Boolean(false);
-	private maintain_enum client_maintain_reason = maintain_enum.unknown;
+	// private Boolean client_maintain_keeping = new Boolean(false);
+	private ArrayList<maintain_enum> client_maintain_list = new ArrayList<maintain_enum>();
+	// Client management update 
+	private state_enum client_run_state = state_enum.initial;
+	// Client environ update
+	private Boolean client_environ_issue = new Boolean(true);
 	// system level message
 	//private String client_info_message = new String("");
 	//private String client_warn_message = new String("");
 	//private String client_error_message = new String("");
-
     private boolean dev_check_need_update = false;
     private boolean dev_update_done = false;
 
@@ -401,7 +406,28 @@ public class switch_data {
 		return status;
 	}	
 	
-	//client_house_keeping
+	//client client_environ_issue
+	public void set_client_environ_issue(Boolean new_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_environ_issue = new_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_client_environ_issue() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_environ_issue;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
+	/*
 	public void set_client_maintain_keeping(Boolean new_status) {
 		rw_lock.writeLock().lock();
 		try {
@@ -421,28 +447,62 @@ public class switch_data {
 		}
 		return status;
 	}	
-	
+	*/
 	//client_maintain_reason
-	public void set_client_maintain_reason(maintain_enum maintain_entry) {
+	public void clear_client_maintain_list() {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_maintain_reason = maintain_entry;
+			this.client_maintain_list.clear();;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public Boolean update_client_maintain_list(maintain_enum maintain_entry) {
+		Boolean update_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			if (client_maintain_list.contains(maintain_entry)){
+				update_status = false;
+			} else {
+				client_maintain_list.add(maintain_entry);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+
+	public ArrayList<maintain_enum> get_client_maintain_list() {
+		rw_lock.readLock().lock();
+		ArrayList<maintain_enum> temp = new ArrayList<maintain_enum>();
+		try {
+			temp.addAll(client_maintain_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
+	public void set_client_run_state(state_enum run_state) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_run_state = run_state;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 
-	public maintain_enum get_client_maintain_reason() {
-		maintain_enum maintain_entry = maintain_enum.unknown;
+	public state_enum get_client_run_state() {
+		state_enum run_state = state_enum.initial;
 		rw_lock.readLock().lock();
 		try {
-			maintain_entry = this.client_maintain_reason;
+			run_state = this.client_run_state;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
-		return maintain_entry;
+		return run_state;
 	}
-	
 	/*
 	public void set_client_hall_status(String current_status) {
 		rw_lock.writeLock().lock();
