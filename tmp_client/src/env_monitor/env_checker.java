@@ -41,6 +41,9 @@ public class env_checker extends Thread {
 		this.switch_info = switch_info;
 	}
 	
+	public env_checker() {
+	}	
+	
 	private String get_python_version() {
 		String cmd = "python --version ";
 		// Python 2.7.2
@@ -226,7 +229,7 @@ public class env_checker extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		self_check my_check = new self_check();
+		env_checker my_check = new env_checker(null);
 		my_check.do_self_check();
 	}
 }

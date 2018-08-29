@@ -435,7 +435,7 @@ public class view_server extends Thread {
 		String available_space = new String(client_info.get_client_system_data().get("space"));
 		String space_reserve = new String(client_info.get_client_preference_data().get("space_reserve"));
 		StringBuilder message = new StringBuilder("");
-		message.append("Work space :" + work_space + " have a lower space left.");
+		message.append("Work space :" + work_space + " has a lower disk space.");
 		message.append(line_separator);
 		message.append("Available Space: "+ available_space + "G, Reserved space: " + space_reserve + "G.");
 		message.append(line_separator);
