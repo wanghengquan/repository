@@ -15,7 +15,8 @@ import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
 import self_update.app_update;
-import env_monitor.dev_check;
+import env_monitor.dev_checker;
+import env_monitor.env_checker;
 
 class initial_status extends abstract_status {
 	
@@ -70,7 +71,8 @@ class initial_status extends abstract_status {
 	
 	public void do_state_things(){
 		client.STATUS_LOGGER.info("Run state things");
-	}	
+	}
+	
 	//=============================================================
 	//methods for locals
 	private void launch_main_gui(){
@@ -130,13 +132,18 @@ class initial_status extends abstract_status {
 	
 	//get daemon process ready
 	private void get_daemon_process_ready(){
+		//task 1: kill process 
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
 			kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
 			my_kill.start();			
 		}
-		dev_check dev_check = new dev_check(this.client.switch_info);
+		//task 2: dev check
+		dev_checker dev_check = new dev_checker(this.client.switch_info);
 		dev_check.start();
+		//task 3: environ check
+		env_checker env_check = new env_checker(this.client.switch_info);
+		env_check.start();
 	}
 	
 	//get tube server start and wait it ready

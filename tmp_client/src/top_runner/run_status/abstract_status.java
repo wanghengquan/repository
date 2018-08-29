@@ -28,8 +28,14 @@ public abstract class abstract_status {
 		
 	}
 	
-	public String get_current_status() {
-		String current_status = getClass().getName();
-		return current_status.substring(current_status.lastIndexOf('.') + 1);
+	public state_enum get_current_status() {
+		String class_name = new String("");
+		String current_status = new String("");
+		class_name = getClass().getName();
+		current_status = class_name.substring(class_name.lastIndexOf('.') + 1);
+		String state = new String("");
+		state = current_status.split("_")[0];
+		return state_enum.valueOf(state);
 	}
+	
 }

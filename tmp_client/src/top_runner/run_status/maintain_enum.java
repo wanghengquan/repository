@@ -15,7 +15,8 @@ public enum maintain_enum {
 	cpu(3, "cpu_overload"),
 	mem(4, "mem_overload"),
 	space(5, "no_space"),
-	unknown(6, "unknown");
+	environ(6, "env_issue"),
+	unknown(7, "unknown");
 	private int index;
 	private String description;
 	

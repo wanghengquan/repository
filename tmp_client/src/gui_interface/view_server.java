@@ -391,11 +391,43 @@ public class view_server extends Thread {
 	}
 
 	private void implements_message_prompt(main_frame top_view){
+		HashMap<String, String> machine_data = new HashMap<String, String>();
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		machine_data.putAll(client_info.get_client_machine_data());
+		preference_data.putAll(client_info.get_client_preference_data());
+		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		if (run_mode.equals("1")){
+			//in unattended mode, no one take care this client
+			return;
+		}
+		if (preference_data.get("cmd_gui").equals("cmd")){
+			//in console mode no gui interface
+			return;
+		}
 		//message 1. space alert
-		space_reservation_alert(top_view);
+		apply_space_reservation_alert(top_view);
+		//message 2. env issue alert
+		apply_environ_issue_alert(top_view);
 	}
 	
-	private void space_reservation_alert(main_frame top_view){
+	private void apply_environ_issue_alert(main_frame top_view){
+		if (!view_info.get_environ_issue_apply()){
+			return;
+		}
+		StringBuilder message = new StringBuilder("");
+		message.append("TMP client have wrong environment.");
+		message.append(line_separator);
+		message.append("Possible issues: Python/svn issue, no system resource.");
+		message.append(line_separator);
+		message.append("");
+		message.append(line_separator);
+		message.append("Manually environment check needed.");
+		String title = new String("Warning:Client environ issue.");
+		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
+		view_info.set_environ_issue_apply(false);		
+	}
+	
+	private void apply_space_reservation_alert(main_frame top_view){
 		if (!view_info.get_space_cleanup_apply()){
 			return;
 		}
@@ -412,7 +444,7 @@ public class view_server extends Thread {
 		message.append("Manually 'Work Space' clean up needed.");
 		String title = new String("Warning:Low space alert.");
 		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
-		view_info.set_space_cleanup_apply(new Boolean(false));
+		view_info.set_space_cleanup_apply(false);
 	}
 	
 	private void run_system_client_insts_check() {
