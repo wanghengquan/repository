@@ -138,9 +138,13 @@ public class hall_manager extends Thread {
 			}
 			task_info.update_warned_task_queue_list(queue_name);
 			//try to pause current running task
-			task_info.update_task_queue_for_processed_task_queues_map(queue_name, task_enum.WAITING, task_enum.HALTED);
-			task_info.mark_queue_in_received_admin_queues_treemap(queue_name, queue_enum.PAUSED);
-			//send warnning mail
+			ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
+			ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
+			if (running_admin_queue_list.contains(queue_name) || processing_admin_queue_list.contains(queue_name)) {
+				task_info.update_task_queue_for_processed_task_queues_map(queue_name, task_enum.WAITING, task_enum.HALTED);
+				task_info.mark_queue_in_received_admin_queues_treemap(queue_name, queue_enum.PAUSED);
+			}			
+			//send warning mail
 			send_warnning_mail(queue_name);
 		}
 	}
