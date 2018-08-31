@@ -727,6 +727,8 @@ public class result_waiter extends Thread {
 		if (!save_path_fobj.exists()) {
 			try {
 				FileUtils.forceMkdir(save_path_fobj);
+				save_path_fobj.setReadable(true, false);
+				save_path_fobj.setWritable(true, false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
