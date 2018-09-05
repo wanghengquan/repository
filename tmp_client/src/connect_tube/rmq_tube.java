@@ -236,9 +236,14 @@ public class rmq_tube {
 		String priority = new String();
 		if (!msg_data.containsKey("CaseInfo")) {
 			priority = "5";
-		} else if (!msg_data.get("CaseInfo").containsKey("priority")) {
+		} 
+		if (!msg_data.get("CaseInfo").containsKey("priority")) {
 			priority = "5";
-		} else {
+		}
+		if (msg_key.toLowerCase().contains("rerun_")){
+			priority = "3";
+		}
+		if (msg_data.get("CaseInfo").containsKey("priority")){
 			priority = msg_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
