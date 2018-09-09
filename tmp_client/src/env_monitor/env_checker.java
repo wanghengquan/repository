@@ -65,7 +65,7 @@ public class env_checker extends Thread {
 		}
 		return ver_str;
 	}
-
+	
 	private String get_java_version() {
 		String ver_str = System.getProperty("java.version");
 		return ver_str;
@@ -126,6 +126,29 @@ public class env_checker extends Thread {
 		}
 	}
 
+	private Boolean python_environ_check() {
+		String cmd = "python " + public_data.TOOLS_PY_ENV;
+		// Python ok
+		ArrayList<String> excute_retruns = new ArrayList<String>();
+		Boolean py_ok = new Boolean(false);
+		try {
+			excute_retruns.addAll(system_cmd.run(cmd));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			ENV_CHECKER_LOGGER.error("python env check error out");
+		}
+		Pattern ok_patt = Pattern.compile("python\\s*ok", Pattern.CASE_INSENSITIVE);
+		for (String line : excute_retruns){
+			Matcher ok_match = ok_patt.matcher(line);
+			if (ok_match.find()) {
+				py_ok = true;
+				break;
+			}
+		}
+		return py_ok;
+	}		
+	
 	private Boolean svn_version_check() {
 		String cur_ver = get_svn_version();
 		if (cur_ver.equals("unknown")) {
@@ -146,13 +169,15 @@ public class env_checker extends Thread {
 		Boolean check_result = new Boolean(false);
 		//Boolean java_pass = java_version_check();
 		Boolean python_pass = python_version_check();
+		Boolean python_env = python_environ_check();
 		Boolean svn_pass = svn_version_check();
-		if (python_pass && svn_pass) {
+		if (python_pass && python_env && svn_pass) {
 			check_result = true;
 		} else {
 			ENV_CHECKER_LOGGER.error("Self Check failed, System error out.");
 			//ENV_CHECKER_LOGGER.error("Client JAVA version:" + get_java_version());
 			ENV_CHECKER_LOGGER.error("Client Python version:" + get_python_version());
+			ENV_CHECKER_LOGGER.error("Client Python environ:" + python_environ_check());
 			ENV_CHECKER_LOGGER.error("Client SVN version:" + get_svn_version());
 		}
 		return check_result;
