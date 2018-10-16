@@ -437,7 +437,7 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private client_data client_info;
 	private task_data task_info;
-	private JMenuItem details;
+	private JMenuItem details, delete;
 
 	public reject_pop_memu(main_frame main_view, JTable table, client_data client_info, task_data task_info) {
 		this.main_view = main_view;
@@ -447,6 +447,9 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
 		this.add(details);
+		delete = new JMenuItem("Delete");
+		delete.addActionListener(this);
+		this.add(delete);
 	}
 
 	public reject_pop_memu get_reject_pop_menu() {
@@ -463,6 +466,12 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 			detail_view.setLocationRelativeTo(main_view);
 			detail_view.setVisible(true);
 		}
+		if (arg0.getSource().equals(delete)) {
+			System.out.println("reject delete clicked");
+			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
+			task_info.remove_queue_from_received_admin_queues_treemap(select_queue);
+			task_info.remove_rejected_admin_reason_treemap(select_queue);// source
+		}	
 	}
 }
 
