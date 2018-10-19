@@ -96,7 +96,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	private Component panel_top_component() {
 		JPanel reject_panel = new JPanel(new BorderLayout());
 		reject_table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		reject_pop_memu reject_menu = new reject_pop_memu(main_view, reject_table, client_info, task_info);
+		reject_pop_memu reject_menu = new reject_pop_memu(main_view, reject_table, client_info, task_info, view_info);
 		reject_table.addMouseListener(new MouseAdapter() {
 			//for windows popmenu
 			public void mouseReleased(MouseEvent e1) {
@@ -269,12 +269,14 @@ public class queue_panel extends JSplitPane implements Runnable {
 
 	private Boolean update_rejected_queue_data() {
 		Boolean show_update = new Boolean(false);
-		TreeMap<String, String> reject_treemap = task_info.get_rejected_admin_reason_treemap();// source
-		Iterator<String> reject_treemap_it = reject_treemap.keySet().iterator();
+		TreeMap<String, String> rejected_treemap = task_info.get_rejected_admin_reason_treemap();// source
+		Set<String> rejected_set = new TreeSet<String>(new queue_compare(view_info.get_rejected_sorting_request()));
+		rejected_set.addAll(rejected_treemap.keySet());
+		Iterator<String> rejected_it = rejected_set.iterator();
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		while (reject_treemap_it.hasNext()) {
-			String queue_name = reject_treemap_it.next();
-			String reject_reason = reject_treemap.get(queue_name);
+		while (rejected_it.hasNext()) {
+			String queue_name = rejected_it.next();
+			String reject_reason = rejected_treemap.get(queue_name);
 			// add watching vector
 			Vector<String> show_line = new Vector<String>();
 			show_line.add(queue_name);
@@ -289,7 +291,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 
 	private Boolean update_captured_queue_data() {
 		Boolean show_update = new Boolean(false);
-		Set<String> captured_set = new TreeSet<String>(new queue_compare());
+		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
 		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
 		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
 		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
@@ -437,16 +439,34 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 	private JTable table;
 	private client_data client_info;
 	private task_data task_info;
+	private view_data view_info;
+	private JMenuItem sort_priority, sort_runid, sort_time;
 	private JMenuItem details, delete;
 
-	public reject_pop_memu(main_frame main_view, JTable table, client_data client_info, task_data task_info) {
+	public reject_pop_memu(main_frame main_view, JTable table, client_data client_info, task_data task_info, view_data view_info) {
 		this.main_view = main_view;
 		this.table = table;
 		this.client_info = client_info;
 		this.task_info = task_info;
+		this.view_info = view_info;
+		//sorting function
+		JMenu sort = new JMenu("Sort");
+		sort_priority = new JMenuItem("Priority");
+		sort_priority.addActionListener(this);
+		sort_runid = new JMenuItem("RunID");
+		sort_runid.addActionListener(this);
+		sort_time = new JMenuItem("Time");
+		sort_time.addActionListener(this);
+		sort.add(sort_priority);
+		sort.add(sort_runid);
+		sort.add(sort_time);
+		this.add(sort);
+		this.addSeparator();
+		//details function
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
 		this.add(details);
+		//delete function
 		delete = new JMenuItem("Delete");
 		delete.addActionListener(this);
 		this.add(delete);
@@ -459,6 +479,18 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
+		if (arg0.getSource().equals(sort_priority)) {
+			System.out.println("sort_priority clicked");
+			view_info.set_rejected_sorting_request(sort_enum.PRIORITY);
+		}
+		if (arg0.getSource().equals(sort_runid)) {
+			System.out.println("sort_runid clicked");
+			view_info.set_rejected_sorting_request(sort_enum.RUNID);
+		}
+		if (arg0.getSource().equals(sort_time)) {
+			System.out.println("sort_time clicked");
+			view_info.set_rejected_sorting_request(sort_enum.TIME);
+		}		
 		if (arg0.getSource().equals(details)) {
 			System.out.println("reject details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
@@ -482,6 +514,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JMenuItem show;
+	private JMenuItem sort_priority, sort_runid, sort_time;
 	private JMenuItem run_play, run_pause, run_stop;
 	private JMenuItem details, results, submit;
 	private JMenuItem delete;
@@ -501,6 +534,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		show = new JMenuItem("Show");
 		show.addActionListener(this);
 		this.add(show);
+		this.addSeparator();
+		JMenu sort = new JMenu("Sort");
+		sort_priority = new JMenuItem("Priority");
+		sort_priority.addActionListener(this);
+		sort_runid = new JMenuItem("RunID");
+		sort_runid.addActionListener(this);
+		sort_time = new JMenuItem("Time");
+		sort_time.addActionListener(this);
+		sort.add(sort_priority);
+		sort.add(sort_runid);
+		sort.add(sort_time);
+		this.add(sort);
 		this.addSeparator();
 		JMenu run = new JMenu("Run");
 		run_play = new JMenuItem("Play");
@@ -653,6 +698,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.set_watching_queue(select_queue);
 			view_info.set_watching_queue_area(watch_enum.ALL);
+		}
+		if (arg0.getSource().equals(sort_priority)) {
+			System.out.println("sort_priority clicked");
+			view_info.set_captured_sorting_request(sort_enum.PRIORITY);
+		}
+		if (arg0.getSource().equals(sort_runid)) {
+			System.out.println("sort_runid clicked");
+			view_info.set_captured_sorting_request(sort_enum.RUNID);
+		}
+		if (arg0.getSource().equals(sort_time)) {
+			System.out.println("sort_time clicked");
+			view_info.set_captured_sorting_request(sort_enum.TIME);
 		}
 		if (arg0.getSource().equals(run_play)) {
 			System.out.println("run_play clicked");
