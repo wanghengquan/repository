@@ -10,15 +10,11 @@
 package flow_control;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.xml.internal.fastinfoset.util.StringArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -309,6 +305,7 @@ public class task_waiter extends Thread {
 		// again: merge case data admin queue and local queue (remote need,
 		// local is done)
 		standard_case_data.putAll(get_standard_case_data(raw_case_data));
+
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
 			// local data only need to merge admin ID run info
 			raw_task_data.putAll(get_merged_local_task_info(admin_data,standard_case_data));						
@@ -566,16 +563,22 @@ public class task_waiter extends Thread {
 		HashMap<String, String> paths_hash = new HashMap<String, String>();
 		paths_hash.put("work_space", public_data.DEF_WORK_SPACE);
 		paths_hash.put("save_space", public_data.DEF_SAVE_SPACE);
-		if (preference_data.containsKey("work_space")){
-			paths_hash.put("work_space", preference_data.get("work_space"));
-		}
-		if (preference_data.containsKey("save_space")){
-			paths_hash.put("save_space", preference_data.get("save_space"));
-		}		
-		if (case_data.containsKey("Paths")) {
-			paths_hash.putAll(case_data.get("Paths"));
-		}
-		default_data.put("Paths", paths_hash);		
+
+		//Modified by Yin, set save space with suite config or preference, 09/28/18
+        if (case_data.containsKey("CaseInfo") & (case_data.get("CaseInfo").containsKey("save_space"))) {
+            paths_hash.put("save_space", case_data.get("CaseInfo").get("save_space"));
+            if(case_data.get("CaseInfo").get("save_space").equals("")) {
+                if (preference_data.containsKey("save_space")) {
+                    paths_hash.put("save_space", preference_data.get("save_space"));
+                }
+            }
+        }
+        if (preference_data.containsKey("work_space")) {
+            paths_hash.put("work_space", preference_data.get("work_space"));
+        }
+        //End modify
+
+		default_data.put("Paths", paths_hash);
 		return default_data;
 	}
 
@@ -606,7 +609,11 @@ public class task_waiter extends Thread {
 		String run_name = "run" + task_data.get("ID").get("run");
 		String task_name = "T" + task_data.get("ID").get("id");
 		String work_space = preference_data.get("work_space");
-		String save_space = preference_data.get("save_space");
+
+		//Modified by Yin, get save_space with suite config, 09/28/18
+        String save_space = paths_hash.get("save_space");
+        //End modify
+
 		String case_mode = preference_data.get("case_mode");
 		String path_keep = preference_data.get("path_keep");
 		File design_name_fobj = new File(design_name);
@@ -645,17 +652,28 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("task_path", task_path);
 		//get save_path
+
+        //modified by Yin, paste save_space and save_path
+        String[] tmp_space = save_space.split("\\s+");
+        StringArray tmp_path = new StringArray(tmp_space.length, tmp_space.length, false);
+
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;
 		} else {
-			if(path_keep.equalsIgnoreCase("true")){
-				String[] path_array = new String[] { save_space, tmp_result, prj_name, run_name, design_name };
-				save_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
-			} else {
-				String[] path_array = new String[] { save_space, tmp_result, prj_name, run_name, task_name};
-				save_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
-			}
+		    for(String space:tmp_space) {
+                if (path_keep.equalsIgnoreCase("true")) {
+                    String[] path_array = new String[]{space, tmp_result, prj_name, run_name, design_name};
+                    tmp_path.add(String.join(file_seprator, path_array).replaceAll("\\\\", "/"));
+                } else {
+                    String[] path_array = new String[]{space, tmp_result, prj_name, run_name, task_name};
+                    tmp_path.add(String.join(file_seprator, path_array).replaceAll("\\\\", "/"));
+                }
+            }
+            save_path = String.join(" ", tmp_path.getCompleteArray()).replace("//",
+                    "\\\\");
 		}
+		//end modify
+
 		paths_hash.put("save_path", save_path);	
 		//get script_source
 		script_source = task_data.get("CaseInfo").get("script_address").trim().replaceAll("\\\\", "/");
@@ -685,7 +703,46 @@ public class task_waiter extends Thread {
 		task_data.put("Paths", paths_hash);
 		return task_data;
 	}
-	
+
+	//Add by Yin, 09/28/18
+	//private HashMap<String, HashMap<String, String>> set_save_space_in_standard_case_data(
+    //        HashMap<String, HashMap<String, String>> case_data,
+    //        HashMap<String, HashMap<String, String>> standard_hash
+    //){
+	//    System.out.println("case_data----------" + case_data.toString());
+    //    HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
+    //    merged_data.putAll(standard_hash);
+    //    HashMap<String, String> Paths = standard_hash.get("Paths");
+    //    String save_space_suite;
+    //    if(case_data.containsKey("SaveSpace")) {
+    //        save_space_suite = case_data.get("SaveSpace").get("save_space");
+    //    }
+    //    //if retest case, save_space has been insert to Paths
+    //    else if(case_data.containsKey("Paths")){
+    //        save_space_suite = case_data.get("Paths").get("save_space");
+    //    }
+    //    else{
+    //        save_space_suite = client_info.get_client_preference_data().get("work_space");
+    //    }
+//
+    //    String save_space = save_space_suite.replaceAll("\\\\", "/");
+    //    Pattern relative_path = Pattern.compile("^/.+?/(.+?)$");
+    //    Matcher m = relative_path.matcher(save_space);
+    //    if(m.find()){
+    //        if(System.getProperty("os.name").contains("Windows")){
+    //            save_space = "\\\\lsh-smb01/" + m.group(1);
+    //        }
+    //        else{
+    //            save_space = "/lsh/" + m.group(1);
+    //        }
+    //    }
+//
+    //    Paths.put("save_space", save_space);
+    //    merged_data.put("Paths", Paths);
+    //    return merged_data;
+    //}
+    //End add
+
 	private HashMap<String, HashMap<String, String>> get_merged_local_task_info(
 			HashMap<String, HashMap<String, String>> admin_hash, 
 			HashMap<String, HashMap<String, String>> case_hash) {

@@ -111,27 +111,35 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = post_process_cleanup(case_path);			
 			// task 2 : zip case to save path
-			if (save_space.equalsIgnoreCase(work_space)) {
-				continue;
-			}
-			if (save_space.trim().equals("")) {
-				// no save path, skip copy
-				continue;
-			}
-			switch (result_keep.toLowerCase()) {
-			case "zipped":
-				run_status = copy_case_to_save_path(report_path, save_path, "archive");
-				break;
-			case "unzipped":
-				run_status = copy_case_to_save_path(report_path, save_path, "source");
-				break;
-			default:// auto and any other inputs treated as auto
-				if (cmd_status.equals(task_enum.PASSED)) {
-					run_status = copy_case_to_save_path(report_path, save_path, "archive");
-				} else {
-					run_status = copy_case_to_save_path(report_path, save_path, "source");
-				}
-			}
+            //Modified by Yin, save case to all space, 10/24/2018
+            String[] tmp_space = save_space.split("\\s+");
+            String[] tmp_path = save_path.split("\\s");
+            for(int i=0; i<tmp_space.length; i++) {
+                String space = tmp_space[i];
+                String path = tmp_path[i];
+                if (space.equalsIgnoreCase(work_space)) {
+                    continue;
+                }
+                if (space.trim().equals("")) {
+                    // no save path, skip copy
+                    continue;
+                }
+                switch (result_keep.toLowerCase()) {
+                    case "zipped":
+                        if(!copy_case_to_save_path(report_path, path, "archive")) run_status = false;
+                        break;
+                    case "unzipped":
+                        if(!copy_case_to_save_path(report_path, path, "source")) run_status = false;
+                        break;
+                    default:// auto and any other inputs treated as auto
+                        if (cmd_status.equals(task_enum.PASSED)) {
+                            if(!copy_case_to_save_path(report_path, path, "archive")) run_status = false;
+                        } else {
+                            if(!copy_case_to_save_path(report_path, path, "source")) run_status = false;
+                        }
+                }
+            }
+            //End modify
 		}
 		return run_status;
 	}
@@ -390,6 +398,46 @@ public class result_waiter extends Thread {
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get("launch_path");
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
+
+			//modified by Yin, set the links in the web with save path, 09/28/18
+            Boolean is_windows = System.getProperty("os.name").contains("Windows");
+            String save_path = task_data.get("Paths").get("save_path");
+            String[] tmp_path = save_path.split("\\s+");
+            int i = 1;
+            for(String path: tmp_path) {
+                if(path.startsWith("/")){
+                     String link = String.format(
+                            "<a href=file://localhost%s  target='_blank'>%s</a>",
+                            path, path);
+                     //if(is_windows) {
+                     //    runlog.append("Can't save due to OS incompatible ==> " + link + line_separator);
+                     //}
+                     if(!is_windows){
+                         runlog.append("Save location " + i + " with Lin access ==> " + link + line_separator);
+                         if(path.startsWith("/lsh/")){
+                             runlog.append("Save location " + i + " with Win access ==> "
+                                     + link.replace("/lsh/", "\\\\lsh-smb01/") + line_separator);
+                         }
+                     }
+                }
+                else {
+                     String link = String.format(
+                            "<a href=%s target='_explorer.exe'>%s</a>",
+                            path, path);
+                     //if(!is_windows){
+                     //    runlog.append("Can't save due to OS incompatible ==> " + link + line_separator);
+                     //}
+                     if(is_windows){
+                         runlog.append("Save location " + i + " with Win access ==> " + link + line_separator);
+                         if(path.startsWith("\\\\lsh-smb01")){
+                             runlog.append("Save location " + i + " with Lin access ==> "
+                                     + link.replace("\\\\lsh-smb01/", "/lsh/") + line_separator);
+                         }
+                     }
+                }
+                i++;
+            }
+            /*
 			String detail_path = new String();
 			detail_path = "/prj" + task_data.get("ID").get("project") + "/run" + task_data.get("ID").get("run") + "/T"
 					+ task_data.get("ID").get("id");
@@ -403,8 +451,9 @@ public class result_waiter extends Thread {
 			lin_link = String.format(
 					"<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>",
 					detail_path, detail_path);
-			runlog.append("Unified Location(Win LSH Access) ==> " + win_link + line_separator);
-			runlog.append("Unified Location(Lin LSH Access) ==> " + lin_link + line_separator);
+			*/
+            //End modify
+
 			runlog.append("Note:" + line_separator);
 			runlog.append("1. If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);

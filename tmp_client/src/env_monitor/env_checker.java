@@ -54,11 +54,6 @@ public class env_checker extends Thread {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("Run command failed:" + cmd);
-			ENV_CHECKER_LOGGER.error(e.toString());
-			for(Object item: e.getStackTrace()){
-				ENV_CHECKER_LOGGER.error(item.toString());
-			}			
 		}
 		Pattern version_patt = Pattern.compile("python\\s(\\d\\.\\d+.\\d+)", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
@@ -66,12 +61,6 @@ public class env_checker extends Thread {
 			if (version_match.find()) {
 				ver_str = version_match.group(1);
 				break;
-			}
-		}
-		if (ver_str.equals("unknown")){
-			ENV_CHECKER_LOGGER.error("Got unknown Python version. command returns:");
-			for(String item: excute_retruns){
-				ENV_CHECKER_LOGGER.error(item);
 			}
 		}
 		return ver_str;
@@ -92,11 +81,6 @@ public class env_checker extends Thread {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("ENV svn run command failed:" + cmd);
-			ENV_CHECKER_LOGGER.error(e.toString());
-			for(Object item: e.getStackTrace()){
-				ENV_CHECKER_LOGGER.error(item.toString());
-			}		
 		}
 		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d\\.\\d+)", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
@@ -129,7 +113,6 @@ public class env_checker extends Thread {
 	private Boolean python_version_check() {
 		String cur_ver = get_python_version();
 		if (cur_ver.equals("unknown")) {
-			ENV_CHECKER_LOGGER.error("Get python version error: unknown version");
 			return false;
 		}
 		String[] ver_array = cur_ver.split("\\.");
@@ -138,7 +121,7 @@ public class env_checker extends Thread {
 		if (cur_ver_float >= public_data.BASE_PYTHONBASEVERSION && cur_ver_float <= 3.0f) {
 			return true;
 		} else {
-			ENV_CHECKER_LOGGER.error("python version out of scope:" + cur_ver_float.toString());
+			ENV_CHECKER_LOGGER.error("python version out of scope.");
 			return false;
 		}
 	}
@@ -177,42 +160,25 @@ public class env_checker extends Thread {
 		if (cur_ver_float >= public_data.BASE_SVNBASEVERSION) {
 			return true;
 		} else {
-			ENV_CHECKER_LOGGER.error("SVN version out of scope:" + cur_ver_float.toString());
+			ENV_CHECKER_LOGGER.error("SVN version out of scope.");
 			return false;
 		}
 	}
 	
 	public Boolean do_self_check() {
 		Boolean check_result = new Boolean(false);
-		Boolean python_pass = new Boolean(false);
-		Boolean python_env = new Boolean(false);
-		Boolean svn_pass = new Boolean(false);
-		int check_counter = 0;
-		//to minimize the wrong warning any success in 3 try will be considered as env ok.
-		while(true){
-			check_counter += 1;
-			if (check_counter > 3){
-				break;
-			}
-			python_pass = python_version_check();
-			python_env = python_environ_check();
-			svn_pass = svn_version_check();	
-			if (python_pass && python_env && svn_pass) {
-				check_result = true;
-				break;
-			} else {
-				ENV_CHECKER_LOGGER.error("Self Check failed:");
-				ENV_CHECKER_LOGGER.error("Client Python version:" + python_pass.toString());
-				ENV_CHECKER_LOGGER.error("Client Python environ:" + python_env.toString());
-				ENV_CHECKER_LOGGER.error("Client SVN version:" + svn_pass.toString());
-				check_result = false;
-			}
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		//Boolean java_pass = java_version_check();
+		Boolean python_pass = python_version_check();
+		Boolean python_env = python_environ_check();
+		Boolean svn_pass = svn_version_check();
+		if (python_pass && python_env && svn_pass) {
+			check_result = true;
+		} else {
+			ENV_CHECKER_LOGGER.error("Self Check failed, System error out.");
+			//ENV_CHECKER_LOGGER.error("Client JAVA version:" + get_java_version());
+			ENV_CHECKER_LOGGER.error("Client Python version:" + get_python_version());
+			ENV_CHECKER_LOGGER.error("Client Python environ:" + python_environ_check());
+			ENV_CHECKER_LOGGER.error("Client SVN version:" + get_svn_version());
 		}
 		return check_result;
 	}
@@ -254,7 +220,7 @@ public class env_checker extends Thread {
 			}
 			// task 1 : 
 			try {
-				Thread.sleep(base_interval * 2 * 1000);
+				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
