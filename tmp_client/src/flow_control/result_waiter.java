@@ -111,7 +111,6 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = post_process_cleanup(case_path);			
 			// task 2 : zip case to save path
-            //Modified by Yin, save case to all space, 10/24/2018
             String[] tmp_space = save_space.split("\\s+");
             String[] tmp_path = save_path.split("\\s");
             for(int i=0; i<tmp_space.length; i++) {
@@ -139,7 +138,6 @@ public class result_waiter extends Thread {
                         }
                 }
             }
-            //End modify
 		}
 		return run_status;
 	}
