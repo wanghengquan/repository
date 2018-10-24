@@ -49,9 +49,10 @@ public class top_launcher {
     public static String get_bin_path() {
         String class_path = System.getProperty("java.class.path");
         if(System.getProperty("user.name").equals("ywang4")) {
-            class_path = System.getProperty("user.dir") + "/bin";
+            //Modified by Yin, add /tmp_client, 09/28/18
+            class_path = System.getProperty("user.dir") + "/tmp_client/bin";
         }
-        String path_split = System.getProperty("path.separator");
+        String path_split =  System.getProperty("path.separator");
         String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
         if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")
                 || bin_path.endsWith(".so")) {
