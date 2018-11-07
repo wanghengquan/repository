@@ -111,11 +111,11 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = post_process_cleanup(case_path);			
 			// task 2 : zip case to save path
-            String[] tmp_space = save_space.split("\\s+");
-            String[] tmp_path = save_path.split("\\s");
+            String[] tmp_space = save_space.split(",");
+            String[] tmp_path = save_path.split(",");
             for(int i=0; i<tmp_space.length; i++) {
-                String space = tmp_space[i];
-                String path = tmp_path[i];
+                String space = tmp_space[i].trim();
+                String path = tmp_path[i].trim();
                 if (space.equalsIgnoreCase(work_space)) {
                     continue;
                 }
@@ -400,9 +400,10 @@ public class result_waiter extends Thread {
 			//modified by Yin, set the links in the web with save path, 09/28/18
             Boolean is_windows = System.getProperty("os.name").contains("Windows");
             String save_path = task_data.get("Paths").get("save_path");
-            String[] tmp_path = save_path.split("\\s+");
+            String[] tmp_path = save_path.split(",");
             int i = 1;
             for(String path: tmp_path) {
+                path = path.trim();
                 if(path.startsWith("/")){
                      String link = String.format(
                             "<a href=file://localhost%s  target='_blank'>%s</a>",
@@ -414,7 +415,8 @@ public class result_waiter extends Thread {
                          runlog.append("Save location " + i + " with Lin access ==> " + link + line_separator);
                          if(path.startsWith("/lsh/")){
                              runlog.append("Save location " + i + " with Win access ==> "
-                                     + link.replace("/lsh/", "\\\\lsh-smb01/") + line_separator);
+                                     + link.replace("/lsh/", "\\\\lsh-smb01\\").replace(
+                                             '/', '\\') + line_separator);
                          }
                      }
                 }
@@ -427,9 +429,10 @@ public class result_waiter extends Thread {
                      //}
                      if(is_windows){
                          runlog.append("Save location " + i + " with Win access ==> " + link + line_separator);
-                         if(path.startsWith("\\\\lsh-smb01")){
+                         if(path.startsWith("\\\\lsh-smb01\\")){
                              runlog.append("Save location " + i + " with Lin access ==> "
-                                     + link.replace("\\\\lsh-smb01/", "/lsh/") + line_separator);
+                                     + link.replace("\\\\lsh-smb01\\", "/lsh/").replace(
+                                             '\\', '/') + line_separator);
                          }
                      }
                 }
