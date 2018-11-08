@@ -396,65 +396,34 @@ public class result_waiter extends Thread {
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get("launch_path");
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
-
-			//modified by Yin, set the links in the web with save path, 09/28/18
             Boolean is_windows = System.getProperty("os.name").contains("Windows");
             String save_path = task_data.get("Paths").get("save_path");
             String[] tmp_path = save_path.split(",");
             int i = 1;
+            //multiple save path with multiple web link show.
             for(String path: tmp_path) {
                 path = path.trim();
                 if(path.startsWith("/")){
-                     String link = String.format(
-                            "<a href=file://localhost%s  target='_blank'>%s</a>",
-                            path, path);
-                     //if(is_windows) {
-                     //    runlog.append("Can't save due to OS incompatible ==> " + link + line_separator);
-                     //}
+                     String link = String.format("<a href=file://localhost%s  target='_blank'>%s</a>", path, path);
                      if(!is_windows){
                          runlog.append("Save location " + i + " with Lin access ==> " + link + line_separator);
                          if(path.startsWith("/lsh/")){
                              runlog.append("Save location " + i + " with Win access ==> "
-                                     + link.replace("/lsh/", "\\\\lsh-smb01\\").replace(
-                                             '/', '\\') + line_separator);
+                                     + link.replace("/lsh/", "\\\\lsh-smb01\\").replace('/', '\\') + line_separator);
                          }
                      }
-                }
-                else {
-                     String link = String.format(
-                            "<a href=%s target='_explorer.exe'>%s</a>",
-                            path, path);
-                     //if(!is_windows){
-                     //    runlog.append("Can't save due to OS incompatible ==> " + link + line_separator);
-                     //}
+                } else {
+                     String link = String.format("<a href=%s target='_explorer.exe'>%s</a>", path, path);
                      if(is_windows){
                          runlog.append("Save location " + i + " with Win access ==> " + link + line_separator);
                          if(path.startsWith("\\\\lsh-smb01\\")){
                              runlog.append("Save location " + i + " with Lin access ==> "
-                                     + link.replace("\\\\lsh-smb01\\", "/lsh/").replace(
-                                             '\\', '/') + line_separator);
+                                     + link.replace("\\\\lsh-smb01\\", "/lsh/").replace('\\', '/') + line_separator);
                          }
                      }
                 }
                 i++;
             }
-            /*
-			String detail_path = new String();
-			detail_path = "/prj" + task_data.get("ID").get("project") + "/run" + task_data.get("ID").get("run") + "/T"
-					+ task_data.get("ID").get("id");
-			String win_link = new String();
-			String lin_link = new String();
-			// Access for Windows: <a href=\\lsh-smb01\home/rel/ng1_0.1205\icd
-			// target='_explorer.exe'>\\lsh-smb01\home\rel\ng1_0.1205\icd</a>
-			win_link = String.format(
-					"<a href=\\\\lsh-smb01\\sw/qa/qadata/results%s target='_explorer.exe'>\\\\lsh-smb01\\sw/qa/qadata/results%s</a>",
-					detail_path, detail_path);
-			lin_link = String.format(
-					"<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>",
-					detail_path, detail_path);
-			*/
-            //End modify
-
 			runlog.append("Note:" + line_separator);
 			runlog.append("1. If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);
@@ -479,7 +448,6 @@ public class result_waiter extends Thread {
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
 	}
-
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, Object>> generate_case_report_data() {
 		HashMap<String, HashMap<String, Object>> case_data = new HashMap<String, HashMap<String, Object>>();

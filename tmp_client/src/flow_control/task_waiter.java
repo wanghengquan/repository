@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.xml.internal.fastinfoset.util.StringArray;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,7 +84,7 @@ public class task_waiter extends Thread {
 					import_data.retrieve_disk_dumped_processed_task_data(client_info));
 		}
 	}
-
+	
 	private void update_captured_queue_detail_lists() {
 		Set<String> captured_admin_queue_set = new HashSet<String>();
 		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
@@ -122,7 +121,7 @@ public class task_waiter extends Thread {
 		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
 	}
 
-	private void sync_running_queue_list() {
+	private void update_running_queue_list() {
 		ArrayList<String> running_admin_queue_list = new ArrayList<String>();
 		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 		running_admin_queue_list.addAll(task_info.get_running_admin_queue_list());
@@ -160,6 +159,28 @@ public class task_waiter extends Thread {
 		}
 	}
 
+	private Boolean start_new_task_check(){
+		Boolean available = new Boolean(true);
+		//DEV ready ?
+		if (switch_info.get_core_script_update_request()){
+			return false;
+		}
+		//thread available ?
+		if (pool_info.get_available_thread() < 1){
+			return false;
+		}
+		//processing queue available ?
+		if (task_info.get_processing_admin_queue_list().size() < 1) {
+			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
+				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+			} else {
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
+			}
+			return false;
+		}		
+		return available;
+	}
+	
 	private String get_right_task_queue() {
 		String queue_name = new String();
 		// pending_queue_list = total processing_admin_queue -
@@ -429,14 +450,12 @@ public class task_waiter extends Thread {
 			machine_hash.putAll(case_data.get("Machine"));
 		}
 		formated_data.put("Machine", machine_hash);
-
-		//Modified by Yin, add client_preference, 11/3/2018
+        // ClientPreference format
         HashMap<String, String> client_preference = new HashMap<String, String>();
         if (case_data.containsKey("ClientPreference")) {
             client_preference.putAll(case_data.get("ClientPreference"));
         }
         formated_data.put("ClientPreference", client_preference);
-
 		// System format
 		HashMap<String, String> system_hash = new HashMap<String, String>();
 		String os = new String("");
@@ -500,6 +519,7 @@ public class task_waiter extends Thread {
 	private HashMap<String, HashMap<String, String>> merge_default_and_preference_data(
 			HashMap<String, HashMap<String, String>> case_data,
 			HashMap<String, String> preference_data) {
+		// the priority will be :  default < preference < case_data
 		HashMap<String, HashMap<String, String>> default_data = new HashMap<String, HashMap<String, String>>();
 		// ID format NA
 		HashMap<String, String> id_hash = new HashMap<String, String>();
@@ -560,6 +580,12 @@ public class task_waiter extends Thread {
 			software_hash.putAll(case_data.get("Software"));
 		}
 		default_data.put("Software", software_hash);
+		// ClientPreference NA
+        HashMap<String, String> client_preference_hash = new HashMap<>();
+        if(case_data.containsKey("ClientPreference")){
+            client_preference_hash.putAll(case_data.get("ClientPreference"));
+        }
+        default_data.put("ClientPreference", client_preference_hash);		
 		// Status NA
 		HashMap<String, String> status_hash = new HashMap<String, String>();
 		if (case_data.containsKey("Status")) {
@@ -568,29 +594,18 @@ public class task_waiter extends Thread {
 		default_data.put("Status", status_hash);
 		// Paths NA
 		HashMap<String, String> paths_hash = new HashMap<String, String>();
-		paths_hash.put("work_space", public_data.DEF_WORK_SPACE);
 		paths_hash.put("save_space", public_data.DEF_SAVE_SPACE);
-
-        //Modified by Yin, add client_preference, 11/3/18
+		if(preference_data.containsKey("save_space")){
+            paths_hash.put("save_space", preference_data.get("save_space"));
+        }		
         if (case_data.containsKey("ClientPreference") & (case_data.get("ClientPreference").containsKey("save_space"))) {
             paths_hash.put("save_space", case_data.get("ClientPreference").get("save_space"));
         }
-        else if(preference_data.containsKey("save_space")){
-            paths_hash.put("save_space", preference_data.get("save_space"));
-        }
+        paths_hash.put("work_space", public_data.DEF_WORK_SPACE);
         if (preference_data.containsKey("work_space")) {
             paths_hash.put("work_space", preference_data.get("work_space"));
         }
-
         default_data.put("Paths", paths_hash);
-
-        HashMap<String, String> client_preference_hash = new HashMap<>();
-        if(case_data.containsKey("ClientPreference")){
-            client_preference_hash.putAll(case_data.get("ClientPreference"));
-        }
-        default_data.put("ClientPreference", client_preference_hash);
-        //End modify
-
 		return default_data;
 	}
 
@@ -610,7 +625,7 @@ public class task_waiter extends Thread {
 		task_data.putAll(deep_clone.clone(case_data));
 		HashMap<String, String> paths_hash = new HashMap<String, String>();
 		paths_hash.putAll(task_data.get("Paths"));
-		// common info prepare
+		//common info prepare
 		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim().replaceAll("\\\\", "/");
 		String repository = task_data.get("CaseInfo").get("repository").trim().replaceAll("\\\\", "/");	
 		String suite_path = task_data.get("CaseInfo").get("suite_path").trim().replaceAll("\\\\", "/");	
@@ -620,16 +635,11 @@ public class task_waiter extends Thread {
 		String prj_name = "prj" + task_data.get("ID").get("project");
 		String run_name = "run" + task_data.get("ID").get("run");
 		String task_name = "T" + task_data.get("ID").get("id");
-		String work_space = preference_data.get("work_space");
-
-		//Modified by Yin, get save_space with suite config, 09/28/18
-        String save_space = paths_hash.get("save_space");
-        //End modify
-
+		String work_space = paths_hash.get("work_space");//already done in previous function
+        String save_space = paths_hash.get("save_space");//already done in previous function
 		String case_mode = preference_data.get("case_mode");
 		String path_keep = preference_data.get("path_keep");
-
-		//Modified by Yin, merge case_mode and path_keep with suite config, 11/3/2018
+		//override case mode and path keep
         if(task_data.get("ClientPreference").containsKey("case_mode")){
             String mode = task_data.get("ClientPreference").get("case_mode").trim();
             if(mode.equals("0")) case_mode = "keep_case";
@@ -642,7 +652,6 @@ public class task_waiter extends Thread {
                 path_keep = "true";
             }
         }
-
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		//get depot_space
@@ -679,16 +688,13 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("task_path", task_path);
 		//get save_path
-
-        //modified by Yin, paste save_space and save_path
         String[] tmp_space = save_space.split(",");
-        StringArray tmp_path = new StringArray(tmp_space.length, tmp_space.length, false);
-
+        ArrayList<String> tmp_path = new ArrayList<String>();    
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;
 		} else {
 		    for(String space:tmp_space) {
-		        String s_path;
+		        String s_path = new String("");
                 if (path_keep.equalsIgnoreCase("true")) {
                     String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name, design_name};
                     s_path = String.join(file_seprator, path_array);
@@ -701,10 +707,8 @@ public class task_waiter extends Thread {
                 }
                 tmp_path.add(s_path);
             }
-            save_path = String.join(",", tmp_path.getCompleteArray());
+            save_path = String.join(",", tmp_path);
 		}
-		//end modify
-
 		paths_hash.put("save_path", save_path);	
 		//get script_source
 		script_source = task_data.get("CaseInfo").get("script_address").trim().replaceAll("\\\\", "/");
@@ -734,45 +738,6 @@ public class task_waiter extends Thread {
 		task_data.put("Paths", paths_hash);
 		return task_data;
 	}
-
-	//Add by Yin, 09/28/18
-	//private HashMap<String, HashMap<String, String>> set_save_space_in_standard_case_data(
-    //        HashMap<String, HashMap<String, String>> case_data,
-    //        HashMap<String, HashMap<String, String>> standard_hash
-    //){
-	//    System.out.println("case_data----------" + case_data.toString());
-    //    HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
-    //    merged_data.putAll(standard_hash);
-    //    HashMap<String, String> Paths = standard_hash.get("Paths");
-    //    String save_space_suite;
-    //    if(case_data.containsKey("SaveSpace")) {
-    //        save_space_suite = case_data.get("SaveSpace").get("save_space");
-    //    }
-    //    //if retest case, save_space has been insert to Paths
-    //    else if(case_data.containsKey("Paths")){
-    //        save_space_suite = case_data.get("Paths").get("save_space");
-    //    }
-    //    else{
-    //        save_space_suite = client_info.get_client_preference_data().get("work_space");
-    //    }
-//
-    //    String save_space = save_space_suite.replaceAll("\\\\", "/");
-    //    Pattern relative_path = Pattern.compile("^/.+?/(.+?)$");
-    //    Matcher m = relative_path.matcher(save_space);
-    //    if(m.find()){
-    //        if(System.getProperty("os.name").contains("Windows")){
-    //            save_space = "\\\\lsh-smb01/" + m.group(1);
-    //        }
-    //        else{
-    //            save_space = "/lsh/" + m.group(1);
-    //        }
-    //    }
-//
-    //    Paths.put("save_space", save_space);
-    //    merged_data.put("Paths", Paths);
-    //    return merged_data;
-    //}
-    //End add
 
 	private HashMap<String, HashMap<String, String>> get_merged_local_task_info(
 			HashMap<String, HashMap<String, String>> admin_hash, 
@@ -939,43 +904,15 @@ public class task_waiter extends Thread {
 				e.printStackTrace();
 			}
 			// ============== All dynamic job start from here ==============
-
-            // if DEV need update, stop all job
-            if(switch_info.dev_need_update())
-            {
-                TASK_WAITER_LOGGER.info("stop all task, waiting for DEV updating...");
-                while(!switch_info.dev_update_done()){
-                    try {
-                        Thread.sleep(base_interval * 1 * 1000);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                };
-                switch_info.clear_dev_update_done();
-                TASK_WAITER_LOGGER.info(">>>DEV update done, continue to work.");
-            }
-
-			// task 0 : initial preparing, update processing queues and load
-			// task data for re-processing queues
+			// task 0 : initial preparing, update processing queues and load task data for re-processing queues
 			update_captured_queue_detail_lists();
-			sync_running_queue_list();
-			// reload finished task data if queue changed to processing from finished
-			reload_finished_queue_data();
+			update_running_queue_list();
+			reload_finished_queue_data();// reload finished task data if queue changed to processing from finished
 			// task 1 : check available work thread and task queue 
-			if (pool_info.get_available_thread() < 1) {
+			if(!start_new_task_check()){
 				continue;
 			}
-			if (task_info.get_processing_admin_queue_list().size() < 1) {
-				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
-				} else {
-					TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
-				}
-				continue;
-			}
-			// task 2 : get working queue ======================>key variable 1:
-			// queue_name OK now
+			// task 2 : get working queue => key variable 1: queue_name OK now
 			String queue_name = new String("");
 			queue_name = get_right_task_queue();
 			if (queue_name == null || queue_name.equals("")) {
@@ -989,16 +926,14 @@ public class task_waiter extends Thread {
 			} else {
 				TASK_WAITER_LOGGER.debug(waiter_name + ":Focus on " + queue_name);
 			}
-			// task 3 : get admin data ======================>key variable 2:
-			// admin_data OK now
+			// task 3 : get admin data =>key variable 2: admin_data OK now
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 			admin_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
 			if (admin_data.isEmpty()) {
 				TASK_WAITER_LOGGER.warn(waiter_name + ":empty admin queue find," + queue_name);
 				continue; // in case this queue deleted by other threads
 			}
-			// task 4 : resource booking (thread, software usage) ==========>
-			// Resource booking finished, release if not launched
+			// task 4 : resource booking (thread, software usage) =>Resource booking finished, release if not launched
 			Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"));
 			if (!software_booking) {
 				continue;
@@ -1008,8 +943,7 @@ public class task_waiter extends Thread {
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				continue;
 			}
-			// task 5 : get one task case data ===============>key variable 3:
-			// task_data OK now
+			// task 5 : get one task case data =>key variable 3:task_data OK now
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 			task_data.putAll(get_final_task_data(queue_name, admin_data, client_info.get_client_preference_data()));
 			if (task_data.isEmpty()) {
@@ -1037,8 +971,7 @@ public class task_waiter extends Thread {
 				pool_info.release_used_thread(1);
 				continue;
 			}
-			// task 6 : register task case to processed task queues map
-			// ======>key variable 4: case_id OK now
+			// task 6 : register task case to processed task queues map =>key variable 4: case_id OK now
 			String case_id = new String("");
 			case_id = task_data.get("ID").get("id");
 			if (case_id == "" || case_id == null){
@@ -1047,8 +980,7 @@ public class task_waiter extends Thread {
 				pool_info.release_used_thread(1);
 				continue;				
 			}
-			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id,
-					task_data);
+			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id, task_data);
 			if (register_status) {
 				if (switch_info.get_local_console_mode()){
 					TASK_WAITER_LOGGER.debug(waiter_name + ":Launched " + queue_name + "," + case_id);
@@ -1075,7 +1007,7 @@ public class task_waiter extends Thread {
 			String case_path = task_data.get("Paths").get("case_path").trim();
 			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
 			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
-			// task 9 : launch or exit
+			// task 9 : launch reporting
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_case_ok);
 			if (!task_case_ok){
 				client_info.release_used_soft_insts(admin_data.get("Software"));

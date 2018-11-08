@@ -68,14 +68,17 @@ public class dev_checker extends Thread {
 
     private void check_dev_need_update(switch_data switch_info)
     {
+    	//if requested already return
+    	if (switch_info.get_core_script_update_request()){
+    		return;
+    	}
+    	//generate a new request
         String new_version = getCore_UUID();
         if (!core_UUID.equals(new_version)) {
             System.out.println("INFO : >>>current Core script version(DEV) is: " + core_UUID);
             System.out.println("INFO : >>>new Core script version(DEV) found: " + new_version);
             core_UUID = new_version;
-            switch_info.set_dev_need_update();
-            while(!switch_info.dev_update_done());
-            System.out.println("INFO : >>>Update DEV completed!");
+            switch_info.set_core_script_update_request(true);
         }
     }
 
