@@ -85,10 +85,9 @@ public class client_manager extends Thread  {
 		return status;
 	}
 	
-	private Boolean get_update_request(){
+	private Boolean get_update_available(){
 		Boolean status = new Boolean(false);
-        if(switch_info.dev_need_update()){
-		    while(pool_info.get_pool_used_threads() != 0);
+        if(switch_info.get_core_script_update_request() && pool_info.get_pool_used_threads() == 0){
 		    status = true;
         }
 		return status;
@@ -156,7 +155,7 @@ public class client_manager extends Thread  {
 		if (get_system_idle()){
 			switch_info.update_client_maintain_list(maintain_enum.idle);
 		}
-		if (get_update_request()){
+		if (get_update_available()){
 			switch_info.update_client_maintain_list(maintain_enum.update);
 		}
 		if (get_environ_issue()){
@@ -170,7 +169,7 @@ public class client_manager extends Thread  {
 		}
 		if (get_space_overload()){
 			switch_info.update_client_maintain_list(maintain_enum.space);
-		}		
+		}
 	}
 	
 	private Boolean start_work_mode(client_status client_sts){

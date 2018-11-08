@@ -74,8 +74,7 @@ public class maintain_status extends abstract_status {
 			case update:
 				System.out.println(">>>Update: Begin to update DEV...");
 				implements_core_script_update();
-				client.switch_info.set_dev_update_done();
-				client.switch_info.clear_dev_need_update();
+				client.switch_info.set_core_script_update_request(false);
 				break;
 			case environ:
 				System.out.println(">>>Update: Begin to propagate env issue...");

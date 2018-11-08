@@ -47,8 +47,6 @@ public class task_prepare {
 		task_prepare_info.add(">>>Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
-
-        //Modified by Yin, merge case_mode and path_keep with suite config, 11/3/2018
         if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
             String mode = task_data.get("ClientPreference").get("case_mode").trim();
             if(mode.equals("0")) case_mode = "keep_case";
@@ -56,7 +54,6 @@ public class task_prepare {
                 case_mode = "copy_case";
             }
         }
-
 		File task_path_dobj = new File(task_path);
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			if (task_path_dobj.isDirectory() && task_path_dobj.canWrite()){
@@ -100,7 +97,6 @@ public class task_prepare {
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
-
         if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
             String mode = task_data.get("ClientPreference").get("case_mode").trim();
             if(mode.equals("0")) case_mode = "keep_case";
@@ -108,8 +104,6 @@ public class task_prepare {
                 case_mode = "copy_case";
             }
         }
-
-        //Modified by Yin, merge case_mode and path_keep with suite config, 11/3/2018
 		File case_path_dobj = new File(case_path);
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			if (case_path_dobj.isDirectory() && case_path_dobj.canWrite()){
