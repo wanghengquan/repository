@@ -72,7 +72,8 @@ public class local_tube {
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
-		if (suite_map.size() > 8) {
+		//Modified by Yin, change 8 to 9, 11/3/2018
+		if ((suite_map.size() > 8) & (!suite_map.containsKey("ClientPreference"))){
 			suite_file_error_msg = "Error: Extra option found in suite sheet::suite info.";
 			System.out.println(">>>Error: Extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
@@ -659,6 +660,14 @@ public class local_tube {
 		String case_machine = case_data.get("Machine").trim();
 		HashMap<String, String> machine_map = comm_suite_case_merge(suite_machine, case_machine);
 		merge_data.put("Machine", machine_map);
+		//Modified by Yin, add client_preference section, 11/3/2018
+        String suite_client_preference = "";
+        String case_client_preference = "";
+        if(suite_data.containsKey("ClientPreference")){
+            suite_client_preference = suite_data.get("ClientPreference").trim();
+        }
+        HashMap<String, String> client_preference = comm_suite_case_merge(suite_client_preference, case_client_preference);
+        merge_data.put("ClientPreference", client_preference);
 		return merge_data;
 	}
 

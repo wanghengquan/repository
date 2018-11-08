@@ -1,24 +1,33 @@
 import os
 import re
+import csv
 import xTools
 
 __author__ = 'syan'
 
+
 def get_suite(suite_csv):
+    _csv_lines = csv.reader(open(suite_csv))
+    csv_lines = list()
+    for foo in _csv_lines:
+        csv_lines.append(foo)
     start = 0
     old_key = ""
     suite_dict = dict()
-    for line in open(suite_csv):
+    for i, line in enumerate(open(suite_csv)):
+        line_csv_list = csv_lines[i]
         line = line.strip()
         if line.startswith("END"):
             break
+        if not line:
+            continue
         if not start:
             if line.startswith("[suite_info]"):
                 start = 1
         else:
             if line.startswith("["):
                 break
-            line_list = re.split("\s*,\s*", line)
+            line_list = line_csv_list
             if line_list[0]:
                 suite_dict[line_list[0]] = [line_list[1]]
                 old_key = line_list[0]
@@ -29,6 +38,7 @@ def get_suite(suite_csv):
                 except IndexError:
                     pass
     return suite_dict
+
 
 def create_suite_ini_lines(suite_csv):
     suite_dict = get_suite(suite_csv)
@@ -41,11 +51,19 @@ def create_suite_ini_lines(suite_csv):
         return 1
     ini_lines.append("[suite %s]" % suite_name)
     description = list()
-    des_keys = ["CaseInfo", "Environment", "LaunchCommand", "Machine", "Software", "System",]
-    for key, value in suite_dict.items():
+    _fixed_order_keys = ["CaseInfo", "System", "Environment", "LaunchCommand", "Software", "Machine", "ClientPreference"]
+    ordered_keys = list()
+    for item in _fixed_order_keys:
+        if item in suite_dict:
+            ordered_keys.append(item)
+    for k in suite_dict.keys():
+        if k not in ordered_keys:
+            ordered_keys.append(k)
+    for key in ordered_keys:
+        value = suite_dict.get(key)
         if key == "suite_name":
             continue
-        if key in des_keys:
+        if key in _fixed_order_keys:
             description.append("  %s[%s]%s" % (xTools.start_mark, key, xTools.end_mark))
             for foo in value:
                 foo = foo.strip()
@@ -55,7 +73,7 @@ def create_suite_ini_lines(suite_csv):
                 for la in pp:
                     la = la.strip()
                     if la:
-                        description.append("  %s%s%s" % (xTools.start_mark,la, xTools.end_mark))
+                        description.append("  %s%s%s" % (xTools.start_mark, la, xTools.end_mark))
         else:
             ini_lines.append("%s = %s" % (key, " ".join(value)))
     ini_lines.append("description = %s" % os.linesep.join(description))
@@ -63,5 +81,3 @@ def create_suite_ini_lines(suite_csv):
 
 if __name__ == "__main__":
     print create_suite_ini_lines(r"test\suite.csv")
-
-

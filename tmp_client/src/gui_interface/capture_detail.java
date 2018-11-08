@@ -73,6 +73,9 @@ public class capture_detail extends JFrame {
 		items.add("Software");
 		items.add("System");
 		items.add("Machine");
+        //Modified by Yin, add one item, 11/7/2018
+        items.add("ClientPreference");
+
 		items.add("Status");
 		Iterator<String> item_it = items.iterator();
 		while(item_it.hasNext()){
