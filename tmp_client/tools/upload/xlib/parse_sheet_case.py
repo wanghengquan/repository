@@ -131,7 +131,7 @@ def execute_action(raw_dict, key_word, suite_content):
         if key == "LaunchCommand":
             new_dict[key] = merge_cmd(suite_content, value)
             # put case cmd strings after macro cmd strings
-        elif key in ("CaseInfo", "Environment", "Software", "System", "Machine"):
+        elif key in ("CaseInfo", "Environment", "Software", "System", "Machine", "ClientPreference"):
             value = value.strip()
             if not value:
                 new_dict[key] = suite_content

@@ -7,18 +7,17 @@
  * Date:
  * Description:
  */
-package top_runner.run_status;
+package gui_interface;
 
-public enum state_enum {
-	initial(1, "Initializing"),
-	work(2, "Working"),
-	maintain(3, "Maintaining"),
-	stop(4, "Stopped"),
-	unknown(5, "Unknown");
+public enum sort_enum {
+	PRIORITY(0, "Sorting with Priority"),
+	RUNID(1, "Sorting with RunID"),
+	TIME(2, "Sorting with Time"),
+	DEFAULT(3, "Default sorting");
 	private int index;
 	private String description;
 	
-	private state_enum(int index, String description){
+	private sort_enum(int index, String description){
 		this.index = index;
 		this.description = description;
 	}
@@ -31,4 +30,3 @@ public enum state_enum {
 		return this.description;
 	}
 }
-

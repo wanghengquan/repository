@@ -24,11 +24,12 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.07.09"; //2.07.09 External.Internal.DEV
-	public final static int BASE_CURRENTVERSION_INT = 20709; // version for code use
-	public final static String BASE_BUILDDATE = "2018/07/16";
-	public final static String BASE_SUITEFILEVERSION = "1.10";
-	public final static String BASE_CONTACT_MAIL = "Jason.Wang@latticesemi.com";
+	public final static String BASE_CURRENTVERSION = "2.07.10"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20710; // version for code use
+	public final static String BASE_BUILDDATE = "2018/11/09";
+	public final static String BASE_SUITEFILEVERSION = "1.11";
+	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
+	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
 	public final static float BASE_PYTHONBASEVERSION = 2.7f;
 	public final static float BASE_SVNBASEVERSION = 1.4f;
@@ -41,13 +42,23 @@ public class public_data {
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 98;//client suspend when CPU usage large than this value
 	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
-	public final static int RUN_LIMITATION_SPACE = 5;//client suspend when disk space less than this value
+	public final static String RUN_LIMITATION_SPACE = "5";//client suspend when disk space less than this value
 	
 	// ========================
 	// log setting
 	public final static String LOG_HOME = SW_HOME_PATH;
 	public final static String FILE_NAME = "client.log";
 
+	// ========================
+	// email setting servers: 1:LSHMAIL1.latticesemi.com,  2:172.25.0.3
+	public final static String MAIL_SERVER = "LSHMAIL1.latticesemi.com";
+	public final static String MAIL_SERVER_USERNAME = "jwang1";
+	public final static String MAIL_SERVER_PASSWORD = "Quan@123";
+
+	// ========================
+	// send email preference setting
+	public final static int SEND_MAIL_TASK_BLOCK = 10;	
+	
 	// ========================
 	// external configure based on software bin path
 	public final static String CONF_ROOT_PATH = SW_HOME_PATH + "/conf";
@@ -79,6 +90,7 @@ public class public_data {
 	// name
 	public final static String WORKSPACE_RESULT_DIR = "results";
 	public final static String WORKSPACE_UPLOAD_DIR = "uploads";
+	public final static String WORKSPACE_TEMP_DIR = "temp";
 	public final static String WORKSPACE_LOG_DIR = "logs";
 	
 	// ========================
@@ -100,6 +112,7 @@ public class public_data {
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
+	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
 	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
 
 	// ========================

@@ -34,7 +34,10 @@ public class view_data {
 	private List<String> export_queue_list = new ArrayList<String>();
 	private List<String> export_title_list = new ArrayList<String>();
 	private queue_enum run_action_request = queue_enum.WAITING;//play, pause, stop
+	private sort_enum rejected_sorting_request = sort_enum.DEFAULT;
+	private sort_enum captured_sorting_request = sort_enum.DEFAULT;
 	private Boolean space_cleanup_apply = new Boolean(false);
+	private Boolean environ_issue_apply = new Boolean(false);
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_compare());
@@ -379,6 +382,46 @@ public class view_data {
 		return impl_action;
 	}
 	
+	public void set_rejected_sorting_request(sort_enum sort_request) {
+		rw_lock.writeLock().lock();
+		try {
+			this.rejected_sorting_request = sort_request;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public sort_enum get_rejected_sorting_request() {
+		rw_lock.readLock().lock();
+		sort_enum temp = sort_enum.DEFAULT;
+		try {
+			temp = rejected_sorting_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_captured_sorting_request(sort_enum sort_request) {
+		rw_lock.writeLock().lock();
+		try {
+			this.captured_sorting_request = sort_request;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+
+	public sort_enum get_captured_sorting_request() {
+		rw_lock.readLock().lock();
+		sort_enum temp = sort_enum.DEFAULT;
+		try {
+			temp = captured_sorting_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
 	public Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_watching_task_queues_data_map() {
 		rw_lock.readLock().lock();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> queues_data = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
@@ -527,4 +570,24 @@ public class view_data {
 		}
 	}
 	
+	//space_cleanup_dialog
+	public Boolean get_environ_issue_apply() {
+		rw_lock.readLock().lock();
+		Boolean temp = new Boolean(false);
+		try {
+			temp = environ_issue_apply;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_environ_issue_apply(Boolean new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			environ_issue_apply = new_data;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
 }

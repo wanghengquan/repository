@@ -415,14 +415,17 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			} else {
 				save_space = jt_save_path.getText().trim().replaceAll("\\\\", "/");
 			}
-			File save_dobj = new File(save_space);
-			String message = new String("save space Not Exists.");
-			if (save_dobj.exists()) {
-				preference_data.put("save_space", save_space);
-			} else {
-				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
+            String save_spaces[] = save_space.split(",");
+            String message = new String("save space Not Exists:");
+            for(String tmp_space:save_spaces){
+                File work_dobj = new File(tmp_space.trim());
+                if(!work_dobj.exists()){
+                    System.out.println(tmp_space.trim());
+                    JOptionPane.showMessageDialog(null, message+tmp_space, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+            }
+            preference_data.put("save_space", jt_save_path.getText().trim().replace("\\", "/"));
 			//input data
 			client_info.set_client_preference_data(preference_data);
 			switch_info.set_client_updated();

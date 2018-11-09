@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+//import java.util.Properties;
 //import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,8 +26,8 @@ import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
+import env_monitor.env_checker;
 import env_monitor.machine_sync;
-import env_monitor.self_check;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
@@ -45,18 +46,22 @@ public class top_launcher {
 
 	}
 
-	public static String get_bin_path() {
-		String class_path = System.getProperty("java.class.path");
-		String path_split = System.getProperty("path.separator");
-		String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
-		if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")
-				|| bin_path.endsWith(".so")) {
-			bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
-		}
-		File file = new File(bin_path);
-		bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
-		return bin_path;
-	}
+    public static String get_bin_path() {
+        String class_path = System.getProperty("java.class.path");
+        if(System.getProperty("user.name").equals("ywang4")) {
+            //Modified by Yin, add /tmp_client, 09/28/18
+            class_path = System.getProperty("user.dir") + "/tmp_client/bin";
+        }
+        String path_split =  System.getProperty("path.separator");
+        String bin_path = class_path.split(path_split)[0].replaceAll("\\\\", "/");
+        if (bin_path.endsWith(".jar") || bin_path.endsWith("client") || bin_path.endsWith(".exe")
+                || bin_path.endsWith(".so")) {
+            bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
+        }
+        File file = new File(bin_path);
+        bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
+        return bin_path;
+    }
 
 	private static void initial_log_config() {
 		ConfigurationSource source;
@@ -77,7 +82,7 @@ public class top_launcher {
 	}
 
 	private static Boolean run_self_check() {
-		self_check my_check = new self_check();
+		env_checker my_check = new env_checker();
 		return my_check.do_self_check();
 	}
 
@@ -124,7 +129,7 @@ public class top_launcher {
 	public static void main(String[] args) {
 		System.out.println(">>>Info: Current Version:" + public_data.BASE_CURRENTVERSION);
 		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
-		System.out.println(">>>Info: Contact us:" + public_data.BASE_CONTACT_MAIL);
+		System.out.println(">>>Info: Contact us:" + public_data.BASE_DEVELOPER_MAIL);
 		System.out.println("");
 		String current_dir = new String(System.getProperty("user.dir").replaceAll("\\\\", "/"));
 		System.out.println(">>>Info: Launch dir:" + current_dir);

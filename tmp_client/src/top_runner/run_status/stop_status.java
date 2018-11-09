@@ -18,6 +18,9 @@ import java.util.TreeMap;
 import data_center.exit_enum;
 import data_center.public_data;
 import flow_control.export_data;
+import utility_funcs.file_action;
+import utility_funcs.mail_action;
+import utility_funcs.time_info;
 
 class stop_status extends abstract_status {
 	
@@ -53,16 +56,56 @@ class stop_status extends abstract_status {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
-		final_stop_with_exit_state();		
+		}
+		send_exception_report();
+		stop_with_exit_state();		
 	}
 	
 	//=============================================================
-	//methods for locals	
-	private void final_stop_with_exit_state(){
-    	exit_enum exit_state = exit_enum.OTHERS;
+	//methods for locals
+	private void send_exception_report(){
+		if (!client.switch_info.get_client_stop_request().containsKey(exit_enum.DUMP)){
+			return;
+		}
+		Exception dump_exception = new Exception();
+		dump_exception = client.switch_info.get_client_stop_exception();
+		if (dump_exception == null){
+			return;
+		}
+		String work_space = client.client_info.get_client_preference_data().get("work_space");
+		String dump_path = work_space + "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
+		String to_str = client.client_info.get_client_preference_data().get("dev_mails");
+		String cc_str = client.client_info.get_client_preference_data().get("opr_mails");
+		String machine = client.client_info.get_client_machine_data().get("terminal");
+		String message = new String("");
+		message = get_dump_string(dump_exception);
+		// 1. send to local disk file
+		file_action.append_file(dump_path, message);
+		// 2. send mail to TMP OPR and DEV
+		mail_action.simple_dump_mail(to_str, cc_str, message, machine);
+	}
+
+	private String get_dump_string(Exception dump_exception){
+		StringBuilder message = new StringBuilder("");
+		String line_separator = System.getProperty("line.separator");
+		if (dump_exception == null){
+			return message.toString();
+		}
+		message.append("####################" + line_separator);
+		message.append("Date   :" + time_info.get_date_time() + line_separator);
+		message.append("Version:" + public_data.BASE_CURRENTVERSION + line_separator);
+		message.append(dump_exception.toString() + line_separator);
+		for(Object item: dump_exception.getStackTrace()){
+			message.append("    at " + item.toString() + line_separator);
+		}
+		return message.toString();
+	}	
+	
+	private void stop_with_exit_state(){
+    	exit_enum exit_state = exit_enum.NORMAL;
     	for (exit_enum current_state: client.switch_info.get_client_stop_request().keySet()){
-    		if(current_state.get_index() < exit_state.get_index()){
+    		//higher exit have higher priority
+    		if(current_state.get_index() > exit_state.get_index()){
     			exit_state = current_state;
     		}
     	}

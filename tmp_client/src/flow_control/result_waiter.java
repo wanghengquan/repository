@@ -111,27 +111,33 @@ public class result_waiter extends Thread {
 			// task 1 : final running process clean up
 			run_status = post_process_cleanup(case_path);			
 			// task 2 : zip case to save path
-			if (save_space.equalsIgnoreCase(work_space)) {
-				continue;
-			}
-			if (save_space.trim().equals("")) {
-				// no save path, skip copy
-				continue;
-			}
-			switch (result_keep.toLowerCase()) {
-			case "zipped":
-				run_status = copy_case_to_save_path(report_path, save_path, "archive");
-				break;
-			case "unzipped":
-				run_status = copy_case_to_save_path(report_path, save_path, "source");
-				break;
-			default:// auto and any other inputs treated as auto
-				if (cmd_status.equals(task_enum.PASSED)) {
-					run_status = copy_case_to_save_path(report_path, save_path, "archive");
-				} else {
-					run_status = copy_case_to_save_path(report_path, save_path, "source");
-				}
-			}
+            String[] tmp_space = save_space.split(",");
+            String[] tmp_path = save_path.split(",");
+            for(int i=0; i<tmp_space.length; i++) {
+                String space = tmp_space[i].trim();
+                String path = tmp_path[i].trim();
+                if (space.equalsIgnoreCase(work_space)) {
+                    continue;
+                }
+                if (space.trim().equals("")) {
+                    // no save path, skip copy
+                    continue;
+                }
+                switch (result_keep.toLowerCase()) {
+                    case "zipped":
+                        if(!copy_case_to_save_path(report_path, path, "archive")) run_status = false;
+                        break;
+                    case "unzipped":
+                        if(!copy_case_to_save_path(report_path, path, "source")) run_status = false;
+                        break;
+                    default:// auto and any other inputs treated as auto
+                        if (cmd_status.equals(task_enum.PASSED)) {
+                            if(!copy_case_to_save_path(report_path, path, "archive")) run_status = false;
+                        } else {
+                            if(!copy_case_to_save_path(report_path, path, "source")) run_status = false;
+                        }
+                }
+            }
 		}
 		return run_status;
 	}
@@ -309,6 +315,15 @@ public class result_waiter extends Thread {
 			case TBD:
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TBD, 1);
 				break;
+			case BLOCKED:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
+				break;	
+			case SWISSUE:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.SWISSUE, 1);
+				break;	
+			case CASEISSUE:
+				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.CASEISSUE, 1);
+				break;				
 			default:
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.OTHERS, 1);
 			}
@@ -343,6 +358,8 @@ public class result_waiter extends Thread {
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
 			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
+            case_status.put("defects", (String) case_report_map.get(call_index).get("defects"));
+            case_status.put("defects_history", (String) case_report_map.get(call_index).get("defects_history"));
 			case_data.put("Status", case_status);
 			task_info.update_case_to_processed_task_queues_map(queue_name, case_id, case_data);
 		}
@@ -380,21 +397,34 @@ public class result_waiter extends Thread {
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get("launch_path");
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
-			String detail_path = new String();
-			detail_path = "/prj" + task_data.get("ID").get("project") + "/run" + task_data.get("ID").get("run") + "/T"
-					+ task_data.get("ID").get("id");
-			String win_link = new String();
-			String lin_link = new String();
-			// Access for Windows: <a href=\\lsh-smb01\home/rel/ng1_0.1205\icd
-			// target='_explorer.exe'>\\lsh-smb01\home\rel\ng1_0.1205\icd</a>
-			win_link = String.format(
-					"<a href=\\\\lsh-smb01\\sw/qa/qadata/results%s target='_explorer.exe'>\\\\lsh-smb01\\sw/qa/qadata/results%s</a>",
-					detail_path, detail_path);
-			lin_link = String.format(
-					"<a href=file://localhost/lsh/sw/qa/qadata/results%s  target='_blank'>/lsh/sw/qa/qadata/results%s</a>",
-					detail_path, detail_path);
-			runlog.append("Unified Location(Win LSH Access) ==> " + win_link + line_separator);
-			runlog.append("Unified Location(Lin LSH Access) ==> " + lin_link + line_separator);
+            Boolean is_windows = System.getProperty("os.name").contains("Windows");
+            String save_path = task_data.get("Paths").get("save_path");
+            String[] tmp_path = save_path.split(",");
+            int i = 1;
+            //multiple save path with multiple web link show.
+            for(String path: tmp_path) {
+                path = path.trim();
+                if(path.startsWith("/")){
+                     String link = String.format("<a href=file://localhost%s  target='_blank'>%s</a>", path, path);
+                     if(!is_windows){
+                         runlog.append("Save location " + i + " with Lin access ==> " + link + line_separator);
+                         if(path.startsWith("/lsh/")){
+                             runlog.append("Save location " + i + " with Win access ==> "
+                                     + link.replace("/lsh/", "\\\\lsh-smb01\\").replace('/', '\\') + line_separator);
+                         }
+                     }
+                } else {
+                     String link = String.format("<a href=%s target='_explorer.exe'>%s</a>", path, path);
+                     if(is_windows){
+                         runlog.append("Save location " + i + " with Win access ==> " + link + line_separator);
+                         if(path.startsWith("\\\\lsh-smb01\\")){
+                             runlog.append("Save location " + i + " with Lin access ==> "
+                                     + link.replace("\\\\lsh-smb01\\", "/lsh/").replace('\\', '/') + line_separator);
+                         }
+                     }
+                }
+                i++;
+            }
 			runlog.append("Note:" + line_separator);
 			runlog.append("1. If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);
@@ -419,7 +449,6 @@ public class result_waiter extends Thread {
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
 	}
-
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, Object>> generate_case_report_data() {
 		HashMap<String, HashMap<String, Object>> case_data = new HashMap<String, HashMap<String, Object>>();
@@ -446,6 +475,8 @@ public class result_waiter extends Thread {
 			String cmd_reason = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
+			String defects = new String("");
+			String defects_history = new String("NA");
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_enum.DONE)) {
 				if(call_timeout){
@@ -458,11 +489,15 @@ public class result_waiter extends Thread {
 				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get("call_output"));
 				milestone = get_milestone_info((ArrayList<String>) one_call_data.get("call_output"));
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get("call_output"));
+				defects = get_defects_info((ArrayList<String>) one_call_data.get("call_output"));
+				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get("call_output"));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get("call_output")));				
 			}  else {
 				cmd_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
+			hash_data.put("defects", defects);
+			hash_data.put("defects_history", defects_history);
 			hash_data.put("milestone", milestone);
 			hash_data.put("key_check", key_check);
 			hash_data.put("status", cmd_status);
@@ -594,7 +629,39 @@ public class result_waiter extends Thread {
 		}
 		return key_check;
 	}
-	
+
+    private String get_defects_info(ArrayList<String> cmd_output) {
+        String defects = new String("");
+        if(cmd_output == null || cmd_output.isEmpty()){
+            return defects;
+        }
+        // <status>Passed</status>
+        Pattern p = Pattern.compile("defects\\s*>\\s*(.+?)$");
+        for (String line : cmd_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+                defects = m.group(1);
+            }
+        }
+        return defects;
+    }
+
+    private String get_defects_history_info(ArrayList<String> cmd_output) {
+        String defects_history = new String("NA");
+        if (cmd_output == null || cmd_output.isEmpty()) {
+            return defects_history;
+        }
+        // <status>Passed</status>
+        Pattern p = Pattern.compile("defects_history\\s*>\\s*(.+?)$");
+        for (String line : cmd_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+                defects_history = m.group(1);
+            }
+        }
+        return defects_history;
+    }
+
 	private Boolean terminate_user_request_running_call() {
 		Boolean cancel_status = new Boolean(true);
 		if (!view_info.impl_stop_case_request()) {
@@ -679,6 +746,8 @@ public class result_waiter extends Thread {
 		if (!save_path_fobj.exists()) {
 			try {
 				FileUtils.forceMkdir(save_path_fobj);
+				save_path_fobj.setReadable(true, false);
+				save_path_fobj.setWritable(true, false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -763,16 +832,7 @@ public class result_waiter extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_space") + "/"
-					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
-			file_action.append_file(dump_path, " " + line_separator);
-			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, "Date   :" + time_info.get_date_time() + line_separator);
-			file_action.append_file(dump_path, "Version:" + public_data.BASE_CURRENTVERSION + line_separator);
-			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for (Object item : run_exception.getStackTrace()) {
-				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}
+			switch_info.set_client_stop_exception(run_exception);
 			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}

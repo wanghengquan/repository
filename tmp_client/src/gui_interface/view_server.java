@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
@@ -32,8 +33,6 @@ import flow_control.pool_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
 import utility_funcs.deep_clone;
-import utility_funcs.file_action;
-import utility_funcs.time_info;
 
 public class view_server extends Thread {
 	// public property
@@ -341,7 +340,7 @@ public class view_server extends Thread {
 		}
 	}
 
-	private void start_main_gui() {
+	private main_frame start_main_gui() {
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
 				break;
@@ -369,6 +368,7 @@ public class view_server extends Thread {
 				}
 			});
 		}
+		return top_view;
 	}
 
 	private void start_progress_show() {
@@ -390,6 +390,63 @@ public class view_server extends Thread {
 		start_prepare.dispose();
 	}
 
+	private void implements_message_prompt(main_frame top_view){
+		HashMap<String, String> machine_data = new HashMap<String, String>();
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		machine_data.putAll(client_info.get_client_machine_data());
+		preference_data.putAll(client_info.get_client_preference_data());
+		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		if (run_mode.equals("1")){
+			//in unattended mode, no one take care this client
+			return;
+		}
+		if (preference_data.get("cmd_gui").equals("cmd")){
+			//in console mode no gui interface
+			return;
+		}
+		//message 1. space alert
+		apply_space_reservation_alert(top_view);
+		//message 2. env issue alert
+		apply_environ_issue_alert(top_view);
+	}
+	
+	private void apply_environ_issue_alert(main_frame top_view){
+		if (!view_info.get_environ_issue_apply()){
+			return;
+		}
+		StringBuilder message = new StringBuilder("");
+		message.append("TMP client have wrong environment.");
+		message.append(line_separator);
+		message.append("Possible issues: Python/svn issue, no system resource.");
+		message.append(line_separator);
+		message.append("");
+		message.append(line_separator);
+		message.append("Manually environment check needed.");
+		String title = new String("Warning:Client environ issue.");
+		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
+		view_info.set_environ_issue_apply(false);		
+	}
+	
+	private void apply_space_reservation_alert(main_frame top_view){
+		if (!view_info.get_space_cleanup_apply()){
+			return;
+		}
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		String available_space = new String(client_info.get_client_system_data().get("space"));
+		String space_reserve = new String(client_info.get_client_preference_data().get("space_reserve"));
+		StringBuilder message = new StringBuilder("");
+		message.append("Work space :" + work_space + " has a lower disk space.");
+		message.append(line_separator);
+		message.append("Available Space: "+ available_space + "G, Reserved space: " + space_reserve + "G.");
+		message.append(line_separator);
+		message.append("");
+		message.append(line_separator);
+		message.append("Manually 'Work Space' clean up needed.");
+		String title = new String("Warning:Low space alert.");
+		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
+		view_info.set_space_cleanup_apply(false);
+	}
+	
 	private void run_system_client_insts_check() {
 		switch_info.increase_system_client_insts();
 		/*
@@ -458,16 +515,7 @@ public class view_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_data().get("preference").get("work_space") + "/"
-					+ public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
-			file_action.append_file(dump_path, " " + line_separator);
-			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, "Date   :" + time_info.get_date_time() + line_separator);
-			file_action.append_file(dump_path, "Version:" + public_data.BASE_CURRENTVERSION + line_separator);
-			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for (Object item : run_exception.getStackTrace()) {
-				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}
+			switch_info.set_client_stop_exception(run_exception);
 			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}
@@ -479,7 +527,7 @@ public class view_server extends Thread {
 		// initial 1 : start progress
 		start_progress_show();
 		// initial 2 : start GUI
-		start_main_gui();
+		main_frame top_view = start_main_gui();
 		// initial 3 : Announce main GUI ready
 		switch_info.set_main_gui_power_up();
 		// ======================================
@@ -504,6 +552,8 @@ public class view_server extends Thread {
 			implements_run_action_request();
 			// task 3 : delete finished queue data
 			implements_user_del_request();
+			// task 4 : prompt message windows
+			implements_message_prompt(top_view);
 			try {
 				Thread.sleep(base_interval * 1 * 100);
 			} catch (InterruptedException e) {

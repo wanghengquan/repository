@@ -20,13 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import utility_funcs.system_cmd;
-import utility_funcs.time_info;
-import utility_funcs.file_action;
 import utility_funcs.linux_info;
 
 /*
@@ -50,11 +47,10 @@ public class machine_sync extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread machine_thread;
-	private String line_separator = System.getProperty("line.separator");
+	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private static final Logger MACHINE_SYNC_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 	private switch_data switch_info;
-	private client_data client_info;
 
 	// public function update data every interval seconds
 	public machine_sync(int base_interval) {
@@ -62,9 +58,8 @@ public class machine_sync extends Thread {
 	}
 
 	// public function default update data every 5 seconds
-	public machine_sync(switch_data switch_info, client_data client_info) {
+	public machine_sync(switch_data switch_info) {
 		this.switch_info = switch_info;
-		this.client_info = client_info;
 	}
 
 	// protected function
@@ -106,9 +101,7 @@ public class machine_sync extends Thread {
 	public static String get_disk_left() {
 		File file = new File("..");
 		String disk_left = new String();
-		// long total_space = file.getTotalSpace();
 		long free_space = file.getFreeSpace();
-		// long used_space = total_space - free_space;
 		disk_left = free_space / 1024 / 1024 / 1024 + "";
 		return disk_left;
 	}
@@ -116,13 +109,27 @@ public class machine_sync extends Thread {
 	public static String get_disk_left(String work_space) {
 		File file = new File(work_space);
 		String disk_left = new String();
-		// long total_space = file.getTotalSpace();
 		long free_space = file.getFreeSpace();
-		// long used_space = total_space - free_space;
 		disk_left = free_space / 1024 / 1024 / 1024 + "";
 		return disk_left;
 	}	
 
+	public static String get_avail_space() {
+		File file = new File("..");
+		String disk_avail = new String();
+		long free_space = file.getUsableSpace();
+		disk_avail = free_space / 1024 / 1024 / 1024 + "";
+		return disk_avail;
+	}
+	
+	public static String get_avail_space(String work_space) {
+		File file = new File(work_space);
+		String disk_avail = new String();
+		long free_space = file.getUsableSpace();
+		disk_avail = free_space / 1024 / 1024 / 1024 + "";
+		return disk_avail;
+	}
+	
 	public static String get_cpu_usage() {
 		String systemType = System.getProperties().getProperty("os.name");
 		String cpu_usage = new String();
@@ -247,7 +254,7 @@ public class machine_sync extends Thread {
 	private void update_dynamic_data() {
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(machine_hash.get("System"));
-		String space = get_disk_left();
+		String space = get_avail_space();
 		String cpu = get_cpu_usage();
 		String mem = get_mem_usage();
 		system_data.put("space", space);
@@ -261,16 +268,7 @@ public class machine_sync extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_space") 
-					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
-			file_action.append_file(dump_path, " " + line_separator);
-			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, "Date   :" + time_info.get_date_time() + line_separator);
-			file_action.append_file(dump_path, "Version:" + public_data.BASE_CURRENTVERSION + line_separator);
-			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for(Object item: run_exception.getStackTrace()){
-				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}	
+			switch_info.set_client_stop_exception(run_exception);
 			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}

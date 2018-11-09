@@ -24,8 +24,8 @@ import env_monitor.machine_sync;
 import flow_control.pool_data;
 import info_parser.cmd_parser;
 import info_parser.ini_parser;
+import top_runner.run_status.state_enum;
 import utility_funcs.deep_clone;
-import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
@@ -64,6 +64,8 @@ import utility_funcs.time_info;
  *                  auto_restart = xx
  * 					work_space = xx
  * 					save_space = xx
+ *                  dev_mails = xx
+ *                  opr_mails = xx
  *                  data from command line
  */
 public class data_server extends Thread {
@@ -79,7 +81,7 @@ public class data_server extends Thread {
 	private task_data task_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
-	private String line_separator = System.getProperty("line.separator");
+	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
 	config_sync config_runner;
@@ -96,7 +98,7 @@ public class data_server extends Thread {
 		this.task_info = task_info;
 		this.pool_info = pool_info;
 		this.config_runner = new config_sync(switch_info, client_info);
-		this.machine_runner = new machine_sync(switch_info, client_info);
+		this.machine_runner = new machine_sync(switch_info);
 	}
 
 	private void impoart_suite_file_task_data(
@@ -191,7 +193,7 @@ public class data_server extends Thread {
 		// 2. merge System data
 		client_data.put("System", machine_hash.get("System"));
 		// 3. merge Machine data:
-		// configuration data > scan data > default data
+		// command data > configuration data > scan data > default data
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
@@ -203,7 +205,7 @@ public class data_server extends Thread {
 		}
 		client_data.put("Machine", machine_data);
 		// 4. merge preference data (for software use):
-		// command data > config data > default data in public_data
+		// command data > configuration data > default data in public_data
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
@@ -216,6 +218,9 @@ public class data_server extends Thread {
 		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("auto_restart", public_data.DEF_AUTO_RESTART);
+		preference_data.put("dev_mails", public_data.BASE_DEVELOPER_MAIL);
+		preference_data.put("opr_mails", public_data.BASE_OPERATOR_MAIL);
+		preference_data.put("space_reserve", public_data.RUN_LIMITATION_SPACE);
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		//the following two are for history name support
@@ -237,7 +242,7 @@ public class data_server extends Thread {
 		system_data.putAll(machine_sync.machine_hash.get("System"));
 		String current_work_space = new String(client_info.get_client_preference_data().get("work_space"));
 		if(current_work_space != null && !current_work_space.trim().equals("")){
-			system_data.put("space", machine_sync.get_disk_left(current_work_space));
+			system_data.put("space", machine_sync.get_avail_space(current_work_space));
 		}		
 		client_info.update_system_data(system_data);
 	}
@@ -468,36 +473,18 @@ public class data_server extends Thread {
 	private status_enum calculate_client_current_status(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(client_info.get_client_system_data());
+		
+		state_enum client_state = switch_info.get_client_run_state();
+		if (client_state.equals(state_enum.maintain)){
+			return status_enum.SUSPEND;
+		}
 		String cpu_used = system_data.get("cpu");
-		String mem_used = system_data.get("mem");
-		String space_left = system_data.get("space");
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
 		} catch (Exception e) {
 			return status_enum.UNKNOWN;
 		}
-		int mem_used_int = 0;
-		try{
-			mem_used_int = Integer.parseInt(mem_used);
-		} catch (Exception e) {
-			return status_enum.UNKNOWN;
-		}
-		int space_left_int = 0;
-		try{
-			space_left_int = Integer.parseInt(space_left);
-		} catch (Exception e) {
-			return status_enum.UNKNOWN;
-		}
-		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
-			return status_enum.SUSPEND;
-		}
-		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
-			return status_enum.SUSPEND;
-		}		
-		if (space_left_int < public_data.RUN_LIMITATION_SPACE){
-			return status_enum.SUSPEND;
-		}		
 		if (cpu_used_int > public_data.RUN_LIMITATION_CPU / 2){
 			return status_enum.BUSY;
 		} else {
@@ -515,16 +502,7 @@ public class data_server extends Thread {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_space") 
-					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
-			file_action.append_file(dump_path, " " + line_separator);
-			file_action.append_file(dump_path, "####################" + line_separator);
-			file_action.append_file(dump_path, "Date   :" + time_info.get_date_time() + line_separator);
-			file_action.append_file(dump_path, "Version:" + public_data.BASE_CURRENTVERSION + line_separator);			
-			file_action.append_file(dump_path, run_exception.toString() + line_separator);
-			for(Object item: run_exception.getStackTrace()){
-				file_action.append_file(dump_path, "    at " + item.toString() + line_separator);
-			}			
+			switch_info.set_client_stop_exception(run_exception);
 			switch_info.set_client_stop_request(exit_enum.DUMP);
 		}
 	}

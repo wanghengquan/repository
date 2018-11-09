@@ -72,7 +72,7 @@ public class local_tube {
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
-		if (suite_map.size() > 8) {
+		if ((suite_map.size() > 8) && (!suite_map.containsKey("ClientPreference"))){
 			suite_file_error_msg = "Error: Extra option found in suite sheet::suite info.";
 			System.out.println(">>>Error: Extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
@@ -208,28 +208,24 @@ public class local_tube {
 			if (row_list.size() < 1) {
 				continue;
 			}
-			String item = row_list.get(0).trim();
+			String item = row_list.get(0).trim().toLowerCase();
 			if (item.contains(macro_start)) {
 				macro_area = true;
 				macro_num += 1;
 				macro_name = "macro" + String.valueOf(macro_num);
 				area_list = new ArrayList<List<String>>();
+				continue;
 			}
 			if (macro_area) {
-				if (item.equals("") || item.equals("END") || item == null) {
+				if (item == null || item.equals("") || item.equals("END")) {
 					macro_area = false;
 					macro_data.put(macro_name, area_list);
+				} else {
+					area_list.add(row_list.subList(0, 3));
 				}
 			}
 			if (item.equals("END")) {
 				break;
-			}
-			if (macro_area) {
-				if (item.equals(macro_start)) {
-					continue;
-				} else {
-					area_list.add(row_list);
-				}
 			}
 		}
 		return_data = sort_macro_map(macro_data);
@@ -351,29 +347,28 @@ public class local_tube {
 		// start
 		Map<String, List<List<String>>> macro_data = get_macro_data(ExcelData);
 		Map<String, Map<String, String>> raw_data = get_raw_case_data(ExcelData);
-		if (raw_data == null || raw_data.size() < 1) {
+		if (raw_data == null || raw_data.isEmpty()) {
 			LOCAL_TUBE_LOGGER.warn(">>>Warning: No test case found in suite file.");
 			return merge_macro_data;
 		}
-		Set<String> data_set = raw_data.keySet();
-		Iterator<String> data_it = data_set.iterator();
+		Iterator<String> data_it = raw_data.keySet().iterator();
 		while (data_it.hasNext()) {
 			String case_order = data_it.next().trim();
 			Integer macro_order = new Integer(0);
 			String macro_case_order = new String();
-			Map<String, String> case_data = raw_data.get(case_order);
+			Map<String, String> case_data = new HashMap<String, String>();
+			case_data.putAll(raw_data.get(case_order));
 			if (case_data.get("NoUse").equalsIgnoreCase("yes")) {
 				continue;
 			}
-			if (macro_data == null) {
+			if (macro_data == null || macro_data.isEmpty()) {
 				macro_case_order = "m" + macro_order.toString() + "_" + case_order;
 				case_data.put("Order", macro_case_order);
 				merge_macro_data.put(macro_case_order, case_data);
 				continue;
 			}
 			Boolean match_one = new Boolean(false);
-			Set<String> macro_set = macro_data.keySet();
-			Iterator<String> macro_it = macro_set.iterator();
+			Iterator<String> macro_it = macro_data.keySet().iterator();
 			while (macro_it.hasNext()) {
 				macro_order = macro_order + 1;
 				String macro_name = macro_it.next();
@@ -400,7 +395,8 @@ public class local_tube {
 	}
 
 	private Boolean case_macro_check(Map<String, String> raw_data, List<List<String>> macro_data) {
-		List<List<String>> one_macro_data = macro_data;
+		List<List<String>> one_macro_data = new ArrayList<List<String>>(); 
+		one_macro_data.addAll(macro_data);
 		// condition check
 		Boolean condition = true;
 		for (List<String> line : one_macro_data) {
@@ -423,8 +419,10 @@ public class local_tube {
 		return condition;
 	}
 
-	private Map<String, String> update_case_data(Map<String, String> raw_data, List<List<String>> macro_data) {
+	private Map<String, String> update_case_data(Map<String, String> case_data, List<List<String>> macro_data) {
 		Map<String, String> return_data = new HashMap<String, String>();
+		Map<String, String> raw_data = new HashMap<String, String>();
+		raw_data.putAll(case_data);
 		List<List<String>> one_macro_data = macro_data;
 		List<String> column_list = new ArrayList<String>();
 		column_list.add("CaseInfo");
@@ -661,6 +659,14 @@ public class local_tube {
 		String case_machine = case_data.get("Machine").trim();
 		HashMap<String, String> machine_map = comm_suite_case_merge(suite_machine, case_machine);
 		merge_data.put("Machine", machine_map);
+		// insert ClientPreference data
+        String suite_client_preference = "";
+        String case_client_preference = "";
+        if(suite_data.containsKey("ClientPreference")){
+            suite_client_preference = suite_data.get("ClientPreference").trim();
+        }
+        HashMap<String, String> client_preference = comm_suite_case_merge(suite_client_preference, case_client_preference);
+        merge_data.put("ClientPreference", client_preference);
 		return merge_data;
 	}
 
@@ -719,7 +725,7 @@ public class local_tube {
 					globle_data.put("cmd", overall_cmd);
 				}
 			} else {
-				// non command key 1)globle have value, local must have value
+				// non command key 1)global have value, local must have value
 				// then overwrite
 				if (globle_data.containsKey(local_key)) {
 					if (!(local_value == null) && !local_value.equals("")) {
@@ -1150,7 +1156,7 @@ public class local_tube {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
-		sheet_parser.generate_suite_file_local_admin_task_queues("D:/java_dev/radiant_regression.xlsx", "", current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues("C:/Users/jwang1/Desktop/client_test/silicon__thunderplus.xlsx", "", current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

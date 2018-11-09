@@ -24,6 +24,7 @@ import env_monitor.machine_sync;
 import flow_control.import_data;
 import self_update.app_update;
 import utility_funcs.deep_clone;
+import utility_funcs.mail_action;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
@@ -45,8 +46,8 @@ public class maintain_status extends abstract_status {
 	public void to_work() {
 		System.out.println(">>>####################");
 		client.STATUS_LOGGER.warn("Go to work");
-		client.data_runner.wake_request();
-		client.tube_runner.wake_request();
+		//client.data_runner.wake_request();
+		//client.tube_runner.wake_request();
 		client.hall_runner.wake_request();
 		client.set_current_status(client.WORK);
 	}
@@ -59,36 +60,43 @@ public class maintain_status extends abstract_status {
 	
 	public void do_state_things(){
 		client.STATUS_LOGGER.info("Run state things");
-		client.switch_info.set_client_maintain_house_keeping(true);
-		maintain_enum maintain_entry = client.switch_info.get_client_maintain_reason();
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
-		System.out.println(">>>Info:Maintain Entry is: " + maintain_entry.get_description());
-		switch (maintain_entry){
-		case idle:
-			implements_self_quiet_update();
-			implements_core_script_update();
-			implements_auto_restart_action();
-			break;
-		case update:
-			implements_core_script_update();
-			break;
-		case cpu:
-			System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
-			client_cpu_action();
-			break;
-		case mem:
-			System.out.println(">>>MEM:" + machine_sync.get_mem_usage());
-			client_mem_action();
-			break;
-		case space:
-			System.out.println(">>>Space:" + machine_sync.get_disk_left(work_space));
-			client_space_action();
-			break;			
-		default:
-			break;
+		ArrayList<maintain_enum> maintain_list = new ArrayList<maintain_enum>();
+		maintain_list.addAll(client.switch_info.get_client_maintain_list());
+		System.out.println(">>>Info:Maintain Entry is: " + maintain_list.toString());
+		for (maintain_enum maintain_entry: maintain_list){
+			switch (maintain_entry) {
+			case idle:
+				implements_self_quiet_update();
+				implements_core_script_update();
+				implements_auto_restart_action();
+				break;
+			case update:
+				System.out.println(">>>Update: Begin to update DEV...");
+				implements_core_script_update();
+				client.switch_info.set_core_script_update_request(false);
+				break;
+			case environ:
+				System.out.println(">>>Update: Begin to propagate env issue...");
+				implements_env_issue_propagate();
+				break;				
+			case cpu:
+				System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
+				implements_client_cpu_action();
+				break;
+			case mem:
+				System.out.println(">>>MEM:" + machine_sync.get_mem_usage());
+				implements_client_mem_action();
+				break;
+			case space:
+				System.out.println(">>>Space:" + machine_sync.get_disk_left(work_space));
+				implements_client_space_action();
+				break;
+			default:
+				break;
+			}
 		}
-		client.switch_info.set_client_maintain_house_keeping(false);
-	}	
+	}
 	
 	//=============================================================
 	//methods for locals
@@ -171,7 +179,7 @@ public class maintain_status extends abstract_status {
 		}
 	}
 	
-	private void client_mem_action(){
+	private void implements_client_mem_action(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		int counter = 0;
 		while(true){
@@ -207,7 +215,38 @@ public class maintain_status extends abstract_status {
 		}
 	}	
 	
-	private void client_cpu_action(){
+	private void implements_env_issue_propagate(){
+		HashMap<String, String> machine_data = new HashMap<String, String>();
+		machine_data.putAll(client.client_info.get_client_machine_data());
+		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		if(run_mode.equals("0")){ 
+			//attended mode local showing
+			client.view_info.set_environ_issue_apply(true);
+		} else {
+			//send mail
+			send_env_issue_info();
+		}
+	}
+	
+	private void send_env_issue_info(){
+		String subject = new String("TMP Client: Environ issue, manually check needed.");
+		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
+		String line_separator = System.getProperty("line.separator");
+		StringBuilder message = new StringBuilder("");
+		message.append("Hi all:" + line_separator);
+		message.append("    TMP client get environ issue, manually check needed." + line_separator);
+		message.append("    TMP client will suspended before this issue removed:" + line_separator);
+		message.append("    Possible reason are: Python/svn issue, No system resource" + line_separator);
+		message.append("    " + line_separator);
+		message.append("    Time:" + time_info.get_date_time() + line_separator);
+		message.append("    Terminal:" + client.client_info.get_client_machine_data().get("terminal"));
+		message.append("    " + line_separator);
+		message.append("Thanks" + line_separator);
+		message.append("TMP Clients" + line_separator);
+		mail_action.simple_event_mail(subject, to_str, message.toString());
+	}
+	
+	private void implements_client_cpu_action(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		int counter = 0;
 		while(true){
@@ -243,7 +282,8 @@ public class maintain_status extends abstract_status {
 		}
 	}
 	
-	private void client_space_action(){
+	private Boolean implements_client_space_action(){
+		Boolean space_cleaned = new Boolean(false);
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		machine_data.putAll(client.client_info.get_client_machine_data());
@@ -262,13 +302,78 @@ public class maintain_status extends abstract_status {
 					e.printStackTrace();
 				}				
 			}
+			space_cleaned = false;
 		} else {
 			//unattended mode, remove old run results
-			implements_del_finished_results();
-		}		
+			run_space_clean_up();
+			space_cleaned = true;
+		}
+		return space_cleaned;
 	}
 	
-	private void implements_del_finished_results() {
+	private void run_space_clean_up(){
+		int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
+		int maximum_remove_round = 5;
+		int remove_round = 0;
+		while(true){
+			del_finished_results();
+			try {
+				Thread.sleep(base_interval * 1 *1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			state_enum client_state = client.switch_info.get_client_run_state();
+			if (!client_state.equals(state_enum.maintain)){
+				break;
+			}
+			if (remove_round > maximum_remove_round){
+				break;
+			}
+			remove_round++;
+		}
+		if (get_space_overload()){
+			send_space_overload_info();
+		}
+	}
+	
+	private void send_space_overload_info(){
+		String subject = new String("TMP Client: Space overload, manually cleanup needed.");
+		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
+		String line_separator = System.getProperty("line.separator");
+		StringBuilder message = new StringBuilder("");
+		message.append("Hi all:" + line_separator);
+		message.append("    TMP client get space overload, manually cleanup needed." + line_separator);
+		message.append("    TMP client will suspended before this issue removed:" + line_separator);
+		message.append("    " + line_separator);
+		message.append("    Time:" + time_info.get_date_time() + line_separator);
+		message.append("    Terminal:" + client.client_info.get_client_machine_data().get("terminal"));
+		message.append("    " + line_separator);
+		message.append("Thanks" + line_separator);
+		message.append("TMP Clients" + line_separator);
+		mail_action.simple_event_mail(subject, to_str, message.toString());
+	}
+	
+	private Boolean get_space_overload(){
+		Boolean status = new Boolean(false);
+		String work_space = client.client_info.get_client_preference_data().get("work_space");
+		String space_available = machine_sync.get_avail_space(work_space);
+		String space_reserve = client.client_info.get_client_preference_data().get("space_reserve");
+		int space_available_int = 0;
+		int space_reserve_int = 0;
+		try{
+			space_available_int = Integer.parseInt(space_available);
+			space_reserve_int = Integer.parseInt(space_reserve);
+		} catch (Exception e) {
+			return false;
+		}	
+		if (space_available_int < space_reserve_int){
+			status = true;
+		}
+		return status;
+	}	
+	
+	private void del_finished_results() {
 		// get delete list
 		List<String> finished_list = new ArrayList<String>();
 		finished_list.addAll(client.task_info.get_finished_admin_queue_list());
@@ -290,7 +395,7 @@ public class maintain_status extends abstract_status {
 			}
 			String work_path = new String();
 			if (client.client_info.get_client_data().containsKey("preference")) {
-				work_path = client.client_info.get_client_data().get("preference").get("work_path");
+				work_path = client.client_info.get_client_preference_data().get("work_space");
 			} else {
 				work_path = public_data.DEF_WORK_SPACE;
 			}

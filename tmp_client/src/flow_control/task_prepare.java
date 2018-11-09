@@ -47,6 +47,13 @@ public class task_prepare {
 		task_prepare_info.add(">>>Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
+        if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
+            String mode = task_data.get("ClientPreference").get("case_mode").trim();
+            if(mode.equals("0")) case_mode = "keep_case";
+            if(mode.equals("1") | mode.equals("2")) {
+                case_mode = "copy_case";
+            }
+        }
 		File task_path_dobj = new File(task_path);
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			if (task_path_dobj.isDirectory() && task_path_dobj.canWrite()){
@@ -90,6 +97,13 @@ public class task_prepare {
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
+        if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
+            String mode = task_data.get("ClientPreference").get("case_mode").trim();
+            if(mode.equals("0")) case_mode = "keep_case";
+            if(mode.equals("1") | mode.equals("2")) {
+                case_mode = "copy_case";
+            }
+        }
 		File case_path_dobj = new File(case_path);
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			if (case_path_dobj.isDirectory() && case_path_dobj.canWrite()){
@@ -337,8 +351,9 @@ public class task_prepare {
 		Matcher match2 = patt2.matcher(launch_cmd);
 		while(match2.find()){
 			String match_str = new String(match2.group().trim());
-			launch_cmd = launch_cmd.replaceAll(match_str, match_str.replaceAll("\\s+", tmp_str));
-		}
+            launch_cmd = launch_cmd.replaceAll(match_str, match_str.replaceAll("\\s+", tmp_str)
+                    .replaceAll("\"", ""));
+        }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		// add default --design option for Core scripts
 		String[] cmd_list = null;

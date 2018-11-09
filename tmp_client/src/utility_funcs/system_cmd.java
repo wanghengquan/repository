@@ -220,16 +220,10 @@ public class system_cmd {
 		// Start processing return string list
 		Iterator<String> line_it = string_list.iterator();
 		String reason = new String();
-		Boolean TBD_flag = new Boolean(false);
+		//Boolean TBD_flag = new Boolean(false);
 		while (line_it.hasNext()) {
 			String line = line_it.next();
 			if (line.toLowerCase().startsWith("error"))
-				reason = line;
-			else if (line.indexOf("##CR_NOTE_BEGIN##") > 0)
-				TBD_flag = true;
-			else if (line.indexOf("#CR_NOTE_END#") > 0)
-				TBD_flag = false;
-			else if (TBD_flag)
 				reason = line;
 		}
 		if (reason.length() > 1)
@@ -284,17 +278,11 @@ public class system_cmd {
 			read_log.start();
 			boolean exit_status = p.waitFor((long) timeout, TimeUnit.SECONDS);
 			String reason = new String("");
-			Boolean TBD_flag = false;
+			//Boolean TBD_flag = false;
 			Iterator<String> line_it = string_list.iterator();
 			while (line_it.hasNext()) {
 				String line = line_it.next();
 				if (line.toLowerCase().startsWith("error"))
-					reason = line;
-				else if (line.indexOf("##CR_NOTE_BEGIN##") > 0)
-					TBD_flag = true;
-				else if (line.indexOf("#CR_NOTE_END#") > 0)
-					TBD_flag = false;
-				else if (TBD_flag)
 					reason = line;
 			}
 			if (exit_status) {

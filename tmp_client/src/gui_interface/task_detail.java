@@ -76,7 +76,8 @@ public class task_detail extends JFrame {
 		items.add("Software");
 		items.add("System");
 		items.add("Machine");
-		items.add("Status");
+        items.add("ClientPreference");
+        items.add("Status");
 		items.add("Paths");
 		Iterator<String> item_it = items.iterator();
 		while(item_it.hasNext()){

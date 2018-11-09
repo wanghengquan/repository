@@ -75,5 +75,11 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/home/jwang1/workspace/lib/Jupdater-1.0.0/Jupdater.jar"/>
+	<classpathentry kind="lib" path="/home/jwang1/workspace/lib/JavaMail_1.6.1/javax.mail.jar"/>
+	<classpathentry kind="lib" path="/home/jwang1/workspace/lib/commons-email-1.5/commons-email-1.5.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/jwang1/workspace/lib/commons-email-1.5/commons-email-1.5-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
