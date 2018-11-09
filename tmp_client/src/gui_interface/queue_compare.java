@@ -26,8 +26,8 @@ public class queue_compare implements Comparator<String> {
 		try {
 			int_pri1 = get_srting_int(queue_name1, "^(\\d+)@");
 			int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
-			int_run1 = get_srting_int(queue_name1, "@run_(\\d+)_?");
-			int_run2 = get_srting_int(queue_name2, "@run_(\\d+)_?");
+			int_run1 = get_srting_int(queue_name1, "run_(\\d+)_?");
+			int_run2 = get_srting_int(queue_name2, "run_(\\d+)_?");
 			int_year1 = get_srting_int(queue_name1, "_\\d+?(\\d\\d)_\\d+$");
 			int_year2 = get_srting_int(queue_name2, "_\\d+?(\\d\\d)_\\d+$");			
 			int_date1 = get_srting_int(queue_name1, "_(\\d+?)\\d\\d_\\d+$");
