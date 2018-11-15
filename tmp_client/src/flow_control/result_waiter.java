@@ -401,24 +401,32 @@ public class result_waiter extends Thread {
             String[] tmp_path = save_path.split(",");
             int i = 1;
             //multiple save path with multiple web link show.
+            String win_href = "<a href=%s target='_explorer.exe'>%s";
+            String lin_href = "<a href=file://localhost%s  target='_blank'>%s";
             for(String path: tmp_path) {
                 path = path.trim();
                 if(path.startsWith("/")){
-                     String link = String.format("<a href=file://localhost%s  target='_blank'>%s</a>", path, path);
                      if(!is_windows){
-                         runlog.append("Save location " + i + " with Lin access ==> " + link + line_separator);
+                         runlog.append("Save location " + i + " with Lin access ==> ");
+                         runlog.append(String.format(lin_href, path, path));
+                         runlog.append("</a>" + line_separator);
                          if(path.startsWith("/lsh/")){
-                             runlog.append("Save location " + i + " with Win access ==> "
-                                     + link.replace("/lsh/", "\\\\lsh-smb01\\").replace('/', '\\') + line_separator);
+                             path = path.replace("/lsh/", "\\\\lsh-smb01\\").replace('/', '\\');
+                             runlog.append("Save location " + i + " with Win access ==> ");
+                             runlog.append(String.format(win_href, path, path));
+                             runlog.append("</a>" + line_separator);
                          }
                      }
                 } else {
-                     String link = String.format("<a href=%s target='_explorer.exe'>%s</a>", path, path);
                      if(is_windows){
-                         runlog.append("Save location " + i + " with Win access ==> " + link + line_separator);
+                         runlog.append("Save location " + i + " with Win access ==> ");
+                         runlog.append(String.format(win_href, path, path));
+                         runlog.append("</a>" + line_separator);
                          if(path.startsWith("\\\\lsh-smb01\\")){
-                             runlog.append("Save location " + i + " with Lin access ==> "
-                                     + link.replace("\\\\lsh-smb01\\", "/lsh/").replace('\\', '/') + line_separator);
+                             path = path.replace("\\\\lsh-smb01\\", "/lsh/").replace('\\', '/');
+                             runlog.append("Save location " + i + " with Lin access ==> ");
+                             runlog.append(String.format(lin_href, path, path));
+                             runlog.append("</a>" + line_separator);
                          }
                      }
                 }
