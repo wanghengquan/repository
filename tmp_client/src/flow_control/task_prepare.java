@@ -392,7 +392,7 @@ public class task_prepare {
 		}
 		// put environ for software requirements
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
-		if (!ignore_request.contains("software")){
+		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
 			while (software_request_it.hasNext()) {
 				String software_name = software_request_it.next();
@@ -607,7 +607,7 @@ public class task_prepare {
 		}
 		// put environ for software requirements
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
-		if (!ignore_request.contains("software")){
+		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
 			Set<String> software_request_set = task_data.get("Software").keySet();
 			Iterator<String> software_request_it = software_request_set.iterator();
 			while (software_request_it.hasNext()) {
