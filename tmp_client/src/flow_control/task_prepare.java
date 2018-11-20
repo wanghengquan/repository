@@ -351,7 +351,7 @@ public class task_prepare {
 		Matcher match2 = patt2.matcher(launch_cmd);
 		while(match2.find()){
 			String match_str = new String(match2.group().trim());
-            launch_cmd = launch_cmd.replaceAll(match_str, match_str.replaceAll("\\s+", tmp_str)
+            launch_cmd = launch_cmd.replace(match_str, match_str.replaceAll("\\s+", tmp_str)
                     .replaceAll("\"", ""));
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
