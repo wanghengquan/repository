@@ -189,7 +189,7 @@ public class cmd_parser {
 		options_obj.addOption(
 				Option.builder("U").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
-				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine) check")
+				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine, all) check")
 				.build());
 		options_obj.addOption(Option.builder("f").longOpt("suite-file").hasArg()
 				.desc("Test suite file for Local run, $unit_path represent the path to <install_path>/doc/TMP_EIT_suites")
