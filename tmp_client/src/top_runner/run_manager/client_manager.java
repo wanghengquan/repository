@@ -270,19 +270,17 @@ public class client_manager extends Thread  {
 			// task 1 : start work status
 			if (start_work_mode(client_sts)){
 				client_sts.to_work_status();
-				client_sts.do_state_things();
 			}
 			// task 2 : maintenance mode calculate
 			if(start_maintenance_mode(client_sts)){
 				client_sts.to_maintain_status();
-				client_sts.do_state_things();
 			}
 			// task 3 :
 			if (!switch_info.get_client_stop_request().isEmpty()){
 				client_sts.to_stop_status();
-				client_sts.do_state_things();
 			} 
-			// task 4 : 
+			// task 4 :
+			client_sts.do_state_things();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

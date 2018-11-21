@@ -59,7 +59,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		client.STATUS_LOGGER.info("Run state things");
+		client.STATUS_LOGGER.info("Run maintain state things");
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
 		ArrayList<maintain_enum> maintain_list = new ArrayList<maintain_enum>();
 		maintain_list.addAll(client.switch_info.get_client_maintain_list());
@@ -323,10 +323,12 @@ public class maintain_status extends abstract_status {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			state_enum client_state = client.switch_info.get_client_run_state();
-			if (!client_state.equals(state_enum.maintain)){
-				break;
-			}
+			//client will keep in maintain state before this function finished
+			//comment out following lines
+			//state_enum client_state = client.switch_info.get_client_run_state();
+			//if (!client_state.equals(state_enum.maintain)){
+			//	break;
+			//}
 			if (remove_round > maximum_remove_round){
 				break;
 			}
@@ -338,13 +340,14 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private void send_space_overload_info(){
-		String subject = new String("TMP Client: Space overload, manually cleanup needed.");
+		String subject = new String("TMP Client: Space overload, Extra cleanup needed.");
 		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
 		String line_separator = System.getProperty("line.separator");
 		StringBuilder message = new StringBuilder("");
 		message.append("Hi all:" + line_separator);
-		message.append("    TMP client get space overload, manually cleanup needed." + line_separator);
-		message.append("    TMP client will suspended before this issue removed:" + line_separator);
+		message.append("    TMP client get space overload issue, Extra cleanup needed." + line_separator);
+		message.append("    TMP client will try to remove finished jobs automatically." + line_separator);
+		message.append("    But it is better to make a disk cleanup manually!" + line_separator);
 		message.append("    " + line_separator);
 		message.append("    Time:" + time_info.get_date_time() + line_separator);
 		message.append("    Terminal:" + client.client_info.get_client_machine_data().get("terminal"));
