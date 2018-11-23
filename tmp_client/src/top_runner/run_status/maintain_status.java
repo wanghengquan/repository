@@ -59,7 +59,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		client.STATUS_LOGGER.info("Run maintain state things");
+		//client.STATUS_LOGGER.info("Run maintain state things");
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
 		ArrayList<maintain_enum> maintain_list = new ArrayList<maintain_enum>();
 		maintain_list.addAll(client.switch_info.get_client_maintain_list());

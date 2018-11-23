@@ -49,7 +49,7 @@ public class work_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		client.STATUS_LOGGER.info("Run work state things");
+		//client.STATUS_LOGGER.info("Run work state things");
 	}	
 	
 	//=============================================================
