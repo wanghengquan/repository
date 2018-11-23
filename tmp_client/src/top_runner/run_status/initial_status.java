@@ -70,7 +70,7 @@ class initial_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		client.STATUS_LOGGER.info("Run initial state things");
+		//client.STATUS_LOGGER.info("Run initial state things");
 	}
 	
 	//=============================================================
