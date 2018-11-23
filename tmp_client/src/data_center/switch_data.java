@@ -65,7 +65,8 @@ public class switch_data {
 	//private String client_warn_message = new String("");
 	//private String client_error_message = new String("");
 	private Boolean core_script_update_request = new Boolean(false);
-
+	private String space_warning_announced_date = new String("");
+	private String environ_warning_announced_date = new String("");
 	// public function
 	public switch_data() {
 
@@ -495,6 +496,46 @@ public class switch_data {
 		}
 		return status;
 	}	
+	
+	public void set_space_warning_announced_date(String new_date) {
+		rw_lock.writeLock().lock();
+		try {
+			this.space_warning_announced_date = new_date;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_space_warning_announced_date() {
+		String date = new String("");
+		rw_lock.readLock().lock();
+		try {
+			date = this.space_warning_announced_date;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return date;
+	}
+	
+	public void set_environ_warning_announced_date(String new_date) {
+		rw_lock.writeLock().lock();
+		try {
+			this.environ_warning_announced_date = new_date;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_environ_warning_announced_date() {
+		String date = new String("");
+		rw_lock.readLock().lock();
+		try {
+			date = this.environ_warning_announced_date;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return date;
+	}
 	
 	/*
 	public void set_client_hall_status(String current_status) {

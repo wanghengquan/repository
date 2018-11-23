@@ -89,7 +89,7 @@ public class maintain_status extends abstract_status {
 				implements_client_mem_action();
 				break;
 			case space:
-				System.out.println(">>>Space:" + machine_sync.get_disk_left(work_space));
+				System.out.println(">>>Space:" + machine_sync.get_avail_space(work_space));
 				implements_client_space_action();
 				break;
 			default:
@@ -218,17 +218,34 @@ public class maintain_status extends abstract_status {
 	private void implements_env_issue_propagate(){
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.putAll(client.client_info.get_client_machine_data());
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client.client_info.get_client_preference_data());		
 		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
 		if(run_mode.equals("0")){ 
 			//attended mode local showing
-			client.view_info.set_environ_issue_apply(true);
+			if(preference_data.get("cmd_gui").equals("gui")){
+				client.view_info.set_environ_issue_apply(true);
+			} else {
+				System.out.println(">>>Info: Manually Environment check needed...");
+				try {
+					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}			
 		} else {
 			//send mail
-			send_env_issue_info();
+			if (get_environ_announced()){
+				return;
+			} else {
+				client.switch_info.set_environ_warning_announced_date(time_info.get_date_year());
+				send_environ_issue_mail();
+			}
 		}
 	}
 	
-	private void send_env_issue_info(){
+	private void send_environ_issue_mail(){
 		String subject = new String("TMP Client: Environ issue, manually check needed.");
 		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
 		String line_separator = System.getProperty("line.separator");
@@ -244,6 +261,16 @@ public class maintain_status extends abstract_status {
 		message.append("Thanks" + line_separator);
 		message.append("TMP Clients" + line_separator);
 		mail_action.simple_event_mail(subject, to_str, message.toString());
+	}
+	
+	private Boolean get_environ_announced(){
+		Boolean status = new Boolean(false);
+		String current_date = new String(time_info.get_date_year());
+		String history_date = new String(client.switch_info.get_environ_warning_announced_date());
+		if (current_date.equalsIgnoreCase(history_date)){
+			status = true;
+		}
+		return status;
 	}
 	
 	private void implements_client_cpu_action(){
@@ -313,7 +340,7 @@ public class maintain_status extends abstract_status {
 	
 	private void run_space_clean_up(){
 		int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
-		int maximum_remove_round = 5;
+		int maximum_remove_round = 10;
 		int remove_round = 0;
 		while(true){
 			del_finished_results();
@@ -334,12 +361,17 @@ public class maintain_status extends abstract_status {
 			}
 			remove_round++;
 		}
-		if (get_space_overload()){
-			send_space_overload_info();
+		if (get_overload_removed()){
+			return;
 		}
+		if (get_overload_announced()){
+			return;
+		}
+		send_space_overload_info();
 	}
 	
 	private void send_space_overload_info(){
+		client.switch_info.set_space_warning_announced_date(time_info.get_date_year());
 		String subject = new String("TMP Client: Space overload, Extra cleanup needed.");
 		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
 		String line_separator = System.getProperty("line.separator");
@@ -357,7 +389,17 @@ public class maintain_status extends abstract_status {
 		mail_action.simple_event_mail(subject, to_str, message.toString());
 	}
 	
-	private Boolean get_space_overload(){
+	private Boolean get_overload_announced(){
+		Boolean status = new Boolean(false);
+		String current_date = new String(time_info.get_date_year());
+		String history_date = new String(client.switch_info.get_space_warning_announced_date());
+		if (current_date.equalsIgnoreCase(history_date)){
+			status = true;
+		}
+		return status;
+	}
+	
+	private Boolean get_overload_removed(){
 		Boolean status = new Boolean(false);
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
 		String space_available = machine_sync.get_avail_space(work_space);
@@ -370,7 +412,7 @@ public class maintain_status extends abstract_status {
 		} catch (Exception e) {
 			return false;
 		}	
-		if (space_available_int < space_reserve_int){
+		if (space_available_int > space_reserve_int){
 			status = true;
 		}
 		return status;
@@ -396,6 +438,7 @@ public class maintain_status extends abstract_status {
 			if (!queue_name.contains(earliest_date)){
 				continue;
 			}
+			client.STATUS_LOGGER.warn("Begin to remove data for Task:" + queue_name);
 			String work_path = new String();
 			if (client.client_info.get_client_data().containsKey("preference")) {
 				work_path = client.client_info.get_client_preference_data().get("work_space");
@@ -409,6 +452,7 @@ public class maintain_status extends abstract_status {
 				admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client.client_info));				
 			}
 			if (admin_data.isEmpty()){
+				client.STATUS_LOGGER.warn("No data can be removed for Task:" + queue_name);
 				continue;
 			}
 			// delete data in memory(Remote server may send a done queue which also need to be delete)
@@ -424,9 +468,11 @@ public class maintain_status extends abstract_status {
 			File task_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
 			if (admin_path.exists() && admin_path.isFile()) {
 				admin_path.delete();
+				client.STATUS_LOGGER.warn("Admin file removed:" + admin_path);
 			}
 			if (task_path.exists() && task_path.isFile()) {
 				task_path.delete();
+				client.STATUS_LOGGER.warn("Task file removed:" + task_path);
 			}
 			// delete results in disk
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
@@ -438,9 +484,9 @@ public class maintain_status extends abstract_status {
 			File result_url_fobj = new File(result_url);
 			if (result_url_fobj.exists()){
 				if(FileUtils.deleteQuietly(result_url_fobj)){
-					System.out.println(">>>Info: Result path cleanup Pass:" + result_url);
+					client.STATUS_LOGGER.warn("Result path cleanup Pass:" + result_url);
 				} else {
-					System.out.println(">>>Info: Result path cleanup Fail:" + result_url);
+					client.STATUS_LOGGER.warn("Result path cleanup Fail:" + result_url);
 				}
 			}
 		}
