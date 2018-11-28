@@ -108,6 +108,18 @@ public class work_panel extends JSplitPane implements Runnable{
 		return proc_lines;
 	}
 	
+	private int get_nodata_lines(panel_table work_table){
+		int nodata_lines = 0;
+		int[] select_rows = work_table.getSelectedRows();
+		for(int row_index : select_rows){
+			String design_str = (String) work_table.getValueAt(row_index, 2);
+			if (design_str.equalsIgnoreCase("..")){
+				nodata_lines++;
+			}
+		}
+		return nodata_lines;
+	}	
+	
 	private Component panel_right_component() {
 		JPanel work_panel = new JPanel(new BorderLayout());
 		table_pop_memu table_menu = new table_pop_memu(main_view, work_table, task_info, view_info);
@@ -123,6 +135,11 @@ public class work_panel extends JSplitPane implements Runnable{
 						} else {
 							table_menu.disable_terminate_item();
 						}
+						if(get_nodata_lines(work_table) > 0){
+							table_menu.disable_retest_item();
+						} else {
+							table_menu.enable_retest_item();
+						}
 						table_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -137,7 +154,12 @@ public class work_panel extends JSplitPane implements Runnable{
 							table_menu.enable_terminate_item();
 						} else {
 							table_menu.disable_terminate_item();
-						}						
+						}
+						if(get_nodata_lines(work_table) > 0){
+							table_menu.disable_retest_item();
+						} else {
+							table_menu.enable_retest_item();
+						}				
 						table_menu.show(e.getComponent(), e.getX(), e.getY());
 					}
 				} else {
@@ -465,6 +487,14 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	public table_pop_memu get_table_pop_menu() {
 		return this;
 	} 
+	
+	public void disable_retest_item() {
+		retest.setEnabled(false);
+	}
+	
+	public void enable_retest_item() {
+		retest.setEnabled(true);
+	}	
 	
 	public void disable_terminate_item() {
 		terminate.setEnabled(false);
