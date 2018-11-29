@@ -163,20 +163,24 @@ public class task_waiter extends Thread {
 		Boolean available = new Boolean(true);
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
-			return false;
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.info(waiter_name + ":Waiting for core script update...");
+			}			
+			available = false;
 		}
 		//thread available ?
 		if (pool_info.get_available_thread() < 1){
-			return false;
+			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No more threads available...");
+			}			
+			available = false;
 		}
 		//processing queue available ?
 		if (task_info.get_processing_admin_queue_list().size() < 1) {
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
-			} else {
-				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
 			}
-			return false;
+			available = false;
 		}		
 		return available;
 	}
