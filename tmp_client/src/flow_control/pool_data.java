@@ -124,7 +124,7 @@ public class pool_data {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void fresh_sys_call() {		
+	public synchronized void fresh_sys_call() {
 		Iterator<String> call_map_it = call_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
