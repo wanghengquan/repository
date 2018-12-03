@@ -233,24 +233,26 @@ public class rmq_tube {
 		String msg_key = (String) msg_key_set.toArray()[0];
 		HashMap<String, HashMap<String, String>> msg_data = msg_hash.get(msg_key);
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = new String();
+		String priority = public_data.TASK_DEF_PRIORITY;
 		if (!msg_data.containsKey("CaseInfo")) {
-			priority = "5";
+			priority = public_data.TASK_DEF_PRIORITY;
 		} 
 		if (!msg_data.get("CaseInfo").containsKey("priority")) {
-			priority = "5";
-		}
-		if (msg_key.toLowerCase().contains("rerun_")){
-			priority = "3";
+			priority = public_data.TASK_DEF_PRIORITY;
 		}
 		if (msg_data.get("CaseInfo").containsKey("priority")){
 			priority = msg_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
-				priority = "5";
+				priority = public_data.TASK_DEF_PRIORITY;
 			}
 		}
+        if (msg_key.toLowerCase().contains("rerun_")){
+            if (priority.charAt(0) > public_data.PRI_RERUN.charAt(0)) {
+                priority = public_data.PRI_RERUN;
+            }
+        }
 		// task belong to this client(job_attribute): (0, assign task) > (1,
 		// match task)
 		String attribute = new String();

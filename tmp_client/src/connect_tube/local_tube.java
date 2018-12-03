@@ -770,17 +770,17 @@ public class local_tube {
 		// generate queue name
 		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = new String();
+		String priority;
 		if (!design_data.containsKey("CaseInfo")) {
-			priority = "5";
+			priority = public_data.PRI_LOCALLY;
 		} else if (!design_data.get("CaseInfo").containsKey("priority")) {
-			priority = "5";
+			priority = public_data.PRI_LOCALLY;
 		} else {
 			priority = design_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
-				priority = "5";
+				priority = public_data.PRI_LOCALLY;
 			}
 		}
 		// task belong to this client: 0, assign task(0) > match task(1)
@@ -961,7 +961,7 @@ public class local_tube {
 		// generate queue name
 		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = new String("5");
+		String priority = public_data.PRI_LOCALLY;
 		// task belong to this client: 0, assign task(0) > match task(1)
 		String attribute = new String("0");
 		// receive time
