@@ -622,6 +622,7 @@ public class task_waiter extends Thread {
 		String case_path = new String("");
 		String task_path = new String("");
 		String save_path = new String("");
+		String save_suite = new String("");
 		String script_source = new String("");
 		String launch_path = new String("");
 		String report_path = new String(""); //also named location in Status
@@ -691,8 +692,25 @@ public class task_waiter extends Thread {
 			}
 		}
 		paths_hash.put("task_path", task_path);
-		//get save_path
+		//get suite save path save_suite
         String[] tmp_space = save_space.split(",");
+        ArrayList<String> tmp_suite = new ArrayList<String>();    
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			save_suite = repository + "/" + suite_path;
+		} else {
+		    for(String space:tmp_space) {
+		        String s_path = new String("");
+		        String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name};
+                s_path = String.join(file_seprator, path_array);
+                if(s_path.startsWith("//")){
+                    s_path = s_path.replace('/', '\\');
+                }
+                tmp_suite.add(s_path);
+            }
+		    save_suite = String.join(",", tmp_suite);
+		}
+		paths_hash.put("save_suite", save_suite);
+		//get save_path
         ArrayList<String> tmp_path = new ArrayList<String>();    
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;

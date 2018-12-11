@@ -64,7 +64,7 @@ public class task_prepare {
 				return false;
 			}
 		}
-		//Create new case path if not have
+		//Create new task path if not have
 		synchronized (this.getClass()) {
 			if (!task_path_dobj.exists()){
 				try {
