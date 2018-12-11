@@ -96,6 +96,7 @@ public class result_waiter extends Thread {
 			task_data.putAll(task_info.get_case_from_processed_task_queues_map(queue_name, case_id));
 			String case_path = task_data.get("Paths").get("case_path");
 			String save_path = task_data.get("Paths").get("save_path");
+			String save_suite = task_data.get("Paths").get("save_suite");
 			String save_space = task_data.get("Paths").get("save_space");
 			String work_space = task_data.get("Paths").get("work_space");
 			String report_path = task_data.get("Paths").get("report_path");
@@ -112,29 +113,45 @@ public class result_waiter extends Thread {
 			run_status = post_process_cleanup(case_path);			
 			// task 2 : zip case to save path
             String[] tmp_space = save_space.split(",");
+            String[] tmp_suite = save_suite.split(",");
             String[] tmp_path = save_path.split(",");
             for(int i=0; i<tmp_space.length; i++) {
-                String space = tmp_space[i].trim();
-                String path = tmp_path[i].trim();
-                if (space.equalsIgnoreCase(work_space)) {
+                String save_space_index = tmp_space[i].trim();
+                String save_suite_index = tmp_suite[i].trim();
+                String save_path_index = tmp_path[i].trim();
+                if (save_space_index.equalsIgnoreCase(work_space)) {
                     continue;
                 }
-                if (space.trim().equals("")) {
+                if (save_space_index.trim().equals("")) {
                     // no save path, skip copy
                     continue;
                 }
+                //make suite level folder
+        		File save_suite_fobj = new File(save_suite_index);
+        		if (!save_suite_fobj.exists()) {
+        			try {
+        				FileUtils.forceMkdir(save_suite_fobj);
+        				save_suite_fobj.setReadable(true, false);
+        				save_suite_fobj.setWritable(true, false);
+        			} catch (IOException e) {
+        				// TODO Auto-generated catch block
+        				// e.printStackTrace();
+        				RESULT_WAITER_LOGGER.warn("Create top leve save suite folder failed.");
+        			}
+        		}          
+                //start detail case copy
                 switch (result_keep.toLowerCase()) {
                     case "zipped":
-                        if(!copy_case_to_save_path(report_path, path, "archive")) run_status = false;
+                        if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
                         break;
                     case "unzipped":
-                        if(!copy_case_to_save_path(report_path, path, "source")) run_status = false;
+                        if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
                         break;
                     default:// auto and any other inputs treated as auto
                         if (cmd_status.equals(task_enum.PASSED)) {
-                            if(!copy_case_to_save_path(report_path, path, "archive")) run_status = false;
+                            if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
                         } else {
-                            if(!copy_case_to_save_path(report_path, path, "source")) run_status = false;
+                            if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
                         }
                 }
             }
@@ -744,11 +761,16 @@ public class result_waiter extends Thread {
 		}
 	}
 
-	public Boolean copy_case_to_save_path(String case_path, String save_path, String copy_type) {
+	public Boolean copy_case_to_save_path(
+			String case_path, 
+			String save_path, 
+			String copy_type) {
+		//save_suite: top path for all save cases
 		Boolean copy_status = new Boolean(true);
 		if (case_path.equalsIgnoreCase(save_path)){
 			return copy_status;
 		}
+
 		File save_path_fobj = new File(save_path);
 		if (!save_path_fobj.exists()) {
 			try {
@@ -779,13 +801,11 @@ public class result_waiter extends Thread {
 		if (save_dest_file.exists()) {
 			FileUtils.deleteQuietly(save_dest_file);
 		}
-		if (!save_path_fobj.exists()) {
-			save_path_fobj.mkdirs();
-			save_path_fobj.setWritable(true, false);
-		}
 		if (copy_type.equals("source")) {
 			try {
 				FileUtils.copyDirectory(case_path_obj, save_dest_folder);
+				save_dest_folder.setReadable(true, false);
+				save_dest_folder.setWritable(true, false);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -795,7 +815,8 @@ public class result_waiter extends Thread {
 		} else if (copy_type.equals("archive")) {
 			file_action.zipFolder(case_path_obj.getAbsolutePath().toString().replaceAll("\\\\", "/"),
 					save_dest_file.toString());
-			copy_status = true;
+			save_dest_file.setReadable(true, false);
+			save_dest_file.setWritable(true, false);
 		} else {
 			RESULT_WAITER_LOGGER.warn("Wrong copy type given, skip");
 			copy_status = false;
