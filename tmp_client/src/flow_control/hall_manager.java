@@ -45,6 +45,7 @@ public class hall_manager extends Thread {
 	private client_data client_info;
 	private pool_data pool_info;
 	private view_data view_info;
+	private post_data post_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private int local_cmd_exit_counter = 0;
@@ -58,13 +59,19 @@ public class hall_manager extends Thread {
 	// protected function
 	// private function
 
-	public hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info,
-			view_data view_info) {
+	public hall_manager(
+			switch_data switch_info, 
+			client_data client_info, 
+			pool_data pool_info, 
+			task_data task_info,
+			view_data view_info,
+			post_data post_info) {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
 		this.pool_info = pool_info;
 		this.view_info = view_info;
+		this.post_info = post_info;
 	}
 
 	private HashMap<String, task_waiter> get_task_waiter_ready(pool_data pool_info) {
@@ -103,7 +110,7 @@ public class hall_manager extends Thread {
 	}
 
 	private result_waiter get_result_waiter_ready(pool_data pool_info) {
-		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info);
+		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		waiter.start();
 		return waiter;
 	}
@@ -643,6 +650,7 @@ public class hall_manager extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		view_data view_info = new view_data();
+		post_data post_info = new post_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
@@ -662,7 +670,7 @@ public class hall_manager extends Thread {
 				break;
 			}
 		}
-		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
+		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		jason.start();
 		try {
 			Thread.sleep(10 * 1000);
