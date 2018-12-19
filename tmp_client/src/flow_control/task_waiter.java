@@ -863,6 +863,8 @@ public class task_waiter extends Thread {
 		ArrayList<String> title_list = new ArrayList<String>();
 		title_list.add("");
 		title_list.add("============================================================");
+		title_list.add("Task Queue:" + queue_name);
+		title_list.add("Task Case :" + case_id);
 		title_list.add("[Export]");
 		report_obj.dump_disk_task_report_data(report_path, title_list);
 		report_obj.dump_disk_task_report_data(report_path, task_prepare_info_list);
