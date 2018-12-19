@@ -151,7 +151,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		GridBagLayout input6_layout = new GridBagLayout();
 		JPanel jp_center6 = new JPanel(input6_layout);
 		jl_work_path = new JLabel("Work Space:");
-		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
+		jl_work_path.setToolTipText("Client will export task case to this place and run here.");
 		jt_work_path = new JTextField(preference_data.get("work_space"));
 		jp_center6.add(jl_work_path);
 		jp_center6.add(jt_work_path);
@@ -190,8 +190,10 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,4,5,10));
 		discard = new JButton("Discard");
+		discard.setToolTipText("Restore previous data.");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
+		apply.setToolTipText("Apply new setting.");
 		apply.addActionListener(this);
 		close = new JButton("Close");
 		close.addActionListener(this);		

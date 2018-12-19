@@ -184,8 +184,10 @@ class value_pane extends JPanel implements ActionListener{
 	private JPanel construct_south_panel(){
 		JPanel south_panel = new JPanel(new GridLayout(1,4,5,20));
 		discard = new JButton("Discard");
+		discard.setToolTipText("Restore previous data.");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
+		apply.setToolTipText("Apply for current Software setting only.");
 		apply.addActionListener(this);
 		close = new JButton("Close");
 		close.addActionListener(this);		
