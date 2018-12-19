@@ -284,7 +284,7 @@ public class data_server extends Thread {
 	private void update_max_sw_insts_limitation() {
 		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
-		client_hash.putAll(client_info.get_client_data());
+		client_hash.putAll(deep_clone.clone(client_info.get_client_data()));
 		Iterator<String> key_it = client_hash.keySet().iterator();
 		while (key_it.hasNext()) {
 			String key = key_it.next();
@@ -297,7 +297,13 @@ public class data_server extends Thread {
 			if (!client_hash.get(key).containsKey("max_insts")) {
 				continue;
 			}
-			Integer insts_value = Integer.valueOf(client_hash.get(key).get("max_insts"));
+			Integer insts_value = Integer.valueOf(public_data.DEF_SW_MAX_INSTANCES);
+			try{
+				insts_value = Integer.valueOf(client_hash.get(key).get("max_insts"));
+			} catch (NumberFormatException e) {
+				DATA_SERVER_LOGGER.warn("Wrong number format detected:" + client_hash.get(key).get("max_insts"));
+				DATA_SERVER_LOGGER.warn("Will use the default value:" + public_data.DEF_SW_MAX_INSTANCES);
+			}
 			max_soft_insts.put(key, insts_value);
 		}
 		client_info.set_max_soft_insts(max_soft_insts);
