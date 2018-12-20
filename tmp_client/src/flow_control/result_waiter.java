@@ -25,6 +25,7 @@ import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import gui_interface.view_data;
+import utility_funcs.deep_clone;
 import utility_funcs.postrun_call;
 import utility_funcs.time_info;
 
@@ -522,8 +523,8 @@ public class result_waiter extends Thread {
 			Boolean call_timeout = (Boolean) one_call_data.get(pool_attr.call_timeout);
 			Boolean call_terminate = (Boolean) one_call_data.get(pool_attr.call_terminate);
 			HashMap<String, Object> hash_data = new HashMap<String, Object>();
-			HashMap<String, HashMap<String, String>> task_data = task_info
-					.get_case_from_processed_task_queues_map(queue_name, case_id);
+			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+			task_data.putAll(deep_clone.clone(task_info.get_case_from_processed_task_queues_map(queue_name, case_id)));
 			hash_data.put("testId", task_data.get("ID").get("id"));
 			hash_data.put("suiteId", task_data.get("ID").get("suite"));
 			hash_data.put("runId", task_data.get("ID").get("run"));
@@ -843,8 +844,9 @@ public class result_waiter extends Thread {
 			update_thread_pool_running_queue();	
 			report_finished_queue_data(); //generate csv report
 			dump_finished_queue_data(); //to log dir xml file save memory
+			// fresh data must start from here
 			fresh_thread_pool_data(); //for all thread pools
-			monitor_cleanup_pool();
+			monitor_cleanup_pool(); // for post run thread pool only
 			// following actions based on a non-empty call back.
 			if (pool_info.get_sys_call_link() == null || pool_info.get_sys_call_link().size() < 1) {
 				if(!switch_info.get_local_console_mode()){
