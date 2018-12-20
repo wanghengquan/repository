@@ -438,6 +438,10 @@ public class maintain_status extends abstract_status {
 			if (!queue_name.contains(earliest_date)){
 				continue;
 			}
+			// got task queue still running
+			if (client.task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+				continue;
+			}
 			client.STATUS_LOGGER.warn("Begin to remove data for Task:" + queue_name);
 			String work_path = new String();
 			if (client.client_info.get_client_data().containsKey("preference")) {
