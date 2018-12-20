@@ -24,8 +24,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.56"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20856; // version for code use
+	public final static String BASE_CURRENTVERSION = "2.08.57"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20857; // version for code use
 	public final static String BASE_BUILDDATE = "2018/12/20";
 	public final static String BASE_SUITEFILEVERSION = "1.11";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -167,7 +167,9 @@ public class public_data {
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 60;   //Case same status report interval
-	public final static int PERF_POOL_MAXIMUM_SIZE = 30;
+	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
+	public final static int PERF_POOL_LIN_MAX_SIZE = 30;
+	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
 	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
@@ -212,7 +214,16 @@ public class public_data {
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 		return install_path.replaceAll("\\\\", "/");
 	}
-
+	
+	private static int get_maximum_threads(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_POOL_WIN_MAX_SIZE;
+		} else {
+			return public_data.PERF_POOL_LIN_MAX_SIZE;
+		}
+	}
+	
 	/*
 	 * main entry for test
 	 */
