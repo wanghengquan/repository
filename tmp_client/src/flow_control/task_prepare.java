@@ -345,7 +345,7 @@ public class task_prepare {
 			}
 		}
 		// replace blank space in ""
-		String tmp_str = new String("@#@");
+		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
 		// python --option1="test1  test2   test3" -o "test1   test3" --test
 		Pattern patt2 = Pattern.compile("\\s(\\S+?)?\".+?\"", Pattern.CASE_INSENSITIVE);
 		Matcher match2 = patt2.matcher(launch_cmd);

@@ -165,7 +165,7 @@ public class local_tube {
 			if (row_list.size() < 2) {
 				value = "";
 			} else {
-				value = row_list.get(1).trim();
+				value = row_list.get(1).trim().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 			}
 			if (item.contains(suite_start)) {
 				suite_area = true;
@@ -221,7 +221,11 @@ public class local_tube {
 					macro_area = false;
 					macro_data.put(macro_name, area_list);
 				} else {
-					area_list.add(row_list.subList(0, 3));
+					ArrayList<String> line_list = new ArrayList<String>();
+					line_list.add(row_list.get(0));
+					line_list.add(row_list.get(1));
+					line_list.add(row_list.get(2).replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON));
+					area_list.add(line_list);
 				}
 			}
 			if (item.equals("END")) {
@@ -326,7 +330,7 @@ public class local_tube {
 					int key_index = title_list.indexOf(key);
 					String column_value = "";
 					if (row_list.size() > key_index) {
-						column_value = row_list.get(key_index).trim();
+						column_value = row_list.get(key_index).trim().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 					}
 					if (key.equals("Order")) {
 						row_data.put("Order", case_order);
@@ -494,7 +498,7 @@ public class local_tube {
 		return_data.putAll(raw_data);
 		return return_data;
 	}
-
+	
 	private Map<String, HashMap<String, HashMap<String, String>>> get_merge_suite_case_data(
 			Map<String, String> suite_data, 
 			Map<String, Map<String, String>> case_data,
@@ -506,7 +510,9 @@ public class local_tube {
 		while (case_iterator.hasNext()) {
 			String case_id = case_iterator.next();
 			Map<String, String> one_case_data = case_data.get(case_id);
-			HashMap<String, HashMap<String, String>> merge_data = merge_suite_case_data(suite_data, one_case_data, extra_env, xlsx_dest);
+			HashMap<String, HashMap<String, String>> merge_data = new HashMap<String, HashMap<String, String>>();
+			merge_data.putAll(merge_suite_case_data(suite_data, one_case_data, extra_env, xlsx_dest));
+			//return internal string to user string
 			cross_data.put(case_id, merge_data);
 		}
 		sorted_data = sortMapByKey(cross_data);
@@ -569,7 +575,7 @@ public class local_tube {
 	}
 
 	// merge suite data and case data(already merged with macro) to an final
-	// case data.
+	// case data. don't forget get the replaced string back
 	public HashMap<String, HashMap<String, String>> merge_suite_case_data(
 			Map<String, String> suite_data,
 			Map<String, String> case_data,
@@ -844,7 +850,7 @@ public class local_tube {
 		local_file = local_file.replaceAll("\\$unit_path", public_data.DOC_EIT_PATH);
 		//excel file sanity check
 		if(!suite_file_sanity_check(local_file)){
-			LOCAL_TUBE_LOGGER.warn("Suite file wrong format/not exists:" + local_file);
+			LOCAL_TUBE_LOGGER.warn("Suite file not exists or wrong format:" + local_file);
 			return;			
 		}
 		//get excel file destination

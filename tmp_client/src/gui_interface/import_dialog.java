@@ -326,12 +326,12 @@ class file_pane extends JPanel implements ActionListener{
 				return;
 			}
 			String user_file = jt_user_file.getText().replaceAll("\\\\", "/");
-			String user_env = jt_user_env.getText();
+			String user_env = jt_user_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 			if (user_file.length() > 0){
 				impoart_local_task_data(user_file, user_env);
 			}			
 			String unit_file = jt_unit_file.getText().replaceAll("\\\\", "/");
-			String unit_env = jt_unit_env.getText();
+			String unit_env = jt_unit_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 			if (unit_file.length() > 0){
 				impoart_local_task_data(unit_file, unit_env);
 			}
@@ -561,7 +561,7 @@ class path_pane extends JPanel implements ActionListener{
 			String suite_key = jt_key_file.getText();
 			String suite_exe = jt_exe_file.getText();
 			String suite_arg = jt_arguments.getText();
-			String suite_env = jt_extra_env.getText();
+			String suite_env = jt_extra_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 			if (suite_path.length() > 0){
 				impoart_local_task_data(suite_path, suite_key, suite_exe, suite_arg, suite_env);
 			}

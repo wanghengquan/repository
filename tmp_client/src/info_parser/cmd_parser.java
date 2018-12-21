@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.exit_enum;
+import data_center.public_data;
 
 /*
  * PlatUML graph
@@ -113,13 +114,13 @@ public class cmd_parser {
 		}
 		// 3.9 task environments setting
 		if (commandline_obj.hasOption('e')) {
-			cmd_hash.put("task_environ", commandline_obj.getOptionValue('e'));
+			cmd_hash.put("task_environ", commandline_obj.getOptionValue('e').replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON));
 		} else {
 			cmd_hash.put("task_environ", "");
 		}
 		// 3.10 client environments setting
 		if (commandline_obj.hasOption('E')) {
-			cmd_hash.put("client_environ", commandline_obj.getOptionValue('E'));
+			cmd_hash.put("client_environ", commandline_obj.getOptionValue('E').replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON));
 		} else {
 			cmd_hash.put("client_environ", "");
 		}
