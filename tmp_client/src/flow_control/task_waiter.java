@@ -317,6 +317,7 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, String>> standard_case_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> task_data_path_updated = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>>();
 		indexed_task_data.putAll(get_indexed_task_data(queue_name));
 		if (indexed_task_data.isEmpty()) {
@@ -339,10 +340,45 @@ public class task_waiter extends Thread {
 			raw_task_data.putAll(get_merged_remote_task_info(admin_data, standard_case_data));
 		}
 		task_data.putAll(merge_default_and_preference_data(raw_task_data, client_preference_data));
-		return_data.putAll(update_task_data_path_info(task_data, client_preference_data));
+		task_data_path_updated.putAll(update_task_data_path_info(task_data, client_preference_data));
+		//get escaped string and replaced string back
+		return_data.putAll(replace_case_data_internal_string(task_data_path_updated));
 		return return_data;
 	}
 
+	private HashMap<String, HashMap<String, String>> replace_case_data_internal_string(
+			HashMap<String, HashMap<String, String>> case_data
+			){
+		HashMap<String, HashMap<String, String>> flow_data1 = new HashMap<String, HashMap<String, String>> ();
+		HashMap<String, HashMap<String, String>> flow_data2 = new HashMap<String, HashMap<String, String>> ();
+		//1. replace \; from remote queue
+		flow_data1.putAll(hash_map_value_replacement("\\\\;", ";", case_data));
+		//2. replace internal semicolon string
+		flow_data2.putAll(hash_map_value_replacement(public_data.INTERNAL_STRING_SEMICOLON, ";", flow_data1));
+		return flow_data2;
+	}	
+	
+	private HashMap<String, HashMap<String, String>> hash_map_value_replacement(
+			String ori_str,
+			String rep_str,
+			HashMap<String, HashMap<String, String>> case_data
+			){
+		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>> ();
+		Iterator<String> section_iterator = case_data.keySet().iterator();
+		while (section_iterator.hasNext()) {
+			String section = section_iterator.next();
+			HashMap<String, String> new_data = new HashMap<String, String>();
+			Iterator<String> option_it = case_data.get(section).keySet().iterator();
+			while(option_it.hasNext()){
+				String key = option_it.next();
+				String value = case_data.get(section).get(key);
+				new_data.put(key, value.replaceAll(ori_str, rep_str));
+			}
+			return_data.put(section, new_data);
+		}
+		return return_data;
+	}	
+	
 	private Map<String, HashMap<String, HashMap<String, String>>> get_indexed_task_data(String queue_name) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		// buffered task queues_tube_map
