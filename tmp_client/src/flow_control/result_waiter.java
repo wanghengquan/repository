@@ -463,7 +463,7 @@ public class result_waiter extends Thread {
                          runlog.append(String.format(lin_href, path, path));
                          runlog.append("</a>" + line_separator);
                          if(path.startsWith("/lsh/")){
-                             path = path.replace("/lsh/", "\\\\lsh-smb01\\").replace('/', '\\');
+                             path = path.replace("/lsh/", "\\\\lsh-smb02\\").replace('/', '\\');
                              runlog.append("Save location " + i + " with Win access ==> ");
                              runlog.append(String.format(win_href, path, path));
                              runlog.append("</a>" + line_separator);
@@ -474,8 +474,8 @@ public class result_waiter extends Thread {
                          runlog.append("Save location " + i + " with Win access ==> ");
                          runlog.append(String.format(win_href, path, path));
                          runlog.append("</a>" + line_separator);
-                         if(path.startsWith("\\\\lsh-smb01\\")){
-                             path = path.replace("\\\\lsh-smb01\\", "/lsh/").replace('\\', '/');
+                         if(path.startsWith("\\\\lsh-smb02\\")){
+                             path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace('\\', '/');
                              runlog.append("Save location " + i + " with Lin access ==> ");
                              runlog.append(String.format(lin_href, path, path));
                              runlog.append("</a>" + line_separator);
