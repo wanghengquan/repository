@@ -50,6 +50,9 @@ public class queue_compare implements Comparator<String> {
 			break;
 		case RUNID:
 			return_value = sort_by_run_priority_time(int_pri1, int_run1, int_year1, int_date1, int_time1, int_pri2, int_run2, int_year2, int_date2, int_time2);;
+			break;
+		case STATUS:
+			return_value = sort_by_priority_time_run(int_pri1, int_run1, int_year1, int_date1, int_time1, int_pri2, int_run2, int_year2, int_date2, int_time2);;
 			break;			
 		default:
 			return_value = queue_name1.compareTo(queue_name2);

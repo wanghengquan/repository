@@ -11,14 +11,14 @@ package flow_control;
 
 public enum queue_enum {
 	WAITING(0, "Waiting"),
-	PROCESSING(1, "Processing"),
-	RUNNING(2, "Running"),	
-	FINISHED(3, "Finished"),
-	STOPPED(4, "Stopped"),
-	PAUSED(5, "Paused"),
-	REMOTEPROCESSIONG(6, "processing"),
+	RUNNING(1, "Running"),
+	PROCESSING(2, "Processing"),
+	FINISHED(8, "Finished"),
+	STOPPED(6, "Stopped"),
+	PAUSED(4, "Paused"),
+	REMOTEPROCESSIONG(3, "processing"),
 	REMOTESTOPED(7, "stop"),
-	REMOTEPAUSED(8, "pause"),
+	REMOTEPAUSED(5, "pause"),
 	REMOTEDONE(9, "done"),
 	UNKNOWN(10, "Unknown");
 	private int index;
