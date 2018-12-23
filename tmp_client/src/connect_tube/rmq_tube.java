@@ -249,8 +249,8 @@ public class rmq_tube {
 			}
 		}
         if (msg_key.toLowerCase().contains("rerun_")){
-            if (priority.charAt(0) > public_data.PRI_RERUN.charAt(0)) {
-                priority = public_data.PRI_RERUN;
+            if (priority.charAt(0) > public_data.TASK_PRI_RERUN.charAt(0)) {
+                priority = public_data.TASK_PRI_RERUN;
             }
         }
 		// task belong to this client(job_attribute): (0, assign task) > (1,
