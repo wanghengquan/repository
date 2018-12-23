@@ -233,6 +233,10 @@ public class view_server extends Thread {
 			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
 			task_info.remove_finished_admin_queue_list(queue_name);
 		}
+		if(task_info.get_emptied_admin_queue_list().contains(queue_name)){
+			task_info.copy_admin_from_processed_to_received_admin_queues_treemap(queue_name);
+			task_info.remove_emptied_admin_queue_list(queue_name);
+		}
 		switch (run_action){
 		case STOPPED:
 			task_info.copy_task_queue_from_processed_to_received_task_queues_map(queue_name);
