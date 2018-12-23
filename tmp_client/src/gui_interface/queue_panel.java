@@ -302,14 +302,14 @@ public class queue_panel extends JSplitPane implements Runnable {
 		captured_set.addAll(finished_admin_queue_list);
 		// //show data
 		Iterator<String> captured_it = captured_set.iterator();
-		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		Vector<Vector<String>> vector_data = new Vector<Vector<String>>();
+		TreeMap<String, queue_enum> treemap_data = new TreeMap<String, queue_enum>(new queue_compare(view_info.get_captured_sorting_request()));
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
 			queue_enum status = queue_enum.UNKNOWN;
+			//start the priority, running is the second level info base on first level(processing, stopped, paused, finished)
 			if (finished_admin_queue_list.contains(queue_name)) {
 				status = queue_enum.FINISHED;
-			} else if (running_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.RUNNING;
 			} else if (emptied_admin_queue_list.contains(queue_name)) {
 				status = queue_enum.PROCESSING;				
 			} else if (processing_admin_queue_list.contains(queue_name)) {
@@ -335,18 +335,49 @@ public class queue_panel extends JSplitPane implements Runnable {
 					status = queue_enum.UNKNOWN;
 				}
 			}
-			// add watching vector
+			if (status.equals(queue_enum.PROCESSING)){
+				if (running_admin_queue_list.contains(queue_name)){
+					status = queue_enum.RUNNING;
+				}
+			}
+			// watching vector data
 			Vector<String> show_line = new Vector<String>();
 			show_line.add(queue_name);
 			show_line.add(status.get_description());
-			new_data.add(show_line);
+			vector_data.add(show_line);
+			// watching map data for future sorting
+			treemap_data.put(queue_name, status);
 			show_update = true;
 		}
 		capture_data.clear();
-		capture_data.addAll(new_data);
+		//sort by status data update
+		if (view_info.get_captured_sorting_request().equals(sort_enum.STATUS)){
+			capture_data.addAll(get_status_sorted_data(treemap_data));
+		} else {
+			capture_data.addAll(vector_data);
+		}
 		return show_update;
 	}
 
+	private Vector<Vector<String>> get_status_sorted_data(
+			TreeMap<String, queue_enum> ori_data){
+		Vector<Vector<String>> status_sorted_data = new Vector<Vector<String>>();
+        for (int index = 0; index < queue_enum.values().length; index++ ){
+        	Iterator<String> queue_it = ori_data.keySet().iterator();
+        	while(queue_it.hasNext()){
+        		String queue_name = queue_it.next();
+        		queue_enum queue_status = ori_data.get(queue_name);
+        		if (queue_status.get_index() == index){
+        			Vector<String> show_line = new Vector<String>();
+        			show_line.add(queue_name);
+        			show_line.add(queue_status.get_description());
+        			status_sorted_data.add(show_line);
+        		}
+        	}
+        }
+		return status_sorted_data;
+	}
+	
 	private Boolean update_select_rejected_queue() {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
@@ -518,7 +549,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JMenuItem show;
-	private JMenuItem sort_priority, sort_runid, sort_time;
+	private JMenuItem sort_priority, sort_runid, sort_time, sort_status;
 	private JMenuItem run_play, run_pause, run_stop;
 	private JMenuItem details, results, submit;
 	private JMenuItem delete;
@@ -546,9 +577,12 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		sort_runid.addActionListener(this);
 		sort_time = new JMenuItem("Time");
 		sort_time.addActionListener(this);
+		sort_status = new JMenuItem("Status");
+		sort_status.addActionListener(this);		
 		sort.add(sort_priority);
 		sort.add(sort_runid);
 		sort.add(sort_time);
+		sort.add(sort_status);
 		this.add(sort);
 		this.addSeparator();
 		JMenu run = new JMenu("Run");
@@ -715,6 +749,10 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("sort_time clicked");
 			view_info.set_captured_sorting_request(sort_enum.TIME);
 		}
+		if (arg0.getSource().equals(sort_status)) {
+			System.out.println("sort_status clicked");
+			view_info.set_captured_sorting_request(sort_enum.STATUS);
+		}		
 		if (arg0.getSource().equals(run_play)) {
 			System.out.println("run_play clicked");
 			view_info.set_run_action_request(queue_enum.PROCESSING);

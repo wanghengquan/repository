@@ -13,7 +13,8 @@ public enum sort_enum {
 	PRIORITY(0, "Sorting with Priority"),
 	RUNID(1, "Sorting with RunID"),
 	TIME(2, "Sorting with Time"),
-	DEFAULT(3, "Default sorting");
+	STATUS(3, "Sorting with Queue status"),
+	DEFAULT(4, "Default sorting");
 	private int index;
 	private String description;
 	
