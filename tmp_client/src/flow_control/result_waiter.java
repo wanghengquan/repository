@@ -168,7 +168,7 @@ public class result_waiter extends Thread {
 		return run_status;
 	}	
 	
-	private void update_thread_pool_running_queue() {
+	private void update_running_queue_list() {
 		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());
@@ -179,21 +179,34 @@ public class result_waiter extends Thread {
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
 			running_queue_in_pool.add(queue_name);
 		}
-		task_info.set_thread_pool_admin_queue_list(running_queue_in_pool);
+		task_info.set_running_admin_queue_list(running_queue_in_pool);
 	}
+	
+	private void update_finished_queue_list() {
+		ArrayList<String> running_queue = new ArrayList<String>();
+		running_queue.addAll(task_info.get_running_admin_queue_list());
+		ArrayList<String> emptied_queue = new ArrayList<String>();
+		emptied_queue.addAll(task_info.get_emptied_admin_queue_list());
+		ArrayList<String> finished_queue = new ArrayList<String>();
+		finished_queue.addAll(task_info.get_finished_admin_queue_list());
+		for (String queue_name : emptied_queue){
+			if (running_queue.contains(queue_name)){
+				continue;
+			}
+			if (finished_queue.contains(queue_name)){
+				continue;
+			}
+			task_info.increase_finished_admin_queue_list(queue_name);
+		}
+	}	
 
 	private void report_finished_queue_data() {
-		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
-		running_queue_in_pool.addAll(task_info.get_thread_pool_admin_queue_list());
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 		reported_admin_queue_list.addAll(task_info.get_reported_admin_queue_list());
 		for (String queue_name : finished_admin_queue_list) {
 			Boolean report_status = new Boolean(true);
-			if (running_queue_in_pool.contains(queue_name)) {
-				continue;// queue not finished
-			}
 			if (reported_admin_queue_list.contains(queue_name)) {
 				continue;// finished queue already reported.
 			}
@@ -210,17 +223,12 @@ public class result_waiter extends Thread {
 	
 	private Boolean dump_finished_queue_data() {
 		Boolean dump_status = new Boolean(true);
-		ArrayList<String> running_queue_in_pool = new ArrayList<String>();
-		running_queue_in_pool.addAll(task_info.get_thread_pool_admin_queue_list());
 		// dump finished task queue data to xml file, save memory
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		for (String dump_queue : finished_admin_queue_list) {
 			if (switch_info.get_local_console_mode()){
 				continue;// in local console mode no dumping
-			}			
-			if (running_queue_in_pool.contains(dump_queue)) {
-				continue;// queue not finished
 			}
 			if (view_info.get_watching_queue().equalsIgnoreCase(dump_queue)) {
 				continue;// queue in GUI watching
@@ -252,12 +260,15 @@ public class result_waiter extends Thread {
 
 	private Boolean fresh_thread_pool_data(){
 		Boolean run_status = new Boolean(true);
+		//fresh pool call map data
 		pool_info.fresh_sys_call();
 		post_info.fresh_postrun_call();
+		//clean post run map data (sys call map will be clean later)
+		clean_postrun_map_data();
 		return run_status;
 	}
 	
-	private Boolean monitor_cleanup_pool(){
+	private Boolean clean_postrun_map_data(){
 		Boolean run_status = new Boolean(true);
 		HashMap<String, HashMap<post_attr, Object>> call_data = new HashMap<String, HashMap<post_attr, Object>>();
 		call_data.putAll(post_info.get_postrun_call_copy());
@@ -841,12 +852,12 @@ public class result_waiter extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : report/dump finished queue:report and data
-			update_thread_pool_running_queue();	
+			update_running_queue_list();	
+			update_finished_queue_list();
 			report_finished_queue_data(); //generate csv report
 			dump_finished_queue_data(); //to log dir xml file save memory
 			// fresh data must start from here
 			fresh_thread_pool_data(); //for all thread pools
-			monitor_cleanup_pool(); // for post run thread pool only
 			// following actions based on a non-empty call back.
 			if (pool_info.get_sys_call_link() == null || pool_info.get_sys_call_link().size() < 1) {
 				if(!switch_info.get_local_console_mode()){

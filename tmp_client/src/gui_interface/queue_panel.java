@@ -297,7 +297,9 @@ public class queue_panel extends JSplitPane implements Runnable {
 		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
 		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
-		captured_set.addAll(finished_admin_queue_list);// source data
+		ArrayList<String> emptied_admin_queue_list = task_info.get_emptied_admin_queue_list();
+		captured_set.addAll(emptied_admin_queue_list);// source data
+		captured_set.addAll(finished_admin_queue_list);
 		// //show data
 		Iterator<String> captured_it = captured_set.iterator();
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
@@ -308,6 +310,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 				status = queue_enum.FINISHED;
 			} else if (running_admin_queue_list.contains(queue_name)) {
 				status = queue_enum.RUNNING;
+			} else if (emptied_admin_queue_list.contains(queue_name)) {
+				status = queue_enum.PROCESSING;				
 			} else if (processing_admin_queue_list.contains(queue_name)) {
 				status = queue_enum.PROCESSING;
 			} else {
