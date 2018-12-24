@@ -10,6 +10,7 @@
 package top_runner.run_status;
 
 import java.util.HashMap;
+import java.util.Timer;
 
 import data_center.public_data;
 import env_monitor.core_update;
@@ -132,18 +133,16 @@ class initial_status extends abstract_status {
 	
 	//get daemon process ready
 	private void get_daemon_process_ready(){
-		//task 1: kill process 
+		Timer misc_timer = new Timer("misc_timer");
+		//task 1: kill process
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
-			kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
-			my_kill.start();			
+			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info), 1000*0, 1000*10);
 		}
 		//task 2: dev check
-		dev_checker dev_check = new dev_checker(this.client.switch_info);
-		dev_check.start();
+		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info), 1000*2, 1000*10);
 		//task 3: environ check
-		env_checker env_check = new env_checker(this.client.switch_info);
-		env_check.start();
+		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info), 1000*4, 1000*10);
 	}
 	
 	//get tube server start and wait it ready

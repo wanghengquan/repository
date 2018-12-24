@@ -1,14 +1,17 @@
 package env_monitor;
 
+import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import utility_funcs.system_cmd;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.*;
 
-public class dev_checker extends Thread {
+public class dev_checker extends TimerTask {
     private switch_data switch_info;
     private String core_addr;
     private String core_UUID = new String("");
@@ -21,16 +24,19 @@ public class dev_checker extends Thread {
         this.core_UUID = getCore_UUID();
     }
 
-    public void run() {
-        while (true) {
-            try {
-                Thread.sleep(5 * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            check_dev_need_update(switch_info);
-        }
-    }
+	public void run() {
+		try {
+			monitor_run();
+		} catch (Exception run_exception) {
+			run_exception.printStackTrace();
+			switch_info.set_client_stop_exception(run_exception);
+			switch_info.set_client_stop_request(exit_enum.DUMP);
+		}
+	}
+	
+	private void monitor_run() {
+		check_dev_need_update(switch_info);
+	}
 
     private String getCore_UUID()
     {
@@ -82,10 +88,8 @@ public class dev_checker extends Thread {
         }
     }
 
-    public static void main(String[] argvs)
-    {
-        dev_checker dc = new dev_checker(null);
-        System.out.println(dc.core_UUID);
+    public static void main(String[] argvs){
+		Timer my_timer = new Timer();
+		my_timer.scheduleAtFixedRate(new dev_checker(null), 1000, 5000);
     }
 }
-
