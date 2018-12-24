@@ -160,8 +160,8 @@ public class public_data {
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
-    public final static String PRI_LOCALLY = "1";
-    public final static String PRI_RERUN = "3";
+    public final static String TASK_PRI_LOCALLY = "1";
+    public final static String TASK_PRI_RERUN = "3";
 
 	// ========================
 	// performance calibration
