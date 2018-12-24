@@ -146,7 +146,7 @@ public class top_launcher {
 		client_data client_info = new client_data();
 		task_data task_info = new task_data();
 		view_data view_info = new view_data();
-		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
+		pool_data pool_info = new pool_data();
 		cmd_parser cmd_run = new cmd_parser(args);
 		post_data post_info = new post_data();
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();

@@ -24,8 +24,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.64"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20864; // version for code use
+	public final static String BASE_CURRENTVERSION = "2.08.65"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20865; // version for code use
 	public final static String BASE_BUILDDATE = "2018/12/24";
 	public final static String BASE_SUITEFILEVERSION = "1.11";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -167,6 +167,7 @@ public class public_data {
 	// performance calibration
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 60;   //Case same status report interval
+	public final static int PERF_POOL_CURRENT_SIZE = 3;      //current maxi size to external
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
 	public final static int PERF_POOL_LIN_MAX_SIZE = 30;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
@@ -201,7 +202,6 @@ public class public_data {
 	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","keep_case"
 	public final static String DEF_COPY_PATH_KEEP = "false";  //flatten copied case
 	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"software", "system", "machine"
-	public final static String DEF_POOL_CURRENT_SIZE = "5";
 	public final static String DEF_SHOW_WELCOME = "1";
 	public final static String DEF_AUTO_RESTART = "0";
 	public final static String DEF_AUTO_RESTART_DAY = "7";
