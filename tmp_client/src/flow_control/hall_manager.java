@@ -74,10 +74,10 @@ public class hall_manager extends Thread {
 		this.post_info = post_info;
 	}
 
-	private HashMap<String, task_waiter> get_task_waiter_ready(pool_data pool_info) {
+	private HashMap<String, task_waiter> get_task_waiter_ready() {
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
-		int max_pool_size = public_data.PERF_POOL_MAXIMUM_SIZE;
-		for (int i = 0; i < max_pool_size; i++) {
+		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+		for (int i = 0; i < pool_size; i++) {
 			task_waiter waiter = new task_waiter(i, switch_info, client_info, pool_info, task_info);
 			String waiter_index = "waiter_" + String.valueOf(i);
 			waiters.put(waiter_index, waiter);
@@ -109,7 +109,7 @@ public class hall_manager extends Thread {
 		}
 	}
 
-	private result_waiter get_result_waiter_ready(pool_data pool_info) {
+	private result_waiter get_result_waiter_ready() {
 		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		waiter.start();
 		return waiter;
@@ -349,7 +349,7 @@ public class hall_manager extends Thread {
 	private void increase_max_thread(){
 		int current_max_thread = pool_info.get_pool_current_size();
 		int new_max_thread = current_max_thread + 1;
-		if (new_max_thread <= public_data.PERF_POOL_MAXIMUM_SIZE){
+		if (new_max_thread <= pool_info.get_pool_maximum_size()){
 			pool_info.set_pool_current_size(new_max_thread);
 		}
 	}
@@ -574,9 +574,9 @@ public class hall_manager extends Thread {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : start task waiters
-		task_waiters = get_task_waiter_ready(pool_info);
+		task_waiters = get_task_waiter_ready();
 		// initial 2 : start result waiter
-		waiter_result = get_result_waiter_ready(pool_info);
+		waiter_result = get_result_waiter_ready();
 		// initial 3 : Announce hall server ready
 		switch_info.set_hall_server_power_up();
 		while (!stop_request) {

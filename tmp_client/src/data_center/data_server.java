@@ -215,7 +215,8 @@ public class data_server extends Thread {
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);
 		preference_data.put("path_keep", public_data.DEF_COPY_PATH_KEEP);
-		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
+		preference_data.put("pool_size", String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+		preference_data.put("max_threads", String.valueOf(public_data.PERF_POOL_CURRENT_SIZE));
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("auto_restart", public_data.DEF_AUTO_RESTART);
 		preference_data.put("dev_mails", public_data.BASE_DEVELOPER_MAIL);
@@ -237,6 +238,18 @@ public class data_server extends Thread {
 		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
+	private void initial_thread_pool_setting(){
+		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+		int max_threads = Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
+		pool_info.initialize_thread_pool(pool_size);
+		if (max_threads > pool_size){
+			DATA_SERVER_LOGGER.warn("max_threads > pool_size, will use pool_size:" + pool_size +" as maximum threads num");
+			pool_info.set_pool_current_size(pool_size);
+		} else {
+			pool_info.set_pool_current_size(max_threads);
+		}
+	}
+	
 	private void dynamic_merge_system_data(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(machine_sync.machine_hash.get("System"));
@@ -529,8 +542,7 @@ public class data_server extends Thread {
  		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 4 : update default current size into Pool Data
-		String current_max_threads = client_info.get_client_preference_data().get("max_threads");
-		pool_info.set_pool_current_size(Integer.parseInt(current_max_threads));
+		initial_thread_pool_setting();
 		// initial 5 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start

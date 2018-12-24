@@ -40,29 +40,49 @@ public class pool_data {
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<pool_attr, Object>> call_map = new HashMap<String, HashMap<pool_attr, Object>>();
 	private int pool_used_threads = 0;
-	private int pool_current_size = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
+	private int pool_current_size = public_data.PERF_POOL_CURRENT_SIZE;
+	private int pool_maximum_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 	private HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>> ();
 
 	public pool_data(int pool_size) {
 		this.run_pool = Executors.newFixedThreadPool(pool_size);
 	}
 
-	public synchronized int get_pool_used_threads() {
+	public pool_data() {
+		//initialize the thread pool later (when config info ready)
+	}
+
+	public synchronized void initialize_thread_pool(int pool_size){
+		this.run_pool = Executors.newFixedThreadPool(pool_size);
+		this.pool_maximum_size = pool_size;
+	}
+	
+	public synchronized void set_pool_maximum_size(int pool_size) {
+		this.pool_maximum_size = pool_size;
+	}
+	
+	public synchronized int get_pool_maximum_size() {
 		int temp = 0;
-		temp = pool_used_threads;
+		temp = pool_maximum_size;
 		return temp;
-	}
-
-	public synchronized void set_pool_used_threads(int new_int) {
-		this.pool_used_threads = new_int;
-	}
-
-	public synchronized int get_pool_current_size() {
-		return this.pool_current_size;
 	}
 
 	public synchronized void set_pool_current_size(int new_int) {
 		this.pool_current_size = new_int;
+	}
+	
+	public synchronized int get_pool_current_size() {
+		return this.pool_current_size;
+	}
+	
+	public synchronized void set_pool_used_threads(int new_int) {
+		this.pool_used_threads = new_int;
+	}
+
+	public synchronized int get_pool_used_threads() {
+		int temp = 0;
+		temp = pool_used_threads;
+		return temp;
 	}
 
 	public synchronized int get_available_thread() {
