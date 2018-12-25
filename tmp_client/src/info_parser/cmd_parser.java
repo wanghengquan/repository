@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.exit_enum;
 import data_center.public_data;
+import utility_funcs.data_check;
 
 /*
  * PlatUML graph
@@ -143,6 +144,9 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}
+		if (commandline_obj.hasOption('T')) {
+			cmd_hash.put("pool_size", commandline_obj.getOptionValue('T'));
+		}
 		// 3.15 debug mode
 		if (commandline_obj.hasOption('d')) {
 			cmd_hash.put("debug", "true");
@@ -171,9 +175,58 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
+		// 3.20 run sanity check
+		if (!run_input_data_check(cmd_hash)){
+			get_help(options_obj);
+		}
 		return cmd_hash;
 	}
 
+	private Boolean run_input_data_check(
+			HashMap<String, String> cmd_hash){
+		Boolean check_satus = new Boolean(true);
+		Iterator<String> option_it = cmd_hash.keySet().iterator();
+		while(option_it.hasNext()){
+			String option_name = option_it.next();
+			String option_value = cmd_hash.get(option_name);
+			switch (option_name){
+			case "ignore_request":
+				if(!data_check.str_choice_check(option_value, new String [] {"", "all", "software", "system", "machine"} )){
+					CMD_PARSER_LOGGER.error("Command line parse Failed.");
+					check_satus = false;
+				}
+				break;
+			case "max_threads":
+				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid max_threads setting");
+					check_satus = false;
+				}
+				break;
+			case "pool_size":
+				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid pool_size setting");
+					check_satus = false;
+				}
+				break;
+			case "save_space":
+				if (!data_check.str_path_check(option_value)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid save_space setting");
+					check_satus = false;
+				}
+				break;
+			case "work_space":
+				if (!data_check.str_path_check(option_value)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid work_space setting");
+					check_satus = false;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		return check_satus;
+	}
+	
 	// protected function
 	// private function
 	/*
@@ -228,7 +281,11 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("s").longOpt("save-space").hasArg()
 				.desc("Storage place for case remote store, if not present will use current work_space").build());
 		options_obj.addOption(
-				Option.builder("t").longOpt("max-threads").hasArg().desc("Client will launch $t threads").build());
+				Option.builder("t").longOpt("max-threads").hasArg()
+				.desc("Client will launch $t threads, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
+		options_obj.addOption(
+				Option.builder("T").longOpt("pool-size").hasArg()
+				.desc("Top size for Thread Pool initial setting, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
 		return options_obj;
@@ -238,7 +295,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-c|-g] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-c|-g] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

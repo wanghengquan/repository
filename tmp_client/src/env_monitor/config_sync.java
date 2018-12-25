@@ -139,7 +139,7 @@ public class config_sync extends Thread {
 					}
 					break;					
 				case "ignore_request":
-					if (!data_check.str_choice_check(option_value, new String [] {"", "software", "system", "machine"} )){
+					if (!data_check.str_choice_check(option_value, new String [] {"", "all", "software", "system", "machine"} )){
 						option_value = public_data.DEF_CLIENT_IGNORE_REQUEST;
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid ignore_request setting:" + section_name + ">" + option_key + ", default value will be used.");
 					} 
