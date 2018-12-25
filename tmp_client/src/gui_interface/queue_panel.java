@@ -303,7 +303,6 @@ public class queue_panel extends JSplitPane implements Runnable {
 		// //show data
 		Iterator<String> captured_it = captured_set.iterator();
 		Vector<Vector<String>> vector_data = new Vector<Vector<String>>();
-		TreeMap<String, queue_enum> treemap_data = new TreeMap<String, queue_enum>(new queue_compare(view_info.get_captured_sorting_request()));
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
 			queue_enum status = queue_enum.UNKNOWN;
@@ -346,19 +345,15 @@ public class queue_panel extends JSplitPane implements Runnable {
 			show_line.add(status.get_description());
 			vector_data.add(show_line);
 			// watching map data for future sorting
-			treemap_data.put(queue_name, status);
+			// treemap_data.put(queue_name, status);
 			show_update = true;
 		}
 		capture_data.clear();
-		//sort by status data update
-		if (view_info.get_captured_sorting_request().equals(sort_enum.STATUS)){
-			capture_data.addAll(get_status_sorted_data(treemap_data));
-		} else {
-			capture_data.addAll(vector_data);
-		}
+		capture_data.addAll(vector_data);
 		return show_update;
 	}
 
+	@SuppressWarnings("unused") //defeatured due to high GUI CPU usage 
 	private Vector<Vector<String>> get_status_sorted_data(
 			TreeMap<String, queue_enum> ori_data){
 		Vector<Vector<String>> status_sorted_data = new Vector<Vector<String>>();
@@ -582,7 +577,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		sort.add(sort_priority);
 		sort.add(sort_runid);
 		sort.add(sort_time);
-		sort.add(sort_status);
+		//sort.add(sort_status); defeatured due to high CPU usage
 		this.add(sort);
 		this.addSeparator();
 		JMenu run = new JMenu("Run");
