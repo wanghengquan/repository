@@ -114,42 +114,43 @@ public class view_server extends Thread {
 	}
 
 	private queue_enum get_admin_queue_status(String queue_name){
-		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
 		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
-		queue_enum queue_status = queue_enum.UNKNOWN;
-		if (finished_admin_queue_list.contains(queue_name)) {
-			queue_status = queue_enum.FINISHED;
-		} else if (running_admin_queue_list.contains(queue_name)) {
-			queue_status = queue_enum.RUNNING;
-		} else if (processing_admin_queue_list.contains(queue_name)) {
-			queue_status = queue_enum.PROCESSING;
-		} else {
-			if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-				queue_status = queue_enum.UNKNOWN;
+		ArrayList<String> emptied_admin_queue_list = task_info.get_emptied_admin_queue_list();
+		queue_enum status = queue_enum.UNKNOWN;
+		if (task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
+			String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
+					.get("admin_status");
+			if (admin_status.equals(queue_enum.STOPPED.get_description())){
+				status = queue_enum.STOPPED;
+			} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
+				status = queue_enum.STOPPED;
+			} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
+				status = queue_enum.PAUSED;
+			} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
+				status = queue_enum.PAUSED;
+			} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
+				status = queue_enum.PROCESSING;
+			} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
+				status = queue_enum.PROCESSING;
+			} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
+				status = queue_enum.FINISHED;
 			} else {
-				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
-						.get("admin_status");
-				if (admin_status.equals(queue_enum.STOPPED.get_description())){
-					queue_status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
-					queue_status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
-					queue_status = queue_enum.PAUSED;
-				} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
-					queue_status = queue_enum.PAUSED;
-				} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
-					queue_status = queue_enum.PROCESSING;
-				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
-					queue_status = queue_enum.PROCESSING;
-				} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
-					queue_status = queue_enum.FINISHED;
-				} else {
-					queue_status = queue_enum.UNKNOWN;
-				}
+				status = queue_enum.UNKNOWN;
+			}				
+		} else if (emptied_admin_queue_list.contains(queue_name)) {
+			status = queue_enum.FINISHED;
+		} else if (finished_admin_queue_list.contains(queue_name)){
+			status = queue_enum.FINISHED;
+		} else {
+			status = queue_enum.UNKNOWN;
+		}
+		if (status.equals(queue_enum.PROCESSING) || status.equals(queue_enum.FINISHED)){
+			if (running_admin_queue_list.contains(queue_name)){
+				status = queue_enum.RUNNING;
 			}
 		}
-		return queue_status;
+		return status;
 	}
 	
 	private Boolean run_action_legal_check(
@@ -215,10 +216,13 @@ public class view_server extends Thread {
 		//get queue status
 		queue_enum queue_status = get_admin_queue_status(queue_name);
 		queue_enum run_action = view_info.impl_run_action_request();
+		if (run_action.equals(queue_enum.UNKNOWN)){
+			return action_status; //nothing to do
+		}
 		//legal check
 		Boolean legal_run = run_action_legal_check(queue_status, run_action);
 		if (!legal_run){
-			VIEW_SERVER_LOGGER.debug(">>>illegal run, queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
+			VIEW_SERVER_LOGGER.warn(">>>illegal run, queque_name:" + queue_name + ", queue_status:" + queue_status.toString() + ", request_action:" + run_action.toString());
 			return action_status;
 		}
 		if(task_info.get_finished_admin_queue_list().contains(queue_name)){

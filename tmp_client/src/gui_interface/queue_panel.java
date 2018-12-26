@@ -294,7 +294,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
 		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
 		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
-		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
+		//ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
 		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
 		ArrayList<String> emptied_admin_queue_list = task_info.get_emptied_admin_queue_list();
@@ -306,14 +306,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
 			queue_enum status = queue_enum.UNKNOWN;
-			//start the priority, running is the second level info base on first level(processing, stopped, paused, finished)
-			if (finished_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.FINISHED;
-			} else if (emptied_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.PROCESSING;				
-			} else if (processing_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.PROCESSING;
-			} else {
+			if (task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
 				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 						.get("admin_status");
 				if (admin_status.equals(queue_enum.STOPPED.get_description())){
@@ -332,9 +325,15 @@ public class queue_panel extends JSplitPane implements Runnable {
 					status = queue_enum.FINISHED;
 				} else {
 					status = queue_enum.UNKNOWN;
-				}
+				}				
+			} else if (emptied_admin_queue_list.contains(queue_name)) {
+				status = queue_enum.FINISHED;
+			} else if (finished_admin_queue_list.contains(queue_name)){
+				status = queue_enum.FINISHED;
+			} else {
+				status = queue_enum.UNKNOWN;
 			}
-			if (status.equals(queue_enum.PROCESSING)){
+			if (status.equals(queue_enum.PROCESSING) || status.equals(queue_enum.FINISHED)){
 				if (running_admin_queue_list.contains(queue_name)){
 					status = queue_enum.RUNNING;
 				}

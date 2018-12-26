@@ -918,11 +918,8 @@ public class task_data {
 	public void set_running_admin_queue_list(ArrayList<String> update_data) {
 		rw_lock.writeLock().lock();
 		try {
-			if (update_data == null || update_data.isEmpty()){
-				this.running_admin_queue_list.clear();
-			} else {
-				this.running_admin_queue_list.addAll(update_data);
-			}		
+			this.running_admin_queue_list.clear();
+			this.running_admin_queue_list.addAll(update_data);		
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
