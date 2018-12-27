@@ -439,7 +439,7 @@ public class maintain_status extends abstract_status {
 				continue;
 			}
 			// got task queue still running
-			if (client.task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+			if (client.task_info.get_running_admin_queue_list().contains(queue_name)){
 				continue;
 			}
 			client.STATUS_LOGGER.warn("Begin to remove data for Task:" + queue_name);

@@ -150,7 +150,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Boolean run_status = new Boolean(false);
 		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
-		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+		if(task_info.get_running_admin_queue_list().contains(queue_name)){
 			return run_status;
 		}
 		switch (queue_enum.valueOf(status.toUpperCase())) {
@@ -177,7 +177,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		if(!status.equals(queue_enum.FINISHED.get_description())){
 			return run_status;
 		}
-		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+		if(task_info.get_running_admin_queue_list().contains(queue_name)){
 			return run_status;
 		}
 		run_status = true;

@@ -34,7 +34,7 @@ public class task_waiter extends Thread {
 	// private property
 	private static final Logger TASK_WAITER_LOGGER = LogManager.getLogger(task_waiter.class.getName());
 	private boolean stop_request = false;
-	private boolean wait_request = false;
+	private boolean wait_request = true;
 	private int waiter_index;
 	private String waiter_name;
 	private String waiter_status;
@@ -931,6 +931,7 @@ public class task_waiter extends Thread {
 		// ============== All static job start from here ==============
 		// initial 1 : import_history_finished_admin_queue
 		task_info.update_finished_admin_queue_list(import_data.import_disk_finished_admin_queue_list(client_info));
+		System.out.println("finished list: " + task_info.get_finished_admin_queue_list().toString());
 		// initial 2 : retrieve previously dumping working queues
 		retrieve_queues_into_memory();
 		// initial end
