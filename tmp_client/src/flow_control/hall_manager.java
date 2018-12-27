@@ -112,6 +112,7 @@ public class hall_manager extends Thread {
 	private result_waiter get_result_waiter_ready() {
 		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		waiter.start();
+		waiter.wake_request();
 		return waiter;
 	}
 

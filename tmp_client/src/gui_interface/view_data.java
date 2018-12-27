@@ -33,7 +33,7 @@ public class view_data {
 	private List<String> select_task_case = new ArrayList<String>();
 	private List<String> export_queue_list = new ArrayList<String>();
 	private List<String> export_title_list = new ArrayList<String>();
-	private queue_enum run_action_request = queue_enum.WAITING;//play, pause, stop
+	private queue_enum run_action_request = queue_enum.UNKNOWN;//play, pause, stop
 	private sort_enum rejected_sorting_request = sort_enum.DEFAULT;
 	private sort_enum captured_sorting_request = sort_enum.DEFAULT;
 	private Boolean space_cleanup_apply = new Boolean(false);

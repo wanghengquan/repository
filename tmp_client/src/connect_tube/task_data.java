@@ -56,6 +56,7 @@ public class task_data {
 	// =====updated by tube server====== queue name and reason
 	private TreeMap<String, String> rejected_admin_reason_treemap = new TreeMap<String, String>(new queue_compare());
 	// =====updated by hall manager=====
+	private ArrayList<String> warned_task_queue_list = new ArrayList<String>();
 	// ====updated by waiters====
 	// Queues updated by task waiter
 	private ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
@@ -72,7 +73,6 @@ public class task_data {
 	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_data_map = new HashMap<String, HashMap<task_enum, Integer>>();
 	//====data not used====
 	private ArrayList<String> thread_pool_admin_queue_list  = new ArrayList<String>();
-	private ArrayList<String> warned_task_queue_list = new ArrayList<String>();	
 	// =============================================member
 	// end=====================================
 

@@ -35,7 +35,7 @@ public class result_waiter extends Thread {
 	// private property
 	private static final Logger RESULT_WAITER_LOGGER = LogManager.getLogger(result_waiter.class.getName());
 	private boolean stop_request = false;
-	private boolean wait_request = false;
+	private boolean wait_request = true;
 	private Thread result_thread;
 	private pool_data pool_info;
 	private client_data client_info;
@@ -177,9 +177,6 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			if (running_queue_in_pool.contains(queue_name)){
-				continue;
-			}
 			running_queue_in_pool.add(queue_name);
 		}
 		task_info.set_running_admin_queue_list(running_queue_in_pool);
@@ -230,6 +227,9 @@ public class result_waiter extends Thread {
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		for (String dump_queue : finished_admin_queue_list) {
+			if (!task_info.get_emptied_admin_queue_list().contains(dump_queue)){
+				continue;//Queue not finished in this run will not dump
+			}
 			if (switch_info.get_local_console_mode()){
 				continue;// in local console mode no dumping
 			}

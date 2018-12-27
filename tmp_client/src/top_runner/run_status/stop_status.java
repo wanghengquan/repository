@@ -139,8 +139,13 @@ class stop_status extends abstract_status {
     	//2) suite is watching
     	//so when client stopped we need dump these finished suite
     	ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
+    	ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
     	finished_admin_queue_list.addAll(client.task_info.get_finished_admin_queue_list());
+    	emptied_admin_queue_list.addAll(client.task_info.get_emptied_admin_queue_list());
 		for (String dump_queue : finished_admin_queue_list) {
+			if (!emptied_admin_queue_list.contains(dump_queue)){
+				continue;// no dump need since this queue is not finished by this launch
+			}
 			if (!client.task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
 				continue;// no queue data to dump (already dumped)
 			}
