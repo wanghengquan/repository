@@ -303,7 +303,7 @@ public class status_bar extends JPanel implements Runnable{
 				});
 			}
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(1000 * public_data.PERF_GUI_BASE_INTERVAL);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
