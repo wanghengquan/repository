@@ -44,6 +44,7 @@ import org.apache.logging.log4j.Logger;
 import connect_tube.task_data;
 import connect_tube.taskid_compare;
 import data_center.client_data;
+import data_center.public_data;
 import flow_control.import_data;
 import flow_control.task_enum;
 import utility_funcs.deep_clone;
@@ -413,7 +414,7 @@ public class work_panel extends JSplitPane implements Runnable{
 				});
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(1000 * public_data.PERF_GUI_BASE_INTERVAL);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

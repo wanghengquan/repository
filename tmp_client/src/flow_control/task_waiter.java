@@ -931,7 +931,6 @@ public class task_waiter extends Thread {
 		// ============== All static job start from here ==============
 		// initial 1 : import_history_finished_admin_queue
 		task_info.update_finished_admin_queue_list(import_data.import_disk_finished_admin_queue_list(client_info));
-		System.out.println("finished list: " + task_info.get_finished_admin_queue_list().toString());
 		// initial 2 : retrieve previously dumping working queues
 		retrieve_queues_into_memory();
 		// initial end
