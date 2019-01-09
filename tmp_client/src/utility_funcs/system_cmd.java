@@ -39,6 +39,8 @@ public class system_cmd {
 		/*
 		 * a command line will be execute.
 		 */
+		int exit_value;
+
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
 		ArrayList<String> string_list = new ArrayList<String>();
 		string_list.add(cmd);
@@ -49,18 +51,28 @@ public class system_cmd {
 		InputStream out_str = process.getInputStream();
 		StreamGobbler read_out = new StreamGobbler(out_str, "OUTPUT", false);
 		read_out.start();
-		process.waitFor((long) 5*60, TimeUnit.SECONDS);
+
+        boolean exit_normal = process.waitFor((long) 5*60, TimeUnit.SECONDS);
+		if (exit_normal) {
+		    exit_value = process.exitValue();
+        } else {
+            string_list.add("Timeout task: " + cmd);
+            string_list.add("Timeout task: " + cmd);
+            process.destroy();
+            return string_list;
+        }
+
 		Thread.sleep(10);//wait for some time to make the output ready
 		string_list.addAll(read_out.getOutputList());
-		string_list.add("Exit Code:" + process.exitValue());
+		string_list.add("Exit Code:" +exit_value);
 		Thread.sleep(1);
 		read_out.stopGobbling();
-		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
+		SYSTEM_CMD_LOGGER.debug("Exit Code:" + exit_value);
 		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
 		process.destroy();
 		return string_list;
 	}
-	
+
 	// run1 run command with in 60 seconds
 	public static ArrayList<String> run(
 			String cmd, 
@@ -68,6 +80,7 @@ public class system_cmd {
 		/*
 		 * a command line will be execute.
 		 */
+        boolean exit_normal = false;
 		ArrayList<String> string_list = new ArrayList<String>();
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
 		string_list.add("Run CMD: " + cmd);
@@ -89,7 +102,7 @@ public class system_cmd {
 		}
 		bri.close();
 		try {
-			process.waitFor((long) 1*60, TimeUnit.SECONDS);
+		    exit_normal = process.waitFor((long) 1*60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -97,8 +110,15 @@ public class system_cmd {
 		} catch (Exception e2) {
 			SYSTEM_CMD_LOGGER.error("Run cmd failed: " + e2.toString());
 		}
-		SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
-		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
+
+        if (exit_normal) {
+            SYSTEM_CMD_LOGGER.debug("Exit Code:" + process.exitValue());
+            SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
+        } else {
+            string_list.add("Timeout task: " + cmd);
+            SYSTEM_CMD_LOGGER.warn("Timeout task: " + cmd);
+        }
+
 		process.destroy();
 		return string_list;
 	}	
@@ -212,7 +232,7 @@ public class system_cmd {
 				string_list.add("<status>Blocked</status>");
 			}
 		} else {
-			SYSTEM_CMD_LOGGER.warn("Timeout task cleanup.");
+			SYSTEM_CMD_LOGGER.warn("Timeout task: " + cmds);
 			string_list.add("<status>Timeout</status>");
 			string_list.add("<reason>Timeout</reason>");
 			p.destroyForcibly();
