@@ -19,12 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.JMenu;
@@ -269,107 +264,16 @@ public class queue_panel extends JSplitPane implements Runnable {
 
 	private Boolean update_rejected_queue_data() {
 		Boolean show_update = new Boolean(false);
-		TreeMap<String, String> rejected_treemap = task_info.get_rejected_admin_reason_treemap();// source
-		Set<String> rejected_set = new TreeSet<String>(new queue_compare(view_info.get_rejected_sorting_request()));
-		rejected_set.addAll(rejected_treemap.keySet());
-		Iterator<String> rejected_it = rejected_set.iterator();
-		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		while (rejected_it.hasNext()) {
-			String queue_name = rejected_it.next();
-			String reject_reason = rejected_treemap.get(queue_name);
-			// add watching vector
-			Vector<String> show_line = new Vector<String>();
-			show_line.add(queue_name);
-			show_line.add(reject_reason);
-			new_data.add(show_line);
-			show_update = true;
-		}
 		reject_data.clear();
-		reject_data.addAll(new_data);
+		reject_data.addAll(view_info.get_rejected_queue_data());
 		return show_update;
 	}
 
 	private Boolean update_captured_queue_data() {
 		Boolean show_update = new Boolean(false);
-		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
-		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
-		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
-		//ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
-		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
-		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
-		ArrayList<String> emptied_admin_queue_list = task_info.get_emptied_admin_queue_list();
-		captured_set.addAll(emptied_admin_queue_list);// source data
-		captured_set.addAll(finished_admin_queue_list);
-		// //show data
-		Iterator<String> captured_it = captured_set.iterator();
-		Vector<Vector<String>> vector_data = new Vector<Vector<String>>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			queue_enum status = queue_enum.UNKNOWN;
-			if (task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
-						.get("admin_status");
-				if (admin_status.equals(queue_enum.STOPPED.get_description())){
-					status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
-					status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
-					status = queue_enum.PAUSED;
-				} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
-					status = queue_enum.PAUSED;
-				} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
-					status = queue_enum.PROCESSING;
-				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
-					status = queue_enum.PROCESSING;
-				} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
-					status = queue_enum.FINISHED;
-				} else {
-					status = queue_enum.UNKNOWN;
-				}				
-			} else if (emptied_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.FINISHED;
-			} else if (finished_admin_queue_list.contains(queue_name)){
-				status = queue_enum.FINISHED;
-			} else {
-				status = queue_enum.UNKNOWN;
-			}
-			if (status.equals(queue_enum.PROCESSING) || status.equals(queue_enum.FINISHED)){
-				if (running_admin_queue_list.contains(queue_name)){
-					status = queue_enum.RUNNING;
-				}
-			}
-			// watching vector data
-			Vector<String> show_line = new Vector<String>();
-			show_line.add(queue_name);
-			show_line.add(status.get_description());
-			vector_data.add(show_line);
-			// watching map data for future sorting
-			// treemap_data.put(queue_name, status);
-			show_update = true;
-		}
 		capture_data.clear();
-		capture_data.addAll(vector_data);
+		capture_data.addAll(view_info.get_captured_queue_data());
 		return show_update;
-	}
-
-	@SuppressWarnings("unused") //defeatured due to high GUI CPU usage 
-	private Vector<Vector<String>> get_status_sorted_data(
-			TreeMap<String, queue_enum> ori_data){
-		Vector<Vector<String>> status_sorted_data = new Vector<Vector<String>>();
-        for (int index = 0; index < queue_enum.values().length; index++ ){
-        	Iterator<String> queue_it = ori_data.keySet().iterator();
-        	while(queue_it.hasNext()){
-        		String queue_name = queue_it.next();
-        		queue_enum queue_status = ori_data.get(queue_name);
-        		if (queue_status.get_index() == index){
-        			Vector<String> show_line = new Vector<String>();
-        			show_line.add(queue_name);
-        			show_line.add(queue_status.get_description());
-        			status_sorted_data.add(show_line);
-        		}
-        	}
-        }
-		return status_sorted_data;
 	}
 	
 	private Boolean update_select_rejected_queue() {
@@ -576,7 +480,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		sort.add(sort_priority);
 		sort.add(sort_runid);
 		sort.add(sort_time);
-		//sort.add(sort_status); defeatured due to high CPU usage
+		sort.add(sort_status);
 		this.add(sort);
 		this.addSeparator();
 		JMenu run = new JMenu("Run");

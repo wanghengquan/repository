@@ -20,10 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JMenu;
@@ -42,12 +39,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
-import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.public_data;
-import flow_control.import_data;
-import flow_control.task_enum;
-import utility_funcs.deep_clone;
 import utility_funcs.time_info;
 
 public class work_panel extends JSplitPane implements Runnable{
@@ -91,7 +84,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
-		queue_panel task_view = new queue_panel(this.main_view, view_info, client_info, task_info);
+		queue_panel task_view = new queue_panel(this.main_view, view_info, this.client_info, task_info);
 		this.setLeftComponent(task_view);
 		this.setRightComponent(panel_right_component());
 		new Thread(task_view).start();
@@ -193,176 +186,16 @@ public class work_panel extends JSplitPane implements Runnable{
 		return work_panel;
 	}
 	
-
-	private Vector<String> get_one_report_line(
-			HashMap<String, HashMap<String, String>> design_data, 
-			watch_enum watching_area) {
-		Vector<String> add_line = new Vector<String>();
-		if(!watching_area.equals(watch_enum.ALL)){
-			if(!design_data.get("Status").containsKey("cmd_status")){
-				return add_line;//empty line which will be ignore
-			}
-		}
-		if(watching_area.equals(watch_enum.PASSED)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.PASSED.get_description())){
-				return add_line;//non-passed line which will be ignore
-			}
-		}
-		if(watching_area.equals(watch_enum.FAILED)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.FAILED.get_description())){
-				return add_line;//non-failed line which will be ignore
-			}
-		}
-		if(watching_area.equals(watch_enum.TBD)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.TBD.get_description())){
-				return add_line;//non-tbd line which will be ignore
-			}
-		}		
-		if(watching_area.equals(watch_enum.TIMEOUT)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.TIMEOUT.get_description())){
-				return add_line;//non-timeout line which will be ignore
-			}
-		}
-		if(watching_area.equals(watch_enum.PROCESSING)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.PROCESSING.get_description())){
-				return add_line;//non-processing line which will be ignore
-			}
-		}
-		if(watching_area.equals(watch_enum.WAITING)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.WAITING.get_description())){
-				return add_line;//non-waiting line which will be ignore
-			}
-		}	
-		if(watching_area.equals(watch_enum.HALTED)){
-			if (!design_data.get("Status").get("cmd_status").equals(task_enum.HALTED.get_description())){
-				return add_line;//non-tbd line which will be ignore
-			}
-		}		
-		if (design_data.get("ID").containsKey("id")) {
-			add_line.add(design_data.get("ID").get("id"));
-		} else {
-			add_line.add("NA");
-		}
-		if (design_data.get("ID").containsKey("suite")) {
-			add_line.add(design_data.get("ID").get("suite"));
-		} else {
-			add_line.add("NA");
-		}
-		if (design_data.get("CaseInfo").containsKey("design_name")) {
-			add_line.add(design_data.get("CaseInfo").get("design_name"));
-		} else {
-			add_line.add("NA");
-		}
-		if (design_data.get("Status").containsKey("cmd_status")) {
-			add_line.add(design_data.get("Status").get("cmd_status"));
-		} else {
-			add_line.add("Waiting");
-		}
-		if (design_data.get("Status").containsKey("cmd_reason")) {
-			add_line.add(design_data.get("Status").get("cmd_reason"));
-		} else {
-			add_line.add("NA");
-		}
-		if (design_data.get("Status").containsKey("run_time")) {
-			add_line.add(design_data.get("Status").get("run_time"));
-		} else {
-			add_line.add("NA");
-		}
-		return add_line;
-	}
-
-	private Vector<Vector<String>> get_blank_data(){
-		Vector<Vector<String>> blank_data = new Vector<Vector<String>>();
-		Vector<String> add_line = new Vector<String>();
-		add_line.add("No data found.");
-		add_line.add("..");
-		add_line.add("..");
-		add_line.add("..");
-		add_line.add("..");
-		add_line.add("..");
-		blank_data.add(add_line);
-		return blank_data;
-	}
-	
 	private Boolean update_working_queue_data() {
 		Boolean show_update = new Boolean(true);
 		String watching_queue = view_info.get_watching_queue();
-		watch_enum watching_area = view_info.get_watching_queue_area();
 		if (watching_queue.equals("")) {
 			return show_update; // no watching queue selected
 		}
-		if (watching_area.equals(watch_enum.UNKNOWN)){
-			watching_area = watch_enum.ALL;
-		}
-		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
-		// try import non exists queue data
-		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue)) {
-			//both admin and task should be successfully import otherwise skip import
-			import_disk_admin_data_to_processed_data(watching_queue);
-			Boolean task_import_status = import_disk_task_data_to_processed_data(watching_queue);
-			if (!task_import_status){
-				WORK_PANEl_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_area.get_description());
-				work_data.clear();
-				work_data.addAll(get_blank_data());
-				return show_update; // no data show
-			}
-		}
-		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
-		if (!processed_task_queues_map.containsKey(watching_queue)) {
-			work_data.clear();
-			work_data.addAll(get_blank_data());
-			return show_update;
-		}
-		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
-		queue_data.putAll(deep_clone.clone(processed_task_queues_map.get(watching_queue)));
-		if (queue_data.size() < 1) {
-			work_data.clear();
-			work_data.addAll(get_blank_data());
-			return show_update;
-		}
-		Iterator<String> case_it = queue_data.keySet().iterator();
-		while (case_it.hasNext()) {
-			String case_id = case_it.next();
-			HashMap<String, HashMap<String, String>> design_data = queue_data.get(case_id);
-			Vector<String> add_line = get_one_report_line(design_data, watching_area);
-			if(add_line.isEmpty()){
-				continue;
-			}
-			new_data.add(add_line);
-		}
 		work_data.clear();
-		work_data.addAll(new_data);
+		work_data.addAll(view_info.get_working_queue_data());
 		return show_update;
 	}	
-	
-	private Boolean import_disk_admin_data_to_processed_data(String queue_name) {
-		Boolean import_status = new Boolean(false);
-		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
-		import_admin_data.putAll(
-				import_data.import_disk_finished_admin_data(queue_name, client_info));
-		if (import_admin_data.isEmpty()){
-			import_status = false;
-		} else {
-			task_info.update_queue_to_processed_admin_queues_treemap(queue_name, import_admin_data);
-			import_status = true;
-		}		
-		return import_status;
-	}
-	
-	private Boolean import_disk_task_data_to_processed_data(String queue_name) {
-		Boolean import_status = new Boolean(false);
-		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		import_task_data.putAll(
-				import_data.import_disk_finished_task_data(queue_name, client_info));
-		if (import_task_data.isEmpty()){
-			import_status = false;
-		} else {
-			task_info.update_queue_to_processed_task_queues_map(queue_name, import_task_data);
-			import_status = true;
-		}
-		return import_status;
-	}
 	
 	private Boolean update_selected_task_case(){
 		Boolean update_status = new Boolean(false);

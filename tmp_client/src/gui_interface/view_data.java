@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -38,6 +39,9 @@ public class view_data {
 	private sort_enum captured_sorting_request = sort_enum.DEFAULT;
 	private Boolean space_cleanup_apply = new Boolean(false);
 	private Boolean environ_issue_apply = new Boolean(false);
+	private Vector<Vector<String>> rejected_queue_data = new Vector<Vector<String>>();
+	private Vector<Vector<String>> captured_queue_data = new Vector<Vector<String>>();
+	private Vector<Vector<String>> working_queue_data = new Vector<Vector<String>>();
 	//following data not used currently
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_compare());
@@ -589,5 +593,68 @@ public class view_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
+	}
+	
+	public Vector<Vector<String>> get_rejected_queue_data() {
+		rw_lock.readLock().lock();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
+		try {
+			temp.addAll(rejected_queue_data);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_rejected_queue_data(Vector<Vector<String>> new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			rejected_queue_data.clear();
+			rejected_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Vector<Vector<String>> get_captured_queue_data() {
+		rw_lock.readLock().lock();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
+		try {
+			temp.addAll(this.captured_queue_data);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_captured_queue_data(Vector<Vector<String>> new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			captured_queue_data.clear();
+			captured_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Vector<Vector<String>> get_working_queue_data() {
+		rw_lock.readLock().lock();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
+		try {
+			temp.addAll(this.working_queue_data);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_working_queue_data(Vector<Vector<String>> new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			working_queue_data.clear();
+			working_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 }
