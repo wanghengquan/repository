@@ -14,7 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -24,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
+import connect_tube.taskid_compare;
 import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
@@ -50,7 +55,7 @@ public class view_server extends Thread {
 	@SuppressWarnings("unused")
 	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
-	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
+	//private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private String file_seprator = System.getProperty("file.separator");
 	// public function
 	// protected function
@@ -518,6 +523,251 @@ public class view_server extends Thread {
 	}
 	*/
 	
+	private Boolean implements_rejected_queue_data_update(){
+		Boolean show_update = new Boolean(false);
+		TreeMap<String, String> rejected_treemap = task_info.get_rejected_admin_reason_treemap();// source
+		Set<String> rejected_set = new TreeSet<String>(new queue_compare(view_info.get_rejected_sorting_request()));
+		rejected_set.addAll(rejected_treemap.keySet());
+		Iterator<String> rejected_it = rejected_set.iterator();
+		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		while (rejected_it.hasNext()) {
+			String queue_name = rejected_it.next();
+			String reject_reason = rejected_treemap.get(queue_name);
+			// add watching vector
+			Vector<String> show_line = new Vector<String>();
+			show_line.add(queue_name);
+			show_line.add(reject_reason);
+			new_data.add(show_line);
+			show_update = true;
+		}
+		view_info.set_rejected_queue_data(new_data);
+		return show_update;		
+	}
+
+	private Boolean implements_captured_queue_data_update() {
+		Boolean show_update = new Boolean(false);
+		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
+		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
+		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
+		//ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
+		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
+		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
+		ArrayList<String> emptied_admin_queue_list = task_info.get_emptied_admin_queue_list();
+		captured_set.addAll(emptied_admin_queue_list);// source data
+		captured_set.addAll(finished_admin_queue_list);
+		// //show data
+		Iterator<String> captured_it = captured_set.iterator();
+		Vector<Vector<String>> vector_data = new Vector<Vector<String>>();
+		TreeMap<String, queue_enum> treemap_data = new TreeMap<String, queue_enum>(new queue_compare(view_info.get_captured_sorting_request()));
+		while (captured_it.hasNext()) {
+			String queue_name = captured_it.next();
+			queue_enum status = queue_enum.UNKNOWN;
+			if (task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
+				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
+						.get("admin_status");
+				if (admin_status.equals(queue_enum.STOPPED.get_description())){
+					status = queue_enum.STOPPED;
+				} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
+					status = queue_enum.STOPPED;
+				} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
+					status = queue_enum.PAUSED;
+				} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
+					status = queue_enum.PAUSED;
+				} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
+					status = queue_enum.PROCESSING;
+				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
+					status = queue_enum.PROCESSING;
+				} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
+					status = queue_enum.FINISHED;
+				} else {
+					status = queue_enum.UNKNOWN;
+				}				
+			} else if (emptied_admin_queue_list.contains(queue_name)) {
+				status = queue_enum.FINISHED;
+			} else if (finished_admin_queue_list.contains(queue_name)){
+				status = queue_enum.FINISHED;
+			} else {
+				status = queue_enum.UNKNOWN;
+			}
+			if (status.equals(queue_enum.PROCESSING) || status.equals(queue_enum.FINISHED)){
+				if (running_admin_queue_list.contains(queue_name)){
+					status = queue_enum.RUNNING;
+				}
+			}
+			// watching vector data
+			Vector<String> show_line = new Vector<String>();
+			show_line.add(queue_name);
+			show_line.add(status.get_description());
+			vector_data.add(show_line);
+			// watching map data for future sorting
+			treemap_data.put(queue_name, status);
+			show_update = true;
+		}
+		if (view_info.get_captured_sorting_request().equals(sort_enum.STATUS)){
+			view_info.set_captured_queue_data(get_status_sorted_data(treemap_data));
+		} else {
+			view_info.set_captured_queue_data(vector_data);
+		}
+		return show_update;
+	}
+	
+	private Vector<Vector<String>> get_status_sorted_data(
+			TreeMap<String, queue_enum> ori_data){
+		Vector<Vector<String>> status_sorted_data = new Vector<Vector<String>>();
+        for (int index = 0; index < queue_enum.values().length; index++ ){
+        	Iterator<String> queue_it = ori_data.keySet().iterator();
+        	while(queue_it.hasNext()){
+        		String queue_name = queue_it.next();
+        		queue_enum queue_status = ori_data.get(queue_name);
+        		if (queue_status.get_index() == index){
+        			Vector<String> show_line = new Vector<String>();
+        			show_line.add(queue_name);
+        			show_line.add(queue_status.get_description());
+        			status_sorted_data.add(show_line);
+        		}
+        	}
+        }
+		return status_sorted_data;
+	}
+	
+	private Boolean implements_working_queue_data_update() {
+		Boolean show_update = new Boolean(true);
+		String watching_queue = view_info.get_watching_queue();
+		watch_enum watching_area = view_info.get_watching_queue_area();
+		if (watching_queue.equals("")) {
+			return show_update; // no watching queue selected
+		}
+		if (watching_area.equals(watch_enum.UNKNOWN)){
+			watching_area = watch_enum.ALL;
+		}
+		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		// try import non exists queue data
+		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue)) {
+			//both admin and task should be successfully import otherwise skip import
+			import_disk_admin_data_to_processed_data(watching_queue);
+			Boolean task_import_status = import_disk_task_data_to_processed_data(watching_queue);
+			if (!task_import_status){
+				VIEW_SERVER_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_area.get_description());
+				view_info.set_working_queue_data(get_blank_data());
+				return show_update; // no data show
+			}
+		}
+		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
+		if (!processed_task_queues_map.containsKey(watching_queue)) {
+			view_info.set_working_queue_data(get_blank_data());
+			return show_update;
+		}
+		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
+		queue_data.putAll(deep_clone.clone(processed_task_queues_map.get(watching_queue)));
+		if (queue_data.size() < 1) {
+			view_info.set_working_queue_data(get_blank_data());
+			return show_update;
+		}
+		Iterator<String> case_it = queue_data.keySet().iterator();
+		while (case_it.hasNext()) {
+			String case_id = case_it.next();
+			HashMap<String, HashMap<String, String>> design_data = queue_data.get(case_id);
+			Vector<String> add_line = get_one_report_line(design_data, watching_area);
+			if(add_line.isEmpty()){
+				continue;
+			}
+			new_data.add(add_line);
+		}
+		view_info.set_working_queue_data(new_data);
+		return show_update;
+	}
+	
+	private Vector<String> get_one_report_line(
+			HashMap<String, HashMap<String, String>> design_data, 
+			watch_enum watching_area) {
+		Vector<String> add_line = new Vector<String>();
+		if(!watching_area.equals(watch_enum.ALL)){
+			if(!design_data.get("Status").containsKey("cmd_status")){
+				return add_line;//empty line which will be ignore
+			}
+		}
+		if(watching_area.equals(watch_enum.PASSED)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.PASSED.get_description())){
+				return add_line;//non-passed line which will be ignore
+			}
+		}
+		if(watching_area.equals(watch_enum.FAILED)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.FAILED.get_description())){
+				return add_line;//non-failed line which will be ignore
+			}
+		}
+		if(watching_area.equals(watch_enum.TBD)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.TBD.get_description())){
+				return add_line;//non-tbd line which will be ignore
+			}
+		}		
+		if(watching_area.equals(watch_enum.TIMEOUT)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.TIMEOUT.get_description())){
+				return add_line;//non-timeout line which will be ignore
+			}
+		}
+		if(watching_area.equals(watch_enum.PROCESSING)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.PROCESSING.get_description())){
+				return add_line;//non-processing line which will be ignore
+			}
+		}
+		if(watching_area.equals(watch_enum.WAITING)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.WAITING.get_description())){
+				return add_line;//non-waiting line which will be ignore
+			}
+		}	
+		if(watching_area.equals(watch_enum.HALTED)){
+			if (!design_data.get("Status").get("cmd_status").equals(task_enum.HALTED.get_description())){
+				return add_line;//non-tbd line which will be ignore
+			}
+		}		
+		if (design_data.get("ID").containsKey("id")) {
+			add_line.add(design_data.get("ID").get("id"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("ID").containsKey("suite")) {
+			add_line.add(design_data.get("ID").get("suite"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("CaseInfo").containsKey("design_name")) {
+			add_line.add(design_data.get("CaseInfo").get("design_name"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("Status").containsKey("cmd_status")) {
+			add_line.add(design_data.get("Status").get("cmd_status"));
+		} else {
+			add_line.add("Waiting");
+		}
+		if (design_data.get("Status").containsKey("cmd_reason")) {
+			add_line.add(design_data.get("Status").get("cmd_reason"));
+		} else {
+			add_line.add("NA");
+		}
+		if (design_data.get("Status").containsKey("run_time")) {
+			add_line.add(design_data.get("Status").get("run_time"));
+		} else {
+			add_line.add("NA");
+		}
+		return add_line;
+	}
+
+	private Vector<Vector<String>> get_blank_data(){
+		Vector<Vector<String>> blank_data = new Vector<Vector<String>>();
+		Vector<String> add_line = new Vector<String>();
+		add_line.add("No data found.");
+		add_line.add("..");
+		add_line.add("..");
+		add_line.add("..");
+		add_line.add("..");
+		add_line.add("..");
+		blank_data.add(add_line);
+		return blank_data;
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -562,8 +812,14 @@ public class view_server extends Thread {
 			implements_user_del_request();
 			// task 4 : prompt message windows
 			implements_message_prompt(top_view);
+			// task 5 : update rejected_queue_data
+			implements_rejected_queue_data_update();
+			// task 6 : update captured_queue_data
+			implements_captured_queue_data_update();
+			// task 7 : update working_queue_data
+			implements_working_queue_data_update();			
 			try {
-				Thread.sleep(base_interval * 1 * 100);
+				Thread.sleep(public_data.PERF_GUI_BASE_INTERVAL * 1 * 1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
