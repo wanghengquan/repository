@@ -43,6 +43,7 @@ public class result_waiter extends Thread {
 	private view_data view_info;
 	private switch_data switch_info;
 	private post_data post_info;
+	private task_report report_obj;
 	private String line_separator = System.getProperty("line.separator");
 	//private String file_separator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
@@ -64,6 +65,7 @@ public class result_waiter extends Thread {
 		this.switch_info = switch_info;
 		this.view_info = view_info;
 		this.post_info = post_info;
+		this.report_obj = new task_report(pool_info, client_info);
 	}
 
 	// since only this thread will remove the finished call, so not slipped
@@ -76,8 +78,7 @@ public class result_waiter extends Thread {
 	 */
 	@SuppressWarnings("unchecked")
 	private Boolean run_local_disk_report(
-			HashMap<String, HashMap<String, Object>> case_report_map,
-			task_report report_obj) {
+			HashMap<String, HashMap<String, Object>> case_report_map) {
 		Boolean run_status = new Boolean(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
@@ -112,8 +113,7 @@ public class result_waiter extends Thread {
 	}
 
 	private Boolean run_post_process(
-			HashMap<String, HashMap<String, Object>> case_report_map,
-			task_report report_obj) {
+			HashMap<String, HashMap<String, Object>> case_report_map) {
 		Boolean run_status = new Boolean(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
@@ -136,6 +136,7 @@ public class result_waiter extends Thread {
 			task_data.putAll(task_info.get_case_from_processed_task_queues_map(queue_name, case_id));
 			String case_path = task_data.get("Paths").get("case_path");
 			String save_path = task_data.get("Paths").get("save_path");
+			String work_suite = task_data.get("Paths").get("work_suite");
 			String save_suite = task_data.get("Paths").get("save_suite");
 			String save_space = task_data.get("Paths").get("save_space");
 			String work_space = task_data.get("Paths").get("work_space");
@@ -150,6 +151,7 @@ public class result_waiter extends Thread {
 					case_path,
 					report_path,
 					work_space,
+					work_suite,
 					save_space,
 					save_suite,
 					save_path,
@@ -285,6 +287,12 @@ public class result_waiter extends Thread {
 			if (!call_status.equals(call_state.DONE)) {
 				continue;
 			}
+			String report_path = (String) one_call_data.get(post_attr.call_rptdir);
+			@SuppressWarnings("unchecked")
+			ArrayList<String> run_msg = (ArrayList<String>) one_call_data.get(post_attr.call_message);
+			// task 1: run message/report generate
+			report_obj.dump_disk_task_report_data(report_path, run_msg);
+			// task 2: remove post run call from call map
 			post_info.remove_postrun_call(call_index);
 		}
 		return run_status;
@@ -832,7 +840,6 @@ public class result_waiter extends Thread {
 		// this run cannot launch multiple threads
 		result_thread = Thread.currentThread();
 		String waiter_name = "RW_0";
-		task_report report_obj = new task_report(pool_info, client_info);
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -882,9 +889,9 @@ public class result_waiter extends Thread {
 			// task 5 : update processed task data info
 			update_processed_task_data(case_report_data);
 			// task 6 : local report
-			run_local_disk_report(case_report_data, report_obj);
+			run_local_disk_report(case_report_data);
 			// task 7 : run post process
-			run_post_process(case_report_data, report_obj);
+			run_post_process(case_report_data);
 			// task 8 : release occupied resource
 			release_resource_usage();
 		}

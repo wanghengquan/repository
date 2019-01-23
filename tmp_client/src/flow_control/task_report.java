@@ -47,6 +47,9 @@ public class task_report {
 			String report_path,
 			ArrayList<String> report_list
 			){
+		if (report_list == null || report_list.isEmpty()){
+			return false;
+		}
 		String report_file = report_path + "/" + public_data.CASE_REPORT_NAME;
 		File report_fobj = new File(report_file);
 		if (!report_fobj.exists()){
