@@ -22,7 +22,8 @@ public enum post_attr {
 	call_canceled(9, "call_canceled_YoN"),
 	call_timeout(10, "call_timeout_YoN"),
 	call_terminate(11, "call_terminate_YoN"),
-	call_rptdir(12, "call_rptdir");
+	call_rptdir(12, "call_rptdir"),
+	call_message(13, "call_message");
 	
 	private int index;
 	private String description;

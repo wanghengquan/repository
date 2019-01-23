@@ -27,17 +27,19 @@ public class postrun_call implements Callable<Object> {
 	private String save_space;
 	private String work_space;
 	private String save_suite;
+	private String work_suite;
 	private String save_path;
 	private task_enum cmd_status;
 	private String local_clean; //auto, keep, remove. cleanup the local folder
 	private String result_keep; //auto, zipped, unzipped .how to copy case wi/wo zip
-	private ArrayList<String> error_msg = new ArrayList<String>();
-	//private String line_separator = System.getProperty("line.separator");
+	public ArrayList<String> run_msg = new ArrayList<String>();
+	private String line_separator = System.getProperty("line.separator");
 
 	public postrun_call(
 			String case_path,
 			String report_path,
 			String work_space,
+			String work_suite,
 			String save_space,
 			String save_suite,
 			String save_path,
@@ -48,6 +50,7 @@ public class postrun_call implements Callable<Object> {
 		this.report_path = report_path;
 		this.save_space = save_space;
 		this.work_space = work_space;
+		this.work_suite = work_suite;
 		this.save_suite = save_suite;
 		this.save_path = save_path;
 		this.cmd_status = cmd_status;
@@ -62,7 +65,15 @@ public class postrun_call implements Callable<Object> {
 		if (!run_process_cleanup(case_path)){
 			run_status = false;
 		}
-		//cleanup run dir
+		//generate local scan report
+		if (!run_local_scan_report_generate(report_path, work_suite)){
+			run_status = false;
+		}
+		//generate remote scan report
+		if (!run_remote_scan_report_generate(report_path, save_space, work_space, save_suite)){
+			run_status = false;
+		}		
+		//cleanup and copy run dir
 		if (!run_disk_cleanup(report_path, save_space, work_space, save_suite, save_path, local_clean, result_keep)){
 			run_status = false;
 		}
@@ -111,7 +122,7 @@ public class postrun_call implements Callable<Object> {
     			} catch (IOException e) {
     				// TODO Auto-generated catch block
     				// e.printStackTrace();
-    				error_msg.add("Create top leve save suite folder failed.");
+    				run_msg.add("Create top leve save suite folder failed.");
     				run_status = false;
     				continue;
     			}
@@ -151,6 +162,101 @@ public class postrun_call implements Callable<Object> {
         return run_status;
 	}
 	
+	private Boolean run_local_scan_report_generate(
+			String report_path,
+			String work_suite){
+		Boolean run_status = new Boolean(false);
+		//task 1: local scan data
+		String suite_scan_file = new String(work_suite + "/" + public_data.SUITE_DATA_REPORT_NAME);
+		String suite_lock_file = new String(work_suite + "/" + public_data.SUITE_LOCK_FILE_NAME);
+		File suite_scan_file_obj = new File(suite_scan_file);
+		String task_name = new File(report_path).getName();
+		String case_scan_file = new String(report_path + "/" + task_name + ".csv");
+		File case_scan_file_obj = new File(case_scan_file);
+		if (!case_scan_file_obj.exists()){
+			return true;
+		}
+		Boolean get_suite_locked = file_action.gen_lock_file(suite_lock_file);
+		if (!get_suite_locked){
+			run_msg.add("Cannot generate local suite lock file, skip local scan report.");
+			return run_status;
+		}		
+		if (!suite_scan_file_obj.exists()){
+			file_action.copy_file(case_scan_file, suite_scan_file);
+		} else {
+			ArrayList<String> file_lines = new ArrayList<String>();
+			file_lines.addAll(file_action.read_file_lines(case_scan_file));
+			file_action.append_file(suite_scan_file, file_lines.get(file_lines.size() -1)  + line_separator);
+		}
+		file_action.del_lock_file(suite_lock_file);
+		run_msg.add("Local scan report generated:" + suite_scan_file);
+		run_status = true;
+        return run_status;
+	}
+	
+	private Boolean run_remote_scan_report_generate(
+			String report_path,
+			String save_space,
+			String work_space,
+			String save_suite){
+		Boolean run_status = new Boolean(true);
+		String task_name = new File(report_path).getName();
+		String case_scan_file = new String(report_path + "/" + task_name + ".csv");
+		File case_scan_file_obj = new File(case_scan_file);
+		if (!case_scan_file_obj.exists()){
+			return true;
+		}
+		//task 1: copy run results
+        String[] tmp_space = save_space.split(",");
+        String[] tmp_suite = save_suite.split(",");
+        for(int i=0; i<tmp_space.length; i++) {
+            String save_space_index = tmp_space[i].trim();
+            String save_suite_index = tmp_suite[i].trim();
+            if (save_space_index.equalsIgnoreCase(work_space)) {
+                continue;
+            }
+            if (save_space_index.trim().equals("")) {
+                // no save path, skip copy
+                continue;
+            }
+            //make suite level folder
+    		File save_suite_fobj = new File(save_suite_index);
+    		if (!save_suite_fobj.exists()) {
+    			try {
+    				FileUtils.forceMkdir(save_suite_fobj);
+    				save_suite_fobj.setReadable(true, false);
+    				save_suite_fobj.setWritable(true, false);
+    			} catch (IOException e) {
+    				// TODO Auto-generated catch block
+    				// e.printStackTrace();
+    				run_msg.add("Create top leve save suite folder failed.");
+    				run_status = false;
+    				continue;
+    			}
+    		}
+    		//start generate scan data file
+    		String suite_scan_file = new String(save_suite_index + "/" + public_data.SUITE_DATA_REPORT_NAME);
+    		String suite_lock_file = new String(save_suite_index + "/" + public_data.SUITE_LOCK_FILE_NAME);
+    		File suite_scan_file_obj = new File(suite_scan_file);
+    		Boolean get_suite_locked = file_action.gen_lock_file(suite_lock_file);
+    		if (!get_suite_locked){
+    			run_msg.add("Cannot generate remote suite lock file, skip local scan report.");
+    			run_status = false;
+    			continue;
+    		}
+    		if (!suite_scan_file_obj.exists()){
+    			file_action.copy_file(case_scan_file, suite_scan_file);
+    		} else {
+    			ArrayList<String> file_lines = new ArrayList<String>();
+    			file_lines.addAll(file_action.read_file_lines(case_scan_file));
+    			file_action.append_file(suite_scan_file, file_lines.get(file_lines.size() -1)  + line_separator);
+    		}
+    		file_action.del_lock_file(suite_lock_file); 
+    		run_msg.add("Remote scan report generated:" + suite_scan_file);
+        }
+        return run_status;
+	}
+	
 	private Boolean run_process_cleanup(String clean_work_path) {
 		String cmd = "python " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
 		ArrayList<String> excute_retruns = new ArrayList<String>();
@@ -159,7 +265,7 @@ public class postrun_call implements Callable<Object> {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			error_msg.add("Run process cleanup failed: " + cmd);
+			run_msg.add("Run process cleanup failed: " + cmd);
 			return false;
 		}
 		Boolean finish_clean = false;
@@ -195,13 +301,13 @@ public class postrun_call implements Callable<Object> {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				error_msg.add("Case remote save path create failed, Skip case copy");
+				run_msg.add("Case remote save path create failed, Skip case copy");
 				copy_status = false;
 				return copy_status;
 			}
 		}
 		if (!save_path_fobj.canWrite()) {
-			error_msg.add("Case remote save path not writeable, Skip case copy");
+			run_msg.add("Case remote save path not writeable, Skip case copy");
 			copy_status = false;
 			return copy_status;
 		}
@@ -223,7 +329,7 @@ public class postrun_call implements Callable<Object> {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				error_msg.add("Copy source case failed, Skip this case");
+				run_msg.add("Copy source case failed, Skip this case");
 				copy_status = false;
 			}
 		} else if (copy_type.equals("archive")) {
@@ -232,7 +338,7 @@ public class postrun_call implements Callable<Object> {
 			save_dest_file.setReadable(true, false);
 			save_dest_file.setWritable(true, false);
 		} else {
-			error_msg.add("Wrong copy type given, skip");
+			run_msg.add("Wrong copy type given, skip");
 			copy_status = false;
 		}
 		return copy_status;

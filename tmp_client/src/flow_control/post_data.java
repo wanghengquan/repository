@@ -9,6 +9,7 @@
  */
 package flow_control;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
@@ -105,6 +106,7 @@ public class post_data {
 				call_data.put(post_attr.call_terminate, false);
 				call_data.put(post_attr.call_status, call_state.INITIATE);
 				call_data.put(post_attr.call_rptdir, call_obj.get_report_path());
+				call_data.put(post_attr.call_message, new ArrayList<String>());
 				call_map.put(call_key, call_data);
 				CLEANUP_DATA_LOGGER.info("Cleanup call added for: " + call_key);				
 			}
@@ -142,6 +144,7 @@ public class post_data {
 				Boolean call_done = call_back.isDone();
 				if (call_done) {
 					hash_data.put(post_attr.call_status, call_state.DONE);
+					hash_data.put(post_attr.call_message, call_obj.run_msg);
 				} else {
 					hash_data.put(post_attr.call_status, call_state.PROCESSIONG);
 				}

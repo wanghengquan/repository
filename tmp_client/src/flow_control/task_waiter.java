@@ -651,6 +651,7 @@ public class task_waiter extends Thread {
 		String design_source = new String("");
 		String case_path = new String("");
 		String task_path = new String("");
+		String work_suite = new String("");
 		String save_path = new String("");
 		String save_suite = new String("");
 		String script_source = new String("");
@@ -722,6 +723,14 @@ public class task_waiter extends Thread {
 			}
 		}
 		paths_hash.put("task_path", task_path);
+		//get suite local work suite path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			work_suite = repository + "/" + suite_path;
+		} else {
+			String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
+			work_suite = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
+		}
+		paths_hash.put("work_suite", work_suite);		
 		//get suite save path save_suite
         String[] tmp_space = save_space.split(",");
         ArrayList<String> tmp_suite = new ArrayList<String>();    

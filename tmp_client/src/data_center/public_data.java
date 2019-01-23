@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.74"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20874; // version for code use
-	public final static String BASE_BUILDDATE = "2019/01/22";
+	public final static String BASE_CURRENTVERSION = "2.08.75"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20875; // version for code use
+	public final static String BASE_BUILDDATE = "2019/01/23";
 	public final static String BASE_SUITEFILEVERSION = "1.12";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -93,6 +93,11 @@ public class public_data {
 	public final static String WORKSPACE_TEMP_DIR = "temp";
 	public final static String WORKSPACE_LOG_DIR = "logs";
 	
+	// ========================
+	// suite folder configuration
+	// name	
+	public final static String SUITE_DATA_REPORT_NAME = "suite_scan.csv";
+	public final static String SUITE_LOCK_FILE_NAME = "suite_lock.txt";
 	// ========================
 	// case folder configuration
 	// name	
