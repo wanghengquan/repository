@@ -248,13 +248,7 @@ public class rmq_tube {
 				priority = public_data.TASK_DEF_PRIORITY;
 			}
 		}
-        if (msg_key.toLowerCase().contains("rerun_")){
-            if (priority.charAt(0) > public_data.TASK_PRI_RERUN.charAt(0)) {
-                priority = public_data.TASK_PRI_RERUN;
-            }
-        }
-		// task belong to this client(job_attribute): (0, assign task) > (1,
-		// match task)
+		// task belong to this client(job_attribute): (0, assign task) > (1, match task)
 		String attribute = new String();
 		String request_terminal = new String();
 		String available_terminal = current_terminal;
