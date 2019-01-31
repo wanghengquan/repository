@@ -9,6 +9,7 @@
  */
 package info_parser;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
@@ -85,13 +86,15 @@ public class cmd_parser {
 		}
 		// 3.4 suite file value
 		if (commandline_obj.hasOption('f')) {
-			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f').replaceAll("\\\\", "/"));
+			String suite_file = new String(commandline_obj.getOptionValue('f'));
+			cmd_hash.put("suite_file", get_absolute_path(suite_file));
 		} else {
 			cmd_hash.put("suite_file", "");
 		}
 		// 3.5 suite path value
 		if (commandline_obj.hasOption('p')) {
-			cmd_hash.put("suite_path", commandline_obj.getOptionValue('p').replaceAll("\\\\", "/"));
+			String suite_path = new String(commandline_obj.getOptionValue('p'));
+			cmd_hash.put("suite_path", get_absolute_path(suite_path));
 		} else {
 			cmd_hash.put("suite_path", "");
 		}
@@ -134,11 +137,13 @@ public class cmd_parser {
 		}
 		// 3.12 work path
 		if (commandline_obj.hasOption('w')) {
-			cmd_hash.put("work_space", commandline_obj.getOptionValue('w').replaceAll("\\\\", "/"));
+			String work_space = new String(commandline_obj.getOptionValue('w'));
+			cmd_hash.put("work_space", get_absolute_path(work_space));
 		}
 		// 3.13 save path
 		if (commandline_obj.hasOption('s')) {
-			cmd_hash.put("save_space", commandline_obj.getOptionValue('s').replaceAll("\\\\", "/"));
+			String save_space = new String(commandline_obj.getOptionValue('s'));
+			cmd_hash.put("save_space", get_absolute_path(save_space));
 		}
 		// 3.14 max threads
 		if (commandline_obj.hasOption('t')) {
@@ -182,6 +187,12 @@ public class cmd_parser {
 		return cmd_hash;
 	}
 
+	private String get_absolute_path(
+			String raw_path){
+		File raw_file = new File(raw_path);
+		return raw_file.getAbsolutePath().replaceAll("\\\\", "/");
+	}
+	
 	private Boolean run_input_data_check(
 			HashMap<String, String> cmd_hash){
 		Boolean check_satus = new Boolean(true);
