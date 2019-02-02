@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -525,8 +524,9 @@ public class view_server extends Thread {
 	
 	private Boolean implements_rejected_queue_data_update(){
 		Boolean show_update = new Boolean(false);
-		TreeMap<String, String> rejected_treemap = task_info.get_rejected_admin_reason_treemap();// source
 		Set<String> rejected_set = new TreeSet<String>(new queue_compare(view_info.get_rejected_sorting_request()));
+		TreeMap<String, String> rejected_treemap = new TreeMap<String, String>();
+		rejected_treemap.putAll(deep_clone.clone(task_info.get_rejected_admin_reason_treemap()));
 		rejected_set.addAll(rejected_treemap.keySet());
 		Iterator<String> rejected_it = rejected_set.iterator();
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
@@ -547,7 +547,9 @@ public class view_server extends Thread {
 	private Boolean implements_captured_queue_data_update() {
 		Boolean show_update = new Boolean(false);
 		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
-		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
+		TreeMap<String, HashMap<String, HashMap<String, String>>> captured_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		captured_data.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));
+		captured_set.addAll(captured_data.keySet());
 		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
 		//ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
 		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
@@ -562,8 +564,8 @@ public class view_server extends Thread {
 		while (captured_it.hasNext()) {
 			String queue_name = captured_it.next();
 			queue_enum status = queue_enum.UNKNOWN;
-			if (task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
+			if (captured_data.containsKey(queue_name)){
+				String admin_status = captured_data.get(queue_name).get("Status")
 						.get("admin_status");
 				if (admin_status.equals(queue_enum.STOPPED.get_description())){
 					status = queue_enum.STOPPED;
@@ -641,25 +643,23 @@ public class view_server extends Thread {
 			watching_area = watch_enum.ALL;
 		}
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 		// try import non exists queue data
 		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue)) {
 			//both admin and task should be successfully import otherwise skip import
 			import_disk_admin_data_to_processed_data(watching_queue);
 			Boolean task_import_status = import_disk_task_data_to_processed_data(watching_queue);
 			if (!task_import_status){
-				VIEW_SERVER_LOGGER.info("Import queue data failed:" + watching_queue + ", " + watching_area.get_description());
+				VIEW_SERVER_LOGGER.warn("Import queue data failed:" + watching_queue + ", " + watching_area.get_description());
 				view_info.set_working_queue_data(get_blank_data());
 				return show_update; // no data show
 			}
 		}
-		processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
-		if (!processed_task_queues_map.containsKey(watching_queue)) {
+		if (!task_info.get_processed_task_queues_map().containsKey(watching_queue)) {
 			view_info.set_working_queue_data(get_blank_data());
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
-		queue_data.putAll(deep_clone.clone(processed_task_queues_map.get(watching_queue)));
+		queue_data.putAll(deep_clone.clone(task_info.get_queue_data_from_processed_task_queues_map(watching_queue)));
 		if (queue_data.size() < 1) {
 			view_info.set_working_queue_data(get_blank_data());
 			return show_update;

@@ -740,7 +740,7 @@ public class task_data {
 
 	public TreeMap<String, String> get_rejected_admin_reason_treemap() {
 		rw_lock.readLock().lock();
-		TreeMap<String, String> temp = new TreeMap<String, String>(new queue_compare());
+		TreeMap<String, String> temp = new TreeMap<String, String>();
 		try {
 			temp.putAll(this.rejected_admin_reason_treemap);
 		} finally {

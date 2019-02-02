@@ -84,42 +84,6 @@ public class task_waiter extends Thread {
 					import_data.retrieve_disk_dumped_processed_task_data(client_info));
 		}
 	}
-	
-	private void update_captured_queue_detail_lists() {
-		Set<String> captured_admin_queue_set = new HashSet<String>();
-		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
-		Iterator<String> captured_it = captured_admin_queue_set.iterator();
-		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
-		ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
-		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
-			if (queue_data == null || queue_data.isEmpty()) {
-				continue; // some one delete this queue already
-			}
-			String status = queue_data.get("Status").get("admin_status");
-			if (status.equals(queue_enum.PROCESSING.get_description())) {
-				processing_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.REMOTEPROCESSIONG.get_description())){
-				processing_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.PAUSED.get_description())){
-				paused_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.REMOTEPAUSED.get_description())){
-				paused_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.STOPPED.get_description())){
-				stopped_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.REMOTESTOPED.get_description())){
-				stopped_admin_queue_list.add(queue_name);
-			} else {
-				continue;
-			}
-		}
-		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
-		task_info.set_paused_admin_queue_list(paused_admin_queue_list);
-		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
-	}
 
 	private void reload_repressing_queue_data() {
 		synchronized (this.getClass()) {
@@ -969,7 +933,6 @@ public class task_waiter extends Thread {
 			}
 			// ============== All dynamic job start from here ==============
 			// task 0 : initial preparing,  load task data for re-processing queues
-			update_captured_queue_detail_lists();
 			reload_repressing_queue_data();// reload finished task data if queue changed to processing from finished
 			// task 1 : check available work thread and task queue 
 			if(!start_new_task_check()){
