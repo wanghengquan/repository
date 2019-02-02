@@ -11,6 +11,7 @@ package connect_tube;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import data_center.public_data;
 import data_center.status_enum;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.queue_enum;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import utility_funcs.deep_clone;
@@ -48,6 +50,7 @@ public class tube_server extends Thread {
 	private rmq_tube rmq_runner;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private String line_separator = System.getProperty("line.separator");
+	private int send_count = 0;
 
 	// public function
 	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
@@ -223,6 +226,17 @@ public class tube_server extends Thread {
 		task_info.set_rejected_admin_reason_treemap(new_rejected_reason_queue);
 	}
 
+	private void send_client_current_info(){
+		//send client detail data every 1 minutes
+		if (send_count < 12) {
+			send_count++;
+			send_client_info("simple");
+		} else {
+			send_count = 0;
+			send_client_info("complex");
+		}		
+	}
+	
 	private Boolean send_client_info(String mode) {
 		Boolean send_status = new Boolean(true);
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
@@ -409,6 +423,42 @@ public class tube_server extends Thread {
 		}
 	}
 	
+	private void update_captured_queue_detail_lists() {
+		Set<String> captured_admin_queue_set = new HashSet<String>();
+		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
+		Iterator<String> captured_it = captured_admin_queue_set.iterator();
+		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
+		ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
+		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
+		while (captured_it.hasNext()) {
+			String queue_name = captured_it.next();
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
+			if (queue_data == null || queue_data.isEmpty()) {
+				continue; // some one delete this queue already
+			}
+			String status = queue_data.get("Status").get("admin_status");
+			if (status.equals(queue_enum.PROCESSING.get_description())) {
+				processing_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.REMOTEPROCESSIONG.get_description())){
+				processing_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.PAUSED.get_description())){
+				paused_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.REMOTEPAUSED.get_description())){
+				paused_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.STOPPED.get_description())){
+				stopped_admin_queue_list.add(queue_name);
+			} else if (status.equals(queue_enum.REMOTESTOPED.get_description())){
+				stopped_admin_queue_list.add(queue_name);
+			} else {
+				continue;
+			}
+		}
+		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
+		task_info.set_paused_admin_queue_list(paused_admin_queue_list);
+		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
+	}	
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -426,7 +476,6 @@ public class tube_server extends Thread {
 		send_client_info("complex");
 		// initial 2 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
-		int send_count = 0;
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -451,14 +500,10 @@ public class tube_server extends Thread {
 			run_received_admin_sorting();
 			// task 4: flash tube output: captured and rejected treemap
 			flash_tube_output();
+			// task 5: detail output list
+			update_captured_queue_detail_lists();
 			// task 5: send client info to Remote server
-			if (send_count < 10) {
-				send_count++;
-				send_client_info("simple");
-			} else {
-				send_count = 0;
-				send_client_info("complex");
-			}
+			send_client_current_info();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
