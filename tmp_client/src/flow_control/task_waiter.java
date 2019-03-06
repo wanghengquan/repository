@@ -803,16 +803,24 @@ public class task_waiter extends Thread {
 	private int get_time_out(String time_out) {
 		Pattern p_timeout = Pattern.compile("\\D");
 		Matcher m = p_timeout.matcher(time_out);
+		//if non-digital found in string, make a default value
 		if (m.find())
 			time_out = "3600";
-		if (time_out.equals("0")) {
-			time_out = "2147483647";
-		}
+		//parse the timeout
 		Integer data = new Integer(3600);
+		Integer data_max = new Integer(Integer.MAX_VALUE -10);//discount 10 to avoid future overflow.
 		try {
 			data = Integer.parseInt(time_out);
 		} catch (NumberFormatException e){
 			TASK_WAITER_LOGGER.warn("Wrong timeout value found, will use default:3600 seconds");
+		}
+		//translate 0 to maximum integer
+		if (data.equals(0)) {
+			data = data_max;
+		}
+		//limit the maximum data
+		if (data > data_max){
+			data = data_max; 
 		}
 		return data;
 	}
