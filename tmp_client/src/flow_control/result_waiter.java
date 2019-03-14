@@ -222,6 +222,19 @@ public class result_waiter extends Thread {
 		}
 	}
 	
+	private Boolean queue_dump_dealy_check(String queue_name){
+		Boolean status = new Boolean(true);
+		task_info.increase_finished_queue_dump_delay_counter(queue_name, 1);
+		int current_delay_cycle = task_info.get_finished_queue_dump_delay_data(queue_name);
+		if (current_delay_cycle < public_data.PERF_QUEUE_DUMP_DELAY){
+			status = false;
+		} else {
+			task_info.release_finished_queue_dump_delay_counter(queue_name);
+			status = true;
+		}
+		return status;
+	}
+	
 	private Boolean dump_finished_queue_data() {
 		Boolean dump_status = new Boolean(true);
 		// dump finished task queue data to xml file, save memory
@@ -249,6 +262,9 @@ public class result_waiter extends Thread {
 			if (task_info.get_processed_task_queues_map().get(dump_queue).size() < 20) {
 				continue;// no need to dump to increase the performance > don't
 							// forget dump when shutdown client
+			}
+			if (!queue_dump_dealy_check(dump_queue)){
+				continue;// dump delay not ready (to avoid client dump)
 			}
 			RESULT_WAITER_LOGGER.warn("Dumping admin queue:" + dump_queue);
 			// dumping task queue
