@@ -24,8 +24,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.82"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20882; // version for code use
+	public final static String BASE_CURRENTVERSION = "2.08.83"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20883; // version for code use
 	public final static String BASE_BUILDDATE = "2019/03/14";
 	public final static String BASE_SUITEFILEVERSION = "1.12";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -179,6 +179,7 @@ public class public_data {
 	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
+	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 
 	// ========================
 	// Internal String replacement

@@ -71,6 +71,7 @@ public class task_data {
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();	
 	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_data_map = new HashMap<String, HashMap<task_enum, Integer>>();
+	private HashMap<String,Integer> finished_queue_dump_delay_counter = new HashMap<String,Integer>();
 	//====data not used====
 	private ArrayList<String> thread_pool_admin_queue_list  = new ArrayList<String>();
 	// =============================================member
@@ -1181,6 +1182,57 @@ public class task_data {
 		}
 	}
 	
+	public HashMap<String, Integer> get_finished_queue_dump_delay_counter() {
+		rw_lock.readLock().lock();
+		HashMap<String, Integer> temp = new HashMap<String, Integer>();
+		try {
+			temp.putAll(finished_queue_dump_delay_counter);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
+	public Integer get_finished_queue_dump_delay_data(String queue_name) {
+		rw_lock.readLock().lock();
+		Integer temp = new Integer(0);
+		try {
+			if (finished_queue_dump_delay_counter.containsKey(queue_name)){
+				temp = finished_queue_dump_delay_counter.get(queue_name);
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void increase_finished_queue_dump_delay_counter(
+			String queue_name,
+			Integer number) {
+		rw_lock.writeLock().lock();
+		try {
+			if (finished_queue_dump_delay_counter.containsKey(queue_name)){
+				int new_data = finished_queue_dump_delay_counter.get(queue_name) + number;
+				finished_queue_dump_delay_counter.put(queue_name, new_data);
+			} else {
+				finished_queue_dump_delay_counter.put(queue_name, number);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void release_finished_queue_dump_delay_counter(
+			String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if (finished_queue_dump_delay_counter.containsKey(queue_name)){
+				finished_queue_dump_delay_counter.remove(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
 	
 	//Map<String, HashMap<String, String>> local_file_imported_task_map
 	public HashMap<String, HashMap<String, String>> get_local_file_imported_task_map() {
