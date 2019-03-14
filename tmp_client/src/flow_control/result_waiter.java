@@ -12,7 +12,6 @@ package flow_control;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -235,7 +234,10 @@ public class result_waiter extends Thread {
 			if (switch_info.get_local_console_mode()){
 				continue;// in local console mode no dumping
 			}
-			if (view_info.get_watching_queue().equalsIgnoreCase(dump_queue)) {
+			if (view_info.get_request_watching_queue().equalsIgnoreCase(dump_queue)) {
+				continue;// queue in GUI watching
+			}			
+			if (view_info.get_current_watching_queue().equalsIgnoreCase(dump_queue)) {
 				continue;// queue in GUI watching
 			}
 			if (view_info.get_export_queue_list().contains(dump_queue)) {
@@ -745,29 +747,38 @@ public class result_waiter extends Thread {
 
 	private Boolean terminate_user_request_running_call() {
 		Boolean cancel_status = new Boolean(true);
-		if (!view_info.impl_stop_case_request()) {
+		HashMap<String, ArrayList<String>> request_terminate_list = new HashMap<String, ArrayList<String>>();
+		request_terminate_list.putAll(view_info.impl_request_terminate_list());
+		if (request_terminate_list.isEmpty()){
 			return cancel_status;
 		}
-		String queue_name = view_info.get_watching_queue();
-		List<String> select_task_case = view_info.get_select_task_case();
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());
-		Iterator<String> call_map_it = call_data.keySet().iterator();
-		while (call_map_it.hasNext()) {
-			String call_index = call_map_it.next();
-			String call_name = (String) call_data.get(call_index).get(pool_attr.call_queue);
-			String call_id = (String) call_data.get(call_index).get(pool_attr.call_case);
-			call_state call_status = (call_state) call_data.get(call_index).get(pool_attr.call_status);
-			if (!call_name.equalsIgnoreCase(queue_name)) {
+		Iterator<String> queue_it = request_terminate_list.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			ArrayList<String> case_list = new ArrayList<String>();
+			case_list.addAll(request_terminate_list.get(queue_name));
+			if (case_list.isEmpty()){
 				continue;
 			}
-			if (!select_task_case.contains(call_id)) {
-				continue;
+			Iterator<String> call_map_it = call_data.keySet().iterator();
+			while (call_map_it.hasNext()) {
+				String call_index = call_map_it.next();
+				String call_name = (String) call_data.get(call_index).get(pool_attr.call_queue);
+				String call_id = (String) call_data.get(call_index).get(pool_attr.call_case);
+				call_state call_status = (call_state) call_data.get(call_index).get(pool_attr.call_status);
+				if (!call_name.equalsIgnoreCase(queue_name)) {
+					continue;
+				}
+				if (!case_list.contains(call_id)) {
+					continue;
+				}
+				if (!call_status.equals(call_state.PROCESSIONG)) {
+					continue;
+				}
+				cancel_status = pool_info.terminate_sys_call(call_index);
 			}
-			if (!call_status.equals(call_state.PROCESSIONG)) {
-				continue;
-			}
-			cancel_status = pool_info.terminate_sys_call(call_index);
 		}
 		return cancel_status;
 	}

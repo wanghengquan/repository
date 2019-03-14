@@ -188,27 +188,13 @@ public class work_panel extends JSplitPane implements Runnable{
 	
 	private Boolean update_working_queue_data() {
 		Boolean show_update = new Boolean(true);
-		String watching_queue = view_info.get_watching_queue();
+		String watching_queue = view_info.get_current_watching_queue();
 		if (watching_queue.equals("")) {
 			return show_update; // no watching queue selected
 		}
 		work_data.clear();
-		work_data.addAll(view_info.get_working_queue_data());
+		work_data.addAll(view_info.get_watching_queue_data());
 		return show_update;
-	}	
-	
-	private Boolean update_selected_task_case(){
-		Boolean update_status = new Boolean(false);
-		int [] select_index = work_table.getSelectedRows();
-		List<String> select_case = new ArrayList<String>();
-		for (int index : select_index){
-			if(work_table.getRowCount() > index){
-				String case_id = (String) work_table.getValueAt(index, 0);
-				select_case.add(case_id);
-			}
-		}
-		view_info.set_select_task_case(select_case);
-		return update_status;
 	}
 	
 	@Override
@@ -230,7 +216,6 @@ public class work_panel extends JSplitPane implements Runnable{
 				work_data.clear();
 				work_data.addAll(new_data);
 			} else {
-				update_selected_task_case();
 				update_working_queue_data();
 			}
 			if (SwingUtilities.isEventDispatchThread()) {
@@ -341,8 +326,8 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	public void open_result_folder(String prefer_id){
 		String title = "Open Folder Failed:";
 		String message = "Cannot open case result DIR, unknow error." + line_separator;			
-		String watching_queue = view_info.get_watching_queue();
-		List<String> case_list = view_info.get_select_task_case();
+		String watching_queue = view_info.get_current_watching_queue();
+		List<String> case_list = get_selected_case_list();
 		if(case_list.size() < 1){
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
@@ -380,52 +365,64 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}	
 	}
 	
+	private ArrayList<String> get_selected_case_list(){
+		int [] select_index = table.getSelectedRows();
+		ArrayList<String> select_case = new ArrayList<String>();
+		for (int index : select_index){
+			if(table.getRowCount() > index){
+				String case_id = (String) table.getValueAt(index, 0);
+				select_case.add(case_id);
+			}
+		}
+		return select_case;
+	}	
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(retest)) {
 			System.out.println("retest clicked");
-			view_info.set_retest_queue_area(retest_enum.SELECTED);
+			view_info.update_request_retest_list(view_info.get_current_watching_queue(), get_selected_case_list());
 		}
 		if (arg0.getSource().equals(terminate)) {
 			System.out.println("terminate clicked");
-			view_info.set_stop_case_request();
+			view_info.update_request_terminate_list(view_info.get_current_watching_queue(), get_selected_case_list());
 		}		
 		if (arg0.getSource().equals(view_all)) {
 			System.out.println("view all");
-			view_info.set_watching_queue_area(watch_enum.ALL);
+			view_info.set_current_watching_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(view_processing)) {
 			System.out.println("view failed");
-			view_info.set_watching_queue_area(watch_enum.PROCESSING);
+			view_info.set_current_watching_area(watch_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(view_waiting)) {
 			System.out.println("view waiting");
-			view_info.set_watching_queue_area(watch_enum.WAITING);
+			view_info.set_current_watching_area(watch_enum.WAITING);
 		}			
 		if (arg0.getSource().equals(view_failed)) {
 			System.out.println("view failed");
-			view_info.set_watching_queue_area(watch_enum.FAILED);
+			view_info.set_current_watching_area(watch_enum.FAILED);
 		}
 		if (arg0.getSource().equals(view_passed)) {
 			System.out.println("view passed");
-			view_info.set_watching_queue_area(watch_enum.PASSED);
+			view_info.set_current_watching_area(watch_enum.PASSED);
 		}
 		if (arg0.getSource().equals(view_tbd)) {
 			System.out.println("view tbd");
-			view_info.set_watching_queue_area(watch_enum.TBD);
+			view_info.set_current_watching_area(watch_enum.TBD);
 		}
 		if (arg0.getSource().equals(view_timeout)) {
 			System.out.println("view timeout");
-			view_info.set_watching_queue_area(watch_enum.TIMEOUT);
+			view_info.set_current_watching_area(watch_enum.TIMEOUT);
 		}
 		if (arg0.getSource().equals(view_halted)) {
 			System.out.println("view halted");
-			view_info.set_watching_queue_area(watch_enum.HALTED);
+			view_info.set_current_watching_area(watch_enum.HALTED);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("details clicked");
-			String watching_queue = view_info.get_watching_queue();
+			String watching_queue = view_info.get_current_watching_queue();
 			String select_case = (String) table.getValueAt(table.getSelectedRow(), 0);
 			task_detail detail_view = new task_detail(watching_queue, select_case, task_info);
 			detail_view.setLocationRelativeTo(main_view);
