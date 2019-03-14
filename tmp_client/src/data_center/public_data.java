@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.80"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20880; // version for code use
-	public final static String BASE_BUILDDATE = "2019/03/06";
+	public final static String BASE_CURRENTVERSION = "2.08.81"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20881; // version for code use
+	public final static String BASE_BUILDDATE = "2019/03/13";
 	public final static String BASE_SUITEFILEVERSION = "1.12";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -183,7 +183,8 @@ public class public_data {
 	// ========================
 	// Internal String replacement
 	public final static String INTERNAL_STRING_SEMICOLON = "@SC@";   // ';'
-	public final static String INTERNAL_STRING_BLANKSPACE = "@BS@";  // ' ' 
+	public final static String INTERNAL_STRING_BLANKSPACE = "@BS@";  // ' '
+	public final static String INTERNAL_STRING_COLON = "@CL@";  	 // ':'
 	
 	// ========================
 	// >>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java

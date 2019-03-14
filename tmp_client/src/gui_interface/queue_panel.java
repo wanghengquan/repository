@@ -250,8 +250,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 					}
 					String select_queue = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 					QUEUE_PANEL_LOGGER.info("Double click and show queue:" + select_queue);
-					view_info.set_watching_queue(select_queue);
-					view_info.set_watching_queue_area(watch_enum.ALL);
+					view_info.set_request_watching_queue(select_queue);
+					view_info.set_request_watching_area(watch_enum.ALL);
 				} else {
 					QUEUE_PANEL_LOGGER.error("No line selected");
 				}
@@ -276,6 +276,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		return show_update;
 	}
 	
+	@SuppressWarnings("unused")
 	private Boolean update_select_rejected_queue() {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
@@ -290,6 +291,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		return update_status;
 	}
 
+	@SuppressWarnings("unused")
 	private Boolean update_select_captured_queue() {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
@@ -342,8 +344,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
-						update_select_rejected_queue();
-						update_select_captured_queue();
+						// update_select_rejected_queue();
+						// update_select_captured_queue();
 						update_rejected_queue_data();
 						update_captured_queue_data();						
 						reject_table.validate();
@@ -632,8 +634,8 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(show)) {
 			System.out.println("show details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
-			view_info.set_watching_queue(select_queue);
-			view_info.set_watching_queue_area(watch_enum.ALL);
+			view_info.set_request_watching_queue(select_queue);
+			view_info.set_request_watching_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(sort_priority)) {
 			System.out.println("sort_priority clicked");
@@ -653,15 +655,18 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		}		
 		if (arg0.getSource().equals(run_play)) {
 			System.out.println("run_play clicked");
-			view_info.set_run_action_request(queue_enum.PROCESSING);
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			view_info.update_run_action_request(queue_name, queue_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(run_pause)) {
 			System.out.println("run_pause clicked");
-			view_info.set_run_action_request(queue_enum.PAUSED);
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			view_info.update_run_action_request(queue_name, queue_enum.PAUSED);
 		}
 		if (arg0.getSource().equals(run_stop)) {
 			System.out.println("run_stop clicked");
-			view_info.set_run_action_request(queue_enum.STOPPED);
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			view_info.update_run_action_request(queue_name, queue_enum.STOPPED);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("detail clicked");
@@ -689,7 +694,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 				return;
 			}
 			String queue_name = (String) table.getValueAt(select_index, 0);
-			view_info.add_delete_request_queue(queue_name);
+			view_info.add_request_delete_queue(queue_name);
 		}		
 	}
 
