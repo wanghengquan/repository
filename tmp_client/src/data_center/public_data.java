@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.81"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20881; // version for code use
-	public final static String BASE_BUILDDATE = "2019/03/13";
+	public final static String BASE_CURRENTVERSION = "2.08.82"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20882; // version for code use
+	public final static String BASE_BUILDDATE = "2019/03/14";
 	public final static String BASE_SUITEFILEVERSION = "1.12";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -169,7 +169,7 @@ public class public_data {
 
 	// ========================
 	// performance calibration
-    public final static int PERF_GUI_BASE_INTERVAL = 2;
+    public final static int PERF_GUI_BASE_INTERVAL = 1;
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 60;   //Case same status report interval
 	public final static int PERF_POOL_CURRENT_SIZE = 3;      //current maxi size to external
