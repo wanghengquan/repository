@@ -395,7 +395,7 @@ public class data_server extends Thread {
 		}
 		int build_counter = 1;
 		for (String line : cmd_output){
-			if (!line.startsWith("build:")){
+			if (line == null || !line.startsWith("build:")){
 				continue;
 			}
 			String build = line.split(":", 2)[1];
