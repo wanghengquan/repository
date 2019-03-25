@@ -26,6 +26,7 @@ import data_center.exit_enum;
 import data_center.public_data;
 import data_center.status_enum;
 import data_center.switch_data;
+import flow_control.export_data;
 import flow_control.pool_data;
 import flow_control.queue_enum;
 import info_parser.cmd_parser;
@@ -58,7 +59,7 @@ public class tube_server extends Thread {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.pool_info = pool_info;
-		this.rmq_runner = new rmq_tube(task_info); // should be changed later
+		this.rmq_runner = new rmq_tube(task_info, client_info); // should be changed later
 	}
 
 	// protected function
@@ -319,6 +320,7 @@ public class tube_server extends Thread {
 			send_msg = parser.create_client_document_string(complex_data);
 		}
 		send_status = rmq_runner.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
+		export_data.debug_disk_client_out_status(send_msg, client_info);
 		return send_status;
 	}
 

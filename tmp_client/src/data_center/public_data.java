@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.08.88"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20888; // version for code use
-	public final static String BASE_BUILDDATE = "2019/03/20";
+	public final static String BASE_CURRENTVERSION = "2.08.89"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20889; // version for code use
+	public final static String BASE_BUILDDATE = "2019/03/25";
 	public final static String BASE_SUITEFILEVERSION = "1.12";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -202,11 +202,12 @@ public class public_data {
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
 	public final static String DEF_UNATTENDED_MODE = "0"; // 1 UNATTENDED(no user), 0 ATTENDED(user there)
 	public final static String DEF_STABLE_VERSION = "1"; // 1 get stable update, 0 get develop update
+	public final static String DEF_CLIENT_DEBUG_MODE = "0"; //1: Client run in debug mode
 	// preference
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial", parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
 	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local","remote","both"
-	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","keep_case"
+	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","keep_case" 
 	public final static String DEF_COPY_PATH_KEEP = "false";  //flatten copied case
 	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"all", "software", "system", "machine"
 	public final static String DEF_SHOW_WELCOME = "1";

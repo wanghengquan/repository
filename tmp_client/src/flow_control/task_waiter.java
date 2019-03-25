@@ -346,7 +346,7 @@ public class task_waiter extends Thread {
 			indexed_case_data.putAll(task_info.get_one_indexed_case_data(queue_name));
 		} else {
 			try {
-				indexed_case_data.putAll(rmq_tube.read_task_server(queue_name));
+				indexed_case_data.putAll(rmq_tube.read_task_server(queue_name, client_info));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();

@@ -53,9 +53,12 @@ class initial_status extends abstract_status {
 		// task 9: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
+		if (client.client_info.get_client_machine_data().get("debug").equals("1")){
+			System.out.println(">>>Info: Client run in Debug Mode.");
+		}
 		System.out.println(">>>Info: Working...");
 		try {
-			Thread.sleep(1000 * 2 * public_data.PERF_THREAD_BASE_INTERVAL);
+			Thread.sleep(1000 * 1 * public_data.PERF_THREAD_BASE_INTERVAL);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

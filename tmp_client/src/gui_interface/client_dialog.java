@@ -40,6 +40,7 @@ public class client_dialog extends JDialog implements ActionListener {
 	private Vector<String> group = new Vector<String>();
 	private Vector<String> client_private = new Vector<String>();
 	private Vector<String> unattended = new Vector<String>();
+	private Vector<String> debug_mode = new Vector<String>();
 	
 	private JButton discard, apply, close;
 	private JTable client_table;
@@ -66,25 +67,30 @@ public class client_dialog extends JDialog implements ActionListener {
 		client_private.clear();
 		client_data.clear();
 		unattended.clear();
+		debug_mode.clear();
 		terminal.add("Terminal:");
 		group.add("Group:");
 		client_private.add("Private Client:");
 		unattended.add("Unattended Mode:");
+		debug_mode.add("Debug Mode:");
 		if (client_info.get_client_data().containsKey("Machine")) {
-			terminal.add(client_info.get_client_data().get("Machine").get("terminal"));
-			group.add(client_info.get_client_data().get("Machine").get("group"));
-			client_private.add(client_info.get_client_data().get("Machine").get("private"));
-			unattended.add(client_info.get_client_data().get("Machine").get("unattended"));
+			terminal.add(client_info.get_client_machine_data().get("terminal"));
+			group.add(client_info.get_client_machine_data().get("group"));
+			client_private.add(client_info.get_client_machine_data().get("private"));
+			unattended.add(client_info.get_client_machine_data().get("unattended"));
+			debug_mode.add(client_info.get_client_machine_data().get("debug"));
 		} else {
 			terminal.add("Test");
 			group.add("Test");
 			client_private.add("Test");
 			unattended.add("Test");
+			debug_mode.add("Test");
 		}
 		client_data.add(terminal);
 		client_data.add(group);
 		client_data.add(client_private);
-		client_data.add(unattended);		
+		client_data.add(unattended);
+		client_data.add(debug_mode);
 	}
 
 	public JTable construct_table_panel() {
@@ -120,17 +126,13 @@ public class client_dialog extends JDialog implements ActionListener {
 			client_table.updateUI();		
 		}		
 		if (arg0.getSource().equals(apply)) {
-			HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
-			update_data.putAll(client_info.get_client_data());
-			if (!update_data.containsKey("Machine")) {
-				return;
-			}
-			HashMap<String, String> machine_data = update_data.get("Machine");
+			HashMap<String, String> machine_data = new HashMap<String, String>();
 			machine_data.put("terminal", (String) client_table.getValueAt(0, 1));
 			machine_data.put("group", (String) client_table.getValueAt(1, 1));
 			machine_data.put("private", (String) client_table.getValueAt(2, 1));
 			machine_data.put("unattended", (String) client_table.getValueAt(3, 1));
-			client_info.set_client_data(update_data);
+			machine_data.put("debug", (String) client_table.getValueAt(4, 1));
+			client_info.update_client_machine_data(machine_data);
 			switch_info.set_client_updated();			
 		}
 		if (arg0.getSource().equals(close)) {

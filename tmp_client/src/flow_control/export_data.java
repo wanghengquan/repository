@@ -33,10 +33,82 @@ public class export_data {
 	// protected property
 	// private property
 	private static final Logger EXPORT_DATA_LOGGER = LogManager.getLogger(task_waiter.class.getName());
-	// private String line_separator = System.getProperty("line.separator");
+	private static String line_separator = System.getProperty("line.separator");
 	// private String file_seprator = System.getProperty("file.separator");
 
 	public export_data() {
+	}
+	
+	public static Boolean debug_disk_client_in_task(
+			String file_name,
+			String message,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/in/task/" + file_name; 
+		file_action.append_file(dump_file, message + line_separator);
+		return dump_status;
+	}
+	
+	public static Boolean debug_disk_client_in_admin(
+			String file_name,
+			String message,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/in/admin/" + file_name; 
+		file_action.append_file(dump_file, message + line_separator);
+		return dump_status;
+	}
+	
+	public static Boolean debug_disk_client_out_result(
+			String message,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/out/result.xml"; 
+		file_action.append_file(dump_file, message + line_separator);
+		return dump_status;
+	}
+	
+	public static Boolean debug_disk_client_out_runtime(
+			String message,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/out/runtime.xml"; 
+		file_action.append_file(dump_file, message + line_separator);
+		return dump_status;
+	}	
+	
+	public static Boolean debug_disk_client_out_status(
+			String message,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/out/status.xml"; 
+		file_action.append_file(dump_file, message + line_separator);
+		return dump_status;
 	}
 	
 	public static void dump_disk_received_admin_data(

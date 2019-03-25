@@ -145,7 +145,7 @@ public class client_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
+	}
 	
 	public HashMap<String, String> get_client_preference_data() {
 		rw_lock.readLock().lock();
