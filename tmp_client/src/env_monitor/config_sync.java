@@ -301,6 +301,7 @@ public class config_sync extends Thread {
 		HashMap<String, String> tmp_preference_data = new HashMap<String, String>();
 		HashMap<String, String> cfg_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
+		HashMap<String, String> cfg_machine_data = new HashMap<String, String>();		
 		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
 		tmp_preference_data.put("ignore_request", write_data.get("preference").get("ignore_request"));
 		tmp_preference_data.put("thread_mode", write_data.get("preference").get("thread_mode"));
@@ -325,15 +326,18 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
+		tmp_machine_data.put("debug", write_data.get("preference").get("debug"));
+		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
 		if (cmd_gui.equalsIgnoreCase("gui")){
 			write_data.put("tmp_preference", tmp_preference_data);
+			write_data.put("tmp_machine", tmp_machine_data);
 		} else {
 			write_data.put("tmp_preference", cfg_preference_data);
+			write_data.put("tmp_machine", cfg_machine_data);
 		}
-		write_data.put("tmp_machine", tmp_machine_data);
 		CONFIG_SYNC_LOGGER.info(write_data.toString());
 		try {
 			ini_runner.write_ini_data(write_data);
