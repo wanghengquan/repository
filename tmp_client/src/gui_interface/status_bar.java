@@ -12,10 +12,13 @@ package gui_interface;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -27,20 +30,27 @@ import data_center.switch_data;
 import flow_control.pool_data;
 import top_runner.run_status.state_enum;
 
-public class status_bar extends JPanel implements Runnable{
+public class status_bar extends JPanel implements Runnable, MouseListener{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private main_frame main_view;
 	private client_data client_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
+	private String line_separator = System.getProperty("line.separator");
 	JTextField jt_thread, jt_link, jt_state, jt_cpu, jt_mem;
 	JLabel icon_belong,icon_mode;	
 	ImageIcon engineer_image, robot_image, private_image, public_image;
 
 
-	public status_bar(client_data client_info, switch_data switch_info, pool_data pool_info){
+	public status_bar(
+			main_frame main_view,
+			client_data client_info, 
+			switch_data switch_info, 
+			pool_data pool_info){
+		this.main_view = main_view;
 		this.pool_info = pool_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
@@ -97,7 +107,7 @@ public class status_bar extends JPanel implements Runnable{
 		//attended mode
 		String mode = new String(public_data.DEF_UNATTENDED_MODE);
 		if (client_info.get_client_data().containsKey("Machine")) {
-			mode = client_info.get_client_data().get("Machine").getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+			mode = client_info.get_client_machine_data().getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
 		}
 		icon_mode = new JLabel();
 		if(mode.equals("0")){
@@ -107,11 +117,12 @@ public class status_bar extends JPanel implements Runnable{
 			icon_mode.setIcon(robot_image);
 			icon_mode.setToolTipText("Client run in Unattended mode.");
 		}
+		icon_mode.addMouseListener(this);
 		bar_panel.add(icon_mode);		
 		//private/public mode
 		String belong = new String(public_data.DEF_MACHINE_PRIVATE);
 		if (client_info.get_client_data().containsKey("Machine")) {
-			belong = client_info.get_client_data().get("Machine").getOrDefault("private", public_data.DEF_UNATTENDED_MODE);
+			belong = client_info.get_client_machine_data().getOrDefault("private", public_data.DEF_UNATTENDED_MODE);
 		}
 		icon_belong = new JLabel();
 		if(belong.equals("1")){
@@ -121,6 +132,7 @@ public class status_bar extends JPanel implements Runnable{
 			icon_belong.setIcon(public_image);
 			icon_belong.setToolTipText("Run in Public mode, all assigned/matched task will be take!");
 		}
+		icon_belong.addMouseListener(this);
 		bar_panel.add(icon_belong);
 		//Setting
 		GridBagConstraints layout_s = new GridBagConstraints();
@@ -254,10 +266,10 @@ public class status_bar extends JPanel implements Runnable{
 		String mode = new String(client_hash.get("Machine").getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE));
 		if(mode.equals("0")){
 			icon_mode.setIcon(engineer_image);
-			icon_mode.setToolTipText("Client run in Attended mode.");
+			icon_mode.setToolTipText("Client run in 'Attended' mode.");
 		} else {
 			icon_mode.setIcon(robot_image);
-			icon_mode.setToolTipText("Client run in Unattended mode.");
+			icon_mode.setToolTipText("Client run in 'Unattended' mode.");
 		}		
 	}
 	
@@ -270,10 +282,10 @@ public class status_bar extends JPanel implements Runnable{
 		String belong = new String(client_hash.get("Machine").getOrDefault("private", public_data.DEF_MACHINE_PRIVATE));
 		if(belong.equals("1")){
 			icon_belong.setIcon(private_image);
-			icon_belong.setToolTipText("Client run in Private mode, only task assign to this client will be take!");
+			icon_belong.setToolTipText("Client run in 'Private' mode, only assigned tasks will be take.");
 		} else {
 			icon_belong.setIcon(public_image);
-			icon_belong.setToolTipText("Client run in Public mode, all matched task will be take!");
+			icon_belong.setToolTipText("Client run in 'Public' mode, all matched tasks will be take!");
 		}		
 	}
 	
@@ -309,5 +321,82 @@ public class status_bar extends JPanel implements Runnable{
 				e.printStackTrace();
 			}
 		}		
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		if (arg0.getSource().equals(icon_mode)){
+			String title = new String("Client mode switch confirmation");
+			StringBuilder message = new StringBuilder("");
+			String current_mode = new String("");
+			current_mode = client_info.get_client_machine_data().getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+			if (current_mode.equals("0")){ //attended mode
+				message.append("Client running in 'Attended' mode, Would you like to switch to 'Unattended' mode?" + line_separator);
+				message.append("In 'Unattended' mode, Client will:" + line_separator);
+				message.append("    1. Disable message popup." + line_separator);
+				message.append("    2. Enable 'Work Space' auto cleanup." + line_separator);
+				message.append("    3. Enable Client self update." + line_separator);
+				int user_input = JOptionPane.showConfirmDialog(main_view, message, title, JOptionPane.YES_NO_OPTION);
+				if (user_input == 0){ //yes means 0
+					client_info.update_client_machine_data("unattended", "1");
+				}
+			} else {
+				message.append("Client running in 'Unattended' mode, Would you like to switch to 'Attended' mode?" + line_separator);
+				message.append("In 'Attended' mode, Client will:" + line_separator);
+				message.append("    1. Enable message popup." + line_separator);
+				message.append("    2. Disable 'Work Space' auto cleanup, User need to do it manually." + line_separator);
+				message.append("    3. Disable Client self update, User need to do it manually." + line_separator);				
+				int user_input = JOptionPane.showConfirmDialog(main_view, message, title, JOptionPane.YES_NO_OPTION);
+				if (user_input == 0){ //yes means 0
+					client_info.update_client_machine_data("unattended", "0");
+				}	
+			}
+		}
+		if (arg0.getSource().equals(icon_belong)){
+			String title = new String("Client mode switch confirmation");
+			StringBuilder message = new StringBuilder("");
+			String current_mode = new String("");
+			current_mode = client_info.get_client_machine_data().getOrDefault("private", public_data.DEF_MACHINE_PRIVATE);
+			if (current_mode.equals("1")){ //Private mode
+				message.append("Client running in 'Private' mode, Would you like to switch to 'Public' mode?" + line_separator);
+				message.append("In 'Public' mode: Client accepts all matched jobs." + line_separator);
+				int user_input = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+				if (user_input == 0){ //yes means 0
+					client_info.update_client_machine_data("private", "0");
+				}
+			} else {
+				message.append("Client running in 'Public' mode, Would you like to switch to 'Private' mode?" + line_separator);
+				message.append("In 'Private' mode: Client only takes assigned jobs." + line_separator);
+				int user_input = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+				if (user_input == 0){ //yes means 0
+					client_info.update_client_machine_data("private", "1");
+				}	
+			}
+		}		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }
