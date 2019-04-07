@@ -147,6 +147,20 @@ public class client_data {
 		}
 	}
 	
+	public void update_client_machine_data(String key, String value) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> machine_data = new HashMap<String, String>();
+			if(client_hash.containsKey("Machine")){
+				machine_data.putAll(client_hash.get("Machine"));
+			}
+			machine_data.put(key, value);
+			client_hash.put("Machine", machine_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public HashMap<String, String> get_client_preference_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, String> temp = new HashMap<String, String>();
