@@ -331,6 +331,7 @@ public class config_sync extends Thread {
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
+		write_data.remove("CoreScript");
 		if (cmd_gui.equalsIgnoreCase("gui")){
 			write_data.put("tmp_preference", tmp_preference_data);
 			write_data.put("tmp_machine", tmp_machine_data);

@@ -140,8 +140,8 @@ public class maintain_status extends abstract_status {
 				break;
 			}
 		}
-		core_update my_core = new core_update();
-		my_core.update(client.client_info.get_client_preference_data().get("work_space"));
+		core_update my_core = new core_update(client.client_info);
+		my_core.update();
 		System.out.println(">>>Info: Core script updated...");
 	}	
 	
