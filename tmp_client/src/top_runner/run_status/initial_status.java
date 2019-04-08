@@ -99,8 +99,8 @@ class initial_status extends abstract_status {
 	
 	//core script update
 	private void get_core_script_update(){
-		core_update my_core = new core_update();
-		my_core.update(client.client_info.get_client_preference_data().getOrDefault("work_space", public_data.DEF_WORK_SPACE));
+		core_update my_core = new core_update(client.client_info);
+		my_core.update();
 		System.out.println(">>>Info: Core Script updated.");
 	}	
 	//self update
@@ -143,7 +143,7 @@ class initial_status extends abstract_status {
 			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info), 1000*0, 1000*10);
 		}
 		//task 2: dev check
-		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info), 1000*2, 1000*10);
+		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*2, 1000*10);
 		//task 3: environ check
 		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info), 1000*4, 1000*10);
 	}

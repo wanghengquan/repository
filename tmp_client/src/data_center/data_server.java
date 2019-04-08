@@ -48,6 +48,13 @@ import utility_funcs.time_info;
  * 					mem		=	xx	%
  * 					status  =   Free/Busy/Suspend
  * 
+ *      CoreScript: version =   xx
+ *                  time    =   xx
+ *                  status  =   latest/updating/NA
+ *                  connection = 0/1
+ *                  remote_version = xx
+ *                  remote_time =xx
+ *                  
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
  * 					group	=	xxx
@@ -101,7 +108,7 @@ public class data_server extends Thread {
 		this.machine_runner = new machine_sync(switch_info);
 	}
 
-	private void impoart_suite_file_task_data(
+	private void import_suite_file_task_data(
 			String task_file,
 			String task_env){
 		String import_time_id = time_info.get_date_time();
@@ -117,7 +124,7 @@ public class data_server extends Thread {
 		}
 	}
 	
-	private void impoart_suite_path_task_data(
+	private void import_suite_path_task_data(
 			String task_path,
 			String task_key,
 			String task_exe,
@@ -152,7 +159,7 @@ public class data_server extends Thread {
 				file_list.add(suite_files);
 			}
 			for(String suite_file:file_list){
-				impoart_suite_file_task_data(suite_file, task_env);
+				import_suite_file_task_data(suite_file, task_env);
 			}			
 		}
 		String suite_paths = cmd_info.get("suite_path");
@@ -169,7 +176,7 @@ public class data_server extends Thread {
 				path_list.add(suite_paths);
 			}
 			for(String suite_path:path_list){
-				impoart_suite_path_task_data(suite_path, task_key, task_exe, task_arg, task_env);
+				import_suite_path_task_data(suite_path, task_key, task_exe, task_arg, task_env);
 			}			
 		}		
 	}
@@ -276,7 +283,7 @@ public class data_server extends Thread {
 			String section_name = section.next();
 			HashMap<String, String> section_data = new HashMap<String, String>();
 			section_data.putAll(client_data.get(section_name));
-			if (section_name.equals("System") || section_name.equals("Machine") || section_name.equals("preference")){
+			if (section_name.equals("System") || section_name.equals("CoreScript") || section_name.equals("Machine") || section_name.equals("preference")){
 				continue;
 			}
 			HashMap<String, String> build_data = new HashMap<String, String>();
@@ -311,6 +318,12 @@ public class data_server extends Thread {
 			if (key.equalsIgnoreCase("machine")) {
 				continue;
 			}
+			if (key.equalsIgnoreCase("corescript")) {
+				continue;
+			}
+			if (key.equalsIgnoreCase("system")) {
+				continue;
+			}			
 			if (!client_hash.get(key).containsKey("max_insts")) {
 				continue;
 			}
@@ -463,6 +476,9 @@ public class data_server extends Thread {
 			if (section.equals("System")) {
 				continue;
 			}
+			if (section.equals("CoreScript")) {
+				continue;
+			}			
 			Iterator<String> option_it = section_data.keySet().iterator();
 			while (option_it.hasNext()) {
 				String option = option_it.next();
