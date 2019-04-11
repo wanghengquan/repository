@@ -10,6 +10,7 @@
 package connect_tube;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,13 +112,29 @@ public class tube_server extends Thread {
 		Set<String> machine_require_set = machine_require_data.keySet();
 		Iterator<String> machine_require_it = machine_require_set.iterator();
 		while (machine_require_it.hasNext()) {
-			String key_name = machine_require_it.next();
-			String value = machine_require_data.get(key_name);
-			if (!client_hash.get("Machine").containsKey(key_name)){
+			String request_key = machine_require_it.next();
+			String request_value = machine_require_data.get(request_key);
+			if (!client_hash.get("Machine").containsKey(request_key)){
 				machine_match = false;
 				break;
 			}
-			if (!value.contains(client_hash.get("Machine").get(key_name))) {
+			String client_value = new String(client_hash.get("Machine").get(request_key));
+			ArrayList<String> client_value_list = new ArrayList<String>();		
+			if (client_value.contains(",")){
+				client_value_list.addAll(Arrays.asList(client_value.split(",")));
+			} else if (client_value.contains(";")){
+				client_value_list.addAll(Arrays.asList(client_value.split(";")));
+			} else{
+				client_value_list.add(client_value);
+			}
+			Boolean item_match = new Boolean(false);
+			for (String individual: client_value_list){
+				if (request_value.contains(individual)){
+					item_match = true;
+					break;
+				}
+			}
+			if (!item_match){
 				machine_match = false;
 				break;
 			}
