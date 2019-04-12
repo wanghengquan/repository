@@ -294,6 +294,7 @@ public class tube_server extends Thread {
 		String private_mode = client_hash.get("Machine").get("private");
 		String unattended_mode = client_hash.get("Machine").get("unattended");
 		String client_version = public_data.BASE_CURRENTVERSION;
+		String core_version = client_hash.get("CoreScript").get("version");
 		//String high_priority = "NA";
 		//String max_threads = String.valueOf(max_thread);
 		complex_data.putAll(simple_data);
@@ -307,12 +308,13 @@ public class tube_server extends Thread {
 		complex_data.put("private_mode", private_mode);
 		complex_data.put("unattended_mode", unattended_mode);
 		complex_data.put("client_version", client_version);
+		complex_data.put("core_version", core_version);
 		//complex_data.put("high_priority", high_priority);
 		//complex_data.put("max_threads", max_threads);
 		Iterator<String> client_hash_it = client_hash.keySet().iterator();
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
-			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("preference")) {
+			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("preference") || key_name.equals("CoreScript")) {
 				continue;
 			}
 			Set<String> value_set = client_hash.get(key_name).keySet();
