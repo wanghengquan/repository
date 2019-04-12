@@ -294,7 +294,10 @@ public class tube_server extends Thread {
 		String private_mode = client_hash.get("Machine").get("private");
 		String unattended_mode = client_hash.get("Machine").get("unattended");
 		String client_version = public_data.BASE_CURRENTVERSION;
-		String core_version = client_hash.get("CoreScript").get("version");
+		String core_version = new String("NA");
+		if (client_hash.containsKey("CoreScript")){
+			core_version = client_hash.get("CoreScript").getOrDefault("version", "NA");
+		}
 		//String high_priority = "NA";
 		//String max_threads = String.valueOf(max_thread);
 		complex_data.putAll(simple_data);
