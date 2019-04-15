@@ -34,7 +34,7 @@ public class task_waiter extends Thread {
 	// private property
 	private static final Logger TASK_WAITER_LOGGER = LogManager.getLogger(task_waiter.class.getName());
 	private boolean stop_request = false;
-	private boolean wait_request = false;
+	private boolean wait_request = true;
 	private int waiter_index;
 	private String waiter_name;
 	private String waiter_status;
@@ -84,66 +84,24 @@ public class task_waiter extends Thread {
 					import_data.retrieve_disk_dumped_processed_task_data(client_info));
 		}
 	}
-	
-	private void update_captured_queue_detail_lists() {
-		Set<String> captured_admin_queue_set = new HashSet<String>();
-		captured_admin_queue_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
-		Iterator<String> captured_it = captured_admin_queue_set.iterator();
-		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
-		ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
-		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data = deep_clone.clone(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
-			if (queue_data == null || queue_data.isEmpty()) {
-				continue; // some one delete this queue already
-			}
-			String status = queue_data.get("Status").get("admin_status");
-			if (status.equals(queue_enum.PROCESSING.get_description())) {
-				processing_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.REMOTEPROCESSIONG.get_description())){
-				processing_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.PAUSED.get_description())){
-				paused_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.REMOTEPAUSED.get_description())){
-				paused_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.STOPPED.get_description())){
-				stopped_admin_queue_list.add(queue_name);
-			} else if (status.equals(queue_enum.REMOTESTOPED.get_description())){
-				stopped_admin_queue_list.add(queue_name);
-			} else {
-				continue;
-			}
-		}
-		task_info.set_processing_admin_queue_list(processing_admin_queue_list);
-		task_info.set_paused_admin_queue_list(paused_admin_queue_list);
-		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
-	}
 
-	private void update_running_queue_list() {
-		ArrayList<String> running_admin_queue_list = new ArrayList<String>();
-		ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
-		running_admin_queue_list.addAll(task_info.get_running_admin_queue_list());
-		processing_admin_queue_list.addAll(task_info.get_processing_admin_queue_list());
-		for (String queue_name : running_admin_queue_list) {
-			if (!processing_admin_queue_list.contains(queue_name)) {
-				// running queue finished or removed out side
-				// task_info.update_finished_admin_queue_list(queue_name);
-				task_info.decrease_running_admin_queue_list(queue_name);
-			}
-		}
-	}
-
-	private void reload_finished_queue_data() {
+	private void reload_repressing_queue_data() {
 		synchronized (this.getClass()) {
 			//must do with following order to avoid multi thread issue
 			ArrayList<String> finished_queue_list = task_info.get_finished_admin_queue_list();
+			ArrayList<String> emptied_queue_list = task_info.get_emptied_admin_queue_list();
 			ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
 			for (String queue_name : processing_queue_list) {
-				if (!finished_queue_list.contains(queue_name)) {
+				if (!emptied_queue_list.contains(queue_name)) {
 					continue;
 				}
+				if (!task_info.remove_emptied_admin_queue_list(queue_name)) {
+					continue;// some one else remove queue form finished list
+								// already
+				}
+				if (!finished_queue_list.contains(queue_name)) {
+					continue;
+				}				
 				if (!task_info.remove_finished_admin_queue_list(queue_name)) {
 					continue;// some one else remove queue form finished list
 								// already
@@ -163,20 +121,24 @@ public class task_waiter extends Thread {
 		Boolean available = new Boolean(true);
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
-			return false;
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.info(waiter_name + ":Waiting for core script update...");
+			}			
+			available = false;
 		}
 		//thread available ?
 		if (pool_info.get_available_thread() < 1){
-			return false;
+			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No more threads available...");
+			}			
+			available = false;
 		}
 		//processing queue available ?
 		if (task_info.get_processing_admin_queue_list().size() < 1) {
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
-			} else {
-				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
 			}
-			return false;
+			available = false;
 		}		
 		return available;
 	}
@@ -313,6 +275,7 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, String>> standard_case_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> task_data_path_updated = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>>();
 		indexed_task_data.putAll(get_indexed_task_data(queue_name));
 		if (indexed_task_data.isEmpty()) {
@@ -335,10 +298,45 @@ public class task_waiter extends Thread {
 			raw_task_data.putAll(get_merged_remote_task_info(admin_data, standard_case_data));
 		}
 		task_data.putAll(merge_default_and_preference_data(raw_task_data, client_preference_data));
-		return_data.putAll(update_task_data_path_info(task_data, client_preference_data));
+		task_data_path_updated.putAll(update_task_data_path_info(task_data, client_preference_data));
+		//get escaped string and replaced string back
+		return_data.putAll(replace_case_data_internal_string(task_data_path_updated));
 		return return_data;
 	}
 
+	private HashMap<String, HashMap<String, String>> replace_case_data_internal_string(
+			HashMap<String, HashMap<String, String>> case_data
+			){
+		HashMap<String, HashMap<String, String>> flow_data1 = new HashMap<String, HashMap<String, String>> ();
+		HashMap<String, HashMap<String, String>> flow_data2 = new HashMap<String, HashMap<String, String>> ();
+		//1. replace \; from remote queue
+		flow_data1.putAll(hash_map_value_replacement("\\\\;", ";", case_data));
+		//2. replace internal semicolon string
+		flow_data2.putAll(hash_map_value_replacement(public_data.INTERNAL_STRING_SEMICOLON, ";", flow_data1));
+		return flow_data2;
+	}	
+	
+	private HashMap<String, HashMap<String, String>> hash_map_value_replacement(
+			String ori_str,
+			String rep_str,
+			HashMap<String, HashMap<String, String>> case_data
+			){
+		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>> ();
+		Iterator<String> section_iterator = case_data.keySet().iterator();
+		while (section_iterator.hasNext()) {
+			String section = section_iterator.next();
+			HashMap<String, String> new_data = new HashMap<String, String>();
+			Iterator<String> option_it = case_data.get(section).keySet().iterator();
+			while(option_it.hasNext()){
+				String key = option_it.next();
+				String value = case_data.get(section).get(key);
+				new_data.put(key, value.replaceAll(ori_str, rep_str));
+			}
+			return_data.put(section, new_data);
+		}
+		return return_data;
+	}	
+	
 	private Map<String, HashMap<String, HashMap<String, String>>> get_indexed_task_data(String queue_name) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		// buffered task queues_tube_map
@@ -348,7 +346,7 @@ public class task_waiter extends Thread {
 			indexed_case_data.putAll(task_info.get_one_indexed_case_data(queue_name));
 		} else {
 			try {
-				indexed_case_data.putAll(rmq_tube.read_task_server(queue_name));
+				indexed_case_data.putAll(rmq_tube.read_task_server(queue_name, client_info));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -358,7 +356,7 @@ public class task_waiter extends Thread {
 		return indexed_case_data;
 	}
 
-	private void move_finished_admin_queue_from_tube(String queue_name) {
+	private void move_emptied_admin_queue_from_tube(String queue_name) {
 		// move received admin queue data to processed queue data
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		queue_data.putAll(task_info.get_queue_data_from_received_admin_queues_treemap(queue_name));
@@ -374,7 +372,7 @@ public class task_waiter extends Thread {
 		task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
 	}
 
-	private void move_finished_task_queue_from_tube(String queue_name) {
+	private void move_emptied_task_queue_from_tube(String queue_name) {
 		// only need to remove buffered task queue in received task map if
 		// have(task from rmq do not have)
 		// since task case will add into processed task map, so we don't need to
@@ -617,7 +615,9 @@ public class task_waiter extends Thread {
 		String design_source = new String("");
 		String case_path = new String("");
 		String task_path = new String("");
+		String work_suite = new String("");
 		String save_path = new String("");
+		String save_suite = new String("");
 		String script_source = new String("");
 		String launch_path = new String("");
 		String report_path = new String(""); //also named location in Status
@@ -687,8 +687,33 @@ public class task_waiter extends Thread {
 			}
 		}
 		paths_hash.put("task_path", task_path);
-		//get save_path
+		//get suite local work suite path
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			work_suite = repository + "/" + suite_path;
+		} else {
+			String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
+			work_suite = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
+		}
+		paths_hash.put("work_suite", work_suite);		
+		//get suite save path save_suite
         String[] tmp_space = save_space.split(",");
+        ArrayList<String> tmp_suite = new ArrayList<String>();    
+		if (case_mode.equalsIgnoreCase("keep_case")){
+			save_suite = repository + "/" + suite_path;
+		} else {
+		    for(String space:tmp_space) {
+		        String s_path = new String("");
+		        String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name};
+                s_path = String.join(file_seprator, path_array);
+                if(s_path.startsWith("//")){
+                    s_path = s_path.replace('/', '\\');
+                }
+                tmp_suite.add(s_path);
+            }
+		    save_suite = String.join(",", tmp_suite);
+		}
+		paths_hash.put("save_suite", save_suite);
+		//get save_path
         ArrayList<String> tmp_path = new ArrayList<String>();    
 		if (case_mode.equalsIgnoreCase("keep_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;
@@ -778,16 +803,24 @@ public class task_waiter extends Thread {
 	private int get_time_out(String time_out) {
 		Pattern p_timeout = Pattern.compile("\\D");
 		Matcher m = p_timeout.matcher(time_out);
+		//if non-digital found in string, make a default value
 		if (m.find())
 			time_out = "3600";
-		if (time_out.equals("0")) {
-			time_out = "2147483647";
-		}
+		//parse the timeout
 		Integer data = new Integer(3600);
+		Integer data_max = new Integer(Integer.MAX_VALUE -10);//discount 10 to avoid future overflow.
 		try {
 			data = Integer.parseInt(time_out);
 		} catch (NumberFormatException e){
 			TASK_WAITER_LOGGER.warn("Wrong timeout value found, will use default:3600 seconds");
+		}
+		//translate 0 to maximum integer
+		if (data.equals(0)) {
+			data = data_max;
+		}
+		//limit the maximum data
+		if (data > data_max){
+			data = data_max; 
 		}
 		return data;
 	}
@@ -841,6 +874,9 @@ public class task_waiter extends Thread {
 		ArrayList<String> title_list = new ArrayList<String>();
 		title_list.add("");
 		title_list.add("============================================================");
+		title_list.add("Task Queue:" + queue_name);
+		title_list.add("Task Case:" + case_id);
+		title_list.add("");
 		title_list.add("[Export]");
 		report_obj.dump_disk_task_report_data(report_path, title_list);
 		report_obj.dump_disk_task_report_data(report_path, task_prepare_info_list);
@@ -904,10 +940,8 @@ public class task_waiter extends Thread {
 				e.printStackTrace();
 			}
 			// ============== All dynamic job start from here ==============
-			// task 0 : initial preparing, update processing queues and load task data for re-processing queues
-			update_captured_queue_detail_lists();
-			update_running_queue_list();
-			reload_finished_queue_data();// reload finished task data if queue changed to processing from finished
+			// task 0 : initial preparing,  load task data for re-processing queues
+			reload_repressing_queue_data();// reload finished task data if queue changed to processing from finished
 			// task 1 : check available work thread and task queue 
 			if(!start_new_task_check()){
 				continue;
@@ -953,8 +987,8 @@ public class task_waiter extends Thread {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
 				}
 				// move queue form received to processed admin queue treemap
-				move_finished_admin_queue_from_tube(queue_name);
-				move_finished_task_queue_from_tube(queue_name);
+				move_emptied_admin_queue_from_tube(queue_name);
+				move_emptied_task_queue_from_tube(queue_name);
 				//update list must be placed here to avoid multi threads risk
 				try {
 					Thread.sleep(10);// make the thread safe
@@ -963,9 +997,8 @@ public class task_waiter extends Thread {
 					// e.printStackTrace();
 					TASK_WAITER_LOGGER.info(waiter_name + ":Sleep error out");
 				}
-				task_info.decrease_processing_admin_queue_list(queue_name);
-				task_info.decrease_running_admin_queue_list(queue_name);				
-				task_info.update_finished_admin_queue_list(queue_name);
+				task_info.decrease_processing_admin_queue_list(queue_name);				
+				task_info.increase_emptied_admin_queue_list(queue_name);
 				// release booking info
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_used_thread(1);
@@ -987,8 +1020,6 @@ public class task_waiter extends Thread {
 				} else {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
 				}
-				// start running this queue.
-				task_info.increase_running_admin_queue_list(queue_name);
 			} else {
 				if (switch_info.get_local_console_mode()){
 					TASK_WAITER_LOGGER.debug(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
@@ -1001,15 +1032,15 @@ public class task_waiter extends Thread {
 			}
 			// task 7 : get test case ready
 			task_prepare prepare_obj = new task_prepare();
-			Boolean task_case_ok = prepare_obj.get_task_case_ready(task_data, client_info.get_client_preference_data());
+			Boolean task_ready = prepare_obj.get_task_case_ready(task_data, client_info.get_client_preference_data());
 			// task 8 : launch info prepare
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
 			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
 			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
 			// task 9 : launch reporting
-			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_case_ok);
-			if (!task_case_ok){
+			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
+			if (!task_ready){
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_used_thread(1);
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);

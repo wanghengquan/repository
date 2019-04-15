@@ -95,7 +95,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jl_max_threads.setToolTipText("Maximum thread number launched for task/case run(one thread for one task/case)");
 		thread_auto = new JRadioButton("Auto");
 		thread_manual = new JRadioButton("Manually");
-		thread_text = new JTextField(preference_data.get("max_threads"));
+		thread_text = new JTextField(String.valueOf(pool_info.get_pool_current_size()));
 		initial_thread_default_value(preference_data.get("thread_mode"));
 		ButtonGroup thread_group = new ButtonGroup();
 		thread_group.add(thread_auto);
@@ -151,7 +151,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		GridBagLayout input6_layout = new GridBagLayout();
 		JPanel jp_center6 = new JPanel(input6_layout);
 		jl_work_path = new JLabel("Work Space:");
-		jl_work_path.setToolTipText("Client will export task case in this place and run here.");
+		jl_work_path.setToolTipText("Client will export task case to this place and run here.");
 		jt_work_path = new JTextField(preference_data.get("work_space"));
 		jp_center6.add(jl_work_path);
 		jp_center6.add(jt_work_path);
@@ -190,8 +190,10 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//Step 3 : bottom line
 		JPanel jp_bottom = new JPanel(new GridLayout(1,4,5,10));
 		discard = new JButton("Discard");
+		discard.setToolTipText("Restore previous data.");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
+		apply.setToolTipText("Apply new setting.");
 		apply.addActionListener(this);
 		close = new JButton("Close");
 		close.addActionListener(this);		
@@ -354,8 +356,9 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			} else {
 				preference_data.put("thread_mode", "manual");
 				int new_value = get_srting_int(thread_text.getText());
-				if (new_value < 0 || new_value > public_data.PERF_POOL_MAXIMUM_SIZE){
-					String message = new String("Client accept value: 0 ~ " + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				int pool_size = pool_info.get_pool_maximum_size();
+				if (new_value < 0 || new_value > pool_size){
+					String message = new String("Client accept value: 0 ~ " + String.valueOf(pool_size));
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}

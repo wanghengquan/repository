@@ -47,6 +47,9 @@ public class task_report {
 			String report_path,
 			ArrayList<String> report_list
 			){
+		if (report_list == null || report_list.isEmpty()){
+			return false;
+		}
 		String report_file = report_path + "/" + public_data.CASE_REPORT_NAME;
 		File report_fobj = new File(report_file);
 		if (!report_fobj.exists()){
@@ -88,13 +91,14 @@ public class task_report {
 			rmq_tube rmq_runner = new rmq_tube();
 			String rmq_result_str = parser.create_result_document_string(remote_send_data, ip, terminal);
 			report_status = rmq_runner.basic_send(public_data.RMQ_RESULT_NAME, rmq_result_str);
+			export_data.debug_disk_client_out_result(rmq_result_str, client_info);
 		}
 		if (local_data.size() > 0) {
 			// local send
 			;
 		}
 		return report_status;
-	}	
+	}
 	
 	protected Boolean send_tube_task_runtime_report(
 			HashMap<String, HashMap<String, String>> runtime_log_data
@@ -119,6 +123,7 @@ public class task_report {
 			rmq_tube rmq_runner = new rmq_tube();
 			String rmq_runtime_str = parser.create_runtime_document_string(remote_data);
 			report_status = rmq_runner.exchange_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
+			export_data.debug_disk_client_out_runtime(rmq_runtime_str, client_info);
 		}
 		if (local_data.size() > 0) {
 			// local send

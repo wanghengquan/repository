@@ -45,6 +45,7 @@ public class hall_manager extends Thread {
 	private client_data client_info;
 	private pool_data pool_info;
 	private view_data view_info;
+	private post_data post_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private int local_cmd_exit_counter = 0;
@@ -58,19 +59,25 @@ public class hall_manager extends Thread {
 	// protected function
 	// private function
 
-	public hall_manager(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info,
-			view_data view_info) {
+	public hall_manager(
+			switch_data switch_info, 
+			client_data client_info, 
+			pool_data pool_info, 
+			task_data task_info,
+			view_data view_info,
+			post_data post_info) {
 		this.task_info = task_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
 		this.pool_info = pool_info;
 		this.view_info = view_info;
+		this.post_info = post_info;
 	}
 
-	private HashMap<String, task_waiter> get_task_waiter_ready(pool_data pool_info) {
+	private HashMap<String, task_waiter> get_task_waiter_ready() {
 		HashMap<String, task_waiter> waiters = new HashMap<String, task_waiter>();
-		int max_pool_size = public_data.PERF_POOL_MAXIMUM_SIZE;
-		for (int i = 0; i < max_pool_size; i++) {
+		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+		for (int i = 0; i < pool_size; i++) {
 			task_waiter waiter = new task_waiter(i, switch_info, client_info, pool_info, task_info);
 			String waiter_index = "waiter_" + String.valueOf(i);
 			waiters.put(waiter_index, waiter);
@@ -102,9 +109,10 @@ public class hall_manager extends Thread {
 		}
 	}
 
-	private result_waiter get_result_waiter_ready(pool_data pool_info) {
-		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info);
+	private result_waiter get_result_waiter_ready() {
+		result_waiter waiter = new result_waiter(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		waiter.start();
+		waiter.wake_request();
 		return waiter;
 	}
 
@@ -247,7 +255,6 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary());
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
-		HALL_MANAGER_LOGGER.debug(task_info.get_received_admin_queues_treemap().toString());
 		HALL_MANAGER_LOGGER.debug(client_info.get_used_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_max_soft_insts());
 		HALL_MANAGER_LOGGER.debug(client_info.get_available_software_insts());
@@ -342,7 +349,7 @@ public class hall_manager extends Thread {
 	private void increase_max_thread(){
 		int current_max_thread = pool_info.get_pool_current_size();
 		int new_max_thread = current_max_thread + 1;
-		if (new_max_thread <= public_data.PERF_POOL_MAXIMUM_SIZE){
+		if (new_max_thread <= pool_info.get_pool_maximum_size()){
 			pool_info.set_pool_current_size(new_max_thread);
 		}
 	}
@@ -567,9 +574,9 @@ public class hall_manager extends Thread {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : start task waiters
-		task_waiters = get_task_waiter_ready(pool_info);
+		task_waiters = get_task_waiter_ready();
 		// initial 2 : start result waiter
-		waiter_result = get_result_waiter_ready(pool_info);
+		waiter_result = get_result_waiter_ready();
 		// initial 3 : Announce hall server ready
 		switch_info.set_hall_server_power_up();
 		while (!stop_request) {
@@ -643,6 +650,7 @@ public class hall_manager extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		view_data view_info = new view_data();
+		post_data post_info = new post_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
@@ -662,7 +670,7 @@ public class hall_manager extends Thread {
 				break;
 			}
 		}
-		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);
+		hall_manager jason = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		jason.start();
 		try {
 			Thread.sleep(10 * 1000);

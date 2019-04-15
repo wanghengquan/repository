@@ -10,6 +10,8 @@
 package env_monitor;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,15 +24,11 @@ import data_center.switch_data;
 import utility_funcs.system_cmd;
 
 
-public class env_checker extends Thread {
+public class env_checker extends TimerTask {
 	// public property
 	// protected property
 	// private property
-	private static final Logger ENV_CHECKER_LOGGER = LogManager.getLogger(env_checker.class.getName());
-	private boolean stop_request = false;
-	private boolean wait_request = false;	
-	private Thread current_thread;		
-	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
+	private static final Logger ENV_CHECKER_LOGGER = LogManager.getLogger(env_checker.class.getName());	
 	private switch_data switch_info;
 	// private String line_separator = System.getProperty("line.separator");
 	// public function
@@ -228,59 +226,10 @@ public class env_checker extends Thread {
 	}
 	
 	private void monitor_run() {
-		current_thread = Thread.currentThread();
-		// ============== All static job start from here ==============
-		// initial 1 : get all runner
-		// start loop:
-		while (!stop_request) {
-			if (wait_request) {
-				try {
-					synchronized (this) {
-						this.wait();
-					}
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				ENV_CHECKER_LOGGER.debug("Client Thread running...");
-			}
-			// ============== All dynamic job start from here ==============
-			// task 0 : run env check
-			if (do_self_check()){
-				switch_info.set_client_environ_issue(false);
-			} else {
-				switch_info.set_client_environ_issue(true);
-			}
-			// task 1 : 
-			try {
-				Thread.sleep(base_interval * 2 * 1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void soft_stop() {
-		stop_request = true;
-	}
-
-	public void hard_stop() {
-		stop_request = true;
-		if (current_thread != null) {
-			current_thread.interrupt();
-		}
-	}
-
-	public void wait_request() {
-		wait_request = true;
-	}
-
-	public void wake_request() {
-		wait_request = false;
-		synchronized (this) {
-			this.notify();
+		if (do_self_check()){
+			switch_info.set_client_environ_issue(false);
+		} else {
+			switch_info.set_client_environ_issue(true);
 		}
 	}
 	
@@ -288,7 +237,7 @@ public class env_checker extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		env_checker my_check = new env_checker(null);
-		my_check.do_self_check();
+		Timer my_timer = new Timer();
+		my_timer.scheduleAtFixedRate(new env_checker(null), 1000, 5000);		
 	}
 }

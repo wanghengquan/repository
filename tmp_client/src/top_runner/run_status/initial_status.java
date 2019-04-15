@@ -10,6 +10,7 @@
 package top_runner.run_status;
 
 import java.util.HashMap;
+import java.util.Timer;
 
 import data_center.public_data;
 import env_monitor.core_update;
@@ -52,9 +53,12 @@ class initial_status extends abstract_status {
 		// task 9: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
+		if (client.client_info.get_client_machine_data().get("debug").equals("1")){
+			System.out.println(">>>Info: Client run in Debug Mode.");
+		}
 		System.out.println(">>>Info: Working...");
 		try {
-			Thread.sleep(1000 * 2 * public_data.PERF_THREAD_BASE_INTERVAL);
+			Thread.sleep(1000 * 1 * public_data.PERF_THREAD_BASE_INTERVAL);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -70,7 +74,7 @@ class initial_status extends abstract_status {
 	}
 	
 	public void do_state_things(){
-		client.STATUS_LOGGER.info("Run state things");
+		//client.STATUS_LOGGER.info("Run initial state things");
 	}
 	
 	//=============================================================
@@ -95,8 +99,8 @@ class initial_status extends abstract_status {
 	
 	//core script update
 	private void get_core_script_update(){
-		core_update my_core = new core_update();
-		my_core.update(client.client_info.get_client_preference_data().getOrDefault("work_space", public_data.DEF_WORK_SPACE));
+		core_update my_core = new core_update(client.client_info);
+		my_core.update();
 		System.out.println(">>>Info: Core Script updated.");
 	}	
 	//self update
@@ -132,18 +136,16 @@ class initial_status extends abstract_status {
 	
 	//get daemon process ready
 	private void get_daemon_process_ready(){
-		//task 1: kill process 
+		Timer misc_timer = new Timer("misc_timer");
+		//task 1: kill process
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
-			kill_winpop my_kill = new kill_winpop(public_data.TOOLS_KILL_WINPOP);
-			my_kill.start();			
+			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info), 1000*0, 1000*10);
 		}
 		//task 2: dev check
-		dev_checker dev_check = new dev_checker(this.client.switch_info);
-		dev_check.start();
+		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*2, 1000*10);
 		//task 3: environ check
-		env_checker env_check = new env_checker(this.client.switch_info);
-		env_check.start();
+		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info), 1000*4, 1000*10);
 	}
 	
 	//get tube server start and wait it ready

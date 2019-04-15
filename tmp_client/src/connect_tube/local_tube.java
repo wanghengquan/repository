@@ -59,16 +59,32 @@ public class local_tube {
 			return false;
 		}
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
-		ExcelData.putAll(get_excel_data(file_path));		
+		ExcelData.putAll(get_excel_data(file_path));
+		//check suite sheet
 		if (!ExcelData.containsKey("suite")) {
 			suite_file_error_msg = "Error: Cannot find 'suite' sheet.";
 			System.out.println(">>>Error: Cannot find 'suite' sheet.");
 			return false;
 		}
-		if (!ExcelData.containsKey("case")) {
+		//if (!ExcelData.containsKey("case")) {
+		//	suite_file_error_msg = "Error: Cannot find 'case' sheet.";
+		//	System.out.println(">>>Error: Cannot find 'case' sheet.");
+		//	return false;
+		//}
+		//check case sheet
+		Iterator<String> sheet_it = ExcelData.keySet().iterator();
+		Boolean get_sheet = new Boolean(false);
+		while(sheet_it.hasNext()){
+			String sheet_name = sheet_it.next();
+			if (sheet_name.contains("case")){
+				get_sheet = true;
+				break;
+			}
+		}
+		if (!get_sheet){
 			suite_file_error_msg = "Error: Cannot find 'case' sheet.";
 			System.out.println(">>>Error: Cannot find 'case' sheet.");
-			return false;
+			return false;			
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
@@ -165,7 +181,7 @@ public class local_tube {
 			if (row_list.size() < 2) {
 				value = "";
 			} else {
-				value = row_list.get(1).trim();
+				value = row_list.get(1).trim().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 			}
 			if (item.contains(suite_start)) {
 				suite_area = true;
@@ -221,7 +237,11 @@ public class local_tube {
 					macro_area = false;
 					macro_data.put(macro_name, area_list);
 				} else {
-					area_list.add(row_list.subList(0, 3));
+					ArrayList<String> line_list = new ArrayList<String>();
+					line_list.add(row_list.get(0));
+					line_list.add(row_list.get(1));
+					line_list.add(row_list.get(2).replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON));
+					area_list.add(line_list);
 				}
 			}
 			if (item.equals("END")) {
@@ -254,12 +274,23 @@ public class local_tube {
 	}
 
 	public static List<String> get_case_title(Map<String, List<List<String>>> ExcelData) {
-		List<List<String>> case_sheet = ExcelData.get("case");
+		//get case sheet
+		String case_sheet = new String("");
+		Iterator<String> sheet_it = ExcelData.keySet().iterator();
+		while(sheet_it.hasNext()){
+			String sheet_name = sheet_it.next();
+			if (sheet_name.contains("case")){
+				case_sheet = sheet_name;
+				break;
+			}
+		}
+		//get title data
+		List<List<String>> case_data = ExcelData.get(case_sheet);
 		List<String> title_list = new ArrayList<String>();
 		// title_list = suite_sheet.get(1);
 		int title_row = -1;
-		for (int row = 0; row < case_sheet.size(); row++) {
-			List<String> row_list = case_sheet.get(row);
+		for (int row = 0; row < case_data.size(); row++) {
+			List<String> row_list = case_data.get(row);
 			if (row_list.size() < 2) {
 				continue;
 			}
@@ -276,7 +307,7 @@ public class local_tube {
 		if (title_row == -1) {
 			return null;
 		}
-		title_list = case_sheet.get(title_row);
+		title_list = case_data.get(title_row);
 		return title_list;
 	}
 
@@ -286,57 +317,66 @@ public class local_tube {
 		int order_index = title_list.indexOf("Order");
 		int title_index = title_list.indexOf("Title");
 		int flow_index = title_list.indexOf("Flow");
-		List<List<String>> case_sheet = ExcelData.get("case");
-		List<String> row_list = new ArrayList<String>();
-		Boolean case_start = false;
-		for (int row = 0; row < case_sheet.size(); row++) {
-			row_list = case_sheet.get(row);
-			if (row_list.size() < 2) {
+		Iterator<String> sheet_it = ExcelData.keySet().iterator();
+		int case_sheet_num = 0;
+		while(sheet_it.hasNext()){
+			String sheet_name = sheet_it.next();
+			if (!sheet_name.contains("case")){
 				continue;
 			}
-			// skip lines do not have case order.
-			if (row_list.get(0).trim() == null || row_list.get(0).trim().equals("")) {
-				continue;
-			}
-			String column_order = "";
-			String column_title = "";
-			String column_flow = "";
-			if (row_list.size() > order_index) {
-				column_order = row_list.get(order_index).trim();
-			}
-			if (row_list.size() > title_index) {
-				column_title = row_list.get(title_index).trim();
-			}
-			if (row_list.size() > flow_index) {
-				column_flow = row_list.get(flow_index).trim();
-			}
-			if (column_order.equals("Order") && column_title.equals("Title")) {
-				case_start = true;
-				continue;
-			}
-			if (!case_start) {
-				continue;
-			}
-			String case_order = "";
-			String[] flow_array = column_flow.split(";");
-			for (String flow_item : flow_array) {
-				Map<String, String> row_data = new HashMap<String, String>();
-				case_order = String.join("_", column_order, flow_item);
-				for (String key : title_list) {
-					int key_index = title_list.indexOf(key);
-					String column_value = "";
-					if (row_list.size() > key_index) {
-						column_value = row_list.get(key_index).trim();
-					}
-					if (key.equals("Order")) {
-						row_data.put("Order", case_order);
-					} else if (key.equals("Flow")) {
-						row_data.put("Flow", flow_item);
-					} else {
-						row_data.put(key, column_value.replaceAll("\\\\", "/"));
-					}
+			case_sheet_num += 1;
+			List<List<String>> case_sheet = ExcelData.get(sheet_name);
+			List<String> row_list = new ArrayList<String>();
+			Boolean case_start = false;
+			for (int row = 0; row < case_sheet.size(); row++) {
+				row_list = case_sheet.get(row);
+				if (row_list.size() < 2) {
+					continue;
 				}
-				case_data.put(case_order, row_data);
+				// skip lines do not have case order.
+				if (row_list.get(0).trim() == null || row_list.get(0).trim().equals("")) {
+					continue;
+				}
+				String column_order = "";
+				String column_title = "";
+				String column_flow = "";
+				if (row_list.size() > order_index) {
+					column_order = String.valueOf(case_sheet_num) + "_" + row_list.get(order_index).trim();
+				}
+				if (row_list.size() > title_index) {
+					column_title = row_list.get(title_index).trim();
+				}
+				if (row_list.size() > flow_index) {
+					column_flow = row_list.get(flow_index).trim();
+				}
+				if (column_order.contains("Order") && column_title.contains("Title")) {
+					case_start = true;
+					continue;
+				}
+				if (!case_start) {
+					continue;
+				}
+				String case_order = "";
+				String[] flow_array = column_flow.split(";");
+				for (String flow_item : flow_array) {
+					Map<String, String> row_data = new HashMap<String, String>();
+					case_order = String.join("_", column_order, flow_item);
+					for (String key : title_list) {
+						int key_index = title_list.indexOf(key);
+						String column_value = "";
+						if (row_list.size() > key_index) {
+							column_value = row_list.get(key_index).trim().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
+						}
+						if (key.equals("Order")) {
+							row_data.put("Order", case_order);
+						} else if (key.equals("Flow")) {
+							row_data.put("Flow", flow_item);
+						} else {
+							row_data.put(key, column_value.replaceAll("\\\\", "/"));
+						}
+					}
+					case_data.put(case_order, row_data);
+				}
 			}
 		}
 		return case_data;
@@ -494,7 +534,7 @@ public class local_tube {
 		return_data.putAll(raw_data);
 		return return_data;
 	}
-
+	
 	private Map<String, HashMap<String, HashMap<String, String>>> get_merge_suite_case_data(
 			Map<String, String> suite_data, 
 			Map<String, Map<String, String>> case_data,
@@ -506,7 +546,9 @@ public class local_tube {
 		while (case_iterator.hasNext()) {
 			String case_id = case_iterator.next();
 			Map<String, String> one_case_data = case_data.get(case_id);
-			HashMap<String, HashMap<String, String>> merge_data = merge_suite_case_data(suite_data, one_case_data, extra_env, xlsx_dest);
+			HashMap<String, HashMap<String, String>> merge_data = new HashMap<String, HashMap<String, String>>();
+			merge_data.putAll(merge_suite_case_data(suite_data, one_case_data, extra_env, xlsx_dest));
+			//return internal string to user string
 			cross_data.put(case_id, merge_data);
 		}
 		sorted_data = sortMapByKey(cross_data);
@@ -569,7 +611,7 @@ public class local_tube {
 	}
 
 	// merge suite data and case data(already merged with macro) to an final
-	// case data.
+	// case data. don't forget get the replaced string back
 	public HashMap<String, HashMap<String, String>> merge_suite_case_data(
 			Map<String, String> suite_data,
 			Map<String, String> case_data,
@@ -770,17 +812,17 @@ public class local_tube {
 		// generate queue name
 		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = new String();
+		String priority;
 		if (!design_data.containsKey("CaseInfo")) {
-			priority = "5";
+			priority = public_data.TASK_PRI_LOCALLY;
 		} else if (!design_data.get("CaseInfo").containsKey("priority")) {
-			priority = "5";
+			priority = public_data.TASK_PRI_LOCALLY;
 		} else {
 			priority = design_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
-				priority = "5";
+				priority = public_data.TASK_PRI_LOCALLY;
 			}
 		}
 		// task belong to this client: 0, assign task(0) > match task(1)
@@ -844,7 +886,7 @@ public class local_tube {
 		local_file = local_file.replaceAll("\\$unit_path", public_data.DOC_EIT_PATH);
 		//excel file sanity check
 		if(!suite_file_sanity_check(local_file)){
-			LOCAL_TUBE_LOGGER.warn("Suite file wrong format/not exists:" + local_file);
+			LOCAL_TUBE_LOGGER.warn("Suite file not exists or wrong format:" + local_file);
 			return;			
 		}
 		//get excel file destination
@@ -961,7 +1003,7 @@ public class local_tube {
 		// generate queue name
 		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = new String("5");
+		String priority = public_data.TASK_PRI_LOCALLY;
 		// task belong to this client: 0, assign task(0) > match task(1)
 		String attribute = new String("0");
 		// receive time
@@ -1156,7 +1198,7 @@ public class local_tube {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "D27639";
-		sheet_parser.generate_suite_file_local_admin_task_queues("C:/Users/jwang1/Desktop/client_test/silicon__thunderplus.xlsx", "", current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues("C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", "", current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

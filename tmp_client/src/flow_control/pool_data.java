@@ -38,31 +38,51 @@ public class pool_data {
 	// protected function
 	// private function
 	private ExecutorService run_pool;
-	private HashMap<String, HashMap<String, Object>> call_map = new HashMap<String, HashMap<String, Object>>();
+	private HashMap<String, HashMap<pool_attr, Object>> call_map = new HashMap<String, HashMap<pool_attr, Object>>();
 	private int pool_used_threads = 0;
-	private int pool_current_size = Integer.parseInt(public_data.DEF_POOL_CURRENT_SIZE);
+	private int pool_current_size = public_data.PERF_POOL_CURRENT_SIZE;
+	private int pool_maximum_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 	private HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>> ();
 
 	public pool_data(int pool_size) {
 		this.run_pool = Executors.newFixedThreadPool(pool_size);
 	}
 
-	public synchronized int get_pool_used_threads() {
+	public pool_data() {
+		//initialize the thread pool later (when config info ready)
+	}
+
+	public synchronized void initialize_thread_pool(int pool_size){
+		this.run_pool = Executors.newFixedThreadPool(pool_size);
+		this.pool_maximum_size = pool_size;
+	}
+	
+	public synchronized void set_pool_maximum_size(int pool_size) {
+		this.pool_maximum_size = pool_size;
+	}
+	
+	public synchronized int get_pool_maximum_size() {
 		int temp = 0;
-		temp = pool_used_threads;
+		temp = pool_maximum_size;
 		return temp;
-	}
-
-	public synchronized void set_pool_used_threads(int new_int) {
-		this.pool_used_threads = new_int;
-	}
-
-	public synchronized int get_pool_current_size() {
-		return this.pool_current_size;
 	}
 
 	public synchronized void set_pool_current_size(int new_int) {
 		this.pool_current_size = new_int;
+	}
+	
+	public synchronized int get_pool_current_size() {
+		return this.pool_current_size;
+	}
+	
+	public synchronized void set_pool_used_threads(int new_int) {
+		this.pool_used_threads = new_int;
+	}
+
+	public synchronized int get_pool_used_threads() {
+		int temp = 0;
+		temp = pool_used_threads;
+		return temp;
 	}
 
 	public synchronized int get_available_thread() {
@@ -105,45 +125,45 @@ public class pool_data {
 			int time_out) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
-		HashMap<String, Object> sys_call_data = new HashMap<String, Object>();
-		sys_call_data.put("call_back", future_call_back);
-		sys_call_data.put("queue_name", queue_name);
-		sys_call_data.put("case_id", case_id);
-		sys_call_data.put("launch_path", launch_path);
-		sys_call_data.put("case_path", case_path);
+		HashMap<pool_attr, Object> sys_call_data = new HashMap<pool_attr, Object>();
+		sys_call_data.put(pool_attr.call_back, future_call_back);
+		sys_call_data.put(pool_attr.call_queue, queue_name);
+		sys_call_data.put(pool_attr.call_case, case_id);
+		sys_call_data.put(pool_attr.call_laudir, launch_path);
+		sys_call_data.put(pool_attr.call_casedir, case_path);
 		long start_time = System.currentTimeMillis() / 1000;
-		sys_call_data.put("start_time", start_time);
-		sys_call_data.put("time_out", time_out);
-		sys_call_data.put("call_canceled", false);
-		sys_call_data.put("call_timeout", false);
-		sys_call_data.put("call_terminate", false);
-		sys_call_data.put("call_status", call_enum.INITIATE);
+		sys_call_data.put(pool_attr.call_gentime, start_time);
+		sys_call_data.put(pool_attr.call_reqtime, time_out);
+		sys_call_data.put(pool_attr.call_canceled, false);
+		sys_call_data.put(pool_attr.call_timeout, false);
+		sys_call_data.put(pool_attr.call_terminate, false);
+		sys_call_data.put(pool_attr.call_status, call_state.INITIATE);
 		ArrayList<String> call_output = new ArrayList<String>();
-		sys_call_data.put("call_output", call_output);
+		sys_call_data.put(pool_attr.call_output, call_output);
 		call_map.put(sys_call_key, sys_call_data);
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void fresh_sys_call() {		
+	public synchronized void fresh_sys_call() {
 		Iterator<String> call_map_it = call_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> hash_data = call_map.get(call_index);
+			HashMap<pool_attr, Object> hash_data = call_map.get(call_index);
 			// put call_status
-			Future<?> call_back = (Future<?>) hash_data.get("call_back");
+			Future<?> call_back = (Future<?>) hash_data.get(pool_attr.call_back);
 			long current_time = System.currentTimeMillis() / 1000;
-			long start_time = (long) hash_data.get("start_time");
-			int time_out = (int) hash_data.get("time_out");
+			long start_time = (long) hash_data.get(pool_attr.call_gentime);
+			int time_out = (int) hash_data.get(pool_attr.call_reqtime);
 			// timeout task cancel
 			if (current_time - start_time > time_out + 5) {
-				hash_data.put("call_timeout", true);
-				hash_data.put("call_canceled", call_back.cancel(true));
+				hash_data.put(pool_attr.call_timeout, true);
+				hash_data.put(pool_attr.call_canceled, call_back.cancel(true));
 			}			
 			// run report action
 			Boolean call_done = call_back.isDone();
 			if (call_done) {
-				hash_data.put("call_status", call_enum.DONE);
-				ArrayList<String> call_output = (ArrayList<String>) hash_data.get("call_output");
+				hash_data.put(pool_attr.call_status, call_state.DONE);
+				ArrayList<String> call_output = (ArrayList<String>) hash_data.get(pool_attr.call_output);
 				try {
 					call_output.addAll((Collection<? extends String>) call_back.get(10, TimeUnit.SECONDS));
 				} catch (Exception e) {
@@ -152,16 +172,16 @@ public class pool_data {
 					call_output.add(">>>Error:Get task call exception.");
 					call_output.add("<status>Blocked</status>");
 				}
-				if((boolean) hash_data.get("call_canceled")){
+				if((boolean) hash_data.get(pool_attr.call_canceled)){
 					call_output.add(">>>Timeout extra run:");
-					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get("case_path")));
+					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir)));
 				}
 				if (is_child_process_timeout(call_output)){
 					call_output.add(">>>Timeout extra run:");
-					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get("case_path")));
+					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir)));
 				}
 			} else {
-				hash_data.put("call_status", call_enum.PROCESSIONG);
+				hash_data.put(pool_attr.call_status, call_state.PROCESSIONG);
 			}
 		}
 	}	
@@ -186,11 +206,11 @@ public class pool_data {
 	
 	public synchronized Boolean terminate_sys_call(String call_index) {
 		Boolean cancel_status = new Boolean(true);
-		HashMap<String, Object> hash_data = call_map.get(call_index);
-		Future<?> call_back = (Future<?>) hash_data.get("call_back");
-		hash_data.put("call_terminate", true);
+		HashMap<pool_attr, Object> hash_data = call_map.get(call_index);
+		Future<?> call_back = (Future<?>) hash_data.get(pool_attr.call_back);
+		hash_data.put(pool_attr.call_terminate, true);
 		cancel_status = call_back.cancel(true);
-		hash_data.put("call_canceled", cancel_status);		
+		hash_data.put(pool_attr.call_canceled, cancel_status);		
 		return cancel_status;
 	}	
 	
@@ -208,17 +228,17 @@ public class pool_data {
 		return output_data;
 	}
 	
-	public synchronized HashMap<String, HashMap<String, Object>> get_sys_call_copy() {
-		HashMap<String, HashMap<String, Object>> call_data = new HashMap<String, HashMap<String, Object>>();
+	public synchronized HashMap<String, HashMap<pool_attr, Object>> get_sys_call_copy() {
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		Iterator<String> call_map_it = call_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
-			HashMap<String, Object> one_call_data = call_map.get(call_index);
-			HashMap<String, Object> return_data = new HashMap<String, Object>();
-			Iterator<String> one_call_it = one_call_data.keySet().iterator();
+			HashMap<pool_attr, Object> one_call_data = call_map.get(call_index);
+			HashMap<pool_attr, Object> return_data = new HashMap<pool_attr, Object>();
+			Iterator<pool_attr> one_call_it = one_call_data.keySet().iterator();
 			while (one_call_it.hasNext()){
-				String call_key = one_call_it.next();
-				if (call_key.equals("call_back")){
+				pool_attr call_key = one_call_it.next();
+				if (call_key.equals(pool_attr.call_back)){
 					continue;
 				}
 				return_data.put(call_key, one_call_data.get(call_key));
@@ -228,16 +248,16 @@ public class pool_data {
 		return call_data;
 	}
 
-	public synchronized HashMap<String, HashMap<String, Object>> get_sys_call_link() {
+	public synchronized HashMap<String, HashMap<pool_attr, Object>> get_sys_call_link() {
 		return this.call_map;
 	}	
 	
 	public synchronized Boolean update_sys_call(
 			String sys_call_key,
-			HashMap<String, Object> update_data
+			HashMap<pool_attr, Object> update_data
 			) {
 		Boolean update_status = new Boolean(true);
-		HashMap<String, Object> call_data = new HashMap<String, Object>();
+		HashMap<pool_attr, Object> call_data = new HashMap<pool_attr, Object>();
 		if (call_map.containsKey(sys_call_key)) {
 			call_data.putAll(call_map.get(sys_call_key));
 		} 

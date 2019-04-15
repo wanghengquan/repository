@@ -22,6 +22,7 @@ import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import env_monitor.machine_sync;
+import flow_control.post_data;
 import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
@@ -50,6 +51,7 @@ public class client_manager extends Thread  {
 	private view_data view_info;
 	private pool_data pool_info;
 	private HashMap<String, String> cmd_info;
+	private post_data post_info;
 	private int idle_counter = 0;	
 	// public function
 	// protected function
@@ -61,13 +63,15 @@ public class client_manager extends Thread  {
 			task_data task_info,
 			view_data view_info,
 			pool_data pool_info,
-			HashMap<String, String> cmd_info){
+			HashMap<String, String> cmd_info,
+			post_data post_info){
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.task_info = task_info;
 		this.view_info = view_info;
 		this.pool_info = pool_info;
 		this.cmd_info = cmd_info;
+		this.post_info = post_info;
 	}
 	
 	private Boolean get_system_idle(){
@@ -234,7 +238,7 @@ public class client_manager extends Thread  {
 		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info);
 		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
 		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
-		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info);		
+		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);		
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
 				switch_info, 
@@ -243,6 +247,7 @@ public class client_manager extends Thread  {
 				view_info, 
 				pool_info, 
 				cmd_info,
+				post_info,
 				view_runner,
 				tube_runner,
 				data_runner,
@@ -270,19 +275,17 @@ public class client_manager extends Thread  {
 			// task 1 : start work status
 			if (start_work_mode(client_sts)){
 				client_sts.to_work_status();
-				client_sts.do_state_things();
 			}
 			// task 2 : maintenance mode calculate
 			if(start_maintenance_mode(client_sts)){
 				client_sts.to_maintain_status();
-				client_sts.do_state_things();
 			}
 			// task 3 :
 			if (!switch_info.get_client_stop_request().isEmpty()){
 				client_sts.to_stop_status();
-				client_sts.do_state_things();
 			} 
-			// task 4 : 
+			// task 4 :
+			client_sts.do_state_things();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

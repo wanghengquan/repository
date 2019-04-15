@@ -19,12 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.JMenu;
@@ -150,7 +145,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		Boolean run_status = new Boolean(false);
 		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
-		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+		if(task_info.get_running_admin_queue_list().contains(queue_name)){
 			return run_status;
 		}
 		switch (queue_enum.valueOf(status.toUpperCase())) {
@@ -177,7 +172,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		if(!status.equals(queue_enum.FINISHED.get_description())){
 			return run_status;
 		}
-		if(task_info.get_thread_pool_admin_queue_list().contains(queue_name)){
+		if(task_info.get_running_admin_queue_list().contains(queue_name)){
 			return run_status;
 		}
 		run_status = true;
@@ -255,8 +250,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 					}
 					String select_queue = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 					QUEUE_PANEL_LOGGER.info("Double click and show queue:" + select_queue);
-					view_info.set_watching_queue(select_queue);
-					view_info.set_watching_queue_area(watch_enum.ALL);
+					view_info.set_request_watching_queue(select_queue);
+					view_info.set_request_watching_area(watch_enum.ALL);
 				} else {
 					QUEUE_PANEL_LOGGER.error("No line selected");
 				}
@@ -269,80 +264,19 @@ public class queue_panel extends JSplitPane implements Runnable {
 
 	private Boolean update_rejected_queue_data() {
 		Boolean show_update = new Boolean(false);
-		TreeMap<String, String> rejected_treemap = task_info.get_rejected_admin_reason_treemap();// source
-		Set<String> rejected_set = new TreeSet<String>(new queue_compare(view_info.get_rejected_sorting_request()));
-		rejected_set.addAll(rejected_treemap.keySet());
-		Iterator<String> rejected_it = rejected_set.iterator();
-		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		while (rejected_it.hasNext()) {
-			String queue_name = rejected_it.next();
-			String reject_reason = rejected_treemap.get(queue_name);
-			// add watching vector
-			Vector<String> show_line = new Vector<String>();
-			show_line.add(queue_name);
-			show_line.add(reject_reason);
-			new_data.add(show_line);
-			show_update = true;
-		}
 		reject_data.clear();
-		reject_data.addAll(new_data);
+		reject_data.addAll(view_info.get_rejected_queue_data());
 		return show_update;
 	}
 
 	private Boolean update_captured_queue_data() {
 		Boolean show_update = new Boolean(false);
-		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
-		captured_set.addAll(task_info.get_captured_admin_queues_treemap().keySet());
-		//Set<String> captured_set = task_info.get_captured_admin_queues_treemap().keySet();
-		ArrayList<String> processing_admin_queue_list = task_info.get_processing_admin_queue_list();
-		ArrayList<String> running_admin_queue_list = task_info.get_running_admin_queue_list();
-		ArrayList<String> finished_admin_queue_list = task_info.get_finished_admin_queue_list();
-		captured_set.addAll(finished_admin_queue_list);// source data
-		// //show data
-		Iterator<String> captured_it = captured_set.iterator();
-		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
-		while (captured_it.hasNext()) {
-			String queue_name = captured_it.next();
-			queue_enum status = queue_enum.UNKNOWN;
-			if (finished_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.FINISHED;
-			} else if (running_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.RUNNING;
-			} else if (processing_admin_queue_list.contains(queue_name)) {
-				status = queue_enum.PROCESSING;
-			} else {
-				String admin_status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
-						.get("admin_status");
-				if (admin_status.equals(queue_enum.STOPPED.get_description())){
-					status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.REMOTESTOPED.get_description())){
-					status = queue_enum.STOPPED;
-				} else if (admin_status.equals(queue_enum.PAUSED.get_description())){
-					status = queue_enum.PAUSED;
-				} else if (admin_status.equals(queue_enum.REMOTEPAUSED.get_description())){
-					status = queue_enum.PAUSED;
-				} else if (admin_status.equals(queue_enum.PROCESSING.get_description())){
-					status = queue_enum.PROCESSING;
-				} else if (admin_status.equals(queue_enum.REMOTEPROCESSIONG.get_description())) {
-					status = queue_enum.PROCESSING;
-				} else if (admin_status.equals(queue_enum.REMOTEDONE.get_description())) {
-					status = queue_enum.FINISHED;
-				} else {
-					status = queue_enum.UNKNOWN;
-				}
-			}
-			// add watching vector
-			Vector<String> show_line = new Vector<String>();
-			show_line.add(queue_name);
-			show_line.add(status.get_description());
-			new_data.add(show_line);
-			show_update = true;
-		}
 		capture_data.clear();
-		capture_data.addAll(new_data);
+		capture_data.addAll(view_info.get_captured_queue_data());
 		return show_update;
 	}
-
+	
+	@SuppressWarnings("unused")
 	private Boolean update_select_rejected_queue() {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
@@ -357,6 +291,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 		return update_status;
 	}
 
+	@SuppressWarnings("unused")
 	private Boolean update_select_captured_queue() {
 		Boolean update_status = new Boolean(true);
 		String selected_queue = new String();
@@ -409,8 +344,8 @@ public class queue_panel extends JSplitPane implements Runnable {
 					@Override
 					public void run() {
 						// TODO Auto-generated method stub
-						update_select_rejected_queue();
-						update_select_captured_queue();
+						// update_select_rejected_queue();
+						// update_select_captured_queue();
 						update_rejected_queue_data();
 						update_captured_queue_data();						
 						reject_table.validate();
@@ -421,7 +356,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 				});				
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(1000 * public_data.PERF_GUI_BASE_INTERVAL);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -514,7 +449,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JMenuItem show;
-	private JMenuItem sort_priority, sort_runid, sort_time;
+	private JMenuItem sort_priority, sort_runid, sort_time, sort_status;
 	private JMenuItem run_play, run_pause, run_stop;
 	private JMenuItem details, results, submit;
 	private JMenuItem delete;
@@ -542,9 +477,12 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		sort_runid.addActionListener(this);
 		sort_time = new JMenuItem("Time");
 		sort_time.addActionListener(this);
+		sort_status = new JMenuItem("Status");
+		sort_status.addActionListener(this);		
 		sort.add(sort_priority);
 		sort.add(sort_runid);
 		sort.add(sort_time);
+		sort.add(sort_status);
 		this.add(sort);
 		this.addSeparator();
 		JMenu run = new JMenu("Run");
@@ -696,8 +634,8 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		if (arg0.getSource().equals(show)) {
 			System.out.println("show details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
-			view_info.set_watching_queue(select_queue);
-			view_info.set_watching_queue_area(watch_enum.ALL);
+			view_info.set_request_watching_queue(select_queue);
+			view_info.set_request_watching_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(sort_priority)) {
 			System.out.println("sort_priority clicked");
@@ -711,17 +649,24 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("sort_time clicked");
 			view_info.set_captured_sorting_request(sort_enum.TIME);
 		}
+		if (arg0.getSource().equals(sort_status)) {
+			System.out.println("sort_status clicked");
+			view_info.set_captured_sorting_request(sort_enum.STATUS);
+		}		
 		if (arg0.getSource().equals(run_play)) {
 			System.out.println("run_play clicked");
-			view_info.set_run_action_request(queue_enum.PROCESSING);
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			view_info.update_run_action_request(queue_name, queue_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(run_pause)) {
 			System.out.println("run_pause clicked");
-			view_info.set_run_action_request(queue_enum.PAUSED);
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			view_info.update_run_action_request(queue_name, queue_enum.PAUSED);
 		}
 		if (arg0.getSource().equals(run_stop)) {
 			System.out.println("run_stop clicked");
-			view_info.set_run_action_request(queue_enum.STOPPED);
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			view_info.update_run_action_request(queue_name, queue_enum.STOPPED);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("detail clicked");
@@ -749,7 +694,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 				return;
 			}
 			String queue_name = (String) table.getValueAt(select_index, 0);
-			view_info.add_delete_request_queue(queue_name);
+			view_info.add_request_delete_queue(queue_name);
 		}		
 	}
 

@@ -14,31 +14,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import flow_control.queue_enum;
+import utility_funcs.deep_clone;
 
 public class view_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	private Boolean view_debug = new Boolean(false);
-	private String watching_queue = new String();
-	private watch_enum watching_queue_area = watch_enum.UNKNOWN;
-	private retest_enum retest_queue_area = retest_enum.UNKNOWN;
-	private int stop_case_request = 0;
-	private List<String> delete_request_queue = new ArrayList<String>();
-	private String select_rejected_queue_name = new String();
-	private String select_captured_queue_name = new String();
-	private queue_enum select_captured_queue_status = queue_enum.UNKNOWN;
-	private List<String> select_task_case = new ArrayList<String>();
+	private String current_watching_queue = new String("");
+	private String request_watching_queue = new String("");
+	private watch_enum current_watching_area = watch_enum.ALL;
+	private watch_enum request_watching_area = watch_enum.ALL;
+	private List<String> request_delete_queue = new ArrayList<String>();
+	private HashMap<String, retest_enum> request_retest_area = new HashMap<String, retest_enum>();
+	private HashMap<String, ArrayList<String>> request_retest_list = new HashMap<String, ArrayList<String>>();
+	private HashMap<String, ArrayList<String>> request_terminate_list = new HashMap<String, ArrayList<String>>();
+	private HashMap<String, queue_enum> run_action_request = new HashMap<String, queue_enum>();
 	private List<String> export_queue_list = new ArrayList<String>();
 	private List<String> export_title_list = new ArrayList<String>();
-	private queue_enum run_action_request = queue_enum.WAITING;//play, pause, stop
 	private sort_enum rejected_sorting_request = sort_enum.DEFAULT;
-	private sort_enum captured_sorting_request = sort_enum.DEFAULT;
+	private sort_enum captured_sorting_request = sort_enum.DEFAULT;	
 	private Boolean space_cleanup_apply = new Boolean(false);
 	private Boolean environ_issue_apply = new Boolean(false);
-	//following data not used currently
+	private Vector<Vector<String>> rejected_queue_data = new Vector<Vector<String>>();
+	private Vector<Vector<String>> captured_queue_data = new Vector<Vector<String>>();
+	private Vector<Vector<String>> watching_queue_data = new Vector<Vector<String>>();
+	//following data not used
+	private String select_rejected_queue_name = new String("");
+	private String select_captured_queue_name = new String("");	
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> watching_task_queues_data_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	TreeMap<String, String> watching_reject_treemap = new TreeMap<String, String>(new queue_compare());
 	TreeMap<String, String> watching_capture_treemap = new TreeMap<String, String>(new queue_compare());
@@ -67,132 +73,246 @@ public class view_data {
 		}
 	}
 	
-	public String get_watching_queue() {
+	public String get_current_watching_queue() {
 		rw_lock.readLock().lock();
 		String temp = new String();
 		try {
-			temp = watching_queue;
+			temp = current_watching_queue;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 	
-	public void set_watching_queue(String update_queue) {
+	public void set_current_watching_queue(String update_queue) {
 		rw_lock.writeLock().lock();
 		try {
-			this.watching_queue = update_queue;
+			this.current_watching_queue = update_queue;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public watch_enum get_watching_queue_area() {
+	public String get_request_watching_queue() {
+		rw_lock.readLock().lock();
+		String temp = new String();
+		try {
+			temp = request_watching_queue;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_request_watching_queue(String update_queue) {
+		rw_lock.writeLock().lock();
+		try {
+			this.request_watching_queue = update_queue;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public watch_enum get_current_watching_area() {
 		rw_lock.readLock().lock();
 		watch_enum temp = watch_enum.UNKNOWN;
 		try {
-			temp = watching_queue_area;
+			temp = current_watching_area;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 
-	public void set_watching_queue_area(watch_enum queue_area) {
+	public void set_current_watching_area(watch_enum queue_area) {
 		rw_lock.writeLock().lock();
 		try {
-			this.watching_queue_area = queue_area;
+			this.current_watching_area = queue_area;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
+	}
 	
-	public retest_enum get_retest_queue_area() {
+	public watch_enum get_request_watching_area() {
 		rw_lock.readLock().lock();
-		retest_enum temp = retest_enum.UNKNOWN;
+		watch_enum temp = watch_enum.UNKNOWN;
 		try {
-			temp = retest_queue_area;
+			temp = request_watching_area;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 
-	public void set_retest_queue_area(retest_enum queue_area) {
+	public void set_request_watching_area(watch_enum queue_area) {
 		rw_lock.writeLock().lock();
 		try {
-			this.retest_queue_area = queue_area;
+			this.request_watching_area = queue_area;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
-	
-	public retest_enum impl_retest_queue_area() {
-		rw_lock.writeLock().lock();
-		retest_enum impl_area = retest_enum.UNKNOWN;
-		try {
-			impl_area = retest_queue_area;
-			this.retest_queue_area = retest_enum.UNKNOWN;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-		return impl_area;
-	}	
-	
-	public void set_stop_case_request() {
-		rw_lock.writeLock().lock();
-		try {
-			this.stop_case_request = stop_case_request + 1;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}	
-	
-	public Boolean impl_stop_case_request() {
-		rw_lock.writeLock().lock();
-		Boolean stop_request = new Boolean(false);
-		try {
-			if (stop_case_request > 0){
-				stop_request = true;
-				stop_case_request = stop_case_request - 1;
-			}
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-		return stop_request;
-	}
-	
-	public int get_stop_case_request() {
-		rw_lock.readLock().lock();
-		int stop_request = 0;
-		try {
-			stop_request = stop_case_request;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return stop_request;
 	}
 
-	public void add_delete_request_queue(String queue_name) {
+	public void add_request_delete_queue(String queue_name) {
 		rw_lock.writeLock().lock();
 		try {
-			this.delete_request_queue.add(queue_name);
+			this.request_delete_queue.add(queue_name);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public List<String> impl_delete_request_queue() {
+	public List<String> impl_request_delete_queue() {
 		List<String> delete_list = new ArrayList<String>();
 		rw_lock.writeLock().lock();
 		try {
-			delete_list.addAll(delete_request_queue);
-			this.delete_request_queue.clear();
+			delete_list.addAll(request_delete_queue);
+			this.request_delete_queue.clear();
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 		return delete_list;
 	}
+	
+	public HashMap<String, retest_enum> impl_request_retest_area() {
+		HashMap<String, retest_enum> request_list = new HashMap<String, retest_enum>();
+		rw_lock.writeLock().lock();
+		try {
+			request_list.putAll(deep_clone.clone(request_retest_area));
+			this.request_retest_area.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return request_list;
+	}
+	
+	public void set_request_retest_area(HashMap<String, retest_enum> queue_area) {
+		rw_lock.writeLock().lock();
+		try {
+			this.request_retest_area.clear();
+			this.request_retest_area.putAll(queue_area);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean update_request_retest_area(
+			String queue_name,
+			retest_enum area) {
+		rw_lock.writeLock().lock();
+		Boolean update_result = new Boolean(true);
+		try {
+			request_retest_area.put(queue_name, area);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_result;
+	}	
+	
+	public HashMap<String, ArrayList<String>> impl_request_retest_list() {
+		HashMap<String, ArrayList<String>> request_list = new HashMap<String, ArrayList<String>>();
+		rw_lock.writeLock().lock();
+		try {
+			request_list.putAll(deep_clone.clone(request_retest_list));
+			this.request_retest_list.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return request_list;
+	}
+	
+	public void set_request_retest_list(HashMap<String, ArrayList<String>> queue_case_list) {
+		rw_lock.writeLock().lock();
+		try {
+			this.request_retest_list.clear();
+			this.request_retest_list.putAll(queue_case_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean update_request_retest_list(
+			String queue_name,
+			ArrayList<String> case_list) {
+		rw_lock.writeLock().lock();
+		Boolean update_result = new Boolean(true);
+		try {
+			request_retest_list.put(queue_name, case_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_result;
+	}	
+	
+	public HashMap<String, ArrayList<String>> impl_request_terminate_list() {
+		HashMap<String, ArrayList<String>> request_list = new HashMap<String, ArrayList<String>>();
+		rw_lock.writeLock().lock();
+		try {
+			request_list.putAll(deep_clone.clone(request_terminate_list));
+			this.request_terminate_list.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return request_list;
+	}
+	
+	public void set_request_terminate_list(HashMap<String, ArrayList<String>> queue_case_list) {
+		rw_lock.writeLock().lock();
+		try {
+			this.request_terminate_list.clear();
+			this.request_terminate_list.putAll(queue_case_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean update_request_terminate_list(
+			String queue_name,
+			ArrayList<String> case_list) {
+		rw_lock.writeLock().lock();
+		Boolean update_result = new Boolean(true);
+		try {
+			request_terminate_list.put(queue_name, case_list);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_result;
+	}
+	
+	public HashMap<String, queue_enum> impl_run_action_request() {
+		HashMap<String, queue_enum> request_list = new HashMap<String, queue_enum>();
+		rw_lock.writeLock().lock();
+		try {
+			request_list.putAll(deep_clone.clone(run_action_request));
+			this.run_action_request.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return request_list;
+	}
+	
+	public void set_run_action_request(HashMap<String, queue_enum> queue_action) {
+		rw_lock.writeLock().lock();
+		try {
+			this.run_action_request.clear();
+			this.run_action_request.putAll(queue_action);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean update_run_action_request(
+			String queue_name,
+			queue_enum action) {
+		rw_lock.writeLock().lock();
+		Boolean update_result = new Boolean(true);
+		try {
+			run_action_request.put(queue_name, action);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_result;
+	}	
 	
 	public String get_select_rejected_queue_name() {
 		rw_lock.readLock().lock();
@@ -232,8 +352,9 @@ public class view_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
+	}
 	
+	/*
 	public queue_enum get_select_captured_queue_status() {
 		rw_lock.readLock().lock();
 		queue_enum temp = queue_enum.UNKNOWN;
@@ -254,6 +375,7 @@ public class view_data {
 		}
 	}
 	
+	
 	public List<String> get_select_task_case() {
 		rw_lock.readLock().lock();
 		List<String> temp = new ArrayList<String>();
@@ -265,7 +387,7 @@ public class view_data {
 		return temp;
 	}
 
-	public void set_select_task_case(List<String> case_list) {
+	public void set_select_task_case1(List<String> case_list) {
 		rw_lock.writeLock().lock();
 		try {
 			this.select_task_case.clear();
@@ -274,6 +396,7 @@ public class view_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	*/
 	
 	public List<String> get_export_title_list() {
 		rw_lock.readLock().lock();
@@ -359,27 +482,6 @@ public class view_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}
-	
-	public void set_run_action_request(queue_enum request_action) {
-		rw_lock.writeLock().lock();
-		try {
-			this.run_action_request = request_action;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}	
-	
-	public queue_enum impl_run_action_request() {
-		rw_lock.writeLock().lock();
-		queue_enum impl_action = queue_enum.UNKNOWN;
-		try {
-			impl_action = run_action_request;
-			this.run_action_request = queue_enum.UNKNOWN;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-		return impl_action;
 	}
 	
 	public void set_rejected_sorting_request(sort_enum sort_request) {
@@ -589,5 +691,68 @@ public class view_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
+	}
+	
+	public Vector<Vector<String>> get_rejected_queue_data() {
+		rw_lock.readLock().lock();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
+		try {
+			temp.addAll(rejected_queue_data);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_rejected_queue_data(Vector<Vector<String>> new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			rejected_queue_data.clear();
+			rejected_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Vector<Vector<String>> get_captured_queue_data() {
+		rw_lock.readLock().lock();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
+		try {
+			temp.addAll(this.captured_queue_data);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_captured_queue_data(Vector<Vector<String>> new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			captured_queue_data.clear();
+			captured_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Vector<Vector<String>> get_watching_queue_data() {
+		rw_lock.readLock().lock();
+		Vector<Vector<String>> temp = new Vector<Vector<String>>();
+		try {
+			temp.addAll(this.watching_queue_data);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_watching_queue_data(Vector<Vector<String>> new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			watching_queue_data.clear();
+			watching_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 }

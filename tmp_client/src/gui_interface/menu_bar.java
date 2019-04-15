@@ -163,7 +163,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		retest_halted = new JMenuItem(retest_enum.HALTED.get_description());
 		retest_halted.addActionListener(this);		
 		retest.add(retest_all);
-		retest.add(retest_selected);
+		//retest.add(retest_selected);
 		retest.add(retest_failed);
 		retest.add(retest_passed);
 		retest.add(retest_tbd);
@@ -244,75 +244,78 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(view_all)) {
 			MENU_BAR_LOGGER.warn("view_all clicked");
-			view_info.set_watching_queue_area(watch_enum.ALL);
+			view_info.set_request_watching_area(watch_enum.ALL);
 		}
 		if (e.getSource().equals(view_waiting)) {
 			MENU_BAR_LOGGER.warn("view_waiting clicked");
-			view_info.set_watching_queue_area(watch_enum.WAITING);
+			view_info.set_request_watching_area(watch_enum.WAITING);
 		}
 		if (e.getSource().equals(view_processing)) {
 			MENU_BAR_LOGGER.warn("view_processing clicked");
-			view_info.set_watching_queue_area(watch_enum.PROCESSING);
+			view_info.set_request_watching_area(watch_enum.PROCESSING);
 		}
 		if (e.getSource().equals(view_passed)) {
 			MENU_BAR_LOGGER.warn("view_passed clicked");
-			view_info.set_watching_queue_area(watch_enum.PASSED);
+			view_info.set_request_watching_area(watch_enum.PASSED);
 		}
 		if (e.getSource().equals(view_failed)) {
 			MENU_BAR_LOGGER.warn("view_failed clicked");
-			view_info.set_watching_queue_area(watch_enum.FAILED);
+			view_info.set_request_watching_area(watch_enum.FAILED);
 		}
 		if (e.getSource().equals(view_tbd)) {
 			MENU_BAR_LOGGER.warn("view_tbd clicked");
-			view_info.set_watching_queue_area(watch_enum.TBD);
+			view_info.set_request_watching_area(watch_enum.TBD);
 		}
 		if (e.getSource().equals(view_timeout)) {
 			MENU_BAR_LOGGER.warn("view_timeout clicked");
-			view_info.set_watching_queue_area(watch_enum.TIMEOUT);
+			view_info.set_request_watching_area(watch_enum.TIMEOUT);
 		}
 		if (e.getSource().equals(view_halted)) {
 			MENU_BAR_LOGGER.warn("view_halted clicked");
-			view_info.set_watching_queue_area(watch_enum.HALTED);
+			view_info.set_request_watching_area(watch_enum.HALTED);
 		}		
 		if (e.getSource().equals(play)) {
 			MENU_BAR_LOGGER.warn("play clicked");
-			view_info.set_run_action_request(queue_enum.PROCESSING);
+			String queue_name = view_info.get_current_watching_queue();
+			view_info.update_run_action_request(queue_name, queue_enum.PROCESSING);
 		}
 		if (e.getSource().equals(pause)) {
 			MENU_BAR_LOGGER.warn("pause clicked");
-			view_info.set_run_action_request(queue_enum.PAUSED);
+			String queue_name = view_info.get_current_watching_queue();
+			view_info.update_run_action_request(queue_name, queue_enum.PAUSED);
 		}
 		if (e.getSource().equals(stop)) {
 			MENU_BAR_LOGGER.warn("stop clicked");
-			view_info.set_run_action_request(queue_enum.STOPPED);
+			String queue_name = view_info.get_current_watching_queue();
+			view_info.update_run_action_request(queue_name, queue_enum.STOPPED);
 		}
 		if (e.getSource().equals(retest_all)) {
 			MENU_BAR_LOGGER.warn("retest_all clicked");
-			view_info.set_retest_queue_area(retest_enum.ALL);
+			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.ALL);
 		}
-		if (e.getSource().equals(retest_selected)) {
-			MENU_BAR_LOGGER.warn("retest_selected clicked");
-			view_info.set_retest_queue_area(retest_enum.SELECTED);
-		}
+		//if (e.getSource().equals(retest_selected)) {
+		//	MENU_BAR_LOGGER.warn("retest_selected clicked");
+		//	view_info.set_retest_queue_area(retest_enum.SELECTED);
+		//} cannot get select case immediately
 		if (e.getSource().equals(retest_passed)) {
 			MENU_BAR_LOGGER.warn("retest_passed clicked");
-			view_info.set_retest_queue_area(retest_enum.PASSED);
+			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.PASSED);
 		}
 		if (e.getSource().equals(retest_failed)) {
 			MENU_BAR_LOGGER.warn("retest_failed clicked");
-			view_info.set_retest_queue_area(retest_enum.FAILED);
+			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.FAILED);
 		}
 		if (e.getSource().equals(retest_tbd)) {
 			MENU_BAR_LOGGER.warn("retest_tbd clicked");
-			view_info.set_retest_queue_area(retest_enum.TBD);
+			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.TBD);
 		}
 		if (e.getSource().equals(retest_timeout)) {
 			MENU_BAR_LOGGER.warn("retest_timeout clicked");
-			view_info.set_retest_queue_area(retest_enum.TIMEOUT);
+			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.TIMEOUT);
 		}
 		if (e.getSource().equals(retest_halted)) {
 			MENU_BAR_LOGGER.warn("retest_halted clicked");
-			view_info.set_retest_queue_area(retest_enum.HALTED);
+			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.HALTED);
 		}		
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.warn("upload clicked");

@@ -64,7 +64,7 @@ public class task_prepare {
 				return false;
 			}
 		}
-		//Create new case path if not have
+		//Create new task path if not have
 		synchronized (this.getClass()) {
 			if (!task_path_dobj.exists()){
 				try {
@@ -345,13 +345,13 @@ public class task_prepare {
 			}
 		}
 		// replace blank space in ""
-		String tmp_str = new String("@#@");
+		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
 		// python --option1="test1  test2   test3" -o "test1   test3" --test
 		Pattern patt2 = Pattern.compile("\\s(\\S+?)?\".+?\"", Pattern.CASE_INSENSITIVE);
 		Matcher match2 = patt2.matcher(launch_cmd);
 		while(match2.find()){
 			String match_str = new String(match2.group().trim());
-            launch_cmd = launch_cmd.replaceAll(match_str, match_str.replaceAll("\\s+", tmp_str)
+            launch_cmd = launch_cmd.replace(match_str, match_str.replaceAll("\\s+", tmp_str)
                     .replaceAll("\"", ""));
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
@@ -392,7 +392,7 @@ public class task_prepare {
 		}
 		// put environ for software requirements
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
-		if (!ignore_request.contains("software")){
+		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
 			while (software_request_it.hasNext()) {
 				String software_name = software_request_it.next();
@@ -607,7 +607,7 @@ public class task_prepare {
 		}
 		// put environ for software requirements
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
-		if (!ignore_request.contains("software")){
+		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
 			Set<String> software_request_set = task_data.get("Software").keySet();
 			Iterator<String> software_request_it = software_request_set.iterator();
 			while (software_request_it.hasNext()) {

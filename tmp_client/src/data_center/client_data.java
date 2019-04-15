@@ -145,7 +145,21 @@ public class client_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
-	}	
+	}
+	
+	public void update_client_machine_data(String key, String value) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> machine_data = new HashMap<String, String>();
+			if(client_hash.containsKey("Machine")){
+				machine_data.putAll(client_hash.get("Machine"));
+			}
+			machine_data.put(key, value);
+			client_hash.put("Machine", machine_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 	
 	public HashMap<String, String> get_client_preference_data() {
 		rw_lock.readLock().lock();
@@ -181,6 +195,59 @@ public class client_data {
 			}
 			preference_data.putAll(update_data);
 			client_hash.put("preference", preference_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public HashMap<String, String> get_client_corescript_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			if (client_hash.containsKey("CoreScript")){
+				temp.putAll(client_hash.get("CoreScript"));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_client_corescript_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			if(client_hash.containsKey("CoreScript")){
+				client_hash.remove("CoreScript");
+			}
+			client_hash.put("CoreScript", update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_corescript_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> corescript_data = new HashMap<String, String>();
+			if(client_hash.containsKey("CoreScript")){
+				corescript_data.putAll(client_hash.get("CoreScript"));
+			}
+			corescript_data.putAll(update_data);
+			client_hash.put("CoreScript", corescript_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_corescript_data(String key, String value) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> corescript_data = new HashMap<String, String>();
+			if(client_hash.containsKey("CoreScript")){
+				corescript_data.putAll(client_hash.get("CoreScript"));
+			}
+			corescript_data.put(key, value);
+			client_hash.put("CoreScript", corescript_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

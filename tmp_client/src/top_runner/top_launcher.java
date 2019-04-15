@@ -28,6 +28,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import env_monitor.env_checker;
 import env_monitor.machine_sync;
+import flow_control.post_data;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
@@ -145,8 +146,9 @@ public class top_launcher {
 		client_data client_info = new client_data();
 		task_data task_info = new task_data();
 		view_data view_info = new view_data();
-		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
+		pool_data pool_info = new pool_data();
 		cmd_parser cmd_run = new cmd_parser(args);
+		post_data post_info = new post_data();
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		// initial 2 : run self check
 		if (!run_self_check()) {
@@ -156,8 +158,14 @@ public class top_launcher {
 		// initial 3 : run client instances check
 		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"), cmd_info.getOrDefault("unattended", ""));
 		// initial 4 : client manager launch
-		client_manager manager = new client_manager(switch_info, client_info, task_info, view_info, pool_info,
-				cmd_info);
+		client_manager manager = new client_manager(
+				switch_info, 
+				client_info, 
+				task_info, 
+				view_info, 
+				pool_info,
+				cmd_info,
+				post_info);
 		manager.start();
 		System.out.println(">>>Info: Run Machine:" + machine_sync.get_host_name());
 		System.out.println(">>>Info: Run Account:" + System.getProperty("user.name"));

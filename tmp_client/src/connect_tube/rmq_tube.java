@@ -12,6 +12,7 @@ package connect_tube;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.rabbitmq.client.*;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import data_center.client_data;
 import data_center.public_data;
+import flow_control.export_data;
 import info_parser.xml_parser;
 
 /*
@@ -40,13 +43,17 @@ public class rmq_tube {
 	private static String rmq_pwd = public_data.RMQ_PWD;
 	private static String task_msg = new String();
 	private task_data task_info;
+	private client_data client_info;
 	private Connection admin_connection;
 	private Channel admin_channel;
 	private Boolean admin_work = new Boolean(false);
 
 	// public function
-	public rmq_tube(task_data task_info) {
+	public rmq_tube(
+			task_data task_info, 
+			client_data client_info) {
 		this.task_info = task_info;
+		this.client_info = client_info;
 	}
 
 	public rmq_tube() {
@@ -120,7 +127,9 @@ public class rmq_tube {
 	 * server. when the client get one message from the server, it should stop
 	 * the connect!
 	 */
-	public static synchronized Map<String, HashMap<String, HashMap<String, String>>> read_task_server(String queue_name)
+	public static synchronized Map<String, HashMap<String, HashMap<String, String>>> read_task_server(
+			String queue_name,
+			client_data client_info)
 			throws Exception {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
@@ -170,6 +179,7 @@ public class rmq_tube {
 			connection.close();
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		msg_hash = xml_parser.get_rmq_xml_data(task_msg);
+		export_data.debug_disk_client_in_task(queue_name + ".xml", task_msg, client_info);
 		return msg_hash;
 	}
 
@@ -233,26 +243,22 @@ public class rmq_tube {
 		String msg_key = (String) msg_key_set.toArray()[0];
 		HashMap<String, HashMap<String, String>> msg_data = msg_hash.get(msg_key);
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = new String();
+		String priority = public_data.TASK_DEF_PRIORITY;
 		if (!msg_data.containsKey("CaseInfo")) {
-			priority = "5";
+			priority = public_data.TASK_DEF_PRIORITY;
 		} 
 		if (!msg_data.get("CaseInfo").containsKey("priority")) {
-			priority = "5";
-		}
-		if (msg_key.toLowerCase().contains("rerun_")){
-			priority = "3";
+			priority = public_data.TASK_DEF_PRIORITY;
 		}
 		if (msg_data.get("CaseInfo").containsKey("priority")){
 			priority = msg_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
-				priority = "5";
+				priority = public_data.TASK_DEF_PRIORITY;
 			}
 		}
-		// task belong to this client(job_attribute): (0, assign task) > (1,
-		// match task)
+		// task belong to this client(job_attribute): (0, assign task) > (1, match task)
 		String attribute = new String();
 		String request_terminal = new String();
 		String available_terminal = current_terminal;
@@ -276,7 +282,10 @@ public class rmq_tube {
 		String new_title = priority + attribute + "1" + "@" + msg_key;
 		admin_hash.put(new_title, msg_data);
 		task_info.update_received_admin_queues_treemap(admin_hash);
+		export_data.debug_disk_client_in_admin(msg_key + ".xml", message, client_info);
 		update_status = true;
 		return update_status;
 	}
+	
+
 }

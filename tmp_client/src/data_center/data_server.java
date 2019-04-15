@@ -48,6 +48,13 @@ import utility_funcs.time_info;
  * 					mem		=	xx	%
  * 					status  =   Free/Busy/Suspend
  * 
+ *      CoreScript: version =   xx
+ *                  time    =   xx
+ *                  status  =   latest/updating/NA
+ *                  connection = 0/1
+ *                  remote_version = xx
+ *                  remote_time =xx
+ *                  
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
  * 					group	=	xxx
@@ -101,7 +108,7 @@ public class data_server extends Thread {
 		this.machine_runner = new machine_sync(switch_info);
 	}
 
-	private void impoart_suite_file_task_data(
+	private void import_suite_file_task_data(
 			String task_file,
 			String task_env){
 		String import_time_id = time_info.get_date_time();
@@ -117,7 +124,7 @@ public class data_server extends Thread {
 		}
 	}
 	
-	private void impoart_suite_path_task_data(
+	private void import_suite_path_task_data(
 			String task_path,
 			String task_key,
 			String task_exe,
@@ -152,7 +159,7 @@ public class data_server extends Thread {
 				file_list.add(suite_files);
 			}
 			for(String suite_file:file_list){
-				impoart_suite_file_task_data(suite_file, task_env);
+				import_suite_file_task_data(suite_file, task_env);
 			}			
 		}
 		String suite_paths = cmd_info.get("suite_path");
@@ -169,7 +176,7 @@ public class data_server extends Thread {
 				path_list.add(suite_paths);
 			}
 			for(String suite_path:path_list){
-				impoart_suite_path_task_data(suite_path, task_key, task_exe, task_arg, task_env);
+				import_suite_path_task_data(suite_path, task_key, task_exe, task_arg, task_env);
 			}			
 		}		
 	}
@@ -198,10 +205,14 @@ public class data_server extends Thread {
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
+		machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
 		if(cmd_hash.containsKey("unattended")){				// add command line data
 			machine_data.put("unattended", cmd_hash.get("unattended"));
+		}
+		if(cmd_hash.containsKey("debug")){
+			machine_data.put("debug", cmd_hash.get("debug"));
 		}
 		client_data.put("Machine", machine_data);
 		// 4. merge preference data (for software use):
@@ -215,7 +226,8 @@ public class data_server extends Thread {
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);
 		preference_data.put("path_keep", public_data.DEF_COPY_PATH_KEEP);
-		preference_data.put("max_threads", public_data.DEF_POOL_CURRENT_SIZE);
+		preference_data.put("pool_size", String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+		preference_data.put("max_threads", String.valueOf(public_data.PERF_POOL_CURRENT_SIZE));
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);
 		preference_data.put("auto_restart", public_data.DEF_AUTO_RESTART);
 		preference_data.put("dev_mails", public_data.BASE_DEVELOPER_MAIL);
@@ -237,6 +249,18 @@ public class data_server extends Thread {
 		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
+	private void initial_thread_pool_setting(){
+		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+		int max_threads = Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
+		pool_info.initialize_thread_pool(pool_size);
+		if (max_threads > pool_size){
+			DATA_SERVER_LOGGER.warn("max_threads > pool_size, will use pool_size:" + pool_size +" as maximum threads num");
+			pool_info.set_pool_current_size(pool_size);
+		} else {
+			pool_info.set_pool_current_size(max_threads);
+		}
+	}
+	
 	private void dynamic_merge_system_data(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(machine_sync.machine_hash.get("System"));
@@ -259,7 +283,7 @@ public class data_server extends Thread {
 			String section_name = section.next();
 			HashMap<String, String> section_data = new HashMap<String, String>();
 			section_data.putAll(client_data.get(section_name));
-			if (section_name.equals("System") || section_name.equals("Machine") || section_name.equals("preference")){
+			if (section_name.equals("System") || section_name.equals("CoreScript") || section_name.equals("Machine") || section_name.equals("preference")){
 				continue;
 			}
 			HashMap<String, String> build_data = new HashMap<String, String>();
@@ -284,7 +308,7 @@ public class data_server extends Thread {
 	private void update_max_sw_insts_limitation() {
 		HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
-		client_hash.putAll(client_info.get_client_data());
+		client_hash.putAll(deep_clone.clone(client_info.get_client_data()));
 		Iterator<String> key_it = client_hash.keySet().iterator();
 		while (key_it.hasNext()) {
 			String key = key_it.next();
@@ -294,10 +318,22 @@ public class data_server extends Thread {
 			if (key.equalsIgnoreCase("machine")) {
 				continue;
 			}
+			if (key.equalsIgnoreCase("corescript")) {
+				continue;
+			}
+			if (key.equalsIgnoreCase("system")) {
+				continue;
+			}			
 			if (!client_hash.get(key).containsKey("max_insts")) {
 				continue;
 			}
-			Integer insts_value = Integer.valueOf(client_hash.get(key).get("max_insts"));
+			Integer insts_value = Integer.valueOf(public_data.DEF_SW_MAX_INSTANCES);
+			try{
+				insts_value = Integer.valueOf(client_hash.get(key).get("max_insts"));
+			} catch (NumberFormatException e) {
+				DATA_SERVER_LOGGER.warn("Wrong number format detected:" + client_hash.get(key).get("max_insts"));
+				DATA_SERVER_LOGGER.warn("Will use the default value:" + public_data.DEF_SW_MAX_INSTANCES);
+			}
 			max_soft_insts.put(key, insts_value);
 		}
 		client_info.set_max_soft_insts(max_soft_insts);
@@ -376,7 +412,7 @@ public class data_server extends Thread {
 		}
 		int build_counter = 1;
 		for (String line : cmd_output){
-			if (!line.startsWith("build:")){
+			if (line == null || !line.startsWith("build:")){
 				continue;
 			}
 			String build = line.split(":", 2)[1];
@@ -440,6 +476,9 @@ public class data_server extends Thread {
 			if (section.equals("System")) {
 				continue;
 			}
+			if (section.equals("CoreScript")) {
+				continue;
+			}			
 			Iterator<String> option_it = section_data.keySet().iterator();
 			while (option_it.hasNext()) {
 				String option = option_it.next();
@@ -523,8 +562,7 @@ public class data_server extends Thread {
  		// initial 3 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 4 : update default current size into Pool Data
-		String current_max_threads = client_info.get_client_preference_data().get("max_threads");
-		pool_info.set_pool_current_size(Integer.parseInt(current_max_threads));
+		initial_thread_pool_setting();
 		// initial 5 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start

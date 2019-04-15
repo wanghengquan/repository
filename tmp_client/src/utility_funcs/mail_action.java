@@ -50,6 +50,8 @@ public class mail_action {
 		String current_time = time_info.get_date_time();
 		send_massage.append("Time:" + current_time);
 		send_massage.append(line_separator);
+		send_massage.append("User:" + System.getProperty("user.name"));
+		send_massage.append(line_separator);
 		send_massage.append("Machine:" + machine);
 		send_massage.append(line_separator);
 		send_massage.append("Dump info:");
@@ -89,7 +91,7 @@ public class mail_action {
 		} catch (EmailException e) {
 			// TODO Auto-generated catch block
 			//  e.printStackTrace();
-			MAIL_ACTION_LOGGER.error("Send client dump message error out.");
+			MAIL_ACTION_LOGGER.error("Send client event message error out.");
 		}			
 	}
 	

@@ -40,6 +40,7 @@ public class about_dialog extends JDialog implements ActionListener {
 	private Vector<Vector<String>> about_data = new Vector<Vector<String>>();
 	private Vector<String> version = new Vector<String>();
 	private Vector<String> date = new Vector<String>();
+	private Vector<String> corescript = new Vector<String>();
 	private Vector<String> support_suite = new Vector<String>();
 	private Vector<String> rumtime = new Vector<String>();
 	private client_data client_info;
@@ -47,7 +48,10 @@ public class about_dialog extends JDialog implements ActionListener {
 	private JCheckBox jc_test;
 	private JButton close, update;
 
-	public about_dialog(main_frame main_view, client_data client_info, switch_data switch_info) {
+	public about_dialog(
+			main_frame main_view, 
+			client_data client_info, 
+			switch_data switch_info) {
 		super(main_view, "About TestRail Client", true);
 		this.client_info = client_info;
 		this.switch_info = switch_info;
@@ -60,6 +64,13 @@ public class about_dialog extends JDialog implements ActionListener {
 		date.add("Build Date:");
 		date.add(public_data.BASE_BUILDDATE);
 		about_data.add(date);
+		corescript.add("Core Version:");
+		String version = new String("");
+		String status = new String("");
+		version = client_info.get_client_corescript_data().get("version");
+		status = client_info.get_client_corescript_data().get("status");
+		corescript.add(version + "<" + status + ">");
+		about_data.add(corescript);
 		support_suite.add("Support Suite File:");
 		support_suite.add(public_data.BASE_SUITEFILEVERSION);
 		about_data.add(support_suite);

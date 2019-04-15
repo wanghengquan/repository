@@ -75,6 +75,9 @@ public class software_dialog extends JDialog implements ChangeListener{
 			if (section_name.equalsIgnoreCase("machine")){
 				continue;
 			}
+			if (section_name.equalsIgnoreCase("corescript")){
+				continue;
+			}
 			//Icon icon_image = (Icon) Toolkit.getDefaultToolkit().getImage(public_data.ICON_TAB_ICO);
 			ImageIcon icon_image = new ImageIcon(public_data.ICON_SOFTWARE_TAB_PNG);
 			String shown_tab_name = new String();
@@ -184,8 +187,10 @@ class value_pane extends JPanel implements ActionListener{
 	private JPanel construct_south_panel(){
 		JPanel south_panel = new JPanel(new GridLayout(1,4,5,20));
 		discard = new JButton("Discard");
+		discard.setToolTipText("Restore previous data.");
 		discard.addActionListener(this);
 		apply = new JButton("Apply");
+		apply.setToolTipText("Apply for current Software setting only.");
 		apply.addActionListener(this);
 		close = new JButton("Close");
 		close.addActionListener(this);		

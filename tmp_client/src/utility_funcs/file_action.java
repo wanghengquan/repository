@@ -292,9 +292,63 @@ public class file_action {
 		}
 	}	
 	
+	public static Boolean lock_file_waiting(String file_path){
+		Boolean status = new Boolean(false);
+		File lock_file = new File(file_path);
+		int counter = 0;
+		while (lock_file.exists()){
+			counter += 1;
+			if (counter > 20){
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (lock_file.exists()){
+			status = false;
+		} else {
+			status = true;
+		}
+		return status;
+	}
+	
+	public static Boolean gen_lock_file(String file_path){
+		Boolean status = new Boolean(false);
+		File lock_file = new File(file_path);
+		int counter = 0;
+		while (lock_file.exists()){
+			counter += 1;
+			if (counter > 20){
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (lock_file.exists()){
+			status = false;
+		} else {
+			file_action.write_file(file_path, time_info.get_date_time());
+			status = true;
+		}
+		return status;
+	}
+	
+	public static Boolean del_lock_file(String file_path) {
+		File delFile = new File(file_path);
+		return FileUtils.deleteQuietly(delFile);
+	}
+	
 	public static void main(String[] args) {
 		System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
-	}	
+	}
 	
 	public static void main2(String[] args) {
 		String work_dir = System.getProperty("user.dir");

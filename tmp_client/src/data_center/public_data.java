@@ -24,10 +24,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.07.10"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20710; // version for code use
-	public final static String BASE_BUILDDATE = "2018/11/09";
-	public final static String BASE_SUITEFILEVERSION = "1.11";
+	public final static String BASE_CURRENTVERSION = "2.07.11"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20711; // version for code use
+	public final static String BASE_BUILDDATE = "2019/04/15";
+	public final static String BASE_SUITEFILEVERSION = "1.12";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -53,7 +53,7 @@ public class public_data {
 	// email setting servers: 1:LSHMAIL1.latticesemi.com,  2:172.25.0.3
 	public final static String MAIL_SERVER = "LSHMAIL1.latticesemi.com";
 	public final static String MAIL_SERVER_USERNAME = "jwang1";
-	public final static String MAIL_SERVER_PASSWORD = "Quan@123";
+	public final static String MAIL_SERVER_PASSWORD = "W@lattice1";
 
 	// ========================
 	// send email preference setting
@@ -94,6 +94,11 @@ public class public_data {
 	public final static String WORKSPACE_LOG_DIR = "logs";
 	
 	// ========================
+	// suite folder configuration
+	// name	
+	public final static String SUITE_DATA_REPORT_NAME = "suite_scan.csv";
+	public final static String SUITE_LOCK_FILE_NAME = "suite_lock.txt";
+	// ========================
 	// case folder configuration
 	// name	
 	public final static String CASE_REPORT_NAME = "case_report.txt";
@@ -113,7 +118,8 @@ public class public_data {
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
-	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
+	//public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
+	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
 
 	// ========================
 	// external documents based on software bin path
@@ -159,17 +165,29 @@ public class public_data {
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
-	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped 
+	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
+    public final static String TASK_PRI_LOCALLY = "1";
 
 	// ========================
 	// performance calibration
+    public final static int PERF_GUI_BASE_INTERVAL = 1;
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 60;   //Case same status report interval
-	public final static int PERF_POOL_MAXIMUM_SIZE = 30;
+	public final static int PERF_POOL_CURRENT_SIZE = 3;      //current maxi size to external
+	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
+	public final static int PERF_POOL_LIN_MAX_SIZE = 30;
+	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
 	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
+	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 
+	// ========================
+	// Internal String replacement
+	public final static String INTERNAL_STRING_SEMICOLON = "@SC@";   // ';'
+	public final static String INTERNAL_STRING_BLANKSPACE = "@BS@";  // ' '
+	public final static String INTERNAL_STRING_COLON = "@CL@";  	 // ':'
+	
 	// ========================
 	// >>>>>>>>>>>>>>>>>>>>>>>>following data will be update by data_server.java
 	// >>>>>>>>>>>>>>>>>>>>>>>>Please use fresh data in switch_data(switch_info)
@@ -185,19 +203,21 @@ public class public_data {
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
 	public final static String DEF_UNATTENDED_MODE = "0"; // 1 UNATTENDED(no user), 0 ATTENDED(user there)
 	public final static String DEF_STABLE_VERSION = "1"; // 1 get stable update, 0 get develop update
+	public final static String DEF_CLIENT_DEBUG_MODE = "0"; //1: Client run in debug mode
 	// preference
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial", parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
 	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local","remote","both"
-	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","keep_case"
+	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","keep_case" 
 	public final static String DEF_COPY_PATH_KEEP = "false";  //flatten copied case
-	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"software", "system", "machine"
-	public final static String DEF_POOL_CURRENT_SIZE = "5";
+	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"all", "software", "system", "machine"
 	public final static String DEF_SHOW_WELCOME = "1";
 	public final static String DEF_AUTO_RESTART = "0";
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_SPACE = "";
+	public final static int DEF_CLEANUP_QUEUE_SIZE = 800;
+	public final static int DEF_CLEANUP_TASK_TIMEOUT = 300;
 
 	public public_data() {
 	}
@@ -208,7 +228,16 @@ public class public_data {
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 		return install_path.replaceAll("\\\\", "/");
 	}
-
+	
+	private static int get_maximum_threads(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_POOL_WIN_MAX_SIZE;
+		} else {
+			return public_data.PERF_POOL_LIN_MAX_SIZE;
+		}
+	}
+	
 	/*
 	 * main entry for test
 	 */

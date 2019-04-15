@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import data_center.client_data;
 import data_center.exit_enum;
@@ -77,8 +78,154 @@ public class config_sync extends Thread {
 	// protected function
 	// private function
 
-
-
+	private HashMap<String, HashMap<String, String>> import_data_verification(
+			HashMap<String, HashMap<String, String>> ini_data) {
+		HashMap<String, HashMap<String, String>> verified_data = new HashMap<String, HashMap<String, String>>();
+		Iterator<String> section_it = ini_data.keySet().iterator();
+		while(section_it.hasNext()){
+			String section_name = section_it.next();
+			Iterator<String> option_it = ini_data.get(section_name).keySet().iterator();
+			HashMap<String, String> verified_section_data = new HashMap<String, String>();
+			while(option_it.hasNext()){
+				String option_key = option_it.next();
+				String option_value = ini_data.get(section_name).get(option_key);
+				switch (option_key.toLowerCase()) {
+				case "max_insts":
+					if (!data_check.num_scope_check(option_value, 0, 30)){
+						option_value = public_data.DEF_SW_MAX_INSTANCES;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid max_insts setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "scan_dir":
+					if (!data_check.str_path_check(option_value)){
+						option_value = "";
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid scan_dir setting:" + section_name + ">" + option_key + ", Ignore it");
+					}
+					break;
+				case "private":
+					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
+						option_value = public_data.DEF_MACHINE_PRIVATE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid private setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "unattended":
+					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
+						option_value = public_data.DEF_UNATTENDED_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid private setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "auto_restart":
+					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
+						option_value = public_data.DEF_AUTO_RESTART;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid auto_restart setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "case_mode":
+					if (!data_check.str_choice_check(option_value, new String [] {"copy_case", "keep_case"} )){
+						option_value = public_data.DEF_CLIENT_CASE_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid case_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "dev_mails":
+					if (!data_check.str_regexp_check(option_value, "(\\w)+(.\\w+)*@(\\w)+((.\\w+)+)")){
+						option_value = public_data.BASE_DEVELOPER_MAIL;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid dev_mails setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "opr_mails":
+					if (!data_check.str_regexp_check(option_value, "(\\w)+(.\\w+)*@(\\w)+((.\\w+)+)")){
+						option_value = public_data.BASE_OPERATOR_MAIL;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid opr_mails setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;					
+				case "ignore_request":
+					if (!data_check.str_choice_check(option_value, new String [] {"", "all", "software", "system", "machine"} )){
+						option_value = public_data.DEF_CLIENT_IGNORE_REQUEST;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid ignore_request setting:" + section_name + ">" + option_key + ", default value will be used.");
+					} 
+					break;
+				case "link_mode":
+					if (!data_check.str_choice_check(option_value, new String [] {"local", "remote", "both"} )){
+						option_value = public_data.DEF_CLIENT_LINK_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid link_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "pool_size":
+					if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+						option_value = String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE);
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid pool_size setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;				
+				case "max_threads":
+					if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+						option_value = String.valueOf(public_data.PERF_POOL_CURRENT_SIZE);
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid max_threads setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "path_keep":
+					if (!data_check.str_choice_check(option_value, new String [] {"false", "true"} )){
+						option_value = public_data.DEF_COPY_PATH_KEEP;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid path_keep setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "result_keep":
+					if (!data_check.str_choice_check(option_value, new String [] {"auto", "zipped", "unzipped"} )){
+						option_value = public_data.TASK_DEF_RESULT_KEEP;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid result_keep setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "save_space":
+					if (!option_value.equals("") && !data_check.str_path_check(option_value)){
+						option_value = public_data.DEF_SAVE_SPACE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid save_space setting:" + section_name + ">" + option_key + ", Ignore it");
+					}
+					break;
+				case "work_space":
+					if (!data_check.str_path_check(option_value)){
+						option_value = public_data.DEF_WORK_SPACE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid work_space setting:" + section_name + ">" + option_key + ", Ignore it");
+					}
+					break;
+				case "show_welcome":
+					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
+						option_value = public_data.DEF_SHOW_WELCOME;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid show_welcome setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "space_reserve":
+					if (!data_check.num_scope_check(option_value, 1, Integer.MAX_VALUE)){
+						option_value = public_data.RUN_LIMITATION_SPACE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid space_reserve setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "stable_version":
+					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
+						option_value = public_data.DEF_STABLE_VERSION;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid stable_version setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "task_mode":
+					if (!data_check.str_choice_check(option_value, new String [] {"serial", "parallel", "auto"} )){
+						option_value = public_data.DEF_TASK_ASSIGN_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid task_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				case "thread_mode":
+					if (!data_check.str_choice_check(option_value, new String [] {"manual", "auto"} )){
+						option_value = public_data.DEF_MAX_THREAD_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid thread_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;
+				default:
+					break;
+				}
+				verified_section_data.put(option_key, option_value);
+			}
+			verified_data.put(section_name, verified_section_data);
+		}
+		return verified_data;
+	}
+	
 	private void update_static_data(HashMap<String, HashMap<String, String>> ini_data) {
 		//different section in ini file means different software
 		Iterator<String> section_it = ini_data.keySet().iterator();
@@ -154,6 +301,7 @@ public class config_sync extends Thread {
 		HashMap<String, String> tmp_preference_data = new HashMap<String, String>();
 		HashMap<String, String> cfg_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
+		HashMap<String, String> cfg_machine_data = new HashMap<String, String>();		
 		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
 		tmp_preference_data.put("ignore_request", write_data.get("preference").get("ignore_request"));
 		tmp_preference_data.put("thread_mode", write_data.get("preference").get("thread_mode"));
@@ -161,6 +309,7 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("case_mode", write_data.get("preference").get("case_mode"));
 		tmp_preference_data.put("result_keep", write_data.get("preference").get("result_keep"));
 		tmp_preference_data.put("path_keep", write_data.get("preference").get("path_keep"));
+		tmp_preference_data.put("pool_size", write_data.get("preference").get("pool_size"));
 		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));
 		tmp_preference_data.put("auto_restart", write_data.get("preference").get("auto_restart"));
@@ -177,15 +326,19 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
+		tmp_machine_data.put("debug", write_data.get("preference").get("debug"));
+		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
+		write_data.remove("CoreScript");
 		if (cmd_gui.equalsIgnoreCase("gui")){
 			write_data.put("tmp_preference", tmp_preference_data);
+			write_data.put("tmp_machine", tmp_machine_data);
 		} else {
 			write_data.put("tmp_preference", cfg_preference_data);
+			write_data.put("tmp_machine", cfg_machine_data);
 		}
-		write_data.put("tmp_machine", tmp_machine_data);
 		CONFIG_SYNC_LOGGER.info(write_data.toString());
 		try {
 			ini_runner.write_ini_data(write_data);
@@ -267,6 +420,7 @@ public class config_sync extends Thread {
 		// initial 1 : get overall configuration data
 		ini_parser ini_runner = new ini_parser(get_read_config_file());
 		HashMap<String, HashMap<String, String>> ini_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> verified_ini_data = new HashMap<String, HashMap<String, String>>();
 		try {
 			ini_data.putAll(ini_runner.read_ini_data());
 		} catch (ConfigurationException e1) {
@@ -276,7 +430,8 @@ public class config_sync extends Thread {
 			switch_info.set_client_stop_request(exit_enum.DATA);
 		}
 		// initial 2 : update initial(static) data
-		update_static_data(ini_data);
+		verified_ini_data.putAll(import_data_verification(ini_data));
+		update_static_data(verified_ini_data);
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -296,7 +451,7 @@ public class config_sync extends Thread {
 			Boolean dump_request = switch_info.impl_dump_config_request();
 			if (dump_request) {
 				ini_parser ini_dump = new ini_parser(get_write_config_file());
-				dump_client_data(ini_dump, ini_data);
+				dump_client_data(ini_dump, verified_ini_data);
 			}
 			try {
 				Thread.sleep(base_interval * 2 * 1000);

@@ -20,6 +20,7 @@ import connect_tube.tube_server;
 import data_center.client_data;
 import data_center.data_server;
 import data_center.switch_data;
+import flow_control.post_data;
 import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
@@ -40,7 +41,8 @@ public class client_status extends Observable  {
 	protected task_data task_info;
 	protected view_data view_info;
 	protected pool_data pool_info;
-	protected HashMap<String, String> cmd_info; 
+	protected HashMap<String, String> cmd_info;
+	protected post_data post_info;
 	protected view_server view_runner;
 	protected tube_server tube_runner;
 	protected data_server data_runner;
@@ -59,6 +61,7 @@ public class client_status extends Observable  {
 			view_data view_info,
 			pool_data pool_info,
 			HashMap<String, String> cmd_info,
+			post_data post_info,
 			view_server view_runner,
 			tube_server tube_runner,
 			data_server data_runner,
@@ -69,6 +72,7 @@ public class client_status extends Observable  {
 		this.view_info = view_info;
 		this.pool_info = pool_info;
 		this.cmd_info = cmd_info;
+		this.post_info = post_info;
 		this.view_runner = view_runner;
 		this.tube_runner = tube_runner;
 		this.data_runner = data_runner;

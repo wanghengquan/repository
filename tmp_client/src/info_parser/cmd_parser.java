@@ -9,6 +9,7 @@
  */
 package info_parser;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
@@ -18,6 +19,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.exit_enum;
+import data_center.public_data;
+import utility_funcs.data_check;
 
 /*
  * PlatUML graph
@@ -83,13 +86,15 @@ public class cmd_parser {
 		}
 		// 3.4 suite file value
 		if (commandline_obj.hasOption('f')) {
-			cmd_hash.put("suite_file", commandline_obj.getOptionValue('f').replaceAll("\\\\", "/"));
+			String suite_file = new String(commandline_obj.getOptionValue('f'));
+			cmd_hash.put("suite_file", get_absolute_path(suite_file));
 		} else {
 			cmd_hash.put("suite_file", "");
 		}
 		// 3.5 suite path value
 		if (commandline_obj.hasOption('p')) {
-			cmd_hash.put("suite_path", commandline_obj.getOptionValue('p').replaceAll("\\\\", "/"));
+			String suite_path = new String(commandline_obj.getOptionValue('p'));
+			cmd_hash.put("suite_path", get_absolute_path(suite_path));
 		} else {
 			cmd_hash.put("suite_path", "");
 		}
@@ -113,13 +118,13 @@ public class cmd_parser {
 		}
 		// 3.9 task environments setting
 		if (commandline_obj.hasOption('e')) {
-			cmd_hash.put("task_environ", commandline_obj.getOptionValue('e'));
+			cmd_hash.put("task_environ", commandline_obj.getOptionValue('e').replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON));
 		} else {
 			cmd_hash.put("task_environ", "");
 		}
 		// 3.10 client environments setting
 		if (commandline_obj.hasOption('E')) {
-			cmd_hash.put("client_environ", commandline_obj.getOptionValue('E'));
+			cmd_hash.put("client_environ", commandline_obj.getOptionValue('E').replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON));
 		} else {
 			cmd_hash.put("client_environ", "");
 		}
@@ -132,21 +137,26 @@ public class cmd_parser {
 		}
 		// 3.12 work path
 		if (commandline_obj.hasOption('w')) {
-			cmd_hash.put("work_space", commandline_obj.getOptionValue('w').replaceAll("\\\\", "/"));
+			String work_space = new String(commandline_obj.getOptionValue('w'));
+			cmd_hash.put("work_space", get_absolute_path(work_space));
 		}
 		// 3.13 save path
 		if (commandline_obj.hasOption('s')) {
-			cmd_hash.put("save_space", commandline_obj.getOptionValue('s').replaceAll("\\\\", "/"));
+			String save_space = new String(commandline_obj.getOptionValue('s'));
+			cmd_hash.put("save_space", get_absolute_path(save_space));
 		}
 		// 3.14 max threads
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}
+		if (commandline_obj.hasOption('T')) {
+			cmd_hash.put("pool_size", commandline_obj.getOptionValue('T'));
+		}
 		// 3.15 debug mode
 		if (commandline_obj.hasOption('d')) {
-			cmd_hash.put("debug", "true");
+			cmd_hash.put("debug", "1");
 		} else {
-			cmd_hash.put("debug", "false");
+			cmd_hash.put("debug", "0");
 		}
 		// 3.16 case mode
 		if (commandline_obj.hasOption('K')) {
@@ -170,9 +180,64 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
+		// 3.20 run sanity check
+		if (!run_input_data_check(cmd_hash)){
+			get_help(options_obj);
+		}
 		return cmd_hash;
 	}
 
+	private String get_absolute_path(
+			String raw_path){
+		File raw_file = new File(raw_path);
+		return raw_file.getAbsolutePath().replaceAll("\\\\", "/");
+	}
+	
+	private Boolean run_input_data_check(
+			HashMap<String, String> cmd_hash){
+		Boolean check_satus = new Boolean(true);
+		Iterator<String> option_it = cmd_hash.keySet().iterator();
+		while(option_it.hasNext()){
+			String option_name = option_it.next();
+			String option_value = cmd_hash.get(option_name);
+			switch (option_name){
+			case "ignore_request":
+				if(!data_check.str_choice_check(option_value, new String [] {"", "all", "software", "system", "machine"} )){
+					CMD_PARSER_LOGGER.error("Command line parse Failed.");
+					check_satus = false;
+				}
+				break;
+			case "max_threads":
+				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid max_threads setting");
+					check_satus = false;
+				}
+				break;
+			case "pool_size":
+				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid pool_size setting");
+					check_satus = false;
+				}
+				break;
+			case "save_space":
+				if (!data_check.str_path_check(option_value)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid save_space setting");
+					check_satus = false;
+				}
+				break;
+			case "work_space":
+				if (!data_check.str_path_check(option_value)){
+					CMD_PARSER_LOGGER.warn("Config file:Invalid work_space setting");
+					check_satus = false;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		return check_satus;
+	}
+	
 	// protected function
 	// private function
 	/*
@@ -189,7 +254,7 @@ public class cmd_parser {
 		options_obj.addOption(
 				Option.builder("U").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
-				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine) check")
+				.desc("Client will ignore/skip the suite_file/task requirement(software, system, machine, all) check")
 				.build());
 		options_obj.addOption(Option.builder("f").longOpt("suite-file").hasArg()
 				.desc("Test suite file for Local run, $unit_path represent the path to <install_path>/doc/TMP_EIT_suites")
@@ -227,7 +292,11 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("s").longOpt("save-space").hasArg()
 				.desc("Storage place for case remote store, if not present will use current work_space").build());
 		options_obj.addOption(
-				Option.builder("t").longOpt("max-threads").hasArg().desc("Client will launch $t threads").build());
+				Option.builder("t").longOpt("max-threads").hasArg()
+				.desc("Client will launch $t threads, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
+		options_obj.addOption(
+				Option.builder("T").longOpt("pool-size").hasArg()
+				.desc("Top size for Thread Pool initial setting, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
 		options_obj.addOption(Option.builder("d").longOpt("debug").desc("Client will run in debug mode").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
 		return options_obj;
@@ -237,7 +306,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-c|-g] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-d] [-c|-g] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
