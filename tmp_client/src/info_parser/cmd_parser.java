@@ -189,6 +189,10 @@ public class cmd_parser {
 
 	private String get_absolute_path(
 			String raw_path){
+		if (raw_path.contains("$")){
+			//Special path variable inside skip convert
+			return raw_path;
+		}
 		File raw_file = new File(raw_path);
 		return raw_file.getAbsolutePath().replaceAll("\\\\", "/");
 	}
