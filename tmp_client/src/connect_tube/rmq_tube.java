@@ -46,7 +46,10 @@ public class rmq_tube {
 	private client_data client_info;
 	private Connection admin_connection;
 	private Channel admin_channel;
+	private Connection stop_connection;
+	private Channel stop_channel;
 	private Boolean admin_work = new Boolean(false);
+	private Boolean stop_queue_work = new Boolean(false);
 
 	// public function
 	public rmq_tube(
@@ -199,9 +202,9 @@ public class rmq_tube {
 		factory.setAutomaticRecoveryEnabled(true);
 		admin_connection = factory.newConnection();
 		admin_channel = admin_connection.createChannel();
-		admin_channel.exchangeDeclare(public_data.RMQ_ADMIN_NAME, "fanout");
+		admin_channel.exchangeDeclare(public_data.RMQ_ADMIN_QUEUE, "fanout");
 		String queueName = admin_channel.queueDeclare().getQueue();
-		admin_channel.queueBind(queueName, public_data.RMQ_ADMIN_NAME, "");
+		admin_channel.queueBind(queueName, public_data.RMQ_ADMIN_QUEUE, "");
 		Consumer consumer = new DefaultConsumer(admin_channel) {
 			@Override
 			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
@@ -287,5 +290,60 @@ public class rmq_tube {
 		return update_status;
 	}
 	
+	public synchronized void start_stop_tube() throws Exception {
+		/*
+		 * This function used to read the admin queue and return the strings at
+		 * here we use Publish/Subscribe in rabbitmq
+		 */
+		if (stop_queue_work){
+			return;
+		}
+		stop_queue_work = true;
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost(rmq_host);
+		factory.setUsername(rmq_user);
+		factory.setPassword(rmq_pwd);
+		factory.setAutomaticRecoveryEnabled(true);
+		stop_connection = factory.newConnection();
+		stop_channel = stop_connection.createChannel();
+		stop_channel.exchangeDeclare(public_data.RMQ_STOP_QUEUE, "fanout");
+		String queueName = stop_channel.queueDeclare().getQueue();
+		stop_channel.queueBind(queueName, public_data.RMQ_STOP_QUEUE, "");
+		Consumer consumer = new DefaultConsumer(stop_channel) {
+			@Override
+			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+					byte[] body) throws IOException {
+				String message = new String(body, "UTF-8");
+				update_stop_queue(message);
+				//channel.basicAck(envelope.getDeliveryTag(), false);
+			}
+		};
+		stop_channel.basicConsume(queueName, true, consumer);
+	}
 
+
+	public synchronized void stop_stop_tube() throws Exception {
+		if (!stop_queue_work){
+			return;
+		}
+		stop_queue_work = false;
+		if (stop_channel.isOpen())
+			try {
+				stop_channel.close();
+			} catch (TimeoutException e) {
+				//e.printStackTrace();
+				RMQ_TUBE_LOGGER.warn("close channel TimeoutException");
+			}
+		if (stop_connection.isOpen())
+			stop_connection.close();		
+	}
+	
+	private Boolean update_stop_queue(String message) {
+		Boolean update_status = new Boolean(false);
+		HashMap<String, HashMap<String, String>> msg_hash = new HashMap<String, HashMap<String, String>>();
+		msg_hash.putAll(xml_parser.get_rmq_xml_data2(message));
+		task_info.update_received_stop_queues_map(msg_hash);
+		export_data.debug_disk_client_in_stop("stop_queue.xml", message, client_info);
+		return update_status;
+	}
 }

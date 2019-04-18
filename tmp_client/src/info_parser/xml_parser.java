@@ -177,6 +177,61 @@ public class xml_parser {
 		return level1_data;
 	}
 
+	public static HashMap<String, HashMap<String, String>> get_rmq_xml_data2(String xmlString) {
+		xmlString = xmlString.replaceAll("\\s", " ");
+		@SuppressWarnings("unused")
+		String stop_queue = "<StopQ>"
+				  + "<ID>" 
+				    + "<sub name=\"run_id\" value=\"6\"></sub>"
+				    + "<sub name=\"test_id\" value=\"1445\"></sub>"
+				    + "<sub name=\"time\" value=\"605\"></sub>"
+				  + "</ID>"
+				  + "<ID>"
+				    + "<sub name=\"run_id\" value=\"6\"></sub>"
+				    + "<sub name=\"test_id\" value=\"1448\"></sub>"
+				    + "<sub name=\"time\" value=\"605\"></sub>"
+				  + "</ID>"
+				+ "</StopQ>";
+		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>>();
+		Document xml_doc = null;
+		try {
+			xml_doc = string_to_document(xmlString);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			XML_PARSER_LOGGER.info("Wrong/empty xml format received, skip.");
+			return return_data;
+		}
+		Element root_node = xml_doc.getRootElement();
+		HashMap<String, HashMap<String, String>> level2_data = new HashMap<String, HashMap<String, String>>();
+		for (Iterator<?> i = root_node.elementIterator(); i.hasNext();) {
+			Element level2_element = (Element) i.next();
+			HashMap<String, String> level3_data = new HashMap<String, String>();
+			for (Iterator<?> j = level2_element.elementIterator(); j.hasNext();) {
+				Element level3_element = (Element) j.next();
+				String name_attr = level3_element.attributeValue("name");
+				String value_attr = level3_element.attributeValue("value");
+				if (name_attr == null) {
+					continue;
+				}
+				level3_data.put(name_attr, value_attr);
+			}
+			if (!level3_data.containsKey("test_id")){
+				XML_PARSER_LOGGER.warn("Skip level3 data, since no test_id found.");
+				continue;
+			}
+			String test_id = new String("");
+			test_id = level3_data.get("test_id");
+			if (test_id == null || test_id == "") {
+				XML_PARSER_LOGGER.warn("Skip level3 data, wrong test_id value found.");
+				continue;
+			}
+			level2_data.put(test_id, level3_data);
+		}
+		return_data.putAll(level2_data);
+		return return_data;
+	}
+	
 	// admin queue
 	public Boolean dump_admin_data(
 			HashMap<String, HashMap<String, String>> admin_queue_data,

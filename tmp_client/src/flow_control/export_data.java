@@ -69,6 +69,21 @@ public class export_data {
 		return dump_status;
 	}
 	
+	public static Boolean debug_disk_client_in_stop(
+			String file_name,
+			String message,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/in/stop/" + file_name; 
+		file_action.append_file(dump_file, message + line_separator);
+		return dump_status;
+	}	
+	
 	public static Boolean debug_disk_client_out_result(
 			String message,
 			client_data client_info){

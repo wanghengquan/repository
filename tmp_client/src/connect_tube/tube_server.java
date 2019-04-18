@@ -401,24 +401,6 @@ public class tube_server extends Thread {
 			counter++;
 		}
 	}
-
-	private void run_import_remote_task_admin(){
-		String link_mode = client_info.get_client_preference_data().get("link_mode");
-		if (link_mode.equalsIgnoreCase("local")){
-			try {
-				rmq_runner.stop_admin_tube();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				TUBE_SERVER_LOGGER.error("Stop Link to RabbitMQ server failed.");
-			}
-		} else {
-			try {
-				rmq_runner.start_admin_tube(client_info.get_client_machine_data().get("terminal"));
-			} catch (Exception e1) {
-				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
-			}
-		}
-	}
 	
 	private void run_received_admin_sorting(){
 		String link_mode = client_info.get_client_preference_data().get("link_mode");
@@ -483,6 +465,26 @@ public class tube_server extends Thread {
 		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
 	}	
 	
+	private void run_remote_tubes_control(){
+		String link_mode = client_info.get_client_preference_data().get("link_mode");
+		if (link_mode.equalsIgnoreCase("local")){
+			try {
+				rmq_runner.stop_admin_tube();
+				rmq_runner.stop_stop_tube();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				TUBE_SERVER_LOGGER.error("Stop Link to RabbitMQ server failed.");
+			}
+		} else {
+			try {
+				rmq_runner.start_admin_tube(client_info.get_client_machine_data().get("terminal"));
+				rmq_runner.start_stop_tube();
+			} catch (Exception e1) {
+				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
+			}
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -514,8 +516,8 @@ public class tube_server extends Thread {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update remote admin
-			run_import_remote_task_admin();
+			// task 1: open/close remote tubes
+			run_remote_tubes_control();
 			// task 2: update local suite file admin (local file, import)
 			run_import_local_file_admin();
 			// task 3: update local suite path admin (local file, import)

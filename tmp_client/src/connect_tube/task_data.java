@@ -44,6 +44,7 @@ public class task_data {
 			new queue_compare());
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
 	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+	private HashMap<String, HashMap<String, String>> received_stop_queues_map = new HashMap<String, HashMap<String, String>>();
 	private Map<String, HashMap<String, String>> local_file_imported_task_map = new HashMap<String, HashMap<String, String>>();
 	private Map<String, HashMap<String, String>> local_file_finished_task_map = new HashMap<String, HashMap<String, String>>();
 	private Map<String, HashMap<String, String>> local_path_imported_task_map = new HashMap<String, HashMap<String, String>>();
@@ -1393,6 +1394,77 @@ public class task_data {
 		}
 	}
 
+	public HashMap<String, HashMap<String, String>> get_received_stop_queues_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		try {
+			queue_data.putAll(this.received_stop_queues_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return queue_data;
+	}
+	
+	public void set_received_stop_queues_map(HashMap<String, HashMap<String, String>> queue_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.received_stop_queues_map.clear();
+			this.received_stop_queues_map.putAll(queue_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return;
+	}
+	
+	public void update_received_stop_queues_map(HashMap<String, HashMap<String, String>> queue_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.received_stop_queues_map.putAll(queue_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return;
+	}
+	
+	public void update_received_stop_queues_map(String test_id, HashMap<String, String> info_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.received_stop_queues_map.put(test_id, info_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return;
+	}
+	
+	public Boolean remove_task_from_received_stop_queues_map(String test_id) {
+		Boolean remove_status = new Boolean(true);
+		rw_lock.writeLock().lock();
+		try {
+			if (received_stop_queues_map.containsKey(test_id)) {
+				received_stop_queues_map.remove(test_id);
+			} else {
+				remove_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return remove_status;
+	}
+	
+	public HashMap<String, HashMap<String, String>> fetch_tasks_from_received_stop_queues_map() {
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		rw_lock.writeLock().lock();
+		try {
+			if (!received_stop_queues_map.isEmpty()){
+				queue_data.putAll(deep_clone.clone(received_stop_queues_map));
+				received_stop_queues_map.clear();
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return queue_data;
+	}
+	
 	/*
 	 * main entry for test
 	 */
