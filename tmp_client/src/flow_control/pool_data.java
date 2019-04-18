@@ -170,10 +170,10 @@ public class pool_data {
 					// e.printStackTrace();
 					THREAD_POOL_LOGGER.warn("Get task call exception.");
 					call_output.add(">>>Error:Get task call exception.");
-					call_output.add("<status>Blocked</status>");
+					call_output.add("<status>Failed</status>");
 				}
 				if((boolean) hash_data.get(pool_attr.call_canceled)){
-					call_output.add(">>>Timeout extra run:");
+					call_output.add(">>>Canceled extra run:");
 					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir)));
 				}
 				if (is_child_process_timeout(call_output)){

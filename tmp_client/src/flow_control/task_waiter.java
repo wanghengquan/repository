@@ -854,7 +854,7 @@ public class task_waiter extends Thread {
 		if (prepare_ok){
 			cmd_status = task_enum.PROCESSING;
 		} else {
-			cmd_status = task_enum.BLOCKED;
+			cmd_status = task_enum.FAILED;
 		}
 		ArrayList<String> task_prepare_info_list = new ArrayList<String>();
 		task_prepare_info_list.addAll(prepare_obj.task_prepare_info);
