@@ -417,6 +417,7 @@ class GetCasesData(object):
         self.get_case_types()
         self.get_fields_system_name()
         self.get_priority_id()
+        self.get_type_id()
         self.skip_always = ("Section", "Sorting", "design_name", 'CRs')
         self.custom_config_keys = ("CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine")
         self.int_keys = ("custom_test_level", "custom_fpga_slice", "custom_fpga_pio", "custom_fpga_rtl",
@@ -439,6 +440,12 @@ class GetCasesData(object):
         self.priorities = dict()
         for foo in self.db.query(sel_cmd):
             self.priorities[foo.get("name")] = foo.get("id")
+
+    def get_type_id(self):
+        sel_cmd = "SELECT id, name from case_types where is_deleted=0"
+        self.types = dict()
+        for foo in self.db.query(sel_cmd):
+            self.types[foo.get("name")] = foo.get("id")
 
     def get_cases_data(self, cases_str):
         self.cases_data = OrderedDict()
@@ -477,6 +484,12 @@ class GetCasesData(object):
             else:
                 if k in self.fields_system_name:
                     case_data[self.fields_system_name[k]] = v
+                elif k.lower() == "type":
+                    type_id = self.types.get(v)
+                    if type_id:
+                        case_data["type_id"] = type_id
+                    else:
+                        LOGGER.warning("Unknown Type name: {} for {}".format(v, raw_dict))
                 elif k == "Priority":
                     p_id = self.priorities.get(v)
                     if p_id:
