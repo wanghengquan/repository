@@ -127,6 +127,7 @@ public class local_tube {
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
+		//for previously version support do not list 'Automated' in must_keys
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
 				suite_file_error_msg = "Error: case sheet title missing :" + x + ".";
@@ -337,9 +338,9 @@ public class local_tube {
 				if (row_list.get(0).trim() == null || row_list.get(0).trim().equals("")) {
 					continue;
 				}
-				String column_order = "";
-				String column_title = "";
-				String column_flow = "";
+				String column_order = new String("");
+				String column_title = new String("");
+				String column_flow = new String("");
 				if (row_list.size() > order_index) {
 					column_order = String.valueOf(case_sheet_num) + "_" + row_list.get(order_index).trim();
 				}
@@ -356,7 +357,7 @@ public class local_tube {
 				if (!case_start) {
 					continue;
 				}
-				String case_order = "";
+				String case_order = new String("");
 				String[] flow_array = column_flow.split(";");
 				for (String flow_item : flow_array) {
 					Map<String, String> row_data = new HashMap<String, String>();
@@ -370,7 +371,7 @@ public class local_tube {
 						if (key.equals("Order")) {
 							row_data.put("Order", case_order);
 						} else if (key.equals("Flow")) {
-							row_data.put("Flow", flow_item);
+							row_data.put("Flow", flow_item);	
 						} else {
 							row_data.put(key, column_value.replaceAll("\\\\", "/"));
 						}
@@ -398,9 +399,14 @@ public class local_tube {
 			String macro_case_order = new String();
 			Map<String, String> case_data = new HashMap<String, String>();
 			case_data.putAll(raw_data.get(case_order));
-			if (case_data.get("NoUse").equalsIgnoreCase("yes")) {
+			if (case_data.containsKey("NoUse") && case_data.get("NoUse").equalsIgnoreCase("yes")) {
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping NoUse case:" + case_data.get("Order"));
 				continue;
 			}
+			if (case_data.containsKey("Automated") &&  case_data.get("Automated").equalsIgnoreCase("no")) {
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping Non-Automated case:" + case_data.get("Order"));
+				continue;
+			}		
 			if (macro_data == null || macro_data.isEmpty()) {
 				macro_case_order = "m" + macro_order.toString() + "_" + case_order;
 				case_data.put("Order", macro_case_order);
