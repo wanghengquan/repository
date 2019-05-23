@@ -223,6 +223,10 @@ public class local_tube {
 		for (int row = 0; row < suite_sheet.size(); row++) {
 			List<String> row_list = suite_sheet.get(row);
 			if (row_list.size() < 1) {
+                if(macro_area) {
+                    macro_area = false;
+                    macro_data.put(macro_name, area_list);
+                }
 				continue;
 			}
 			String item = row_list.get(0).trim().toLowerCase();

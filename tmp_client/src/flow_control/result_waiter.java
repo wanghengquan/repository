@@ -566,8 +566,8 @@ public class result_waiter extends Thread {
 	}
 	
 	private String remove_xml_modifier(String xml_string) {
+        xml_string = xml_string.replaceAll("&", "&amp;");
 		xml_string = xml_string.replaceAll("\"", "&quot;");
-		xml_string = xml_string.replaceAll("&", "&amp;");
 		xml_string = xml_string.replaceAll("<", "&lt;");
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
@@ -600,6 +600,7 @@ public class result_waiter extends Thread {
 			String key_check = new String("NA");
 			String defects = new String("");
 			String defects_history = new String("NA");
+			String scan_result = "";
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -614,11 +615,13 @@ public class result_waiter extends Thread {
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+                scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));				
 			}  else {
 				cmd_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
+            hash_data.put("scan_result", scan_result);
 			hash_data.put("defects", defects);
 			hash_data.put("defects_history", defects_history);
 			hash_data.put("milestone", milestone);
@@ -634,7 +637,24 @@ public class result_waiter extends Thread {
 		}
 		return case_data;
 	}
-	
+
+
+    private String get_scan_result(ArrayList<String> cmd_output) {
+        String scan_result = "";
+        if (cmd_output == null || cmd_output.isEmpty()) {
+            return scan_result;
+        }
+        Pattern p = Pattern.compile("^(\\{.+?\\})$");
+        for (String line : cmd_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+                scan_result = m.group(1);
+            }
+        }
+        return scan_result;
+    }
+
+
 	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output) {
 		HashMap<String, String> report_data = new HashMap<String, String>();
 		for (String line : cmd_output) {
