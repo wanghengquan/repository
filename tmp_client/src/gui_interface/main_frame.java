@@ -9,6 +9,9 @@
  */
 package gui_interface;
 
+import java.io.File;
+import java.util.List;
+
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,6 +35,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import connect_tube.local_tube;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +45,15 @@ import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import utility_funcs.time_info;
+
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.datatransfer.DataFlavor;
+
+import javax.swing.*;
 
 public class main_frame extends JFrame {
 	/**
@@ -136,8 +149,73 @@ public class main_frame extends JFrame {
 		this.getContentPane().add(status_insts, BorderLayout.SOUTH);
 		this.getContentPane().setBackground(Color.white);
 		this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        this.openDrag(task_insts);
 		new Thread(task_insts).start();
 	}
+
+
+    private void openDrag(work_panel task_insts) {
+        new DropTarget(task_insts, DnDConstants.ACTION_COPY_OR_MOVE, new DropTargetAdapter() {
+            @Override
+            public void drop(DropTargetDropEvent dtde) {
+                try {
+                    if(dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+                    {
+                        dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                        List<File> list =
+                                (List<File>)(dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor));
+
+                        for(File file:list)
+                        {
+                            String link_mode = client_info.get_client_preference_data().get("link_mode");
+                            if (link_mode.equals("remote")){
+                                String title = "Link mode error";
+                                String message = "Client run in remote mode, cannot import local suite file. " +
+                                        "Please go and setting in \"Setting --> Preference...\"";
+                                JOptionPane.showMessageDialog(null, message,
+                                        title, JOptionPane.INFORMATION_MESSAGE);
+                                return;
+                            }
+                            String user_file = file.getAbsolutePath().replaceAll("\\\\", "/");
+                            if (user_file.length() > 0){
+                                drag_import_local_task_data(user_file, "");
+                            }
+                        }
+                        dtde.dropComplete(true);
+                    }
+                    else
+                    {
+                        dtde.rejectDrop();
+                    }
+                }catch (Exception e){e.printStackTrace();}
+            }
+        });
+    }
+
+    private void drag_import_local_task_data(
+            String task_file,
+            String task_env){
+        if (local_tube.suite_file_sanity_check(task_file)){
+            MAIN_FRAME_LOGGER.warn("Importing suite file:" + task_file);
+        } else {
+            MAIN_FRAME_LOGGER.warn("Importing suite file failed:" + task_file);
+            String title = new String("Import suite file error");
+            String message = new String(local_tube.suite_file_error_msg);
+            JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        String import_time_id = time_info.get_date_time();
+        HashMap <String, String> task_data = new HashMap <String, String>();
+        task_data.put("path", task_file);
+        task_data.put("env", task_env);
+        task_info.update_local_file_imported_task_map(import_time_id, task_data);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 	private void launch_system_tray() {
 		if (!SystemTray.isSupported()) {
