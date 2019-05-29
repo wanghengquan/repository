@@ -160,9 +160,6 @@ class UploadSuites(object):
                         continue
                     if k == "Order":
                         continue
-                    if k == "NoUse":
-                        if v == "YES":
-                            break
                     simple_case[k] = v
                 else:
                     self.raw_cases.append(simple_case)
@@ -196,12 +193,12 @@ class UploadSuites(object):
                 continue
             for k, v in self.macro_dict.items():
                 # matched?
-                matched = 0
+                matched_list = list()
                 try:
                     for foo in v:
                         if foo[0] != "condition":
                             continue
-                        matched = 0
+                        _matched = 0
                         now_value = case.get(foo[1])
                         if not now_value:
                             continue
@@ -209,10 +206,14 @@ class UploadSuites(object):
                         this_value = this_value.strip("= ")
                         now_value_list = tools.comma_split(now_value, sep_mark=";")
                         if this_value in now_value_list:
-                            matched = 1
+                            _matched = 1
+                        matched_list.append(_matched)
                 except:
                     pass
-                if not matched:
+                if matched_list:
+                    if matched_list.count(0):
+                        continue
+                else:
                     # TODO: DO NOT add raw case currently
                     continue
                 # action!
@@ -342,7 +343,7 @@ class UploadSuites(object):
                         # LOGGER.info("Same settings for case {} ({})".format(title, case_id))
                 else:
                     LOGGER.info("Update settings for case {} ({})".format(title, case_id))
-                    LOGGER.info(case_data)
+                    log4u.say_it(case_data, "UPDATE:", show=self.debug)
                     if not self.debug:
                         self.tr.send_post("update_case/{}".format(case_id), case_data)
             else:
@@ -496,6 +497,14 @@ class GetCasesData(object):
                         case_data["priority_id"] = p_id
                     else:
                         LOGGER.warning("Unknown Priority name: {} for {}".format(v, raw_dict))
+        # automated and nouse
+        key_no_use = "custom_nouse"
+        if case_data.get(key_no_use, "") != "YES":
+            case_data[key_no_use] = "NO"
+        key_automated = "custom_automated"
+        if case_data.get(key_automated, "") != "NO":
+            case_data[key_automated] = "YES"
+
         for int_key in self.int_keys:
             this_value = case_data.get(int_key)
             if this_value:
