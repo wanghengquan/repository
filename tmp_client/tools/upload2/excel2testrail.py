@@ -19,6 +19,21 @@ SEL_SUITE_ID = 'SELECT id as suite_id, description from suites where name="{}" a
 SEL_SECTION_ID = 'SELECT id as section_id from sections where suite_id={} and name="{}" and is_copy=0'
 SEL_CASE_TITLE_ID = 'SELECT * from cases where section_id={}'
 
+DROP_DOWN_DICT = dict(custom_automated=dict(YES=1, NO=2),
+                      custom_test_level={"1": 1, "2": 2, "3": 3},
+                      custom_fpga_rtl=dict(YES=1, NO=2, unkonwn=3),
+                      custom_test_bench=dict(YES=1, NO=2, unkonwn=3),
+                      custom_nouse=dict(YES=2, NO=1))
+
+
+def get_drop_down_value(raw_case_data):
+    for k, v in raw_case_data.items():
+        v_dict = DROP_DOWN_DICT.get(k)
+        if not v_dict:
+            continue
+        new_v = v_dict.get(v)
+        raw_case_data[k] = new_v
+
 
 class UploadSuites(object):
     def __init__(self):
@@ -421,8 +436,7 @@ class GetCasesData(object):
         self.get_type_id()
         self.skip_always = ("Section", "Sorting", "design_name", 'CRs')
         self.custom_config_keys = ("CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine")
-        self.int_keys = ("custom_test_level", "custom_fpga_slice", "custom_fpga_pio", "custom_fpga_rtl",
-                         "custom_fpga_ebr", "custom_fpga_dsp", "custom_test_bench")
+        self.int_keys = ("custom_fpga_slice", "custom_fpga_pio", "custom_fpga_ebr", "custom_fpga_dsp")
 
     def get_case_types(self):
         sel_cmd = "SELECT id, name from case_types where is_deleted=0"
@@ -518,6 +532,7 @@ class GetCasesData(object):
                     except:
                         LOGGER.warning("{} is {}, not an integer".format(int_key, this_value))
                         case_data.pop(int_key)
+        get_drop_down_value(case_data)
         return case_data["title"], case_data
 
     def get_config(self, raw_dict):
