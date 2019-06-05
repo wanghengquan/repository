@@ -159,14 +159,12 @@ public class main_frame extends JFrame {
             @Override
             public void drop(DropTargetDropEvent dtde) {
                 try {
-                    if(dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
-                    {
+                    if(dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor)){
                         dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-                        List<File> list =
-                                (List<File>)(dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor));
-
-                        for(File file:list)
-                        {
+                        @SuppressWarnings("unchecked")
+						List<File> list = 
+						    (List<File>)(dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor));
+                        for(File file:list){
                             String link_mode = client_info.get_client_preference_data().get("link_mode");
                             if (link_mode.equals("remote")){
                                 String title = "Link mode error";
@@ -182,12 +180,10 @@ public class main_frame extends JFrame {
                             }
                         }
                         dtde.dropComplete(true);
-                    }
-                    else
-                    {
+                    } else {
                         dtde.rejectDrop();
                     }
-                }catch (Exception e){e.printStackTrace();}
+                } catch (Exception e){e.printStackTrace();}
             }
         });
     }
