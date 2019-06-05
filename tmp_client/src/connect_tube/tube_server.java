@@ -104,13 +104,29 @@ public class tube_server extends Thread {
 			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		Boolean machine_match = new Boolean(true);
+		String client_current_private = client_hash.get("Machine").get("private");
+		//Scenario 1 local task (not remote)
+		if (queue_name.contains("0@")){
+			//this is a local task queue no private need to check
+			return machine_match;
+		}		
+		//Scenario 2 without machine requirement data
 		if (!queue_data.containsKey("Machine")) {
+			if (client_current_private.equals("1")) {
+				machine_match = false;
+			} else {
+				machine_match = true;
+			}
 			return machine_match;
 		}
-		// check machine match
+		//Scenario 3 with machine requirement data without 'terminal'
 		HashMap<String, String> machine_require_data = queue_data.get("Machine");
-		Set<String> machine_require_set = machine_require_data.keySet();
-		Iterator<String> machine_require_it = machine_require_set.iterator();
+		if (client_current_private.equals("1") && !machine_require_data.containsKey("terminal")) {
+			machine_match = false;
+			return machine_match;
+		}
+		//Scenario 4 with machine requirement data
+		Iterator<String> machine_require_it = machine_require_data.keySet().iterator();
 		while (machine_require_it.hasNext()) {
 			String request_key = machine_require_it.next();
 			String request_value = machine_require_data.get(request_key);
@@ -138,18 +154,7 @@ public class tube_server extends Thread {
 				machine_match = false;
 				break;
 			}
-		}
-		//check private when queue come from remote(not local)
-		if (queue_name.contains("0@")){
-			//this is a local task queue no private need to check
-			return machine_match;
-		}
-		String client_current_private = client_hash.get("Machine").get("private");
-		if (client_current_private.equals("1")) {
-			if (!machine_require_data.containsKey("terminal")) {
-				machine_match = false;
-			}
-		}
+		}		
 		return machine_match;
 	}
 
