@@ -51,7 +51,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout, retest_halted;
 	JMenuItem upload, key_gen;
 	JMenuItem client, software, preference;
-	JMenuItem usage, client_help, tmp_doc, tmp_example, contact, about;
+	JMenuItem usage, client_help, tmp_doc, tmp_example, welcome_page, contact, about;
 	private String line_separator = System.getProperty("line.separator");	
 	
 	public menu_bar(
@@ -207,10 +207,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		tmp_doc = new JMenuItem("TMP Doc...");
 		tmp_doc.addActionListener(this);		
 		tmp_example = new JMenuItem("TMP Example...");
-		tmp_example.addActionListener(this);		
+		tmp_example.addActionListener(this);
+		welcome_page = new JMenuItem("Welcome Page...");
+		welcome_page.addActionListener(this);		
 		usage.add(client_help);
 		usage.add(tmp_doc);
 		usage.add(tmp_example);
+		usage.add(welcome_page);
 		contact = new JMenuItem("Contact...");
 		contact.addActionListener(this);
 		about = new JMenuItem("About...");
@@ -394,7 +397,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			} else {
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			}
-		}		
+		}	
+		if (e.getSource().equals(welcome_page)) {
+			MENU_BAR_LOGGER.warn("welcome page clicked");
+			welcome_dialog welcome_view = new welcome_dialog(main_view, switch_info, client_info);
+			welcome_view.setLocationRelativeTo(main_view);
+			welcome_view.setVisible(true);
+		}
 		if (e.getSource().equals(contact)) {
 			MENU_BAR_LOGGER.warn("Contact clicked");
 			String title = "Open Mail Failed:";

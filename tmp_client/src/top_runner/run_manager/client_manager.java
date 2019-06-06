@@ -154,6 +154,14 @@ public class client_manager extends Thread  {
 		return status;
 	}
 	
+	private Boolean get_work_space_updated(){
+		Boolean status = new Boolean(false);
+		if (switch_info.get_work_space_update_request() && pool_info.get_pool_used_threads() == 0){
+			status = true;
+		}
+		return status;
+	}
+	
 	private void impl_current_info_update(){
 		switch_info.clear_client_maintain_list();
 		if (get_system_idle()){
@@ -173,6 +181,9 @@ public class client_manager extends Thread  {
 		}
 		if (get_space_overload()){
 			switch_info.update_client_maintain_list(maintain_enum.space);
+		}
+		if (get_work_space_updated()){
+			switch_info.update_client_maintain_list(maintain_enum.workspace);
 		}
 	}
 	

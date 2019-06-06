@@ -119,6 +119,13 @@ public class task_waiter extends Thread {
 
 	private Boolean start_new_task_check(){
 		Boolean available = new Boolean(true);
+		//work space ready ?
+		if (switch_info.get_work_space_update_request()){
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.info(waiter_name + ":Waiting for work space update...");
+			}			
+			available = false;			
+		}
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
@@ -942,7 +949,7 @@ public class task_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 0 : initial preparing,  load task data for re-processing queues
 			reload_repressing_queue_data();// reload finished task data if queue changed to processing from finished
-			// task 1 : check available work thread and task queue 
+			// task 1 : check available work environments 
 			if(!start_new_task_check()){
 				continue;
 			}

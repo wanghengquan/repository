@@ -37,6 +37,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import utility_funcs.deep_clone;
 
 public class preference_dialog extends JDialog implements ActionListener, Runnable{
 	/**
@@ -328,7 +329,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	public void actionPerformed(ActionEvent arg0) {		
 		// TODO Auto-generated method stub
 		HashMap<String, String> preference_data = new HashMap<String, String>();
-		preference_data.putAll(client_info.get_client_preference_data());
+		preference_data.putAll(deep_clone.clone(client_info.get_client_preference_data()));
 		if(arg0.getSource().equals(discard)){
 			initial_link_default_value(preference_data.get("link_mode"));
 			initial_thread_default_value(preference_data.get("thread_mode"));
@@ -397,15 +398,20 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			}
 			preference_data.put("ignore_request", String.join(",", ignore_list));
 			//work space
-			if(jt_work_path.getText().trim().equals("")){
+			String new_work_space = jt_work_path.getText().trim().replaceAll("\\\\", "/");
+			String ori_work_space = preference_data.getOrDefault("work_space", public_data.DEF_WORK_SPACE);
+			if(new_work_space.equals("")){
 				String message = new String("Empty work space found.");
 				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;				
 			} else {
-				File work_dobj = new File(jt_work_path.getText().trim());
+				File work_dobj = new File(new_work_space);
 				String message = new String("work space Not Exists.");
 				if(work_dobj.exists()){
-					preference_data.put("work_space", jt_work_path.getText().trim().replaceAll("\\\\", "/"));
+					preference_data.put("work_space_temp", new_work_space);
+					if (!new_work_space.equals(ori_work_space)){
+						switch_info.set_work_space_update_request(true);
+					}
 				} else {
 					JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 					return;					
@@ -428,7 +434,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
                     return;
                 }
             }
-            preference_data.put("save_space", jt_save_path.getText().trim().replace("\\", "/"));
+            preference_data.put("save_space", save_space);
 			//input data
 			client_info.set_client_preference_data(preference_data);
 			switch_info.set_client_updated();
