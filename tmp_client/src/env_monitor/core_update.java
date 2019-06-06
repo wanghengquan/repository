@@ -40,12 +40,13 @@ public class core_update {
 	}
 	
 	public void update() {
-		update_core_script();
+		String work_space = client_info.get_client_preference_data().get("work_space");  
+		update_core_script(work_space);
 		update_core_script_info();
 	}
 	
-	public void update_core_script() {
-		String work_space = client_info.get_client_preference_data().get("work_space");
+	public void update_core_script(String work_space) {
+		//String work_space = client_info.get_client_preference_data().get("work_space");
 		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
 		File trunk_handle = new File(core_name);
 		if (trunk_handle.exists() && trunk_handle.isDirectory()) {

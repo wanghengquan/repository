@@ -65,6 +65,7 @@ public class switch_data {
 	//private String client_warn_message = new String("");
 	//private String client_error_message = new String("");
 	private Boolean core_script_update_request = new Boolean(false);
+	private Boolean work_space_update_request = new Boolean(false);
 	private String space_warning_announced_date = new String("");
 	private String environ_warning_announced_date = new String("");
 	// public function
@@ -491,6 +492,26 @@ public class switch_data {
 		rw_lock.readLock().lock();
 		try {
 			status = this.core_script_update_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}	
+	
+	public void set_work_space_update_request(Boolean new_request) {
+		rw_lock.writeLock().lock();
+		try {
+			this.work_space_update_request = new_request;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean get_work_space_update_request() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.work_space_update_request;
 		} finally {
 			rw_lock.readLock().unlock();
 		}

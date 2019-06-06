@@ -16,7 +16,8 @@ public enum maintain_enum {
 	mem(4, "mem_overload"),
 	space(5, "no_space"),
 	environ(6, "env_issue"),
-	unknown(7, "unknown");
+	workspace(7, "work_space_update"),
+	unknown(8, "unknown");
 	private int index;
 	private String description;
 	

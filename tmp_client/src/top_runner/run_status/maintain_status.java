@@ -67,6 +67,7 @@ public class maintain_status extends abstract_status {
 		for (maintain_enum maintain_entry: maintain_list){
 			switch (maintain_entry) {
 			case idle:
+				System.out.println(">>>Idle: Begin to run system idle things...");
 				implements_self_quiet_update();
 				implements_core_script_update();
 				implements_auto_restart_action();
@@ -77,7 +78,7 @@ public class maintain_status extends abstract_status {
 				client.switch_info.set_core_script_update_request(false);
 				break;
 			case environ:
-				System.out.println(">>>Update: Begin to propagate env issue...");
+				System.out.println(">>>Environ: Begin to propagate env issue...");
 				implements_env_issue_propagate();
 				break;				
 			case cpu:
@@ -92,6 +93,9 @@ public class maintain_status extends abstract_status {
 				System.out.println(">>>Space:" + machine_sync.get_avail_space(work_space));
 				implements_client_space_action();
 				break;
+			case workspace:
+				System.out.println(">>>Workspace: Begin to update work space...");
+				implements_work_space_update();
 			default:
 				break;
 			}
@@ -336,6 +340,44 @@ public class maintain_status extends abstract_status {
 			space_cleaned = true;
 		}
 		return space_cleaned;
+	}
+	
+	private Boolean implements_work_space_update(){
+		Boolean work_space_updated = new Boolean(false);
+		//confirm no test case running
+		int counter = 0;
+		while(true){
+			counter++;
+			if(counter > 10){
+				System.out.println(">>>Info: work space update failed...");
+				return work_space_updated;
+			}
+			if (client.pool_info.get_pool_used_threads() > 0){
+				try {
+					Thread.sleep(1000 *60);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				continue;
+			} else {
+				break;
+			}
+		}
+		//update work space
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(deep_clone.clone(client.client_info.get_client_preference_data()));
+        String new_work_space = new String(preference_data.get("work_space_temp"));
+        //1. export new core script
+		core_update my_core = new core_update(client.client_info);
+		my_core.update_core_script(new_work_space);
+		//2. update client preference data
+		preference_data.put("work_space", new_work_space);
+		client.client_info.set_client_preference_data(preference_data);
+		client.switch_info.set_work_space_update_request(false);
+		client.switch_info.set_client_updated();
+		work_space_updated = true;
+		return work_space_updated;
 	}
 	
 	private void run_space_clean_up(){
