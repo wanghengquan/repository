@@ -122,10 +122,17 @@ public class welcome_dialog extends JDialog implements ActionListener {
 	}
 
 	private JPanel get_jb_apply_panel() {
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(deep_clone.clone(client_info.get_client_preference_data()));
 		JPanel jb_apply_panel = new JPanel(new BorderLayout());
 		// checkbox panel
 		JPanel check_panel = new JPanel(new BorderLayout());
 		jc_welcome = new JCheckBox("Don't show welcome setting in next start.");
+		if (preference_data.getOrDefault("show_welcome", public_data.DEF_SHOW_WELCOME).equals("1")){
+			jc_welcome.setSelected(false);
+		} else {
+			jc_welcome.setSelected(true);
+		}		
 		check_panel.add(jc_welcome, BorderLayout.WEST);
 		// button panel
 		JPanel button_panel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -151,13 +158,19 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.putAll(deep_clone.clone(client_info.get_client_preference_data()));
 		if (arg0.getSource().equals(jb_discard)) {
-			jc_welcome.setSelected(false);
+			if (preference_data.getOrDefault("show_welcome", public_data.DEF_SHOW_WELCOME).equals("1")){
+				jc_welcome.setSelected(false);
+			} else {
+				jc_welcome.setSelected(true);
+			}
 			jt_work.setText(preference_data.getOrDefault("work_space", ""));
 			jt_save.setText(preference_data.getOrDefault("save_space", ""));
 		}
 		if (arg0.getSource().equals(jb_apply)) {
 			if (jc_welcome.isSelected()) {
 				preference_data.put("show_welcome", "0");
+			} else {
+				preference_data.put("show_welcome", "1");
 			}
 			// work space
 			String new_work_space = jt_work.getText().trim().replaceAll("\\\\", "/");
