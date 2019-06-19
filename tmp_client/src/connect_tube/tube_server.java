@@ -77,20 +77,47 @@ public class tube_server extends Thread {
 		Set<String> system_require_set = system_require_data.keySet();
 		Iterator<String> system_require_it = system_require_set.iterator();
 		while (system_require_it.hasNext()) {
-			String key_name = system_require_it.next();
-			String value = system_require_data.get(key_name);
-			if (!client_hash.get("System").containsKey(key_name)){
+			String request_key = system_require_it.next();
+			String request_value = system_require_data.get(request_key);
+			if (!client_hash.get("System").containsKey(request_key)){
 				system_match = false;
 				break;
 			}			
-			if (key_name.equals("min_space")) {
+			if (request_key.equals("min_space")) {
 				String client_available_space = client_hash.get("System").get("space");
-				if (Integer.valueOf(value) > Integer.valueOf(client_available_space)) {
+				if (Integer.valueOf(request_value) > Integer.valueOf(client_available_space)) {
 					system_match = false;
 					break;
 				}
 			} else {
-				if (!value.contains(client_hash.get("System").get(key_name))) {
+				// Get request value list
+				ArrayList<String> request_value_list = new ArrayList<String>();		
+				if (request_value.contains(",")){
+					request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
+				} else if (request_value.contains(";")){
+					request_value_list.addAll(Arrays.asList(request_value.split("\\s*;\\s*")));
+				} else{
+					request_value_list.add(request_value);
+				}
+				//get available value list
+				String client_value = new String(client_hash.get("System").get(request_key));
+				ArrayList<String> client_value_list = new ArrayList<String>();		
+				if (client_value.contains(",")){
+					client_value_list.addAll(Arrays.asList(client_value.split("\\s*,\\s*")));
+				} else if (client_value.contains(";")){
+					client_value_list.addAll(Arrays.asList(client_value.split("\\s*;\\s*")));
+				} else{
+					client_value_list.add(client_value);
+				}				
+				//compare data
+				Boolean item_match = new Boolean(false);
+				for (String individual: client_value_list){
+					if (request_value_list.contains(individual)){
+						item_match = true;
+						break;
+					}
+				}
+				if (!item_match){
 					system_match = false;
 					break;
 				}
@@ -130,6 +157,14 @@ public class tube_server extends Thread {
 		while (machine_require_it.hasNext()) {
 			String request_key = machine_require_it.next();
 			String request_value = machine_require_data.get(request_key);
+			ArrayList<String> request_value_list = new ArrayList<String>();		
+			if (request_value.contains(",")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
+			} else if (request_value.contains(";")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*;\\s*")));
+			} else{
+				request_value_list.add(request_value);
+			}			
 			if (!client_hash.get("Machine").containsKey(request_key)){
 				machine_match = false;
 				break;
@@ -137,15 +172,15 @@ public class tube_server extends Thread {
 			String client_value = new String(client_hash.get("Machine").get(request_key));
 			ArrayList<String> client_value_list = new ArrayList<String>();		
 			if (client_value.contains(",")){
-				client_value_list.addAll(Arrays.asList(client_value.split(",")));
+				client_value_list.addAll(Arrays.asList(client_value.split("\\s*,\\s*")));
 			} else if (client_value.contains(";")){
-				client_value_list.addAll(Arrays.asList(client_value.split(";")));
+				client_value_list.addAll(Arrays.asList(client_value.split("\\s*;\\s*")));
 			} else{
 				client_value_list.add(client_value);
 			}
 			Boolean item_match = new Boolean(false);
 			for (String individual: client_value_list){
-				if (request_value.contains(individual)){
+				if (request_value_list.contains(individual)){
 					item_match = true;
 					break;
 				}
