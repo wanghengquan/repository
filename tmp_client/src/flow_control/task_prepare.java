@@ -129,8 +129,13 @@ public class task_prepare {
 		}
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// get source version if have
+		String source_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("version")){
+			source_version = task_data.get("CaseInfo").get("version").trim();
+		}			
 		//get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(source_path, user_name, pass_word, case_path, task_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(source_path, source_version, user_name, pass_word, case_path, task_path);
 		task_prepare_info.add(">>>Export Task case with CMD(s):");
 		task_prepare_info.addAll(export_cmd_list);		
 		//run export
@@ -190,9 +195,14 @@ public class task_prepare {
 			return false;
 		}
 		String user_name = user_passwd.split("_\\+_")[0];
-		String pass_word = user_passwd.split("_\\+_")[1];		
+		String pass_word = user_passwd.split("_\\+_")[1];	
+		// get script version if have
+		String script_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("script_version")){
+			script_version = task_data.get("CaseInfo").get("script_version").trim();
+		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, user_name, pass_word, task_path, task_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, script_version, user_name, pass_word, task_path, task_path);
 		task_prepare_info.add(">>>Export Task script with CMD(s):");
 		task_prepare_info.addAll(export_cmd_list);
 		//skip export if exists
@@ -225,7 +235,8 @@ public class task_prepare {
 	 * test_suite + test_case /lsh/sw/test_test + test_suite + test_case
 	 */
 	private ArrayList<String> get_export_cmd(
-			String case_url, 
+			String case_url,
+			String case_ver,
 			String user_name, 
 			String pass_word, 
 			String case_dir,
@@ -237,7 +248,13 @@ public class task_prepare {
 		if (host_src.length() > 1 && url_array.length > 1) {
 			if (host_src.equalsIgnoreCase("http")) {
 				// svn path
-				cmd_array.add("svn export " + case_url + " " + case_dir + " --username=" + user_name + " --password="
+				String svn_str = new String("");
+				if (case_ver.length() > 0){
+					svn_str = "svn export -r " + case_ver + " ";
+				} else {
+					svn_str = "svn export ";
+				}
+				cmd_array.add(svn_str + case_url + " " + case_dir + " --username=" + user_name + " --password="
 						+ pass_word + " --no-auth-cache" + " --force");
 			} else if (host_src.equalsIgnoreCase("ftp")){
 				String account_str = new String();
@@ -474,6 +491,11 @@ public class task_prepare {
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// get required case version
+		String source_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("version")){
+			source_version = task_data.get("CaseInfo").get("version").trim();
+		}
 		// clean local existing case
 		File design_path_fobj = new File(design_des_url);
 		if (design_path_fobj.exists()){
@@ -484,7 +506,7 @@ public class task_prepare {
 			}
 		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, user_name, pass_word, design_des_url, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, source_version, user_name, pass_word, design_des_url, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
@@ -515,8 +537,13 @@ public class task_prepare {
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// get script version if have
+		String script_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("script_version")){
+			script_version = task_data.get("CaseInfo").get("script_version").trim();
+		}		
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, user_name, pass_word, case_work_path, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, script_version, user_name, pass_word, case_work_path, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
