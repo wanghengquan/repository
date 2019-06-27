@@ -24,10 +24,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.12"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21012; // version for code use
-	public final static String BASE_BUILDDATE = "2019/06/26";
-	public final static String BASE_SUITEFILEVERSION = "1.13";
+	public final static String BASE_CURRENTVERSION = "2.10.13"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21013; // version for code use
+	public final static String BASE_BUILDDATE = "2019/06/27";
+	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;

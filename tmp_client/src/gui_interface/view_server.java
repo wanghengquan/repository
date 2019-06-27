@@ -326,6 +326,8 @@ public class view_server extends Thread {
 				admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client_info));				
 			}
 			if (admin_data.isEmpty()){
+				VIEW_SERVER_LOGGER.warn("Empty admin queue found, remove it anyway.");
+				task_info.remove_finished_admin_queue_list(queue_name);
 				continue;
 			}
 			// delete data in memory(Remote server may send a done queue which also need to be delete)
@@ -663,17 +665,22 @@ public class view_server extends Thread {
 			if (!task_import_status){
 				VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 				view_info.set_watching_queue_data(get_blank_data());
+				view_info.set_request_watching_queue("");
 				return show_update; // no data show
 			}
 		}
 		if (!task_info.get_processed_task_queues_map().containsKey(request_queue)) {
+			VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
+			view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 		queue_data.putAll(deep_clone.clone(task_info.get_queue_data_from_processed_task_queues_map(request_queue)));
 		if (queue_data.size() < 1) {
+			VIEW_SERVER_LOGGER.warn("Empty Queue found:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
+			view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		Iterator<String> case_it = queue_data.keySet().iterator();
