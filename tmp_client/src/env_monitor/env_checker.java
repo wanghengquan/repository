@@ -9,6 +9,7 @@
  */
 package env_monitor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.client_data;
 import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
@@ -30,13 +32,17 @@ public class env_checker extends TimerTask {
 	// private property
 	private static final Logger ENV_CHECKER_LOGGER = LogManager.getLogger(env_checker.class.getName());	
 	private switch_data switch_info;
+	private client_data client_info;
 	// private String line_separator = System.getProperty("line.separator");
 	// public function
 	// protected function
 	// private function
 
-	public env_checker(switch_data switch_info) {
+	public env_checker(
+			switch_data switch_info, 
+			client_data client_info) {
 		this.switch_info = switch_info;
+		this.client_info = client_info;
 	}
 	
 	public env_checker() {
@@ -180,11 +186,21 @@ public class env_checker extends TimerTask {
 		}
 	}
 	
-	public Boolean do_self_check() {
+	private Boolean work_path_check(String check_path) {
+		File check_fh = new File(check_path);
+		if (check_fh.canWrite()){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public Boolean do_self_check(String work_path) {
 		Boolean check_result = new Boolean(false);
 		Boolean python_pass = new Boolean(false);
 		Boolean python_env = new Boolean(false);
 		Boolean svn_pass = new Boolean(false);
+		Boolean writable_pass = new Boolean(false);
 		int check_counter = 0;
 		//to minimize the wrong warning any success in 3 try will be considered as env ok.
 		while(true){
@@ -195,7 +211,8 @@ public class env_checker extends TimerTask {
 			python_pass = python_version_check();
 			python_env = python_environ_check();
 			svn_pass = svn_version_check();	
-			if (python_pass && python_env && svn_pass) {
+			writable_pass = work_path_check(work_path);
+			if (python_pass && python_env && svn_pass && writable_pass) {
 				check_result = true;
 				break;
 			} else {
@@ -203,6 +220,8 @@ public class env_checker extends TimerTask {
 				ENV_CHECKER_LOGGER.error("Client Python version:" + python_pass.toString());
 				ENV_CHECKER_LOGGER.error("Client Python environ:" + python_env.toString());
 				ENV_CHECKER_LOGGER.error("Client SVN version:" + svn_pass.toString());
+				ENV_CHECKER_LOGGER.error("Work Path writable Check:" + writable_pass.toString());
+				ENV_CHECKER_LOGGER.error("Work Path"  + " " + work_path);
 				check_result = false;
 			}
 			try {
@@ -226,7 +245,9 @@ public class env_checker extends TimerTask {
 	}
 	
 	private void monitor_run() {
-		if (do_self_check()){
+		String work_space = new String("");
+		work_space = client_info.get_client_preference_data().getOrDefault("work_space", public_data.DEF_WORK_SPACE);
+		if (do_self_check(work_space)){
 			switch_info.set_client_environ_issue(false);
 		} else {
 			switch_info.set_client_environ_issue(true);
@@ -238,6 +259,6 @@ public class env_checker extends TimerTask {
 	 */
 	public static void main(String[] args) {
 		Timer my_timer = new Timer();
-		my_timer.scheduleAtFixedRate(new env_checker(null), 1000, 5000);		
+		my_timer.scheduleAtFixedRate(new env_checker(null,null), 1000, 5000);		
 	}
 }
