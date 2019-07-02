@@ -82,9 +82,9 @@ public class top_launcher {
 		}
 	}
 
-	private static Boolean run_self_check() {
+	private static Boolean run_self_check(String work_path) {
 		env_checker my_check = new env_checker();
-		return my_check.do_self_check();
+		return my_check.do_self_check(work_path);
 	}
 
 	private static void run_client_insts_check(
@@ -151,7 +151,7 @@ public class top_launcher {
 		post_data post_info = new post_data();
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		// initial 2 : run self check
-		if (!run_self_check()) {
+		if (!run_self_check(current_dir)) {
 			TOP_LAUNCHER_LOGGER.error("Self check failed.");
 			System.exit(exit_enum.RUNENV.get_index());
 		}

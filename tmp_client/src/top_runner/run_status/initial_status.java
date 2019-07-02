@@ -145,7 +145,7 @@ class initial_status extends abstract_status {
 		//task 2: dev check
 		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*2, 1000*10);
 		//task 3: environ check
-		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info), 1000*4, 1000*10);
+		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*4, 1000*10);
 	}
 	
 	//get tube server start and wait it ready
