@@ -407,7 +407,7 @@ public class task_prepare {
 		if (task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")) {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
-		// put environ for software requirements
+		// put environ for software requirements in sub process
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
@@ -424,7 +424,7 @@ public class task_prepare {
 		while (env_request_it.hasNext()) {
 			String env_name = env_request_it.next();
 			String env_value = task_data.get("Environment").get(env_name);
-			run_env.put(env_name, env_value);
+			run_env.put(env_name, get_updated_environment_string(env_value, task_data, client_data));
 		}
 		// local report 
 		task_prepare_info.add(line_separator + ">>>Prepare launch ENV:");
@@ -432,6 +432,22 @@ public class task_prepare {
 		return run_env;
 	}	
 
+	private String get_updated_environment_string(
+			String env_string,
+			HashMap<String, HashMap<String, String>> task_data,
+			HashMap<String, HashMap<String, String>> client_data
+			){
+		Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
+		while (software_request_it.hasNext()) {
+			String software_name = software_request_it.next();
+			String software_build = task_data.get("Software").get(software_name);
+			String software_path = client_data.get(software_name).get(software_build);
+			if (env_string.contains("$" + software_name)){
+				env_string = env_string.replaceAll("\\$" + software_name, software_path);
+			}
+		}		
+		return env_string;
+	}
 	
 	//following function are not used
 	//
