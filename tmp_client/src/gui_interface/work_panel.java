@@ -57,7 +57,11 @@ public class work_panel extends JSplitPane implements Runnable{
 	private Vector<String> work_column = new Vector<String>();
 	private Vector<Vector<String>> work_data = new Vector<Vector<String>>(); //show on table
 
-	public work_panel(main_frame main_view, view_data view_info, client_data client_info, task_data task_info) {
+	public work_panel(
+			main_frame main_view, 
+			view_data view_info, 
+			client_data client_info, 
+			task_data task_info) {
 		super();//default constructor
 		this.main_view = main_view;
 		this.view_info = view_info;
@@ -116,7 +120,7 @@ public class work_panel extends JSplitPane implements Runnable{
 	
 	private Component panel_right_component() {
 		JPanel work_panel = new JPanel(new BorderLayout());
-		table_pop_memu table_menu = new table_pop_memu(main_view, work_table, task_info, view_info);
+		table_pop_memu table_menu = new table_pop_memu(main_view, work_table, task_info, view_info, client_info);
 		work_table.setShowVerticalLines(true);
 		work_table.setShowHorizontalLines(true);
 		work_table.addMouseListener(new MouseAdapter() {
@@ -252,15 +256,22 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 	private JMenuItem terminate;
 	private view_data view_info;
 	private task_data task_info;
+	private client_data client_info;
 	private JMenuItem view_all, view_processing, view_waiting, view_failed, view_passed, view_tbd, view_timeout, view_halted;
 	private JMenuItem details, results;
 	private String line_separator = System.getProperty("line.separator");
 
-	public table_pop_memu(main_frame main_view, JTable table, task_data task_info, view_data view_info) {
+	public table_pop_memu(
+			main_frame main_view, 
+			JTable table, 
+			task_data task_info, 
+			view_data view_info,
+			client_data client_info) {
 		this.main_view = main_view;
 		this.table = table;
 		this.task_info = task_info;
 		this.view_info = view_info;
+		this.client_info = client_info;
 		retest = new JMenuItem("Retest");
 		retest.addActionListener(this);
 		terminate = new JMenuItem("Terminate");
@@ -424,7 +435,7 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 			System.out.println("details clicked");
 			String watching_queue = view_info.get_current_watching_queue();
 			String select_case = (String) table.getValueAt(table.getSelectedRow(), 0);
-			task_detail detail_view = new task_detail(watching_queue, select_case, task_info);
+			task_detail detail_view = new task_detail(watching_queue, select_case, task_info, client_info);
 			detail_view.setLocationRelativeTo(main_view);
 			detail_view.setVisible(true);			
 		}

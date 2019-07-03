@@ -26,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 
 import connect_tube.task_data;
+import data_center.client_data;
 import data_center.public_data;
 
 public class task_detail extends JFrame {
@@ -34,16 +35,22 @@ public class task_detail extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	private task_data task_info;
+	private client_data client_info;
 	private String queue_name;
 	private String task_id;
 	private Vector<String> detail_column = new Vector<String>();
 	private Vector<Vector<String>> detail_data = new Vector<Vector<String>>();
 	private JTable detail_table;
 
-	public task_detail(String queue_name, String task_id, task_data task_info) {
+	public task_detail(
+			String queue_name, 
+			String task_id, 
+			task_data task_info,
+			client_data client_info) {
 		this.queue_name = queue_name;
 		this.task_id = task_id;
 		this.task_info = task_info;
+		this.client_info = client_info;
 		this.setTitle("Detail info for " + task_id + ":");
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
@@ -76,12 +83,18 @@ public class task_detail extends JFrame {
 		items.add("Software");
 		items.add("System");
 		items.add("Machine");
-        items.add("ClientPreference");
         items.add("Status");
+        items.add("ClientPreference");        
 		items.add("Paths");
 		Iterator<String> item_it = items.iterator();
 		while(item_it.hasNext()){
 			String item = item_it.next();
+			//debug mode no 'path' show
+			if (client_info.get_client_machine_data().get("debug").equals("1")){
+				if (item.equals("Paths")){
+					continue;
+				}
+			}
 			if (!task_data.containsKey(item)){
 				continue;
 			}
