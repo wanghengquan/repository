@@ -333,7 +333,12 @@ public class postrun_call implements Callable<Object> {
 				FileUtils.copyDirectory(case_path_obj, save_dest_folder);
 				save_dest_folder.setReadable(true, false);
 				save_dest_folder.setWritable(true, false);
-			} catch (IOException e) {
+				//for Linux copy extra run needed
+				String host_run = System.getProperty("os.name").toLowerCase();
+				if (host_run.startsWith("linux")) {
+					system_cmd.run("chmod -R 777 " + save_dest_folder);
+				}
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 				run_msg.add("Copy source case failed, Skip this case");
@@ -344,6 +349,7 @@ public class postrun_call implements Callable<Object> {
 					save_dest_file.toString());
 			save_dest_file.setReadable(true, false);
 			save_dest_file.setWritable(true, false);
+			save_dest_file.setExecutable(true, false);
 		} else {
 			run_msg.add("Wrong copy type given, skip");
 			copy_status = false;
