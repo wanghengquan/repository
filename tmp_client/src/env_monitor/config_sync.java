@@ -326,7 +326,7 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
-		tmp_machine_data.put("debug", write_data.get("preference").get("debug"));
+		tmp_machine_data.put("debug", write_data.get("Machine").get("debug"));
 		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
 		write_data.remove("preference");
 		write_data.remove("Machine");

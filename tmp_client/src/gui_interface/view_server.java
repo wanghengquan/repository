@@ -327,6 +327,8 @@ public class view_server extends Thread {
 			}
 			if (admin_data.isEmpty()){
 				VIEW_SERVER_LOGGER.warn("Empty admin queue found, remove it anyway.");
+				task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
+				task_info.remove_queue_from_processed_task_queues_map(queue_name);
 				task_info.remove_finished_admin_queue_list(queue_name);
 				continue;
 			}
