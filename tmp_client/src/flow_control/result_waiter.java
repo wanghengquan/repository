@@ -498,7 +498,9 @@ public class result_waiter extends Thread {
             for(String path: tmp_path) {
                 path = path.trim();
                 if(path.startsWith("/")){
-                     if(!is_windows){
+                     if(is_windows){
+                    	 runlog.append("Save location :" + path + ", not reachable from Windows side.");
+                     } else {
                          runlog.append("Save location " + i + " with Lin access ==> ");
                          runlog.append(String.format(lin_href, path, path));
                          runlog.append("</a>" + line_separator);
@@ -520,6 +522,8 @@ public class result_waiter extends Thread {
                              runlog.append(String.format(lin_href, path, path));
                              runlog.append("</a>" + line_separator);
                          }
+                     } else {
+                    	 runlog.append("Save location :" + path + ", not reachable from Linux side.");
                      }
                 }
                 i++;
