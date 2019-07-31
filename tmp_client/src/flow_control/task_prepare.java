@@ -407,6 +407,10 @@ public class task_prepare {
 		if (task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")) {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
+		// put external core script path
+		String work_space = task_data.get("Paths").get("work_space").trim();
+		String core_path = new String(work_space + "/" + public_data.CORE_SCRIPT_NAME);
+		run_env.put("EXTERNAL_DEV_PATH", core_path);
 		// put environ for software requirements in sub process
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
