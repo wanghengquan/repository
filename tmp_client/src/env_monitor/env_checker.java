@@ -66,6 +66,8 @@ public class env_checker extends TimerTask {
 		}
 		Pattern version_patt = Pattern.compile("python\\s(\\d\\.\\d+.\\d+)", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
+		    if(line == null || line == "")
+		        continue;
 			Matcher version_match = version_patt.matcher(line);
 			if (version_match.find()) {
 				ver_str = version_match.group(1);
@@ -104,6 +106,8 @@ public class env_checker extends TimerTask {
 		}
 		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d\\.\\d+)", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
+            if(line == null || line == "")
+                continue;
 			Matcher version_match = version_patt.matcher(line);
 			if (version_match.find()) {
 				ver_str = version_match.group(1);
@@ -161,6 +165,8 @@ public class env_checker extends TimerTask {
 		}
 		Pattern ok_patt = Pattern.compile("python\\s*ok", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
+            if(line == null || line == "")
+                continue;
 			Matcher ok_match = ok_patt.matcher(line);
 			if (ok_match.find()) {
 				py_ok = true;
