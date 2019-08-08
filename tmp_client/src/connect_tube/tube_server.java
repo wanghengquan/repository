@@ -179,17 +179,29 @@ public class tube_server extends Thread {
 				client_value_list.add(client_value);
 			}
 			Boolean item_match = new Boolean(false);
+
+            for (String terminal_model: request_value_list){
+                if(terminal_model.contains("!")){
+                    item_match = true;
+                    break;
+                }
+            }
+
 			for (String individual: client_value_list){
 				if (request_value_list.contains(individual)){
 					item_match = true;
 					break;
 				}
+                if (request_value_list.contains("!" + individual)){
+                    item_match = false;
+                    break;
+                }
 			}
 			if (!item_match){
 				machine_match = false;
 				break;
 			}
-		}		
+		}
 		return machine_match;
 	}
 
