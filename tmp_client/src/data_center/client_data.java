@@ -365,7 +365,7 @@ public class client_data {
 		rw_lock.writeLock().lock();
 		Boolean release_result = new Boolean(true);
 		try {
-			if(!release_data.isEmpty() && release_data != null){
+			if(release_data != null && !release_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
 				Set<String> release_data_set = release_data.keySet();
@@ -421,7 +421,7 @@ public class client_data {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
-			if(!booking_data.isEmpty() && booking_data != null){
+			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
 				Set<String> booking_data_set = booking_data.keySet();
@@ -455,7 +455,7 @@ public class client_data {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
-			if(!booking_data.isEmpty() && booking_data != null){
+			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
 				Set<String> future_keys_set = future_soft_insts.keySet();
