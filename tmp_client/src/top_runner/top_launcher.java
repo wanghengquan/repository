@@ -87,6 +87,11 @@ public class top_launcher {
 		return my_check.do_self_check(work_path);
 	}
 
+	private static void default_tools_report() {
+		env_checker my_check = new env_checker();
+		my_check.report_default_tools();
+	}
+	
 	private static void run_client_insts_check(
 			switch_data switch_info, 
 			String run_mode, 
@@ -150,11 +155,12 @@ public class top_launcher {
 		cmd_parser cmd_run = new cmd_parser(args);
 		post_data post_info = new post_data();
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
-		// initial 2 : run self check
+		// initial 2 : run self check and report
 		if (!run_self_check(current_dir)) {
 			TOP_LAUNCHER_LOGGER.error("Self check failed.");
 			System.exit(exit_enum.RUNENV.get_index());
 		}
+		default_tools_report();
 		// initial 3 : run client instances check
 		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"), cmd_info.getOrDefault("unattended", ""));
 		// initial 4 : client manager launch
