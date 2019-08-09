@@ -403,10 +403,12 @@ public class task_prepare {
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data) {
 		HashMap<String, String> run_env = new HashMap<String, String>();
-		// put Python unbuffered environ
+		// put Python unbuffered environment
 		if (task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")) {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
+		// put system level default tools path
+		run_env.put("EXTERNAL_PYTHON_PATH", System.getProperty("python"));
 		// put external core script path
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String core_path = new String(work_space + "/" + public_data.CORE_SCRIPT_NAME);

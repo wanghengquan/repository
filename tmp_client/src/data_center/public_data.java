@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.23"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21023; // version for code use
-	public final static String BASE_BUILDDATE = "2019/08/08";
+	public final static String BASE_CURRENTVERSION = "2.10.24"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21024; // version for code use
+	public final static String BASE_BUILDDATE = "2019/08/09";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -116,6 +116,7 @@ public class public_data {
 	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
+	public final static String TOOLS_WHICH = SW_HOME_PATH + "/tools/which.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
 	//public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
