@@ -74,8 +74,10 @@ public class maintain_status extends abstract_status {
 				break;
 			case update:
 				System.out.println(">>>Update: Begin to update DEV...");
-				implements_core_script_update();
-				client.switch_info.set_core_script_update_request(false);
+				Boolean update_status = implements_core_script_update();
+				if (update_status){
+					client.switch_info.set_core_script_update_request(false);
+				} 
 				break;
 			case environ:
 				System.out.println(">>>Environ: Begin to propagate env issue...");
@@ -123,14 +125,14 @@ public class maintain_status extends abstract_status {
 		System.out.println(">>>Info: TMP Client updated...");		
 	}
 	
-	private void implements_core_script_update(){
+	private Boolean implements_core_script_update(){
 		//confirm no test case running
 		int counter = 0;
 		while(true){
 			counter++;
 			if(counter > 10){
 				System.out.println(">>>Info: Core script update failed...");
-				return;
+				return false;
 			}
 			if (client.pool_info.get_pool_used_threads() > 0){
 				try {
@@ -145,9 +147,67 @@ public class maintain_status extends abstract_status {
 			}
 		}
 		core_update my_core = new core_update(client.client_info);
-		my_core.update();
-		System.out.println(">>>Info: Core script updated...");
+		Boolean update_status = my_core.update();
+		if (update_status){
+			System.out.println(">>>Info: Core script updated...PASS");
+			return update_status;
+		}
+		System.out.println(">>>Info: Core script updated...FAILED");
+		HashMap<String, String> machine_data = new HashMap<String, String>();
+		machine_data.putAll(client.client_info.get_client_machine_data());
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client.client_info.get_client_preference_data());		
+		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		if(run_mode.equals("0")){ 
+			//attended mode local showing
+			if(preference_data.get("cmd_gui").equals("gui")){
+				client.view_info.set_corescript_update_apply(true);
+			} else {
+				System.out.println(">>>Info: Manually Core Script update needed...");
+				try {
+					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}			
+		} else {
+			//send mail
+			if (!get_core_script_issue_announced()){
+				client.switch_info.set_core_script_warning_announced_date(time_info.get_date_year());
+				send_core_script_update_issue_info();
+			}
+		}
+		return update_status;
 	}	
+	
+	private Boolean get_core_script_issue_announced(){
+		Boolean status = new Boolean(false);
+		String current_date = new String(time_info.get_date_year());
+		String history_date = new String(client.switch_info.get_core_script_warning_announced_date());
+		if (current_date.equalsIgnoreCase(history_date)){
+			status = true;
+		}
+		return status;
+	}	
+	
+	private void send_core_script_update_issue_info(){
+		String subject = new String("TMP Client: Core Script update issue, manually check needed.");
+		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
+		String line_separator = System.getProperty("line.separator");
+		StringBuilder message = new StringBuilder("");
+		message.append("Hi all:" + line_separator);
+		message.append("    TMP client get Core Script update issue, manually check needed." + line_separator);
+		message.append("    TMP client will suspended before this issue removed:" + line_separator);
+		message.append("    Possible reason are: Core script locked" + line_separator);
+		message.append("    " + line_separator);
+		message.append("    Time:" + time_info.get_date_time() + line_separator);
+		message.append("    Terminal:" + client.client_info.get_client_machine_data().get("terminal"));
+		message.append("    " + line_separator);
+		message.append("Thanks" + line_separator);
+		message.append("TMP Clients" + line_separator);
+		mail_action.simple_event_mail(subject, to_str, message.toString());
+	}
 	
 	private void implements_auto_restart_action(){
 		String unattend_mode = client.client_info.get_client_machine_data().get("unattended");
