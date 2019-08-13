@@ -39,10 +39,45 @@ public class core_update {
 		this.client_info = client_info;
 	}
 	
-	public void update() {
+	public Boolean update() {
+		Boolean update_status = new Boolean(false);
 		String work_space = client_info.get_client_preference_data().get("work_space");  
 		update_core_script(work_space);
 		update_core_script_info();
+		if(is_remote_local_version_same()){
+			update_status = true;
+		}
+		return update_status;
+	}
+	
+	private Boolean is_remote_local_version_same(){
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache"; 		
+		//remote version
+    	String remote_version = new String("NA");
+        try {
+            String remote_info = "svn info " + core_addr +  user_cmd;
+            ArrayList<String> remote_return = system_cmd.run(remote_info);
+            remote_version = get_version_num(remote_return);
+        }catch (InterruptedException e) {
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        //local_version
+    	String local_version = new String("NA");
+        try {
+            String local_info = "svn info " + core_name +  user_cmd;
+            ArrayList<String> local_return = system_cmd.run(local_info, work_space);
+            local_version = get_version_num(local_return);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        if (local_version.equalsIgnoreCase(remote_version)){
+        	return true;
+        } else {
+        	return false;
+        }
 	}
 	
 	public void update_core_script(String work_space) {

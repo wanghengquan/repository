@@ -68,6 +68,7 @@ public class switch_data {
 	private Boolean work_space_update_request = new Boolean(false);
 	private String space_warning_announced_date = new String("");
 	private String environ_warning_announced_date = new String("");
+	private String corescript_warning_announced_date = new String("");
 	// public function
 	public switch_data() {
 
@@ -558,6 +559,25 @@ public class switch_data {
 		return date;
 	}
 	
+	public void set_core_script_warning_announced_date(String new_date) {
+		rw_lock.writeLock().lock();
+		try {
+			this.corescript_warning_announced_date = new_date;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_core_script_warning_announced_date() {
+		String date = new String("");
+		rw_lock.readLock().lock();
+		try {
+			date = this.corescript_warning_announced_date;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return date;
+	}	
 	/*
 	public void set_client_hall_status(String current_status) {
 		rw_lock.writeLock().lock();
