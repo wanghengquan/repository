@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<master_task ip="192.168.122.58" machine="D27639">
+  <ID>
+    <sub name="project" value="3"></sub>
+    <sub name="run" value="778"></sub>
+    <sub name="suite" value="404"></sub>
+    <sub name="case" value="23789"></sub>
+  </ID>
+  
+  <CaseInfo>
+    <sub name='case_name' value='case1'></sub>
+    <sub name='suite_path' value='sim_suite'></sub>
+    <sub name='repository' value='http://lshlabd0001/designpool/trunk'></sub>
+  </CaseInfo> 
+  
+  <System>
+    <sub name='os_type' value='windows'></sub>
+  </System>
+  
+  <Status>
+    <sub name="task_status" value="processing"></sub>
+  </Status>
+  
+  <Exchange>
+    <sub name="result_win" value="//lsh-smb02/sw/qa/qausr/qadata"></sub>
+    <sub name="result_lin" value="/lsh/sw/qa/qausr/qadata"></sub>
+    <sub name="physical_addr" value="lsh-comedy:/public/jwang1/test"></sub>
+  </Exchange>  
+</master_task>
+  
+<?xml version="1.0" encoding="UTF-8" ?>
+<master_data ip="192.168.122.58" machine="D27639">
+	<data>
+		<sub name='return' value='data'></sub>
+	</data>	
+</master_data>

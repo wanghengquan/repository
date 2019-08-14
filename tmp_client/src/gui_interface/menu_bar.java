@@ -51,6 +51,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout, retest_halted;
 	JMenuItem upload, key_gen;
 	JMenuItem client, software, preference;
+	JMenuItem client_restart_now, client_restart_later, client_shutdown_now, client_shutdown_later, host_restart_now, host_restart_later, host_shutdown_now, host_shutdown_later;
 	JMenuItem usage, client_help, tmp_doc, tmp_example, welcome_page, contact, about;
 	private String line_separator = System.getProperty("line.separator");	
 	
@@ -72,6 +73,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		this.add(construct_run_menu());
 		this.add(construct_tool_menu());
 		this.add(construct_setting_menu());
+		this.add(construct_control_menu());
 		this.add(construct_help_menu());
 		if (client_info.get_client_data().containsKey("preference")) {
 			work_space = client_info.get_client_data().get("preference").get("work_space");
@@ -199,6 +201,54 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		return setting;
 	}
 
+	public JMenu construct_control_menu() {
+		JMenu control = new JMenu("Control");
+		JMenu client = new JMenu("Client");
+		client_restart_now = new JMenuItem("Restart Now");
+		client_restart_now.setToolTipText("Restart the client immediately, Ignore the running tasks.");
+		client_restart_now.addActionListener(this);
+		client_restart_later = new JMenuItem("Restart Later");
+		client_restart_later.setToolTipText("Restart the client after running tasks finished.");
+		client_restart_later.addActionListener(this);		
+		client_shutdown_now = new JMenuItem("Shutdown Now");
+		client_shutdown_now.setToolTipText("Shutdown the client immediately, Ignore the running tasks.");
+		client_shutdown_now.addActionListener(this);		
+		client_shutdown_later = new JMenuItem("Shutdown Later");
+		client_shutdown_later.setToolTipText("Shutdown the client after running tasks finished.");
+		client_shutdown_later.addActionListener(this);
+		client.add(client_restart_now);
+		client.add(client_restart_later);
+		client.addSeparator();
+		client.add(client_shutdown_now);
+		client.add(client_shutdown_later);
+		control.add(client);
+		control.addSeparator();
+		JMenu host = new JMenu("Host");
+		host_restart_now = new JMenuItem("Restart Now");
+		host_restart_now.setToolTipText("Restart the host immediately, Ignore the running tasks.");
+		host_restart_now.addActionListener(this);
+		host_restart_later = new JMenuItem("Restart Later");
+		host_restart_later.setToolTipText("Restart the host after running tasks finished.");
+		host_restart_later.addActionListener(this);		
+		host_shutdown_now = new JMenuItem("Shutdown Now");
+		host_shutdown_now.setToolTipText("Shutdown the host immediately, Ignore the running tasks.");
+		host_shutdown_now.addActionListener(this);		
+		host_shutdown_later = new JMenuItem("Shutdown Later");
+		host_shutdown_later.setToolTipText("Shutdown the host after running tasks finished.");
+		host_shutdown_later.addActionListener(this);
+		host.add(host_restart_now);
+		host.add(host_restart_later);
+		host.addSeparator();
+		host.add(host_shutdown_now);
+		host.add(host_shutdown_later);
+		String host_run = System.getProperty("os.name").toLowerCase();
+		if (host_run.startsWith("windows")) {
+			host.setEnabled(false);
+		}
+		control.add(host);
+		return control;
+	}
+	
 	public JMenu construct_help_menu() {
 		JMenu help = new JMenu("Help");
 		JMenu usage = new JMenu("Usage");

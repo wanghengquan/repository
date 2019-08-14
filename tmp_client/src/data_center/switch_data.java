@@ -45,6 +45,8 @@ public class switch_data {
 	private Boolean main_gui_power_up = new Boolean(false);
 	private Boolean data_server_power_up = new Boolean(false);
 	private Boolean tube_server_power_up = new Boolean(false);
+	private Boolean link_server_power_up = new Boolean(false);
+	private Boolean console_server_power_up = new Boolean(false);
 	private Boolean hall_server_power_up = new Boolean(false);
 	private Boolean local_console_mode = new Boolean(false);
 	// suite file updating
@@ -309,7 +311,47 @@ public class switch_data {
 		}
 		return status;
 	}
+	
+	public void set_link_server_power_up() {
+		rw_lock.writeLock().lock();
+		try {
+			this.link_server_power_up = true;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 
+	public Boolean get_link_server_power_up() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.link_server_power_up;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
+	public void set_console_server_power_up() {
+		rw_lock.writeLock().lock();
+		try {
+			this.console_server_power_up = true;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_console_server_power_up() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.console_server_power_up;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
 	public void set_hall_server_power_up() {
 		rw_lock.writeLock().lock();
 		try {

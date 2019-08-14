@@ -574,13 +574,13 @@ public class tube_server extends Thread {
 			run_import_local_file_admin();
 			// task 3: update local suite path admin (local file, import)
 			run_import_local_path_admin();
-			// task 3 flash tube input:
+			// task 4: flash tube input:
 			run_received_admin_sorting();
-			// task 4: flash tube output: captured and rejected treemap
+			// task 5: flash tube output: captured and rejected treemap
 			flash_tube_output();
-			// task 5: detail output list
+			// task 6: detail output list
 			update_captured_queue_detail_lists();
-			// task 5: send client info to Remote server
+			// task 7: send client info to Remote server
 			send_client_current_info();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
