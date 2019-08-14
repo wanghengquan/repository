@@ -439,6 +439,26 @@ public class view_server extends Thread {
 		apply_space_reservation_alert(top_view);
 		//message 2. env issue alert
 		apply_environ_issue_alert(top_view);
+		//message 3. core script update alert
+		apply_corescript_update_alert(top_view);
+	}
+	
+	
+	private void apply_corescript_update_alert(main_frame top_view){
+		if (!view_info.get_corescript_update_apply()){
+			return;
+		}
+		StringBuilder message = new StringBuilder("");
+		message.append("TMP client have Core Script update issue.");
+		message.append(line_separator);
+		message.append("Possible issues: Core Script(DEV) was locked.");
+		message.append(line_separator);
+		message.append("");
+		message.append(line_separator);
+		message.append("Manually Core Script update needed.");
+		String title = new String("Warning:Client Core Script update issue.");
+		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
+		view_info.set_corescript_update_apply(false);		
 	}
 	
 	private void apply_environ_issue_alert(main_frame top_view){

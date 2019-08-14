@@ -39,6 +39,7 @@ public class view_data {
 	private sort_enum captured_sorting_request = sort_enum.DEFAULT;	
 	private Boolean space_cleanup_apply = new Boolean(false);
 	private Boolean environ_issue_apply = new Boolean(false);
+	private Boolean corescript_update_apply = new Boolean(false);
 	private Vector<Vector<String>> rejected_queue_data = new Vector<Vector<String>>();
 	private Vector<Vector<String>> captured_queue_data = new Vector<Vector<String>>();
 	private Vector<Vector<String>> watching_queue_data = new Vector<Vector<String>>();
@@ -672,7 +673,7 @@ public class view_data {
 		}
 	}
 	
-	//space_cleanup_dialog
+	//environ_issue_dialog
 	public Boolean get_environ_issue_apply() {
 		rw_lock.readLock().lock();
 		Boolean temp = new Boolean(false);
@@ -688,6 +689,27 @@ public class view_data {
 		rw_lock.writeLock().lock();
 		try {
 			environ_issue_apply = new_data;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	//core script update issue
+	public Boolean get_corescript_update_apply() {
+		rw_lock.readLock().lock();
+		Boolean temp = new Boolean(false);
+		try {
+			temp = corescript_update_apply;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_corescript_update_apply(Boolean new_data) {
+		rw_lock.writeLock().lock();
+		try {
+			corescript_update_apply = new_data;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
