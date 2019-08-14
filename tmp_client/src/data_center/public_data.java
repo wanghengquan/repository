@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.24"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21024; // version for code use
-	public final static String BASE_BUILDDATE = "2019/08/09";
+	public final static String BASE_CURRENTVERSION = "2.10.26"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21026; // version for code use
+	public final static String BASE_BUILDDATE = "2019/08/25";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -130,7 +130,7 @@ public class public_data {
 	public final static String DOC_EIT_PATH = SW_HOME_PATH + "/doc/TMP_EIT_suites";
 
 	// ========================
-	// link to RabbitMQ configuration data only shown here
+	// link to RabbitMQ configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
 	public final static String RMQ_HOST = "linux-D50553"; // "linux-D50553", "lsh-reg01"
 	public final static String RMQ_USER = "root";
@@ -142,6 +142,17 @@ public class public_data {
 	public final static String RMQ_STOP_QUEUE = "stop_queue";
 	public final static String RMQ_RUNTIME_NAME = "logs";
 
+	// ========================
+	// link to Other Clients configuration data shown here
+	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
+	public final static int SOCKET_DEF_PORT = 55533;
+	public final static String SOCKET_DEF_ACKNOWLEDGE = "@ok@";
+	public final static String SOCKET_DEF_TERMINAL = "localhost";
+	
+	// ========================
+	// terminal defaults
+	public final static String TERMINAL_DEF_PROMPT = "->";	
+	
 	// ========================
 	// Encryption public key
 	public final static String ENCRY_KEY = "@Lattice";

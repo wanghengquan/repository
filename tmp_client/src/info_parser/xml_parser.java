@@ -114,6 +114,33 @@ public class xml_parser {
 		return text;
 	}
 
+	public String create_common_document_string(
+			String type,
+			HashMap<String, HashMap<String, String>> xml_data, 
+			String ip,
+			String machine) {
+		Document document = DocumentHelper.createDocument();
+		Element root_element = document.addElement(type);
+		root_element.addAttribute("ip", ip);
+		root_element.addAttribute("machine", machine);
+		Iterator<String> xml_data_it = xml_data.keySet().iterator();
+		while (xml_data_it.hasNext()) {
+			String level1_key = xml_data_it.next();
+			HashMap<String, String> level1_data = xml_data.get(level1_key);
+			Element level1_element = root_element.addElement(level1_key);
+			Iterator<String> level1_data_it = xml_data.get(level1_key).keySet().iterator();
+			while (level1_data_it.hasNext()) {
+				String level2_key = level1_data_it.next();
+				String level2_value = level1_data.get(level2_key); 
+				Element level2_element = level1_element.addElement("sub").addText("");
+				level2_element.addAttribute("name", level2_key);
+				level2_element.addAttribute("value", level2_value);
+			}
+		}
+		String text = document.asXML();
+		return text;
+	}
+	
 	public static String document_to_string(Document document_obj) {
 		String text = document_obj.asXML();
 		return text;
@@ -124,6 +151,50 @@ public class xml_parser {
 		return document;
 	}
 
+	public static Map<String, HashMap<String, HashMap<String, String>>> get_socket_xml_data(String xmlString) {
+		xmlString = xmlString.replaceAll("\\s", " ");
+		@SuppressWarnings("unused")
+		String test_data = 
+		"<slave_data ip=\"192.168.122.58\" machine=\"D27639\">" + 
+			"<data>" + 
+				"<Sub name=\"request\" value=\"data\"></Sub>" +
+				"<Sub name=\"return\" value=\"data\"></Sub>" +
+		"</slave_data>";
+		Map<String, HashMap<String, HashMap<String, String>>> level1_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		Document xml_doc = null;
+		try {
+			xml_doc = string_to_document(xmlString);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			XML_PARSER_LOGGER.info("Wrong/empty xml format received, skip.");
+			return level1_data;
+		}
+		Element root_node = xml_doc.getRootElement();
+		if (root_node.attribute("machine") == null) {
+			return level1_data;
+		}
+		String root_name = root_node.getName();
+		HashMap<String, HashMap<String, String>> level2_data = new HashMap<String, HashMap<String, String>>();
+		for (Iterator<?> i = root_node.elementIterator(); i.hasNext();) {
+			Element level2_element = (Element) i.next();
+			String element_name = level2_element.getName();
+			HashMap<String, String> level3_data = new HashMap<String, String>();
+			for (Iterator<?> j = level2_element.elementIterator(); j.hasNext();) {
+				Element level3_element = (Element) j.next();
+				String name_attr = level3_element.attributeValue("name");
+				String value_attr = level3_element.attributeValue("value");
+				if (name_attr == null) {
+					continue;
+				}
+				level3_data.put(name_attr, value_attr);
+			}
+			level2_data.put(element_name, level3_data);
+		}
+		level1_data.put(root_name, level2_data);
+		return level1_data;
+	}
+	
 	public static Map<String, HashMap<String, HashMap<String, String>>> get_rmq_xml_data(String xmlString) {
 		xmlString = xmlString.replaceAll("\\s", " ");
 		@SuppressWarnings("unused")
@@ -373,7 +444,6 @@ public class xml_parser {
 	}
 	
 	public static void main2(String[] args) {
-		@SuppressWarnings("unused")
 		xml_parser xml_parser2 = new xml_parser();
 		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> result_data1 = new HashMap<String, String>();
@@ -386,6 +456,12 @@ public class xml_parser {
 		result_data2.put("result", "fail");
 		result_data.put("T123456", result_data1);
 		result_data.put("T654321", result_data2);
-		System.out.println(result_data.toString());
+		//System.out.println(result_data.toString());
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		request_data.put("request", "System");
+		xml_data.put("client", request_data);
+		String output = xml_parser2.create_common_document_string("slave_data", xml_data, "192.168.2.11", "localhost");
+		System.out.println(output);
 	}
 }
