@@ -35,8 +35,8 @@ public enum info_cmd {
 	
 	public static ArrayList<String> get_value_list(){
 		ArrayList<String> list = new ArrayList<String>();
-		for (task_cmd cmd : task_cmd.values()){
-			list.add(cmd.get_description());
+		for (info_cmd cmd : info_cmd.values()){
+			list.add(cmd.toString());
 		}
 		return list;
 	}

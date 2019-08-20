@@ -11,6 +11,8 @@ package cmd_interface;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +36,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import info_parser.cmd_parser;
+import info_parser.xml_parser;
 import top_runner.run_status.exit_enum;
 
 public class console_server extends Thread {
@@ -102,16 +105,60 @@ public class console_server extends Thread {
 		if (input_list.length < 1){
 			input_ok = false;
 			return input_ok;
-		}	
-		switch(top_cmd.valueOf(input_list[0].toUpperCase())){
-		case HELP:
-			input_ok = true;
-			break;
-		default:
-			if (input_list.length != 2){
+		}
+		String first_word = input_list[0].toUpperCase();
+		if (!top_cmd.get_value_list().contains(first_word)){
+			input_ok = false;
+			return input_ok;
+		}
+		if (input_list.length == 1){
+			if (!first_word.equalsIgnoreCase("HELP") && !first_word.equalsIgnoreCase("H")){
 				input_ok = false;
+				return input_ok;
 			}
-			break;
+		}
+		if (input_list.length > 1){
+			String second_word = input_list[1].toUpperCase();
+			switch(top_cmd.valueOf(first_word)){
+			case H:
+				input_ok = false;
+				break;
+			case HELP:
+				input_ok = false;
+				break;
+			case I:
+				if (!info_cmd.get_value_list().contains(second_word)){
+					input_ok = false;
+				}
+				break;
+			case INFO:
+				if (!info_cmd.get_value_list().contains(second_word)){
+					input_ok = false;
+				}
+				break;
+			case T:
+				if (!task_cmd.get_value_list().contains(second_word)){
+					input_ok = false;
+				}
+				break;
+			case TASK:
+				if (!task_cmd.get_value_list().contains(second_word)){
+					input_ok = false;
+				}
+				break;
+			case A:
+				if (!action_cmd.get_value_list().contains(second_word)){
+					input_ok = false;
+				}
+				break;	
+			case ACTION:
+				if (!action_cmd.get_value_list().contains(second_word)){
+					input_ok = false;
+				}
+				break;	
+			default:
+			    break;		
+			}
 		}
 		return input_ok;
 	}
@@ -119,7 +166,7 @@ public class console_server extends Thread {
 	private Boolean answer_user_inputs(
 			String user_inputs){
 		Boolean run_ok = new Boolean(true);
-		String [] input_list = user_inputs.split("\\s+");
+		String [] input_list = user_inputs.split("\\s+");		
 		switch(top_cmd.valueOf(input_list[0].toUpperCase())){
 		case H:
 			help_command_answer();
@@ -243,7 +290,9 @@ public class console_server extends Thread {
 			e.printStackTrace();
 			CONSOLE_SERVER_LOGGER.warn("Run command error:" + request_info);
 		}
-		System.out.println(outputs);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_common_xml_data(outputs));
+		common_hash_data_print(msg_hash);
 	}
 	
 	private Boolean task_command_answer(String [] cmd_list){
@@ -292,7 +341,9 @@ public class console_server extends Thread {
 			e.printStackTrace();
 			CONSOLE_SERVER_LOGGER.warn("Run command error:" + request_info);
 		}
-		System.out.println(outputs);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_common_xml_data(outputs));
+		common_hash_data_print(msg_hash);
 	}
 	
 	private Boolean action_command_answer(String [] cmd_list){
@@ -301,29 +352,29 @@ public class console_server extends Thread {
 		case HELP:
 			action_help_command_output();
 			break;
-		case RCN:
-			action_other_command_output(action_cmd.RCN.toString());
+		case CRN:
+			action_other_command_output(action_cmd.CRN.toString());
 			break;
-		case RCL:
-			action_other_command_output(action_cmd.RCL.toString());
+		case CRL:
+			action_other_command_output(action_cmd.CRL.toString());
 			break;
-		case RHN:
-			action_other_command_output(action_cmd.RHN.toString());
+		case CSN:
+			action_other_command_output(action_cmd.CSN.toString());
 			break;
-		case RHL:
-			action_other_command_output(action_cmd.RHL.toString());
+		case CSL:
+			action_other_command_output(action_cmd.CSL.toString());
 			break;
-		case SCN:
-			action_other_command_output(action_cmd.SCN.toString());
+		case HRN:
+			action_other_command_output(action_cmd.HRN.toString());
 			break;
-		case SCL:
-			action_other_command_output(action_cmd.SCL.toString());
+		case HRL:
+			action_other_command_output(action_cmd.HRL.toString());
 			break;
-		case SHN:
-			action_other_command_output(action_cmd.SHN.toString());
+		case HSN:
+			action_other_command_output(action_cmd.HSN.toString());
 			break;
-		case SHL:
-			action_other_command_output(action_cmd.SHL.toString());
+		case HSL:
+			action_other_command_output(action_cmd.HSL.toString());
 			break;			
 		default:
 			break;
@@ -340,7 +391,31 @@ public class console_server extends Thread {
 			e.printStackTrace();
 			CONSOLE_SERVER_LOGGER.warn("Run command error:" + request_info);
 		}
-		System.out.println(outputs);
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_common_xml_data(outputs));
+		common_hash_data_print(msg_hash);
+	}
+	
+	private void common_hash_data_print(
+			Map<String, HashMap<String, HashMap<String, String>>> hash_data
+			){
+		Iterator<String> level1_it = hash_data.keySet().iterator();
+		while(level1_it.hasNext()){
+			String level1_item = level1_it.next();
+			System.out.format("%s" + line_separator,level1_item);
+			HashMap<String, HashMap<String, String>> level2_data = hash_data.get(level1_item);
+			Iterator<String> level2_it = level2_data.keySet().iterator();
+			while(level2_it.hasNext()){
+				String level2_item = level2_it.next();
+				System.out.format("  %10s" + line_separator,level2_item);
+				HashMap<String, String> level3_data = level2_data.get(level2_item);
+				Iterator<String> level3_it = level3_data.keySet().iterator();
+				while(level3_it.hasNext()){
+					String level3_item = level3_it.next();
+					System.out.format("  %20s  -->  %s" + line_separator,level3_item, level3_data.get(level3_item));
+				}
+			}
+		}
 	}
 	
 	public void run() {

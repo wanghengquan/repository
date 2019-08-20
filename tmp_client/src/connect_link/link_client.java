@@ -35,7 +35,7 @@ public class link_client {
 	// public function
 	// protected function
 	// private function
-	private String linked_host = null;
+	private String linked_host = public_data.SOCKET_DEF_TERMINAL;
 	//private static final Logger LINK_CLIENT_LOGGER = LogManager.getLogger(link_client.class.getName());
 	
 	public link_client() {
