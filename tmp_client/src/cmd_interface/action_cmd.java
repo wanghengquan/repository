@@ -13,14 +13,14 @@ import java.util.ArrayList;
 
 public enum action_cmd {
 	HELP(0, "Show all commands."),
-	RCN(1, "Restart Client Now, Without waiting the running tasks."),
-	RCL(2, "Restart Client Later, After the running tasks finished"),
-	RHN(3, "Restart Host Machine Now, without waiting the running tasks."),
-	RHL(4, "Restart Host Machine Later, After the running tasks finished."),	
-	SCN(5, "Shutdown Client Now, without waiting the running tasks."),
-	SCL(6, "Shutdown Client Later, After the running tasks finished."),
-	SHN(7, "Shutdown Host Machine Now, without waiting the running tasks."),
-	SHL(8, "Shutdown Host Machine Later, After the running tasks finished.");
+	CRN(1, "Client Restart Now, Without waiting the running tasks."),
+	CRL(2, "Client Restart Later, After the running tasks finished"),
+	CSN(3, "Client Shutdown Now, without waiting the running tasks."),
+	CSL(4, "Client Shutdown Later, After the running tasks finished."),	
+	HRN(5, "Host Machine Restart Now, without waiting the running tasks."),
+	HRL(6, "Host Machine Restart Later, After the running tasks finished."),	
+	HSN(7, "Host Machine Shutdown Now, without waiting the running tasks."),
+	HSL(8, "Host Machine Shutdown Later, After the running tasks finished.");
 	private int index;
 	private String description;
 	
@@ -39,7 +39,7 @@ public enum action_cmd {
 	
 	public static ArrayList<String> get_value_list(){
 		ArrayList<String> list = new ArrayList<String>();
-		for (task_cmd cmd : task_cmd.values()){
+		for (action_cmd cmd : action_cmd.values()){
 			list.add(cmd.get_description());
 		}
 		return list;

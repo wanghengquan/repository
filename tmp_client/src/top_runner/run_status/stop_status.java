@@ -156,16 +156,32 @@ class stop_status extends abstract_status {
     		cmd = client_restart_cmd;
     		break;
     	case HRN:
-       		cmd = host_restart_cmd;
+    		if (os.contains("windows")) {
+    			cmd = host_restart_cmd;
+    		} else {
+    			client.STATUS_LOGGER.warn(">>>Warn: host restart not available for Linux client");
+    		}
     		break; 
     	case HRL:
-       		cmd = host_restart_cmd;
+    		if (os.contains("windows")) {
+    			cmd = host_restart_cmd;
+    		} else {
+    			client.STATUS_LOGGER.warn(">>>Warn: host restart not available for Linux client");
+    		}
     		break; 
     	case HSN:
-       		cmd = host_shutdown_cmd;
+    		if (os.contains("windows")) {
+    			cmd = host_shutdown_cmd;
+    		} else {
+    			client.STATUS_LOGGER.warn(">>>Warn: host shutdown not available for Linux client");
+    		}
     		break;  
     	case HSL:
-       		cmd = host_shutdown_cmd;
+    		if (os.contains("windows")) {
+    			cmd = host_shutdown_cmd;
+    		} else {
+    			client.STATUS_LOGGER.warn(">>>Warn: host shutdown not available for Linux client");
+    		}
     		break;
     	default:
     		break;

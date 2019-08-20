@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cmd_interface.action_cmd;
 import cmd_interface.info_cmd;
 import cmd_interface.task_cmd;
 import cmd_interface.top_cmd;
@@ -89,7 +90,7 @@ public class link_server extends Thread {
 			} else if (slave_data.containsKey(top_cmd.INFO.toString())){
 				return_string = get_info_return_data(ip, machine, slave_data.get(top_cmd.INFO.toString()).get("request"));
 			} else if (slave_data.containsKey(top_cmd.ACTION.toString())){
-				return_string = get_default_return_data(ip, machine);
+				return_string = get_action_return_data(ip, machine, slave_data.get(top_cmd.ACTION.toString()).get("request"));
 			} else {
 				return_string = get_default_return_data(ip, machine);
 			}
@@ -116,6 +117,62 @@ public class link_server extends Thread {
 		String return_str = xml_parser.create_common_xml_string("master_data", xml_data, ip, machine);
 		return return_str;
 	}
+	
+	private String get_action_return_data(
+			String ip,
+			String machine,
+			String req_action){
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> detail_data = new HashMap<String, String>();
+		switch(action_cmd.valueOf(req_action)){
+		case CRN:
+			switch_info.set_client_stop_request(exit_enum.CRN);
+			switch_info.set_client_soft_stop_request(false);
+			detail_data.put(action_cmd.CRN.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case CRL:
+			switch_info.set_client_stop_request(exit_enum.CRL);
+			switch_info.set_client_soft_stop_request(true);			
+			detail_data.put(action_cmd.CRL.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case CSN:
+			switch_info.set_client_stop_request(exit_enum.CSN);
+			switch_info.set_client_soft_stop_request(false);			
+			detail_data.put(action_cmd.CSN.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case CSL:
+			switch_info.set_client_stop_request(exit_enum.CSL);
+			switch_info.set_client_soft_stop_request(true);			
+			detail_data.put(action_cmd.CSL.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case HRN:
+			switch_info.set_client_stop_request(exit_enum.HRN);
+			switch_info.set_client_soft_stop_request(false);			
+			detail_data.put(action_cmd.HRN.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case HRL:
+			switch_info.set_client_stop_request(exit_enum.HRL);
+			switch_info.set_client_soft_stop_request(true);			
+			detail_data.put(action_cmd.HRL.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case HSN:
+			switch_info.set_client_stop_request(exit_enum.HSN);
+			switch_info.set_client_soft_stop_request(false);			
+			detail_data.put(action_cmd.HSN.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		case HSL:
+			switch_info.set_client_stop_request(exit_enum.HSL);
+			switch_info.set_client_soft_stop_request(true);			
+			detail_data.put(action_cmd.HSL.toString(), public_data.SOCKET_DEF_ACKNOWLEDGE);
+			break;
+		default:
+			detail_data.put("default", "NA");
+			break;
+		}
+		xml_data.put("results", detail_data);
+		String return_str = xml_parser.create_common_xml_string("master_data", xml_data, ip, machine);
+		return return_str;		
+	}	
 	
 	private String get_info_return_data(
 			String ip,
