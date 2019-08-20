@@ -242,7 +242,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		host.add(host_shutdown_now);
 		host.add(host_shutdown_later);
 		String host_run = System.getProperty("os.name").toLowerCase();
-		if (host_run.startsWith("windows")) {
+		if (!host_run.startsWith("windows")) {
 			host.setEnabled(false);
 		}
 		control.add(host);

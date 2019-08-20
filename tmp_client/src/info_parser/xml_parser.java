@@ -49,7 +49,7 @@ public class xml_parser {
 	public xml_parser() {
 	}
 
-	public String create_client_document_string(HashMap<String, String> xml_data) {
+	public static String create_client_document_string(HashMap<String, String> xml_data) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("client");
 		Set<String> xml_data_set = xml_data.keySet();
@@ -64,7 +64,7 @@ public class xml_parser {
 		return text;
 	}
 
-	public String create_result_document_string(
+	public static String create_result_document_string(
 			HashMap<String, HashMap<String, Object>> xml_data, 
 			String ip,
 			String machine) {
@@ -94,7 +94,7 @@ public class xml_parser {
 		return text;
 	}
 
-	public String create_runtime_document_string(HashMap<String, HashMap<String, String>> xml_data) {
+	public static String create_runtime_document_string(HashMap<String, HashMap<String, String>> xml_data) {
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		Set<String> xml_data_set = xml_data.keySet();
@@ -114,7 +114,7 @@ public class xml_parser {
 		return text;
 	}
 
-	public String create_common_document_string(
+	public static String create_common_xml_string(
 			String type,
 			HashMap<String, HashMap<String, String>> xml_data, 
 			String ip,
@@ -151,7 +151,7 @@ public class xml_parser {
 		return document;
 	}
 
-	public static Map<String, HashMap<String, HashMap<String, String>>> get_socket_xml_data(String xmlString) {
+	public static Map<String, HashMap<String, HashMap<String, String>>> get_common_xml_data(String xmlString) {
 		xmlString = xmlString.replaceAll("\\s", " ");
 		@SuppressWarnings("unused")
 		String test_data = 
@@ -304,7 +304,7 @@ public class xml_parser {
 	}
 	
 	// admin queue
-	public Boolean dump_admin_data(
+	public static Boolean dump_admin_data(
 			HashMap<String, HashMap<String, String>> admin_queue_data,
 			String queue_name, 
 			String xml_path) throws IOException {
@@ -333,7 +333,7 @@ public class xml_parser {
 	}
 
 	// task queue
-	public Boolean dump_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
+	public static Boolean dump_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
 			String queue_name, 
 			String xml_path) throws IOException {
 		Boolean dump_status = new Boolean(true);
@@ -367,7 +367,7 @@ public class xml_parser {
 		return dump_status;
 	}
 
-	public HashMap<String, HashMap<String, String>> get_xml_file_admin_queue_data(String xml_path)
+	public static HashMap<String, HashMap<String, String>> get_xml_file_admin_queue_data(String xml_path)
 			throws DocumentException {
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		File xml_fobj = new File(xml_path);
@@ -396,7 +396,7 @@ public class xml_parser {
 		return admin_queue_data;
 	}
 	
-	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_xml_file_task_queue_data(String xml_path)
+	public static TreeMap<String, HashMap<String, HashMap<String, String>>> get_xml_file_task_queue_data(String xml_path)
 			throws DocumentException {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		File xml_fobj = new File(xml_path);
@@ -432,10 +432,9 @@ public class xml_parser {
 	}
 
 	public static void main(String[] args) {
-		xml_parser xml_parser2 = new xml_parser();
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 		try {
-			queue_data = xml_parser2.get_xml_file_admin_queue_data("D:/tmp_work_space/logs/retrieve/received_admin/511@run_997_041817_141406.xml");
+			queue_data = xml_parser.get_xml_file_admin_queue_data("D:/tmp_work_space/logs/retrieve/received_admin/511@run_997_041817_141406.xml");
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -444,7 +443,6 @@ public class xml_parser {
 	}
 	
 	public static void main2(String[] args) {
-		xml_parser xml_parser2 = new xml_parser();
 		HashMap<String, HashMap<String, String>> result_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> result_data1 = new HashMap<String, String>();
 		result_data1.put("testId", "T123456");
@@ -461,7 +459,7 @@ public class xml_parser {
 		HashMap<String, String> request_data = new HashMap<String, String>();
 		request_data.put("request", "System");
 		xml_data.put("client", request_data);
-		String output = xml_parser2.create_common_document_string("slave_data", xml_data, "192.168.2.11", "localhost");
+		String output = xml_parser.create_common_xml_string("slave_data", xml_data, "192.168.2.11", "localhost");
 		System.out.println(output);
 	}
 }

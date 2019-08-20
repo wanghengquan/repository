@@ -9,8 +9,6 @@
  */
 package connect_link;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class link_data {
 	// public property
@@ -19,7 +17,7 @@ public class link_data {
 	// public function
 	// protected function
 	// private function
-	private static final Logger LINK_DATA_LOGGER = LogManager.getLogger(link_data.class.getName());
+	// private static final Logger LINK_DATA_LOGGER = LogManager.getLogger(link_data.class.getName());
 	
 	public link_data() {
 		

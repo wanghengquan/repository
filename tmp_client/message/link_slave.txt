@@ -31,27 +31,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <slave_data ip="192.168.122.58" machine="D27639">
 	<task>
-		<sub name='request' value='first.second.third'></sub>
+		<sub name='request' value='FINISHED'></sub>
 	</task>
 	
-	<client>
-		<sub name='request' value='first.second.third'></sub>
-	</client>
+	<info>
+		<sub name='request' value='SYSTEM'></sub>
+	</info>
 	
-	<control>
+	<action>
 		<sub name='request' value='shutdown/restart'></sub>
-	</control>
-	
+	</action>
 </slave_data>
-
-<?xml version="1.0" encoding="UTF-8"?>
-<slave_data ip="192.168.2.11" machine="localhost">
-	<client>
-		<sub name="request" value="System"></sub>
-	</client>
-</slave_data>
-
-
 
 
 

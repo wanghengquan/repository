@@ -18,8 +18,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
@@ -37,12 +35,44 @@ public class link_client {
 	// public function
 	// protected function
 	// private function
-	private static final Logger LINK_CLIENT_LOGGER = LogManager.getLogger(link_client.class.getName());
+	private String linked_host = null;
+	//private static final Logger LINK_CLIENT_LOGGER = LogManager.getLogger(link_client.class.getName());
 	
 	public link_client() {
 	}
 
-	private String client_data_request(
+	public Boolean link_to_user_host(String host) {
+		Boolean link_status = new Boolean(true);
+		linked_host = host;
+		return link_status;
+	}
+	
+	public String data_action_request(
+			String category,
+			String request_info) throws IOException{
+		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_CMD_PORT);
+		BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		request_data.put("request", request_info);
+		xml_data.put(category, request_data);
+		String output = xml_parser.create_common_xml_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+		socket_out.write(output);
+		socket_out.flush();
+		socket.shutdownOutput();
+		//get the return
+		StringBuilder return_data = new StringBuilder("");
+		BufferedReader socket_in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		String line = null;
+		while((line = socket_in.readLine()) != null){
+			return_data.append(line);
+		}
+		socket.shutdownInput();
+		socket.close();
+		return return_data.toString();
+	}
+	
+	private String info_data_request(
 			String terminal,
 			int port,
 			String request_info) throws UnknownHostException, IOException{
@@ -52,8 +82,7 @@ public class link_client {
 		HashMap<String, String> request_data = new HashMap<String, String>();
 		request_data.put("request", request_info);
 		xml_data.put("client", request_data);
-		xml_parser xml_parser = new xml_parser();
-		String output = xml_parser.create_common_document_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), terminal);
+		String output = xml_parser.create_common_xml_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), terminal);
 		socket_out.write(output);
 		socket_out.flush();
 		socket.shutdownOutput();
@@ -79,8 +108,7 @@ public class link_client {
 		HashMap<String, String> request_data = new HashMap<String, String>();
 		request_data.put("request", request_info);
 		xml_data.put("task", request_data);
-		xml_parser xml_parser = new xml_parser();
-		String output = xml_parser.create_common_document_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), terminal);
+		String output = xml_parser.create_common_xml_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), terminal);
 		socket_out.write(output);
 		socket_out.flush();
 		socket.shutdownOutput();
@@ -106,8 +134,7 @@ public class link_client {
 		HashMap<String, String> request_data = new HashMap<String, String>();
 		request_data.put("request", request_info);
 		xml_data.put("control", request_data);
-		xml_parser xml_parser = new xml_parser();
-		String output = xml_parser.create_common_document_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), terminal);
+		String output = xml_parser.create_common_xml_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), terminal);
 		socket_out.write(output);
 		socket_out.flush();
 		socket.shutdownOutput();
@@ -142,7 +169,7 @@ public class link_client {
 			e.printStackTrace();
 		}
 		System.out.println(">>>client data:" + client_info.get_client_data().toString());
-		link_server my_server = new link_server(switch_info, client_info);
+		link_server my_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
 		my_server.start();
 		try {
 			Thread.sleep(2 * 1000);
@@ -152,19 +179,28 @@ public class link_client {
 		}		
 		link_client my_client = new link_client();
 		String system_string = null;
+		String task_string = null;
+		String action_string = null;
 		try {
-			system_string = my_client.client_data_request(
+			system_string = my_client.info_data_request(
 					public_data.SOCKET_DEF_TERMINAL, 
-					public_data.SOCKET_DEF_PORT, 
+					public_data.SOCKET_DEF_CMD_PORT, 
 					"diamond");
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+			task_string = my_client.task_data_request(
+					public_data.SOCKET_DEF_TERMINAL, 
+					public_data.SOCKET_DEF_CMD_PORT, 
+					"diamond");
+			action_string = my_client.control_action_request(
+					public_data.SOCKET_DEF_TERMINAL, 
+					public_data.SOCKET_DEF_CMD_PORT, 
+					"diamond");			
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println(system_string);
+		System.out.println(task_string);
+		System.out.println(action_string);
 		my_server.soft_stop();
 		server_runner.soft_stop();
 	}

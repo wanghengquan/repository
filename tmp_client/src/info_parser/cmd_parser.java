@@ -65,6 +65,12 @@ public class cmd_parser {
 			get_help(options_obj);
 		}
 		// 3. collect option results
+		// 3.0 interactive or not
+		if (commandline_obj.hasOption('I')) {
+			cmd_hash.put("interactive", "1");
+		} else {
+			cmd_hash.put("interactive", "0");
+		}
 		// 3.1 cmd or gui model
 		if (commandline_obj.hasOption('c')) {
 			cmd_hash.put("cmd_gui", "cmd");
@@ -250,8 +256,8 @@ public class cmd_parser {
 	private Options get_options() {
 		Options options_obj = new Options();
 		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command mode").build());
-		options_obj.addOption(
-				Option.builder("g").longOpt("gui").desc("Client will run in GUI mode, default mode.").build());
+		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI mode, default mode.").build());
+		options_obj.addOption(Option.builder("I").longOpt("console").desc("Client will run in interactive console mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
 		options_obj.addOption(Option.builder("A").longOpt("attended").desc("Client will run in attended mode").build());
@@ -310,7 +316,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-d] [-c|-g] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-d] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments])] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
