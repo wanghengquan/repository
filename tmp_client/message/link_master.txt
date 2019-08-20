@@ -30,7 +30,7 @@
   
 <?xml version="1.0" encoding="UTF-8" ?>
 <master_data ip="192.168.122.58" machine="D27639">
-	<data>
-		<sub name='return' value='data'></sub>
-	</data>	
+	<results>
+		<sub name='default' value='NA'></sub>
+	</results>	
 </master_data>

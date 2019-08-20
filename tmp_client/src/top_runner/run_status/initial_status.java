@@ -12,6 +12,9 @@ package top_runner.run_status;
 import java.util.HashMap;
 import java.util.Timer;
 
+
+import cmd_interface.console_server;
+import connect_link.link_server;
 import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
@@ -34,6 +37,13 @@ class initial_status extends abstract_status {
 	public void to_work() {
 		System.out.println(">>>####################");
 		client.STATUS_LOGGER.warn("Initializing...");
+		// task 0: launch GUI if in GUI mode
+		launch_link_services();
+		if (client.cmd_info.get("interactive").equals("1")){
+			console_server my_console = new console_server(client.switch_info);
+			my_console.start();
+			return;
+		}
 		// task 1: launch GUI if in GUI mode
 		launch_main_gui();
 		// task 2: get and wait client data ready 
@@ -79,6 +89,13 @@ class initial_status extends abstract_status {
 	
 	//=============================================================
 	//methods for locals
+	private void launch_link_services(){
+		link_server task_link = new link_server(client.switch_info, client.client_info, client.task_info, public_data.SOCKET_DEF_TASK_PORT);
+		link_server cmd_link = new link_server(client.switch_info, client.client_info, client.task_info, public_data.SOCKET_DEF_CMD_PORT);
+		task_link.start();
+		cmd_link.start();
+	}
+	
 	private void launch_main_gui(){
 		if(client.cmd_info.get("cmd_gui").equals("gui")){
 			client.view_runner.start();

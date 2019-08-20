@@ -64,7 +64,6 @@ public class task_report {
 			Boolean smart_send
 			) {
 		Boolean report_status = new Boolean(true);
-		xml_parser parser = new xml_parser();
 		String ip = client_info.get_client_machine_data().get("ip");
 		String terminal = client_info.get_client_machine_data().get("terminal");
 		// get remote date
@@ -89,7 +88,7 @@ public class task_report {
 		if (remote_send_data.size() > 0) {
 			// remote send
 			rmq_tube rmq_runner = new rmq_tube();
-			String rmq_result_str = parser.create_result_document_string(remote_send_data, ip, terminal);
+			String rmq_result_str = xml_parser.create_result_document_string(remote_send_data, ip, terminal);
 			report_status = rmq_runner.basic_send(public_data.RMQ_RESULT_NAME, rmq_result_str);
 			export_data.debug_disk_client_out_result(rmq_result_str, client_info);
 		}
@@ -104,7 +103,6 @@ public class task_report {
 			HashMap<String, HashMap<String, String>> runtime_log_data
 			) {
 		Boolean report_status = new Boolean(true);
-		xml_parser parser = new xml_parser();
 		// get remote date
 		HashMap<String, HashMap<String, String>> remote_data = new HashMap<String, HashMap<String, String>>();
 		// get local data
@@ -121,7 +119,7 @@ public class task_report {
 		if (remote_data.size() > 0) {
 			// remote send
 			rmq_tube rmq_runner = new rmq_tube();
-			String rmq_runtime_str = parser.create_runtime_document_string(remote_data);
+			String rmq_runtime_str = xml_parser.create_runtime_document_string(remote_data);
 			report_status = rmq_runner.exchange_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
 			export_data.debug_disk_client_out_runtime(rmq_runtime_str, client_info);
 		}

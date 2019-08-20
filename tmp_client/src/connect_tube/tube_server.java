@@ -387,11 +387,10 @@ public class tube_server extends Thread {
 		}
 		// generate xml message
 		String send_msg = new String();
-		xml_parser parser = new xml_parser();
 		if (mode.equals("simple")) {
-			send_msg = parser.create_client_document_string(simple_data);
+			send_msg = xml_parser.create_client_document_string(simple_data);
 		} else {
-			send_msg = parser.create_client_document_string(complex_data);
+			send_msg = xml_parser.create_client_document_string(complex_data);
 		}
 		send_status = rmq_runner.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
 		export_data.debug_disk_client_out_status(send_msg, client_info);

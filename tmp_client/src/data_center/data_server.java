@@ -657,5 +657,6 @@ public class data_server extends Thread {
 			e.printStackTrace();
 		}
 		// server_runner.soft_stop();
+		System.out.println(client_info.get_client_data().toString());
 	}
 }

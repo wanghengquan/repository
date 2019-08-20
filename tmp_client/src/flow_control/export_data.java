@@ -336,9 +336,8 @@ public class export_data {
 		}
 		String file_name = queue_name + ".xml";
 		String dump_file = dump_path + "/" + file_name;
-		xml_parser parser = new xml_parser();
 		try {
-			dump_status = parser.dump_admin_data(admin_data, queue_name, dump_file.replaceAll("\\\\", "/"));
+			dump_status = xml_parser.dump_admin_data(admin_data, queue_name, dump_file.replaceAll("\\\\", "/"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -372,9 +371,8 @@ public class export_data {
 		}
 		String file_name = queue_name + ".xml";
 		String dump_file = dump_path + "/" + file_name;
-		xml_parser parser = new xml_parser();
 		try {
-			dump_status = parser.dump_task_data(task_data, queue_name, dump_file.replaceAll("\\\\", "/"));
+			dump_status = xml_parser.dump_task_data(task_data, queue_name, dump_file.replaceAll("\\\\", "/"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
