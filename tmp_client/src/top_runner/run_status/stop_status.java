@@ -9,13 +9,13 @@
  */
 package top_runner.run_status;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import data_center.exit_enum;
 import data_center.public_data;
 import flow_control.export_data;
 import utility_funcs.file_action;
@@ -58,6 +58,7 @@ class stop_status extends abstract_status {
 			e.printStackTrace();
 		}
 		send_exception_report();
+		restart_shutdown_run();
 		stop_with_exit_state();		
 	}
 	
@@ -113,6 +114,74 @@ class stop_status extends abstract_status {
     	System.out.println(">>>Info: Client Exit Reason:" + exit_state.get_description());
     	System.exit(exit_state.get_index());
     }
+	
+	private void restart_shutdown_run(){
+		//step 1. get highest exit reason
+    	exit_enum exit_state = exit_enum.NORMAL;
+    	for (exit_enum current_state: client.switch_info.get_client_stop_request().keySet()){
+    		//higher exit have higher priority
+    		if(current_state.get_index() > exit_state.get_index()){
+    			exit_state = current_state;
+    		}
+    	}
+    	//step 2. get client restart command
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client.client_info.get_client_preference_data());    	
+    	String sw_home = public_data.SW_HOME_PATH;
+    	String sw_path = new String("");
+    	String run_mode = new String("");
+    	String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			sw_path = sw_home + "/bin/client.exe";
+		} else {
+			sw_path = sw_home + "/bin/client";
+		}
+		if(preference_data.get("cmd_gui").equals("gui")){
+			run_mode = " -g";
+		} else {
+			run_mode = " -c";
+		}
+    	String client_restart_cmd = new String(sw_path + run_mode);
+    	//step 2. get host machine restart command
+    	String host_restart_cmd = new String("shutdown -r");
+    	//step 3. get host machine shutdown command
+    	String host_shutdown_cmd = new String("shutdown -s");
+    	//step 4. get final commands
+    	String cmd = new String("");
+    	switch (exit_state){
+    	case CRN:
+    		cmd = client_restart_cmd;
+    		break;
+    	case CRL:
+    		cmd = client_restart_cmd;
+    		break;
+    	case HRN:
+       		cmd = host_restart_cmd;
+    		break; 
+    	case HRL:
+       		cmd = host_restart_cmd;
+    		break; 
+    	case HSN:
+       		cmd = host_shutdown_cmd;
+    		break;  
+    	case HSL:
+       		cmd = host_shutdown_cmd;
+    		break;
+    	default:
+    		break;
+    	}
+    	//step 5. run final command
+    	if (cmd == null || cmd.equals("")){
+    		return;
+    	}
+    	System.out.println(">>>Warn: Client running command:" + cmd);
+    	try {
+			Runtime.getRuntime().exec(cmd);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 	
 	private void report_processed_data(){
     	//by default result waiter will dump finished data except:

@@ -29,6 +29,12 @@ class initial_status extends abstract_status {
 	}
 
 	public void to_stop() {
+		//step 1. soft stop requested and still have task running
+		if(client.switch_info.get_client_soft_stop_request() && (client.pool_info.get_pool_used_threads() > 0)){
+			client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+			return;
+		}
+		//step 2. to stop actions		
 		System.out.println(">>>####################");
 		client.STATUS_LOGGER.warn("Go to stop");
 		client.set_current_status(client.STOP);		

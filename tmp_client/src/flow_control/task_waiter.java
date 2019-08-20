@@ -21,9 +21,9 @@ import connect_tube.local_tube;
 import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
+import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.system_call;
 import utility_funcs.time_info;
@@ -119,17 +119,24 @@ public class task_waiter extends Thread {
 
 	private Boolean start_new_task_check(){
 		Boolean available = new Boolean(true);
+		//client soft stop request ?
+		if (switch_info.get_client_soft_stop_request()){
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for Client soft stop...");
+			}			
+			available = false;			
+		}		
 		//work space ready ?
 		if (switch_info.get_work_space_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
-				TASK_WAITER_LOGGER.info(waiter_name + ":Waiting for work space update...");
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for work space update...");
 			}			
 			available = false;			
 		}
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
-				TASK_WAITER_LOGGER.info(waiter_name + ":Waiting for core script update...");
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for core script update...");
 			}			
 			available = false;
 		}
@@ -143,7 +150,7 @@ public class task_waiter extends Thread {
 		//processing queue available ?
 		if (task_info.get_processing_admin_queue_list().size() < 1) {
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
 			}
 			available = false;
 		}		

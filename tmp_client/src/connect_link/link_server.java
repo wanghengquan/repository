@@ -27,10 +27,10 @@ import cmd_interface.task_cmd;
 import cmd_interface.top_cmd;
 import connect_tube.task_data;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import info_parser.xml_parser;
+import top_runner.run_status.exit_enum;
 
 public class link_server extends Thread {
 	// public property
