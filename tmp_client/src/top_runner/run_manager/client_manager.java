@@ -18,7 +18,6 @@ import connect_tube.task_data;
 import connect_tube.tube_server;
 import data_center.client_data;
 import data_center.data_server;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import env_monitor.machine_sync;
@@ -28,6 +27,7 @@ import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import top_runner.run_status.client_status;
+import top_runner.run_status.exit_enum;
 import top_runner.run_status.maintain_enum;
 import top_runner.run_status.state_enum;
 import utility_funcs.file_action;
@@ -194,6 +194,9 @@ public class client_manager extends Thread  {
 		if(!switch_info.get_client_maintain_list().isEmpty()){
 			return false;
 		}
+		if(!switch_info.get_client_stop_list().isEmpty()){
+			return false;
+		}		
 		return true;
 	}
 	
@@ -204,8 +207,21 @@ public class client_manager extends Thread  {
 		if(switch_info.get_client_maintain_list().isEmpty()){
 			return false;
 		}
+		if(!switch_info.get_client_stop_list().isEmpty()){
+			return false;
+		}		
 		return true;
 	}
+	
+	private Boolean start_stop_mode(client_status client_sts){
+		if(client_sts.get_current_status().equals(state_enum.stop)){
+			return false; //already in stop_status
+		}
+		if(switch_info.get_client_stop_list().isEmpty()){
+			return false;
+		}
+		return true;
+	}	
 	
 	private String get_dump_string(Exception dump_exception){
 		StringBuilder message = new StringBuilder("");
@@ -295,7 +311,7 @@ public class client_manager extends Thread  {
 				client_sts.to_maintain_status();
 			}
 			// task 3 :
-			if (!switch_info.get_client_stop_request().isEmpty()){
+			if (start_stop_mode(client_sts)){
 				client_sts.to_stop_status();
 			} 
 			// task 4 :

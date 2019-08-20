@@ -30,11 +30,11 @@ import connect_link.link_server;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.data_server;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import info_parser.cmd_parser;
+import top_runner.run_status.exit_enum;
 
 public class console_server extends Thread {
 	// public property

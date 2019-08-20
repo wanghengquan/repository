@@ -26,11 +26,11 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
 import flow_control.queue_enum;
+import top_runner.run_status.exit_enum;
 
 public class menu_bar extends JMenuBar implements ActionListener {
 	/**
@@ -225,16 +225,16 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		control.addSeparator();
 		JMenu host = new JMenu("Host");
 		host_restart_now = new JMenuItem("Restart Now");
-		host_restart_now.setToolTipText("Restart the host immediately, Ignore the running tasks.");
+		host_restart_now.setToolTipText("Restart the host machine immediately, Ignore the running tasks.");
 		host_restart_now.addActionListener(this);
 		host_restart_later = new JMenuItem("Restart Later");
-		host_restart_later.setToolTipText("Restart the host after running tasks finished.");
+		host_restart_later.setToolTipText("Restart the host machine after running tasks finished.");
 		host_restart_later.addActionListener(this);		
 		host_shutdown_now = new JMenuItem("Shutdown Now");
-		host_shutdown_now.setToolTipText("Shutdown the host immediately, Ignore the running tasks.");
+		host_shutdown_now.setToolTipText("Shutdown the host machine immediately, Ignore the running tasks.");
 		host_shutdown_now.addActionListener(this);		
 		host_shutdown_later = new JMenuItem("Shutdown Later");
-		host_shutdown_later.setToolTipText("Shutdown the host after running tasks finished.");
+		host_shutdown_later.setToolTipText("Shutdown the host machine after running tasks finished.");
 		host_shutdown_later.addActionListener(this);
 		host.add(host_restart_now);
 		host.add(host_restart_later);
@@ -292,7 +292,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			export_view.setVisible(true);			
 		}
 		if (e.getSource().equals(exit)) {
-			switch_info.set_client_stop_request(exit_enum.NORMAL);
+			switch_info.set_client_stop_request(exit_enum.USER);
 			main_view.setVisible(false);
 		}
 		if (e.getSource().equals(view_all)) {
@@ -396,6 +396,58 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			new Thread(pref_view).start();
 			pref_view.setLocationRelativeTo(main_view);
 			pref_view.setVisible(true);
+		}
+		if (e.getSource().equals(client_restart_now)) {
+			switch_info.set_client_stop_request(exit_enum.CRN);
+			switch_info.set_client_soft_stop_request(false);
+			main_view.setVisible(false);
+		}
+		if (e.getSource().equals(client_restart_later)) {
+			switch_info.set_client_stop_request(exit_enum.CRL);
+			switch_info.set_client_soft_stop_request(true);
+			//main_view.setVisible(false);
+			String message = new String("Request will be run after running tasks finished.");
+			String title = new String("Info:");
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+		}
+		if (e.getSource().equals(client_shutdown_now)) {
+			switch_info.set_client_stop_request(exit_enum.CSN);
+			switch_info.set_client_soft_stop_request(false);
+			main_view.setVisible(false);
+		}
+		if (e.getSource().equals(client_shutdown_later)) {
+			switch_info.set_client_stop_request(exit_enum.CSL);
+			switch_info.set_client_soft_stop_request(true);
+			//main_view.setVisible(false);
+			String message = new String("Request will be run after running tasks finished.");
+			String title = new String("Info:");
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);			
+		}
+		if (e.getSource().equals(host_restart_now)) {
+			switch_info.set_client_stop_request(exit_enum.HRN);
+			switch_info.set_client_soft_stop_request(false);
+			main_view.setVisible(false);
+		}
+		if (e.getSource().equals(host_restart_later)) {
+			switch_info.set_client_stop_request(exit_enum.HRL);
+			switch_info.set_client_soft_stop_request(true);
+			//main_view.setVisible(false);
+			String message = new String("Request will be run after running tasks finished.");
+			String title = new String("Info:");
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);			
+		}
+		if (e.getSource().equals(host_shutdown_now)) {
+			switch_info.set_client_stop_request(exit_enum.HSN);
+			switch_info.set_client_soft_stop_request(false);
+			main_view.setVisible(false);
+		}
+		if (e.getSource().equals(host_shutdown_later)) {
+			switch_info.set_client_stop_request(exit_enum.HSL);
+			switch_info.set_client_soft_stop_request(true);
+			//main_view.setVisible(false);
+			String message = new String("Request will be run after running tasks finished.");
+			String title = new String("Info:");
+			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 		}
 		if (e.getSource().equals(client_help)) {
 			MENU_BAR_LOGGER.warn("client usage clicked");
