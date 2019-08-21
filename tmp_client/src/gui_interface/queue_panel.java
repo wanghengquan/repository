@@ -415,26 +415,26 @@ class reject_pop_memu extends JPopupMenu implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(sort_priority)) {
-			System.out.println("sort_priority clicked");
+			//System.out.println("sort_priority clicked");
 			view_info.set_rejected_sorting_request(sort_enum.PRIORITY);
 		}
 		if (arg0.getSource().equals(sort_runid)) {
-			System.out.println("sort_runid clicked");
+			//System.out.println("sort_runid clicked");
 			view_info.set_rejected_sorting_request(sort_enum.RUNID);
 		}
 		if (arg0.getSource().equals(sort_time)) {
-			System.out.println("sort_time clicked");
+			//System.out.println("sort_time clicked");
 			view_info.set_rejected_sorting_request(sort_enum.TIME);
 		}		
 		if (arg0.getSource().equals(details)) {
-			System.out.println("reject details clicked");
+			//System.out.println("reject details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			reject_detail detail_view = new reject_detail(select_queue, client_info, task_info);
 			detail_view.setLocationRelativeTo(main_view);
 			detail_view.setVisible(true);
 		}
 		if (arg0.getSource().equals(delete)) {
-			System.out.println("reject delete clicked");
+			//System.out.println("reject delete clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			task_info.remove_queue_from_received_admin_queues_treemap(select_queue);
 			task_info.remove_rejected_admin_reason_treemap(select_queue);// source
@@ -632,63 +632,63 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
 		if (arg0.getSource().equals(show)) {
-			System.out.println("show details clicked");
+			//System.out.println("show details clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.set_request_watching_queue(select_queue);
 			view_info.set_request_watching_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(sort_priority)) {
-			System.out.println("sort_priority clicked");
+			//System.out.println("sort_priority clicked");
 			view_info.set_captured_sorting_request(sort_enum.PRIORITY);
 		}
 		if (arg0.getSource().equals(sort_runid)) {
-			System.out.println("sort_runid clicked");
+			//System.out.println("sort_runid clicked");
 			view_info.set_captured_sorting_request(sort_enum.RUNID);
 		}
 		if (arg0.getSource().equals(sort_time)) {
-			System.out.println("sort_time clicked");
+			//System.out.println("sort_time clicked");
 			view_info.set_captured_sorting_request(sort_enum.TIME);
 		}
 		if (arg0.getSource().equals(sort_status)) {
-			System.out.println("sort_status clicked");
+			//System.out.println("sort_status clicked");
 			view_info.set_captured_sorting_request(sort_enum.STATUS);
 		}		
 		if (arg0.getSource().equals(run_play)) {
-			System.out.println("run_play clicked");
+			//System.out.println("run_play clicked");
 			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.update_run_action_request(queue_name, queue_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(run_pause)) {
-			System.out.println("run_pause clicked");
+			//System.out.println("run_pause clicked");
 			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.update_run_action_request(queue_name, queue_enum.PAUSED);
 		}
 		if (arg0.getSource().equals(run_stop)) {
-			System.out.println("run_stop clicked");
+			//System.out.println("run_stop clicked");
 			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.update_run_action_request(queue_name, queue_enum.STOPPED);
 		}
 		if (arg0.getSource().equals(details)) {
-			System.out.println("detail clicked");
+			//System.out.println("detail clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
 			capture_detail detail_view = new capture_detail(select_queue, task_info);
 			detail_view.setLocationRelativeTo(main_view);
 			detail_view.setVisible(true);
 		}	
 		if (arg0.getSource().equals(results)) {
-			System.out.println("results clicked");
+			//System.out.println("results clicked");
 			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
 			open_result_folder(queue_name);
 		}	
 		if (arg0.getSource().equals(submit)) {
-			System.out.println("submit clicked");
+			//System.out.println("submit clicked");
 			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
 			submit_dialog submit_view = new submit_dialog(main_view, task_info, queue_name);
 			submit_view.setLocationRelativeTo(main_view);
 			submit_view.setVisible(true);
 		}			
 		if (arg0.getSource().equals(delete)) {
-			System.out.println("delete clicked");
+			//System.out.println("delete clicked");
 			int select_index = table.getSelectedRow();
 			if (select_index < 0){
 				return;

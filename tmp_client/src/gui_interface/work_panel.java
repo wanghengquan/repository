@@ -181,7 +181,7 @@ public class work_panel extends JSplitPane implements Runnable{
 					WORK_PANEl_LOGGER.warn("clicked task:" + select_task);
 					table_menu.open_result_folder(select_task);
 				} else {
-					WORK_PANEl_LOGGER.error("No line selected");
+					WORK_PANEl_LOGGER.info("No line selected");
 				}
 			}		
 		});

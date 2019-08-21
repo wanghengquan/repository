@@ -184,7 +184,7 @@ public class env_checker extends TimerTask {
 			ENV_CHECKER_LOGGER.error("Get " + tool_name + " path error");
 			return false;
 		}
-		System.out.println(">>>Inof: " + tool_name.toUpperCase() + " default path:" + tool_path);
+		ENV_CHECKER_LOGGER.info(tool_name.toUpperCase() + " default path:" + tool_path);
 		File tool = new File(tool_path);
 		if (!tool.canExecute()){
 			ENV_CHECKER_LOGGER.error(tool_name.toUpperCase() + " is not executable");

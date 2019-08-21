@@ -12,6 +12,9 @@ package top_runner.run_status;
 import java.util.HashMap;
 import java.util.Timer;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import cmd_interface.console_server;
 import connect_link.link_server;
@@ -35,44 +38,41 @@ class initial_status extends abstract_status {
 			return;
 		}
 		//step 2. to stop actions		
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to stop");
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to stop");
 		client.set_current_status(client.STOP);		
 	}
 
 	public void to_work() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Initializing...");
-		// task 0: launch GUI if in GUI mode
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Initializing...");
+		// task 1: launch link services
 		launch_link_services();
-		if (client.cmd_info.get("interactive").equals("1")){
-			console_server my_console = new console_server(client.switch_info);
-			my_console.start();
-			return;
-		}
-		// task 1: launch GUI if in GUI mode
+		// task 2: launch link console
+		launch_link_console();
+		// task 3: launch GUI if in GUI mode
 		launch_main_gui();
-		// task 2: get and wait client data ready 
+		// task 4: get and wait client data ready 
 		get_client_data_ready();
-		// task 3: get daemon process ready
+		// task 5: get daemon process ready
 		get_daemon_process_ready();
-		// task 4: get tube server ready
+		// task 6: get tube server ready
 		get_tube_server_ready();
-		// task 5: auto restart warning message print
+		// task 7: auto restart warning message print
 		release_auto_restart_msg();		
-		// task 6 : core script update 
+		// task 8 : core script update 
 		get_core_script_update();
-		// task 7: client self update
+		// task 9: client self update
 		get_client_self_update();
-		// task 8: client run mode recognize
+		// task 10: client run mode recognize
 		client_local_console_run_recognize();		
-		// task 9: get hall manager ready
+		// task 11: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
 		if (client.client_info.get_client_machine_data().get("debug").equals("1")){
-			System.out.println(">>>Info: Client run in Debug Mode.");
+			client.STATUS_LOGGER.debug("Client run in Debug Mode.");
 		}
-		System.out.println(">>>Info: Working...");
+		client.STATUS_LOGGER.info("Working...");
 		try {
 			Thread.sleep(1000 * 1 * public_data.PERF_THREAD_BASE_INTERVAL);
 		} catch (InterruptedException e) {
@@ -85,7 +85,8 @@ class initial_status extends abstract_status {
 	}
 
 	public void to_maintain() {
-		client.STATUS_LOGGER.warn("Go to maintain");
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
@@ -102,6 +103,25 @@ class initial_status extends abstract_status {
 		cmd_link.start();
 	}
 	
+	private void launch_link_console(){
+		if (client.cmd_info.get("interactive").equals("1")){
+			mute_log4j_outputs();
+			console_server my_console = new console_server(client.switch_info);
+			my_console.start();
+		}		
+	}
+	
+	private void mute_log4j_outputs(){
+		Configurator.setLevel(LogManager.getRootLogger().getName(), Level.ERROR);
+		Configurator.setLevel("top_runner.top_launcher", Level.OFF);
+		Configurator.setLevel("top_runner.run_status.client_status", Level.OFF);
+		Configurator.setLevel("flow_control.hall_manager", Level.OFF);
+		Configurator.setLevel("flow_control.result_waiter", Level.OFF);
+		Configurator.setLevel("flow_control.task_waiter", Level.OFF);
+		Configurator.setLevel("flow_control.hall_manager", Level.OFF);
+		Configurator.setLevel("connect_tube.tube_server", Level.OFF);
+	}
+		
 	private void launch_main_gui(){
 		if(client.cmd_info.get("cmd_gui").equals("gui")){
 			client.view_runner.start();
@@ -114,7 +134,7 @@ class initial_status extends abstract_status {
 		client.data_runner.start();
 		while(true){
 			if (client.switch_info.get_data_server_power_up()){
-				System.out.println(">>>Info: Data server power up.");
+				client.STATUS_LOGGER.info("Data server power up.");
 				break;
 			}
 		}		
@@ -124,7 +144,7 @@ class initial_status extends abstract_status {
 	private void get_core_script_update(){
 		core_update my_core = new core_update(client.client_info);
 		my_core.update();
-		System.out.println(">>>Info: Core Script updated.");
+		client.STATUS_LOGGER.info("Core Script updated.");
 	}	
 	//self update
 	private void get_client_self_update(){ 
@@ -154,7 +174,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>Info: TMP client updated.");
+		client.STATUS_LOGGER.info("TMP client updated.");
 	}
 	
 	//get daemon process ready
@@ -176,7 +196,7 @@ class initial_status extends abstract_status {
 		client.tube_runner.start();
 		while(true){
 			if (client.switch_info.get_tube_server_power_up()){
-				System.out.println(">>>Info: Tube server power up.");
+				client.STATUS_LOGGER.info("Tube server power up.");
 				break;
 			}
 		}		
@@ -187,7 +207,7 @@ class initial_status extends abstract_status {
 		String unattend_mode = client.client_info.get_client_machine_data().get("unattended");
 		String auto_restart = client.client_info.get_client_preference_data().get("auto_restart");
 		if (unattend_mode.equals("1") && auto_restart.equals("1")){
-			System.out.println(">>>Warn: Auto Restart sensed, will restart Client Machine every Sunday,12:00");
+			client.STATUS_LOGGER.warn("Auto Restart sensed, will restart Client Machine every Sunday,12:00");
 		}
 	}	
 	
@@ -209,7 +229,7 @@ class initial_status extends abstract_status {
 	//get_hall_manager_reay
 	private void get_hall_manager_ready(){
 		client.hall_runner.start();
-		System.out.println(">>>Info: Hall manager power up.");
+		client.STATUS_LOGGER.info("Hall manager power up.");
 	}
 }
 
