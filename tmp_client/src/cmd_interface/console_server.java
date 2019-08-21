@@ -465,7 +465,9 @@ public class console_server extends Thread {
 			// task 1: process the input
 			String user_inputs = new String("");
 			user_inputs = lineReader.readLine(public_data.TERMINAL_DEF_PROMPT);
-			
+			if (user_inputs ==null || user_inputs.equals("")){
+				continue;
+			}
 			// task 2: check the inputs
 			Boolean input_ok = check_user_inputs(user_inputs);
 			// task 3: print the answer

@@ -280,13 +280,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if (e.getSource().equals(imports)) {
-			MENU_BAR_LOGGER.warn("Imports clicked");
+			MENU_BAR_LOGGER.info("Imports clicked");
 			import_dialog import_view = new import_dialog(main_view, client_info, task_info);
 			import_view.setLocationRelativeTo(main_view);
 			import_view.setVisible(true);			
 		}
 		if (e.getSource().equals(exports)) {
-			MENU_BAR_LOGGER.warn("Exports clicked");
+			MENU_BAR_LOGGER.info("Exports clicked");
 			export_dialog export_view = new export_dialog(main_view, client_info, task_info, view_info);
 			export_view.setLocationRelativeTo(main_view);
 			export_view.setVisible(true);			
@@ -296,82 +296,82 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			main_view.setVisible(false);
 		}
 		if (e.getSource().equals(view_all)) {
-			MENU_BAR_LOGGER.warn("view_all clicked");
+			MENU_BAR_LOGGER.info("view_all clicked");
 			view_info.set_request_watching_area(watch_enum.ALL);
 		}
 		if (e.getSource().equals(view_waiting)) {
-			MENU_BAR_LOGGER.warn("view_waiting clicked");
+			MENU_BAR_LOGGER.info("view_waiting clicked");
 			view_info.set_request_watching_area(watch_enum.WAITING);
 		}
 		if (e.getSource().equals(view_processing)) {
-			MENU_BAR_LOGGER.warn("view_processing clicked");
+			MENU_BAR_LOGGER.info("view_processing clicked");
 			view_info.set_request_watching_area(watch_enum.PROCESSING);
 		}
 		if (e.getSource().equals(view_passed)) {
-			MENU_BAR_LOGGER.warn("view_passed clicked");
+			MENU_BAR_LOGGER.info("view_passed clicked");
 			view_info.set_request_watching_area(watch_enum.PASSED);
 		}
 		if (e.getSource().equals(view_failed)) {
-			MENU_BAR_LOGGER.warn("view_failed clicked");
+			MENU_BAR_LOGGER.info("view_failed clicked");
 			view_info.set_request_watching_area(watch_enum.FAILED);
 		}
 		if (e.getSource().equals(view_tbd)) {
-			MENU_BAR_LOGGER.warn("view_tbd clicked");
+			MENU_BAR_LOGGER.info("view_tbd clicked");
 			view_info.set_request_watching_area(watch_enum.TBD);
 		}
 		if (e.getSource().equals(view_timeout)) {
-			MENU_BAR_LOGGER.warn("view_timeout clicked");
+			MENU_BAR_LOGGER.info("view_timeout clicked");
 			view_info.set_request_watching_area(watch_enum.TIMEOUT);
 		}
 		if (e.getSource().equals(view_halted)) {
-			MENU_BAR_LOGGER.warn("view_halted clicked");
+			MENU_BAR_LOGGER.info("view_halted clicked");
 			view_info.set_request_watching_area(watch_enum.HALTED);
 		}		
 		if (e.getSource().equals(play)) {
-			MENU_BAR_LOGGER.warn("play clicked");
+			MENU_BAR_LOGGER.info("play clicked");
 			String queue_name = view_info.get_current_watching_queue();
 			view_info.update_run_action_request(queue_name, queue_enum.PROCESSING);
 		}
 		if (e.getSource().equals(pause)) {
-			MENU_BAR_LOGGER.warn("pause clicked");
+			MENU_BAR_LOGGER.info("pause clicked");
 			String queue_name = view_info.get_current_watching_queue();
 			view_info.update_run_action_request(queue_name, queue_enum.PAUSED);
 		}
 		if (e.getSource().equals(stop)) {
-			MENU_BAR_LOGGER.warn("stop clicked");
+			MENU_BAR_LOGGER.info("stop clicked");
 			String queue_name = view_info.get_current_watching_queue();
 			view_info.update_run_action_request(queue_name, queue_enum.STOPPED);
 		}
 		if (e.getSource().equals(retest_all)) {
-			MENU_BAR_LOGGER.warn("retest_all clicked");
+			MENU_BAR_LOGGER.info("retest_all clicked");
 			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.ALL);
 		}
 		//if (e.getSource().equals(retest_selected)) {
-		//	MENU_BAR_LOGGER.warn("retest_selected clicked");
+		//	MENU_BAR_LOGGER.info("retest_selected clicked");
 		//	view_info.set_retest_queue_area(retest_enum.SELECTED);
 		//} cannot get select case immediately
 		if (e.getSource().equals(retest_passed)) {
-			MENU_BAR_LOGGER.warn("retest_passed clicked");
+			MENU_BAR_LOGGER.info("retest_passed clicked");
 			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.PASSED);
 		}
 		if (e.getSource().equals(retest_failed)) {
-			MENU_BAR_LOGGER.warn("retest_failed clicked");
+			MENU_BAR_LOGGER.info("retest_failed clicked");
 			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.FAILED);
 		}
 		if (e.getSource().equals(retest_tbd)) {
-			MENU_BAR_LOGGER.warn("retest_tbd clicked");
+			MENU_BAR_LOGGER.info("retest_tbd clicked");
 			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.TBD);
 		}
 		if (e.getSource().equals(retest_timeout)) {
-			MENU_BAR_LOGGER.warn("retest_timeout clicked");
+			MENU_BAR_LOGGER.info("retest_timeout clicked");
 			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.TIMEOUT);
 		}
 		if (e.getSource().equals(retest_halted)) {
-			MENU_BAR_LOGGER.warn("retest_halted clicked");
+			MENU_BAR_LOGGER.info("retest_halted clicked");
 			view_info.update_request_retest_area(view_info.get_current_watching_queue(), retest_enum.HALTED);
 		}		
 		if (e.getSource().equals(upload)) {
-			MENU_BAR_LOGGER.warn("upload clicked");
+			MENU_BAR_LOGGER.info("upload clicked");
 			upload_dialog upload_view = new upload_dialog(client_info);
 			upload_view.setLocationRelativeTo(main_view);
 			upload_view.setVisible(true);
@@ -450,7 +450,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 		}
 		if (e.getSource().equals(client_help)) {
-			MENU_BAR_LOGGER.warn("client usage clicked");
+			MENU_BAR_LOGGER.info("client usage clicked");
 			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_CLIENT_USAGE);
 			String title = new String("Open usage file failed");
 			if (Desktop.isDesktopSupported()) {
@@ -467,7 +467,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			}
 		}
 		if (e.getSource().equals(tmp_doc)) {
-			MENU_BAR_LOGGER.warn("tmp client usage clicked");
+			MENU_BAR_LOGGER.info("tmp client usage clicked");
 			String message = new String("Cannot open usage folder:" + line_separator + public_data.DOC_TMP_USAGE);
 			String title = new String("Open TMP documents folder failed");
 			if (Desktop.isDesktopSupported()) {
@@ -484,7 +484,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			}	
 		}
 		if (e.getSource().equals(tmp_example)) {
-			MENU_BAR_LOGGER.warn("tmp example usage clicked");
+			MENU_BAR_LOGGER.info("tmp example usage clicked");
 			String message = new String("Cannot open usage file:" + line_separator + public_data.DOC_EXAMPLE_PATH);
 			String title = new String("Open example folder failed");
 			if (Desktop.isDesktopSupported()) {
@@ -501,13 +501,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			}
 		}	
 		if (e.getSource().equals(welcome_page)) {
-			MENU_BAR_LOGGER.warn("welcome page clicked");
+			MENU_BAR_LOGGER.info("welcome page clicked");
 			welcome_dialog welcome_view = new welcome_dialog(main_view, switch_info, client_info);
 			welcome_view.setLocationRelativeTo(main_view);
 			welcome_view.setVisible(true);
 		}
 		if (e.getSource().equals(contact)) {
-			MENU_BAR_LOGGER.warn("Contact clicked");
+			MENU_BAR_LOGGER.info("Contact clicked");
 			String title = "Open Mail Failed:";
 			String message = "Can not open system registered mail." + line_separator + "Please send mail to:"
 					+ public_data.BASE_DEVELOPER_MAIL;
@@ -525,7 +525,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			}
 		}
 		if (e.getSource().equals(about)) {
-			MENU_BAR_LOGGER.warn("about clicked");
+			MENU_BAR_LOGGER.info("about clicked");
 			about_dialog about_view = new about_dialog(main_view, client_info, switch_info);
 			about_view.setLocationRelativeTo(main_view);
 			about_view.setVisible(true);

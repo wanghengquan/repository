@@ -29,20 +29,20 @@ class stop_status extends abstract_status {
 	}
 
 	public void to_stop() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to stop");
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to stop");
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to work");		
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to work");		
 		client.set_current_status(client.WORK);
 	}
 
 	public void to_maintain() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to maintain");
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
@@ -110,8 +110,8 @@ class stop_status extends abstract_status {
     			exit_state = current_state;
     		}
     	}
-    	System.out.println(">>>Info: Client Exit Code:" + exit_state.get_index());
-    	System.out.println(">>>Info: Client Exit Reason:" + exit_state.get_description());
+    	client.STATUS_LOGGER.info("Client Exit Code:" + exit_state.get_index());
+    	client.STATUS_LOGGER.info("Client Exit Reason:" + exit_state.get_description());
     	System.exit(exit_state.get_index());
     }
 	
@@ -190,7 +190,7 @@ class stop_status extends abstract_status {
     	if (cmd == null || cmd.equals("")){
     		return;
     	}
-    	System.out.println(">>>Warn: Client running command:" + cmd);
+    	client.STATUS_LOGGER.warn("Client running command:" + cmd);
     	try {
 			Runtime.getRuntime().exec(cmd);
 		} catch (IOException e1) {
