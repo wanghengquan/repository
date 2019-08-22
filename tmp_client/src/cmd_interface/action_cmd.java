@@ -40,7 +40,7 @@ public enum action_cmd {
 	public static ArrayList<String> get_value_list(){
 		ArrayList<String> list = new ArrayList<String>();
 		for (action_cmd cmd : action_cmd.values()){
-			list.add(cmd.get_description());
+			list.add(cmd.toString());
 		}
 		return list;
 	}
