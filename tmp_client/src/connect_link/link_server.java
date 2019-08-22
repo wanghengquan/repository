@@ -62,12 +62,18 @@ public class link_server extends Thread {
 			server = new ServerSocket(link_port);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			// e1.printStackTrace();
+			LINK_SERVER_LOGGER.error("Create link server error out, Could be port occupied.");			
 		}
 	}
 
 	private void process_socket_data() throws IOException{
 		StringBuilder new_data = new StringBuilder("");
+		if (server == null){
+			LINK_SERVER_LOGGER.error("Link server didn't initialized.");
+			stop_request = true;
+			return;
+		}
 		String ip = new String(server.getInetAddress().getHostAddress());
 		String machine = new String(server.getInetAddress().getHostName());
 		Socket socket = server.accept();
@@ -279,6 +285,7 @@ public class link_server extends Thread {
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
+				LINK_SERVER_LOGGER.error("link server run error.");
 			}
 			// task 2: xxx
 			try {
