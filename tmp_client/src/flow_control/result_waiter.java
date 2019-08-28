@@ -488,43 +488,35 @@ public class result_waiter extends Thread {
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get(pool_attr.call_laudir);
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
-            Boolean is_windows = System.getProperty("os.name").contains("Windows");
+            //Boolean is_windows = System.getProperty("os.name").contains("Windows");
             String save_path = task_data.get("Paths").get("save_path");
             String[] tmp_path = save_path.split(",");
             int i = 1;
             //multiple save path with multiple web link show.
-            String win_href = "<a href=%s target='_explorer.exe'>%s";
-            String lin_href = "<a href=file://localhost%s  target='_blank'>%s";
+            String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
+            String lin_href = "<a href=file:///%s  target='_blank'>%s";
             for(String path: tmp_path) {
                 path = path.trim();
                 if(path.startsWith("/")){
-                     if(is_windows){
-                    	 runlog.append("Save location :" + path + ", not reachable from Windows side.");
-                     } else {
-                         runlog.append("Save location " + i + " with Lin access ==> ");
-                         runlog.append(String.format(lin_href, path, path));
-                         runlog.append("</a>" + line_separator);
-                         if(path.startsWith("/lsh/")){
-                             path = path.replace("/lsh/", "\\\\lsh-smb02\\").replace('/', '\\');
-                             runlog.append("Save location " + i + " with Win access ==> ");
-                             runlog.append(String.format(win_href, path, path));
-                             runlog.append("</a>" + line_separator);
-                         }
-                     }
+                    runlog.append("Save location " + i + " with Lin access ==> ");
+                    runlog.append(String.format(lin_href, path, path));
+                    runlog.append("</a>" + line_separator);
+                    if(path.startsWith("/lsh/")){
+                        path = path.replace("/lsh/", "//lsh-smb02/");
+                        runlog.append("Save location " + i + " with Win access ==> ");
+                        runlog.append(String.format(win_href, path, path.replace("/", "\\")));
+                        runlog.append("</a>" + line_separator);
+                    }
                 } else {
-                     if(is_windows){
-                         runlog.append("Save location " + i + " with Win access ==> ");
-                         runlog.append(String.format(win_href, path, path));
-                         runlog.append("</a>" + line_separator);
-                         if(path.startsWith("\\\\lsh-smb02\\")){
-                             path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace('\\', '/');
-                             runlog.append("Save location " + i + " with Lin access ==> ");
-                             runlog.append(String.format(lin_href, path, path));
-                             runlog.append("</a>" + line_separator);
-                         }
-                     } else {
-                    	 runlog.append("Save location :" + path + ", not reachable from Linux side.");
-                     }
+                    runlog.append("Save location " + i + " with Win access ==> ");
+                    runlog.append(String.format(win_href, path.replace("\\", "/"), path));
+                    runlog.append("</a>" + line_separator);
+                    if(path.startsWith("\\\\lsh-smb02\\")){
+                        path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
+                        runlog.append("Save location " + i + " with Lin access ==> ");
+                        runlog.append(String.format(lin_href, path, path));
+                        runlog.append("</a>" + line_separator);
+                    }
                 }
                 i++;
             }
