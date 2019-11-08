@@ -654,7 +654,7 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
-		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
@@ -662,7 +662,7 @@ public class hall_manager extends Thread {
 				break;
 			}
 		}
-		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
+		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
 			if (switch_info.get_tube_server_power_up()) {

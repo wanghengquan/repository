@@ -9,11 +9,13 @@
  */
 package connect_tube;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -33,6 +35,8 @@ import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
+import utility_funcs.time_info;
 
 public class tube_server extends Thread {
 	// public property
@@ -45,6 +49,7 @@ public class tube_server extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread tube_thread;
+	private HashMap<String, String> cmd_info;
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
@@ -55,7 +60,13 @@ public class tube_server extends Thread {
 	private int send_count = 0;
 
 	// public function
-	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
+	public tube_server(
+			HashMap<String, String> cmd_info, 
+			switch_data switch_info, 
+			client_data client_info, 
+			pool_data pool_info, 
+			task_data task_info) {
+		this.cmd_info = cmd_info;
 		this.switch_info = switch_info;
 		this.task_info = task_info;
 		this.client_info = client_info;
@@ -418,8 +429,12 @@ public class tube_server extends Thread {
 			} else {
 				task_info.update_local_path_finished_task_map(imported_id, imported_map.get(imported_id));
 			}
+			
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
-			local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_data);
+			String imported_paths = imported_data.get("path");
+			for(String imported_path : imported_paths.split(",")){
+			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_path, imported_data);
+			}
 			counter++;
 		}
 	}	
@@ -446,9 +461,11 @@ public class tube_server extends Thread {
 			} else {
 				task_info.update_local_file_finished_task_map(imported_id, imported_map.get(imported_id));
 			}
-			String imported_file = imported_map.get(imported_id).get("path");
+			String imported_files = imported_map.get(imported_id).get("path");
 			String imported_env = imported_map.get(imported_id).get("env");
-			local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, terminal);
+			for(String imported_file : imported_files.split(",")){
+			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, terminal);
+			}
 			counter++;
 		}
 	}
@@ -536,6 +553,82 @@ public class tube_server extends Thread {
 		}
 	}
 	
+	private void update_cmd_suites_to_task_data(HashMap<String, String> cmd_info){
+		String suite_files = cmd_info.get("suite_file");
+		String suite_paths = cmd_info.get("suite_path");
+		String list_file = cmd_info.get("list_file");
+		String task_env = cmd_info.get("task_environ");
+		String task_key = cmd_info.get("key_file");
+		String task_exe = cmd_info.get("exe_file");
+		String task_arg = cmd_info.get("arguments");
+		//suite file inputs
+		if (suite_files.length() > 0){
+			HashMap <String, String> task_data = new HashMap <String, String>();
+			task_data.put("path", suite_files);
+			task_data.put("env", task_env);
+			task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		//suite path inputs
+		if (suite_paths.length() > 0){
+			HashMap <String, String> task_data = new HashMap <String, String>();
+			task_data.put("path", suite_paths);
+			task_data.put("key", task_key);
+			task_data.put("exe", task_exe);
+			task_data.put("arg", task_arg);
+			task_data.put("env", task_env);			
+			task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		//list file inputs
+		List<String> line_list = new ArrayList<String>();
+		line_list.addAll(file_action.read_file_lines(list_file));
+		for (String line : line_list){
+			if(line.startsWith(";")){
+				continue;
+			}
+			if(line.startsWith("#")){
+				continue;
+			}
+			File file_obj = new File(line);
+			if(!file_obj.exists()){
+				continue;
+			}
+			if (file_obj.isDirectory()){
+				HashMap <String, String> task_data = new HashMap <String, String>();
+				task_data.put("path", line);
+				task_data.put("key", task_key);
+				task_data.put("exe", task_exe);
+				task_data.put("arg", task_arg);
+				task_data.put("env", task_env);			
+				task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);				
+			} else if (file_obj.isFile()) {
+				HashMap <String, String> task_data = new HashMap <String, String>();
+				task_data.put("path", line);
+				task_data.put("env", task_env);
+				task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
+			} else {
+				continue;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -551,8 +644,11 @@ public class tube_server extends Thread {
 		// ============== All static job start from here ==============
 		// initial 1 : send client detail info
 		send_client_info("complex");
-		// initial 2 : Announce tube server ready
+		// initial 2 : put command line suite file/path into task info
+		update_cmd_suites_to_task_data(cmd_info);
+		// initial 3 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
+		// loop start
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -571,7 +667,7 @@ public class tube_server extends Thread {
 			run_remote_tubes_control();
 			// task 2: update local suite file admin (local file, import)
 			run_import_local_file_admin();
-			// task 3: update local suite path admin (local file, import)
+			// task 3: update local suite path admin (local path, import)
 			run_import_local_path_admin();
 			// task 4: flash tube input:
 			run_received_admin_sorting();
@@ -622,14 +718,14 @@ public class tube_server extends Thread {
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
 		task_data task_info = new task_data();
-		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
 				break;
 			}
 		}
-		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
+		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
 			// System.out.println(task_info.get_rejected_admin_reason_treemap());

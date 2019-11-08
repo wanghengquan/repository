@@ -517,7 +517,7 @@ public class console_server extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
-		data_server server_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
+		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		server_runner.start();		
 		link_server my_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
 		my_server.start();
