@@ -758,6 +758,7 @@ public class task_waiter extends Thread {
 		//get launch_path
 		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
+			launch_path = launch_path.replaceAll("\\$work_path", work_space);
 		} else {
 			launch_path = task_path;
 		}

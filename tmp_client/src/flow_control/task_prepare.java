@@ -334,6 +334,7 @@ public class task_prepare {
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String design_path = new String("");
+		// update launch path
 		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
 		// update launch command
 		Pattern patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe))", Pattern.CASE_INSENSITIVE);
@@ -374,7 +375,9 @@ public class task_prepare {
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		// add default --design option for Core scripts
 		String[] cmd_list = null;
-		if (launch_cmd.contains("run_lattice.py"))
+		if (launch_path.equalsIgnoreCase(case_path))
+			cmd_list = launch_cmd.split("\\s+");
+		else if (launch_cmd.contains("run_lattice.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");

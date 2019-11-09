@@ -1077,7 +1077,10 @@ public class local_tube {
 		HashMap<String, String> cmd_data = new HashMap<String, String>();
 		String exe_file = imported_data.get("exe");
 		String arg_file = imported_data.get("arg");
-		exe_file = "$case_path/" + exe_file;
+		File exe_frh = new File(exe_file);
+		if (!exe_frh.exists() && !exe_file.contains("$work_path") && !exe_file.contains("$tool_path")){
+			exe_file = "$case_path/" + exe_file;
+		}
 		if (arg_file.length() > 0){
 			exe_file = exe_file + " " + arg_file;
 		}
