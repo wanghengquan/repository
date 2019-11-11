@@ -604,6 +604,7 @@ public class tube_server extends Thread {
 			if(!file_obj.exists()){
 				continue;
 			}
+			line = line.replaceAll("\\\\", "/");
 			if (file_obj.isDirectory()){
 				HashMap <String, String> task_data = new HashMap <String, String>();
 				task_data.put("path", line);

@@ -1168,7 +1168,7 @@ public class local_tube {
 				}
 				File path_obj = new File(line);
 				if(path_obj.exists()){
-					case_list.add(line);
+					case_list.add(line.replaceAll("\\\\", "/"));
 				}
 			}
 		} else {
