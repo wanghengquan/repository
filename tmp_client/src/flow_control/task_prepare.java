@@ -148,6 +148,20 @@ public class task_prepare {
 				} else {
 					task_prepare_info.add("Warning: Previously run design remove Fail:" + case_path);
 					CASE_PREPARE_LOGGER.warn("Previously run design deleted Fail:" + case_path);
+					return false;
+				}
+			}
+			// prepare export dir
+			File case_path_parent = case_path_dobj.getParentFile();
+			if (!case_path_parent.exists()){
+				try {
+					FileUtils.forceMkdir(case_path_parent);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					// e.printStackTrace();
+					task_prepare_info.add("Error: Prepare case parent path Fail:" + case_path_parent.getAbsolutePath());
+					CASE_PREPARE_LOGGER.error("Prepare case parent path Fail:" + case_path_parent.getAbsolutePath());
+					return false;
 				}
 			}
 			// export design
@@ -160,7 +174,7 @@ public class task_prepare {
 					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
 					return false;
 				}
-			}			
+			}		
 		}
 		return true;
 	}

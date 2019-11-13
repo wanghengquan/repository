@@ -63,14 +63,14 @@ public class link_server extends Thread {
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
-			LINK_SERVER_LOGGER.error("Create link server error out, Could be port occupied.");			
+			LINK_SERVER_LOGGER.warn("Create link server error out, Could be port occupied.");			
 		}
 	}
 
 	private void process_socket_data() throws IOException{
 		StringBuilder new_data = new StringBuilder("");
 		if (server == null){
-			LINK_SERVER_LOGGER.error("Link server didn't initialized.");
+			LINK_SERVER_LOGGER.warn("Link server didn't initialized.");
 			stop_request = true;
 			return;
 		}
