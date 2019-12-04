@@ -219,9 +219,12 @@ public class console_server extends Thread {
 		if(cmd_list[1].equalsIgnoreCase(link_cmd.HELP.toString())){
 			link_help_command_output();
 		} else {
-			link_ok = linked_client.link_to_user_host(cmd_list[1]);
+			link_ok = linked_client.link_request(cmd_list[1]);
 			if (link_ok){
 				System.out.println("Client linked to:" + cmd_list[1]);
+			} else {
+				System.out.println("Client link to <" + cmd_list[1] + "> Failed");
+				System.out.println("Client still linked to <" + linked_client.linked_host + ">");
 			}
 		}
 		return link_ok;
@@ -241,6 +244,16 @@ public class console_server extends Thread {
 			break;
 		case PREFER:
 			info_other_command_output(info_cmd.PREFER.toString());
+			break;
+		case CORESCRIPT:
+			info_other_command_output(info_cmd.CORESCRIPT.toString());
+			break;			
+		case SOFTWARE:
+			if(cmd_list.length > 2){
+				info_software_command_output(info_cmd.SOFTWARE.toString(), cmd_list[2]);
+			} else {
+				info_software_command_output(info_cmd.SOFTWARE.toString(), "");
+			}
 			break;			
 		default:
 			info_help_command_output();
@@ -284,7 +297,7 @@ public class console_server extends Thread {
 	private void info_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.data_action_request(top_cmd.INFO.toString(), request_info);
+			outputs = linked_client.data_request(top_cmd.INFO.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -294,6 +307,28 @@ public class console_server extends Thread {
 		msg_hash.putAll(xml_parser.get_common_xml_data(outputs));
 		common_hash_data_print(msg_hash);
 	}
+	
+	private void info_software_command_output(
+			String request_info,
+			String request_detail){
+		String outputs = new String("");
+		String request = new String("");
+		if (request_detail.equals("")){
+			request = request_info;
+		} else {
+			request = request_info + "." + request_detail;
+		}
+		try {
+			outputs = linked_client.data_request(top_cmd.INFO.toString(), request);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			CONSOLE_SERVER_LOGGER.warn("Run command error:" + request_info);
+		}
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_common_xml_data(outputs));
+		common_hash_data_print(msg_hash);
+	}	
 	
 	private Boolean task_command_answer(String [] cmd_list){
 		Boolean task_ok = new Boolean(false);
@@ -335,7 +370,7 @@ public class console_server extends Thread {
 	private void task_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.data_action_request(top_cmd.TASK.toString(), request_info);
+			outputs = linked_client.data_request(top_cmd.TASK.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -385,7 +420,7 @@ public class console_server extends Thread {
 	private void action_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.data_action_request(top_cmd.ACTION.toString(), request_info);
+			outputs = linked_client.action_request(top_cmd.ACTION.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
