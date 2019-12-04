@@ -66,12 +66,6 @@ public class cmd_parser {
 			get_help(options_obj);
 		}
 		// 3. collect option results
-		// 3.0 interactive or not
-		if (commandline_obj.hasOption('I')) {
-			cmd_hash.put("interactive", "1");
-		} else {
-			cmd_hash.put("interactive", "0");
-		}
 		// 3.1 cmd or gui model
 		if (commandline_obj.hasOption('c')) {
 			cmd_hash.put("cmd_gui", "cmd");
@@ -190,11 +184,19 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('R')) {
 			cmd_hash.put("result_keep", commandline_obj.getOptionValue('R'));
 		}	
-		// 3.20 help definition
+		// 3.20 interactive or not
+		if (commandline_obj.hasOption('I')) {
+			cmd_hash.put("interactive", "1");
+			cmd_hash.put("cmd_gui", "cmd");
+			cmd_hash.put("link_mode", "remote");
+		} else {
+			cmd_hash.put("interactive", "0");
+		}
+		// 3.21 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
-		// 3.21 run sanity check
+		// 3.22 run sanity check
 		if (!run_input_data_check(cmd_hash)){
 			get_help(options_obj);
 		}
@@ -271,7 +273,8 @@ public class cmd_parser {
 		Options options_obj = new Options();
 		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command mode").build());
 		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI mode, default mode.").build());
-		options_obj.addOption(Option.builder("I").longOpt("console").desc("Client will run in interactive console mode").build());
+		options_obj.addOption(
+				Option.builder("I").longOpt("console").desc("Client will run in interactive console mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
 		options_obj.addOption(Option.builder("A").longOpt("attended").desc("Client will run in attended mode").build());

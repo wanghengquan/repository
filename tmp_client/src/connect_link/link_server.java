@@ -97,14 +97,15 @@ public class link_server extends Thread {
 				return_string = get_info_return_data(ip, machine, slave_data.get(top_cmd.INFO.toString()).get("request"));
 			} else if (slave_data.containsKey(top_cmd.ACTION.toString())){
 				return_string = get_action_return_data(ip, machine, slave_data.get(top_cmd.ACTION.toString()).get("request"));
-			} else {
+			} else if (slave_data.containsKey(top_cmd.LINK.toString())){
+				return_string = get_link_return_data(ip, machine);
+			}else {
 				return_string = get_default_return_data(ip, machine);
 			}
-		} else if (msg_hash.containsKey("slave_task")){
+		}
+		if (msg_hash.containsKey("slave_task")){
 			HashMap<String, HashMap<String, String>> slave_task = new HashMap<String, HashMap<String, String>>();
 			slave_task.putAll(msg_hash.get("slave_task"));
-			return_string = get_default_return_data(ip, machine);
-		} else {
 			return_string = get_default_return_data(ip, machine);
 		}
 		socket_out.write(return_string);
@@ -123,6 +124,17 @@ public class link_server extends Thread {
 		String return_str = xml_parser.create_common_xml_string("master_data", xml_data, ip, machine);
 		return return_str;
 	}
+	
+	private String get_link_return_data(
+			String ip,
+			String machine){
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> detail_data = new HashMap<String, String>();
+		detail_data.put("default", public_data.SOCKET_LINK_ACKNOWLEDGE);
+		xml_data.put("results", detail_data);
+		String return_str = xml_parser.create_common_xml_string("master_data", xml_data, ip, machine);
+		return return_str;
+	}	
 	
 	private String get_action_return_data(
 			String ip,
@@ -184,9 +196,17 @@ public class link_server extends Thread {
 			String ip,
 			String machine,
 			String req_area){
+		String req_section = new String("");
+		String req_option = new String("");
+		if (req_area.contains(".")){
+			req_section = req_area.split("\\.")[0];
+			req_option = req_area.split("\\.")[1];
+		} else {
+			req_section = req_area;
+		}
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
-		switch(info_cmd.valueOf(req_area)){
+		switch(info_cmd.valueOf(req_section)){
 		case SYSTEM:
 			detail_data.putAll(client_info.get_client_system_data());
 			break;
@@ -196,7 +216,15 @@ public class link_server extends Thread {
 		case PREFER:
 			detail_data.putAll(client_info.get_client_preference_data());
 			break;
+		case CORESCRIPT:
+			detail_data.putAll(client_info.get_client_corescript_data());
+			break;			
 		case SOFTWARE:
+			if (req_option == null || req_option.equals("")){
+				detail_data.putAll(client_info.get_client_software_data());
+			} else {
+				detail_data.putAll(client_info.get_client_software_data(req_option));
+			}
 			break;
 		default:
 			detail_data.put("default", "NA");
@@ -284,8 +312,8 @@ public class link_server extends Thread {
 				process_socket_data();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
-				LINK_SERVER_LOGGER.error("link server run error.");
+				// e1.printStackTrace();
+				LINK_SERVER_LOGGER.warn("link server run error/closed.");
 			}
 			// task 2: xxx
 			try {

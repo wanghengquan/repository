@@ -200,6 +200,46 @@ public class client_data {
 		}
 	}
 	
+	public HashMap<String, String> get_client_software_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		int counter = 1;
+		String id_name = new String("");
+		try {
+			Iterator<String> section = client_hash.keySet().iterator();
+			while(section.hasNext()){
+				String section_name = section.next();
+				if (section_name.equals("System") || section_name.equals("CoreScript") || section_name.equals("Machine") || section_name.equals("preference")){
+					continue;
+				}
+				id_name = "SW" + String.valueOf(counter);
+				temp.put(id_name, section_name);
+				counter += 1;
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public HashMap<String, String> get_client_software_data(String software) {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			Iterator<String> section = client_hash.keySet().iterator();
+			while(section.hasNext()){
+				String section_name = section.next();
+				if (section_name.equalsIgnoreCase(software)){
+					temp.putAll(client_hash.get(section_name));
+					break;
+				}
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
 	public HashMap<String, String> get_client_corescript_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, String> temp = new HashMap<String, String>();

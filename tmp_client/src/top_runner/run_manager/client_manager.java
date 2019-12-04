@@ -14,6 +14,7 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_link.link_server;
 import connect_tube.task_data;
 import connect_tube.tube_server;
 import data_center.client_data;
@@ -265,7 +266,9 @@ public class client_manager extends Thread  {
 		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info);
 		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
-		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);		
+		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
+		link_server task_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_TASK_PORT);
+		link_server cmd_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
 				switch_info, 
@@ -278,7 +281,9 @@ public class client_manager extends Thread  {
 				view_runner,
 				tube_runner,
 				data_runner,
-				hall_runner);
+				hall_runner,
+				task_server,
+				cmd_server);
 		client_sts.set_current_status(client_sts.INITIAL);
 		// initial 3 : go to work status
 		client_sts.to_work_status();

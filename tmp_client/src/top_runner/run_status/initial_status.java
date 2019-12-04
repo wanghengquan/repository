@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import cmd_interface.console_server;
-import connect_link.link_server;
 import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
@@ -46,24 +45,24 @@ class initial_status extends abstract_status {
 	public void to_work() {
 		client.STATUS_LOGGER.debug(">>>####################");
 		client.STATUS_LOGGER.info("Initializing...");
-		// task 1: launch link services
-		launch_link_services();
-		// task 2: launch link console
+		// task 1: launch link console
 		launch_link_console();
-		// task 3: launch GUI if in GUI mode
+		// task 2: launch GUI if in GUI mode
 		launch_main_gui();
-		// task 4: get and wait client data ready 
+		// task 3: get and wait client data ready 
 		get_client_data_ready();
-		// task 5: get daemon process ready
+		// task 4: get daemon process ready
 		get_daemon_process_ready();
-		// task 6: get tube server ready
+		// task 5: get tube server ready
 		get_tube_server_ready();
-		// task 7: auto restart warning message print
+		// task 6: auto restart warning message print
 		release_auto_restart_msg();		
-		// task 8 : core script update 
+		// task 7 : core script update 
 		get_core_script_update();
-		// task 9: client self update
+		// task 8: client self update
 		get_client_self_update();
+		// task 9: launch link services
+		launch_link_services();
 		// task 10: client run mode recognize
 		client_local_console_run_recognize();		
 		// task 11: get hall manager ready
@@ -97,10 +96,9 @@ class initial_status extends abstract_status {
 	//=============================================================
 	//methods for locals
 	private void launch_link_services(){
-		link_server task_link = new link_server(client.switch_info, client.client_info, client.task_info, public_data.SOCKET_DEF_TASK_PORT);
-		link_server cmd_link = new link_server(client.switch_info, client.client_info, client.task_info, public_data.SOCKET_DEF_CMD_PORT);
-		task_link.start();
-		cmd_link.start();
+		client.cmd_server.start();
+		client.task_server.start();
+		client.STATUS_LOGGER.info("Socket servers power up.");
 	}
 	
 	private void launch_link_console(){

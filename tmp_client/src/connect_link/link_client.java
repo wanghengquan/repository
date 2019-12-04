@@ -17,8 +17,12 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import cmd_interface.top_cmd;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.data_server;
@@ -35,19 +39,72 @@ public class link_client {
 	// public function
 	// protected function
 	// private function
-	private String linked_host = public_data.SOCKET_DEF_TERMINAL;
-	//private static final Logger LINK_CLIENT_LOGGER = LogManager.getLogger(link_client.class.getName());
+	public String linked_host = public_data.SOCKET_DEF_TERMINAL;
+	private static final Logger LINK_CLIENT_LOGGER = LogManager.getLogger(link_client.class.getName());
 	
 	public link_client() {
 	}
 
-	public Boolean link_to_user_host(String host) {
-		Boolean link_status = new Boolean(true);
+	private void set_linked_user_host(String host) {
 		linked_host = host;
-		return link_status;
 	}
 	
-	public String data_action_request(
+	public Boolean link_request(
+			String host){
+		Boolean link_status = new Boolean(true);
+		Socket socket = null;
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		StringBuilder return_data = new StringBuilder("");
+		try {
+			socket = new Socket(host, public_data.SOCKET_DEF_CMD_PORT);
+			BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+			request_data.put("request", top_cmd.LINK.toString());
+			xml_data.put(top_cmd.LINK.toString(), request_data);
+			String output = xml_parser.create_common_xml_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+			socket_out.write(output);
+			socket_out.flush();
+			socket.shutdownOutput();
+			//get the return
+			BufferedReader socket_in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String line = null;
+			while((line = socket_in.readLine()) != null){
+				return_data.append(line);
+			}
+			socket.shutdownInput();
+			socket.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			LINK_CLIENT_LOGGER.warn("link to host:" + host + ", Failed.");
+			link_status = false;
+		}
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_common_xml_data(return_data.toString()));
+		if (!msg_hash.containsKey("master_data")){
+			link_status = false;
+			return link_status;
+		}
+		if (!msg_hash.get("master_data").containsKey("results")){
+			link_status = false;
+			return link_status;
+		}
+		if (!msg_hash.get("master_data").get("results").containsKey("default")){
+			link_status = false;
+			return link_status;
+		}	
+		if (!msg_hash.get("master_data").get("results").get("default").equalsIgnoreCase(public_data.SOCKET_LINK_ACKNOWLEDGE)){
+			link_status = false;
+			return link_status;
+		}
+		//successfully linked to host
+		set_linked_user_host(host);
+		LINK_CLIENT_LOGGER.warn("linked client: " + host);
+		//return link status
+		return link_status;
+	}	
+	
+	public String data_request(
 			String category,
 			String request_info) throws IOException{
 		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_CMD_PORT);
@@ -72,6 +129,32 @@ public class link_client {
 		return return_data.toString();
 	}
 	
+	public String action_request(
+			String category,
+			String request_action) throws IOException{
+		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_CMD_PORT);
+		BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		request_data.put("request", request_action);
+		xml_data.put(category, request_data);
+		String output = xml_parser.create_common_xml_string("slave_data", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+		socket_out.write(output);
+		socket_out.flush();
+		socket.shutdownOutput();
+		//get the return
+		StringBuilder return_data = new StringBuilder("");
+		BufferedReader socket_in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		String line = null;
+		while((line = socket_in.readLine()) != null){
+			return_data.append(line);
+		}
+		socket.shutdownInput();
+		socket.close();
+		return return_data.toString();
+	}	
+	
+	//unused
 	private String info_data_request(
 			String terminal,
 			int port,
@@ -98,6 +181,7 @@ public class link_client {
 		return return_data.toString();
 	}
 	
+	//unused
 	private String task_data_request(
 			String terminal,
 			int port,			
@@ -124,6 +208,7 @@ public class link_client {
 		return return_data.toString();
 	}
 	
+	//unused
 	private String control_action_request(
 			String terminal,
 			int port,

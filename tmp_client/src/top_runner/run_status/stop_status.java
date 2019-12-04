@@ -48,6 +48,7 @@ class stop_status extends abstract_status {
 	
 	public void do_state_things(){
 		//client.STATUS_LOGGER.info("Run stop state things");
+		stop_link_servers();
 		report_processed_data();
 		dump_finished_data();
 		dump_memory_data();		
@@ -159,28 +160,28 @@ class stop_status extends abstract_status {
     		if (os.contains("windows")) {
     			cmd = host_restart_cmd;
     		} else {
-    			client.STATUS_LOGGER.warn(">>>Warn: host restart not available for Linux client");
+    			client.STATUS_LOGGER.warn("Host restart not available for Linux client");
     		}
     		break; 
     	case HRL:
     		if (os.contains("windows")) {
     			cmd = host_restart_cmd;
     		} else {
-    			client.STATUS_LOGGER.warn(">>>Warn: host restart not available for Linux client");
+    			client.STATUS_LOGGER.warn("Host restart not available for Linux client");
     		}
     		break; 
     	case HSN:
     		if (os.contains("windows")) {
     			cmd = host_shutdown_cmd;
     		} else {
-    			client.STATUS_LOGGER.warn(">>>Warn: host shutdown not available for Linux client");
+    			client.STATUS_LOGGER.warn("Host shutdown not available for Linux client");
     		}
     		break;  
     	case HSL:
     		if (os.contains("windows")) {
     			cmd = host_shutdown_cmd;
     		} else {
-    			client.STATUS_LOGGER.warn(">>>Warn: host shutdown not available for Linux client");
+    			client.STATUS_LOGGER.warn("Host shutdown not available for Linux client");
     		}
     		break;
     	default:
@@ -197,6 +198,17 @@ class stop_status extends abstract_status {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+    	try {
+    		Thread.sleep(5 * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void stop_link_servers(){
+		client.cmd_server.soft_stop();
+		client.task_server.soft_stop();
 	}
 	
 	private void report_processed_data(){
