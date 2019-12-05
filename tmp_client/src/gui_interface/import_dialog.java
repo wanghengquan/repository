@@ -393,14 +393,14 @@ class path_pane extends JPanel implements ActionListener{
 		p1.add(jb_suite_path);
 		//step 2 : user key file 
 		jl_key_file = new JLabel("Key File:");
-		jl_key_file.setToolTipText("The key file to help client consider the path is a case path");
-		jt_key_file = new JTextField("", 128);
+		jl_key_file.setToolTipText("The key file to help client consider the path is a case");
+		jt_key_file = new JTextField("bqs.info", 128);
 		p1.add(jl_key_file);
 		p1.add(jt_key_file);
 		//step 3 : user exe file
 		jl_exe_file = new JLabel("EXE File:");
-		jl_exe_file.setToolTipText("The execute file in every case path");
-		jt_exe_file = new JTextField("", 128);
+		jl_exe_file.setToolTipText("The execute file for test case run, can be a file in case folder or absolut path to an external script/execute file.");
+		jt_exe_file = new JTextField("$work_path/DEV/bin/run_radiant.py", 128);
 		p1.add(jl_exe_file);
 		p1.add(jt_exe_file);
 		//step 4 : jl_arguments

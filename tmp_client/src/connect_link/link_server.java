@@ -328,7 +328,9 @@ public class link_server extends Thread {
 	public void soft_stop() {
 		stop_request = true;
 		try {
-			server.close();
+			if (server!=null){
+				server.close();
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -338,7 +340,9 @@ public class link_server extends Thread {
 	public void hard_stop() {
 		stop_request = true;
 		try {
-			server.close();
+			if (server!=null){
+				server.close();
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

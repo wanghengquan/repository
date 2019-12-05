@@ -607,7 +607,7 @@ public class tube_server extends Thread {
 			line = line.replaceAll("\\\\", "/");
 			if (file_obj.isDirectory()){
 				HashMap <String, String> task_data = new HashMap <String, String>();
-				task_data.put("path", line);
+				task_data.put("path", file_obj.getAbsolutePath().replaceAll("\\\\", "/"));
 				task_data.put("key", task_key);
 				task_data.put("exe", task_exe);
 				task_data.put("arg", task_arg);
@@ -615,7 +615,7 @@ public class tube_server extends Thread {
 				task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);				
 			} else if (file_obj.isFile()) {
 				HashMap <String, String> task_data = new HashMap <String, String>();
-				task_data.put("path", line);
+				task_data.put("path", file_obj.getAbsolutePath().replaceAll("\\\\", "/"));
 				task_data.put("env", task_env);
 				task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
 			} else {

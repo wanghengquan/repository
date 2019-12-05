@@ -110,13 +110,13 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('k')) {
 			cmd_hash.put("key_file", commandline_obj.getOptionValue('k'));
 		} else {
-			cmd_hash.put("key_file", "");
+			cmd_hash.put("key_file", "bqs.info");
 		}
 		// 3.8 execute file value
 		if (commandline_obj.hasOption('x')) {
 			cmd_hash.put("exe_file", commandline_obj.getOptionValue('x'));
 		} else {
-			cmd_hash.put("exe_file", "");
+			cmd_hash.put("exe_file", "$work_path/DEV/bin/run_radiant.py");
 		}
 		// 3.9 arguments for execute file
 		if (commandline_obj.hasOption('a')) {
@@ -293,7 +293,7 @@ public class cmd_parser {
 				.desc("Test suites list file for Local run")
 				.build());
 		options_obj.addOption(Option.builder("k").longOpt("key-file").hasArg()
-				.desc("The key file to help client consider the path is a case path, Work with -p(suite path)")
+				.desc("The key file to help client consider the path is a case path, default value: bqs.info, Work with -p(suite path)")
 				.build());
 		options_obj.addOption(Option.builder("K").longOpt("keep-case")
 				.desc("Case mode:Keep case in it's original path(depot space) and run it in that place")
@@ -310,7 +310,7 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("R").longOpt("result-keep").hasArg()
 				.desc("How to save the run results, available value: auto, zipped, unzipped").build());		
 		options_obj.addOption(Option.builder("x").longOpt("exe-file").hasArg()
-				.desc("The execute file in every case path, Work with -p(suite path)").build());
+				.desc("The execute file for test case run, default value: $work_path/DEV/bin/run_radiant.py, Work with -p(suite path)").build());
 		options_obj.addOption(Option.builder("a").longOpt("arguments").hasArg()
 				.desc("The arguments for execute file , Work with -x(exe_file)").build());
 		options_obj.addOption(Option.builder("e").longOpt("task-environ").hasArg()
