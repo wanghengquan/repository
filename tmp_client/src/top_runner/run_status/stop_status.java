@@ -9,11 +9,14 @@
  */
 package top_runner.run_status;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+
+import com.panayotis.jupidator.data.TextUtils;
 
 import data_center.public_data;
 import flow_control.export_data;
@@ -131,18 +134,23 @@ class stop_status extends abstract_status {
     	String sw_home = public_data.SW_HOME_PATH;
     	String sw_path = new String("");
     	String run_mode = new String("");
+    	String client_restart_cmd = new String("");
     	String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
 			sw_path = sw_home + "/bin/client.exe";
 		} else {
-			sw_path = sw_home + "/bin/client";
+			sw_path = sw_home + "/bin/client.jar";
 		}
 		if(preference_data.get("cmd_gui").equals("gui")){
 			run_mode = " -g";
 		} else {
 			run_mode = " -c";
 		}
-    	String client_restart_cmd = new String(sw_path + run_mode);
+		if (os.contains("windows")) {
+			client_restart_cmd = new String(sw_path + run_mode);
+		} else {
+			client_restart_cmd = new String(get_java_exec() + " -jar " +sw_path + run_mode);
+		}
     	//step 2. get host machine restart command
     	String host_restart_cmd = new String("shutdown -r");
     	//step 3. get host machine shutdown command
@@ -191,14 +199,29 @@ class stop_status extends abstract_status {
     	if (cmd == null || cmd.equals("")){
     		return;
     	}
+    	client.STATUS_LOGGER.warn("Client run command:" + cmd);
     	system_cmd.run_immediately(cmd);
     	try {
-    		Thread.sleep(1 * 1000);
+    		Thread.sleep(3 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+    private String get_java_exec() {
+        String EXEC = TextUtils.getSystemName().contains("windows") ? "javaw.exe" : "java";
+        String JAVAHOME = System.getProperty("java.home");
+        String file;
+        file = JAVAHOME + File.separator + "bin" + File.separator + EXEC;
+        if (new File(file).isFile())
+            return file;
+        file = JAVAHOME + File.separator + "jre" + File.separator + "bin" + File.separator + EXEC;
+        if (new File(file).isFile())
+            return file;
+        String default_return = new String("java");
+        return default_return;
+    }
 	
 	private void stop_link_servers(){
 		client.cmd_server.soft_stop();
