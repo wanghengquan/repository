@@ -21,10 +21,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
+import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 
@@ -326,7 +326,7 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
-		tmp_machine_data.put("debug", write_data.get("preference").get("debug"));
+		tmp_machine_data.put("debug", write_data.get("Machine").get("debug"));
 		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
 		write_data.remove("preference");
 		write_data.remove("Machine");

@@ -29,7 +29,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import data_center.client_data;
+import data_center.public_data;
 import data_center.switch_data;
+import utility_funcs.deep_clone;
 
 public class welcome_dialog extends JDialog implements ActionListener {
 	/**
@@ -44,7 +46,8 @@ public class welcome_dialog extends JDialog implements ActionListener {
 	private String line_separator = System.getProperty("line.separator");
 
 	public welcome_dialog(main_frame main_view, switch_data switch_info, client_data client_info) {
-		super(main_view, "Welcome & Initial Setting", true);
+		//super(main_view, "Welcome & Initial Setting", true);
+		this.setTitle("Welcome & Initial Setting");
 		this.client_info = client_info;
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
@@ -119,10 +122,17 @@ public class welcome_dialog extends JDialog implements ActionListener {
 	}
 
 	private JPanel get_jb_apply_panel() {
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(deep_clone.clone(client_info.get_client_preference_data()));
 		JPanel jb_apply_panel = new JPanel(new BorderLayout());
 		// checkbox panel
 		JPanel check_panel = new JPanel(new BorderLayout());
-		jc_welcome = new JCheckBox("Don't show welcome setting next time.");
+		jc_welcome = new JCheckBox("Don't show welcome setting in next start.");
+		if (preference_data.getOrDefault("show_welcome", public_data.DEF_SHOW_WELCOME).equals("1")){
+			jc_welcome.setSelected(false);
+		} else {
+			jc_welcome.setSelected(true);
+		}		
 		check_panel.add(jc_welcome, BorderLayout.WEST);
 		// button panel
 		JPanel button_panel = new JPanel(new GridLayout(1, 2, 5, 5));
@@ -145,38 +155,37 @@ public class welcome_dialog extends JDialog implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
-		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
-		client_data.putAll(client_info.get_client_data());
-		HashMap<String, String> preference_data = client_data.get("preference");
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(deep_clone.clone(client_info.get_client_preference_data()));
 		if (arg0.getSource().equals(jb_discard)) {
-			jc_welcome.setSelected(false);
-			if (preference_data == null) {
-				jt_work.setText("Test");
-				jt_save.setText("Test");
+			if (preference_data.getOrDefault("show_welcome", public_data.DEF_SHOW_WELCOME).equals("1")){
+				jc_welcome.setSelected(false);
 			} else {
-				jt_work.setText(preference_data.get("work_space"));
-				jt_save.setText(preference_data.get("save_space"));
+				jc_welcome.setSelected(true);
 			}
+			jt_work.setText(preference_data.getOrDefault("work_space", ""));
+			jt_save.setText(preference_data.getOrDefault("save_space", ""));
 		}
 		if (arg0.getSource().equals(jb_apply)) {
 			if (jc_welcome.isSelected()) {
 				preference_data.put("show_welcome", "0");
+			} else {
+				preference_data.put("show_welcome", "1");
 			}
 			// work space
-			if (jt_work.getText().trim().equals("")) {
-				String message = new String("Empty work path found.");
-				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
-				return;
-			} else {
-				File work_dobj = new File(jt_work.getText().trim());
-				String message = new String("Work Space Not Exists.");
-				if (work_dobj.exists()) {
-					preference_data.put("work_space", jt_work.getText().trim().replaceAll("\\\\", "/"));
-				} else {
-					JOptionPane.showMessageDialog(null, message, "Wrong import value:",
-							JOptionPane.INFORMATION_MESSAGE);
-					return;
+			String new_work_space = jt_work.getText().trim().replaceAll("\\\\", "/");
+			String ori_work_space = preference_data.getOrDefault("work_space", public_data.DEF_WORK_SPACE);
+			File work_dobj = new File(new_work_space);
+			String message1 = new String("Work Space Not Exists.");
+			if (work_dobj.exists()) {
+				preference_data.put("work_space_temp", new_work_space);
+				if (!new_work_space.equals(ori_work_space)){
+					switch_info.set_work_space_update_request(true);
 				}
+			} else {
+				JOptionPane.showMessageDialog(null, message1, "Wrong import value:",
+						JOptionPane.INFORMATION_MESSAGE);
+				return;
 			}
 			// save space
 			String save_space = new String();
@@ -186,14 +195,14 @@ public class welcome_dialog extends JDialog implements ActionListener {
 				save_space = jt_save.getText().trim().replaceAll("\\\\", "/");
 			}
 			File save_dobj = new File(save_space);
-			String message = new String("save space Not Exists.");
+			String message2 = new String("save space Not Exists.");
 			if (save_dobj.exists()) {
 				preference_data.put("save_space", save_space);
 			} else {
-				JOptionPane.showMessageDialog(null, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, message2, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			client_info.set_client_data(client_data);
+			client_info.set_client_preference_data(preference_data);
 			switch_info.set_client_updated();
 		}
 		if(arg0.getSource().equals(jb_close)){

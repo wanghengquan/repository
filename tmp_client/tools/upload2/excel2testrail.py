@@ -19,6 +19,21 @@ SEL_SUITE_ID = 'SELECT id as suite_id, description from suites where name="{}" a
 SEL_SECTION_ID = 'SELECT id as section_id from sections where suite_id={} and name="{}" and is_copy=0'
 SEL_CASE_TITLE_ID = 'SELECT * from cases where section_id={}'
 
+DROP_DOWN_DICT = dict(custom_automated=dict(YES=1, NO=2),
+                      custom_test_level={"1": 1, "2": 2, "3": 3},
+                      custom_fpga_rtl=dict(YES=1, NO=2, unkonwn=3),
+                      custom_test_bench=dict(YES=1, NO=2, unkonwn=3),
+                      custom_nouse=dict(YES=2, NO=1))
+
+
+def get_drop_down_value(raw_case_data):
+    for k, v in raw_case_data.items():
+        v_dict = DROP_DOWN_DICT.get(k)
+        if not v_dict:
+            continue
+        new_v = v_dict.get(v)
+        raw_case_data[k] = new_v
+
 
 class UploadSuites(object):
     def __init__(self):
@@ -160,9 +175,6 @@ class UploadSuites(object):
                         continue
                     if k == "Order":
                         continue
-                    if k == "NoUse":
-                        if v == "YES":
-                            break
                     simple_case[k] = v
                 else:
                     self.raw_cases.append(simple_case)
@@ -196,12 +208,12 @@ class UploadSuites(object):
                 continue
             for k, v in self.macro_dict.items():
                 # matched?
-                matched = 0
+                matched_list = list()
                 try:
                     for foo in v:
                         if foo[0] != "condition":
                             continue
-                        matched = 0
+                        _matched = 0
                         now_value = case.get(foo[1])
                         if not now_value:
                             continue
@@ -209,10 +221,14 @@ class UploadSuites(object):
                         this_value = this_value.strip("= ")
                         now_value_list = tools.comma_split(now_value, sep_mark=";")
                         if this_value in now_value_list:
-                            matched = 1
+                            _matched = 1
+                        matched_list.append(_matched)
                 except:
                     pass
-                if not matched:
+                if matched_list:
+                    if matched_list.count(0):
+                        continue
+                else:
                     # TODO: DO NOT add raw case currently
                     continue
                 # action!
@@ -342,7 +358,7 @@ class UploadSuites(object):
                         # LOGGER.info("Same settings for case {} ({})".format(title, case_id))
                 else:
                     LOGGER.info("Update settings for case {} ({})".format(title, case_id))
-                    LOGGER.info(case_data)
+                    log4u.say_it(case_data, "UPDATE:", show=self.debug)
                     if not self.debug:
                         self.tr.send_post("update_case/{}".format(case_id), case_data)
             else:
@@ -417,10 +433,10 @@ class GetCasesData(object):
         self.get_case_types()
         self.get_fields_system_name()
         self.get_priority_id()
+        self.get_type_id()
         self.skip_always = ("Section", "Sorting", "design_name", 'CRs')
         self.custom_config_keys = ("CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine")
-        self.int_keys = ("custom_test_level", "custom_fpga_slice", "custom_fpga_pio", "custom_fpga_rtl",
-                         "custom_fpga_ebr", "custom_fpga_dsp", "custom_test_bench")
+        self.int_keys = ("custom_fpga_slice", "custom_fpga_pio", "custom_fpga_ebr", "custom_fpga_dsp")
 
     def get_case_types(self):
         sel_cmd = "SELECT id, name from case_types where is_deleted=0"
@@ -439,6 +455,12 @@ class GetCasesData(object):
         self.priorities = dict()
         for foo in self.db.query(sel_cmd):
             self.priorities[foo.get("name")] = foo.get("id")
+
+    def get_type_id(self):
+        sel_cmd = "SELECT id, name from case_types where is_deleted=0"
+        self.types = dict()
+        for foo in self.db.query(sel_cmd):
+            self.types[foo.get("name")] = foo.get("id")
 
     def get_cases_data(self, cases_str):
         self.cases_data = OrderedDict()
@@ -477,12 +499,26 @@ class GetCasesData(object):
             else:
                 if k in self.fields_system_name:
                     case_data[self.fields_system_name[k]] = v
+                elif k.lower() == "type":
+                    type_id = self.types.get(v)
+                    if type_id:
+                        case_data["type_id"] = type_id
+                    else:
+                        LOGGER.warning("Unknown Type name: {} for {}".format(v, raw_dict))
                 elif k == "Priority":
                     p_id = self.priorities.get(v)
                     if p_id:
                         case_data["priority_id"] = p_id
                     else:
                         LOGGER.warning("Unknown Priority name: {} for {}".format(v, raw_dict))
+        # automated and nouse
+        key_no_use = "custom_nouse"
+        if case_data.get(key_no_use, "") != "YES":
+            case_data[key_no_use] = "NO"
+        key_automated = "custom_automated"
+        if case_data.get(key_automated, "") != "NO":
+            case_data[key_automated] = "YES"
+
         for int_key in self.int_keys:
             this_value = case_data.get(int_key)
             if this_value:
@@ -496,6 +532,7 @@ class GetCasesData(object):
                     except:
                         LOGGER.warning("{} is {}, not an integer".format(int_key, this_value))
                         case_data.pop(int_key)
+        get_drop_down_value(case_data)
         return case_data["title"], case_data
 
     def get_config(self, raw_dict):

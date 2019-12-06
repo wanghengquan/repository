@@ -15,6 +15,7 @@ import java.util.Observable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_link.link_server;
 import connect_tube.task_data;
 import connect_tube.tube_server;
 import data_center.client_data;
@@ -47,6 +48,8 @@ public class client_status extends Observable  {
 	protected tube_server tube_runner;
 	protected data_server data_runner;
 	protected hall_manager hall_runner;
+	protected link_server task_server;
+	protected link_server cmd_server;
 	protected final Logger STATUS_LOGGER = LogManager.getLogger(client_status.class.getName());
     private abstract_status current_status = INITIAL; 
     
@@ -65,7 +68,9 @@ public class client_status extends Observable  {
 			view_server view_runner,
 			tube_server tube_runner,
 			data_server data_runner,
-			hall_manager hall_runner){
+			hall_manager hall_runner,
+			link_server task_server,
+			link_server cmd_server){
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.task_info = task_info;
@@ -77,6 +82,8 @@ public class client_status extends Observable  {
 		this.tube_runner = tube_runner;
 		this.data_runner = data_runner;
 		this.hall_runner = hall_runner;
+		this.task_server = task_server;
+		this.cmd_server = cmd_server;
 	}	
 	
 	public void set_current_status(abstract_status new_status) {  

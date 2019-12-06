@@ -22,11 +22,11 @@ import connect_tube.tube_server;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.data_server;
-import data_center.exit_enum;
 import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import top_runner.run_status.exit_enum;
 import utility_funcs.des_encode;
 import utility_funcs.mail_action;
 import utility_funcs.time_info;
@@ -654,7 +654,7 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info);
 		view_runner.start();
-		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
@@ -662,7 +662,7 @@ public class hall_manager extends Thread {
 				break;
 			}
 		}
-		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
+		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
 			if (switch_info.get_tube_server_power_up()) {

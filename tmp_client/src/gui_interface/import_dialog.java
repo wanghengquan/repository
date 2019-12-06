@@ -18,6 +18,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -261,20 +262,20 @@ class file_pane extends JPanel implements ActionListener{
 	}
 
 	private void impoart_local_task_data(
-			String task_file,
+			String task_files,
 			String task_env){
-		if (local_tube.suite_file_sanity_check(task_file)){
-			FILE_PANE_LOGGER.warn("Importing suite file:" + task_file);
+		if (local_tube.suite_files_sanity_check(task_files)){
+			FILE_PANE_LOGGER.warn("Importing suite files:" + task_files);
 		} else {
-			FILE_PANE_LOGGER.warn("Importing suite file failed:" + task_file);
-			String title = new String("Import suite file error");
+			FILE_PANE_LOGGER.warn("Importing suite files failed:" + task_files);
+			String title = new String("Import suite files error");
 			String message = new String(local_tube.suite_file_error_msg);
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		String import_time_id = time_info.get_date_time();
 		HashMap <String, String> task_data = new HashMap <String, String>();
-		task_data.put("path", task_file);
+		task_data.put("path", task_files);
 		task_data.put("env", task_env);
 		task_info.update_local_file_imported_task_map(import_time_id, task_data);
 		try {
@@ -297,21 +298,27 @@ class file_pane extends JPanel implements ActionListener{
 			}			
 			JFileChooser import_file = new JFileChooser(work_space);
 			import_file.setDialogTitle("Select Test Suite File");
+			import_file.setMultiSelectionEnabled(true);
+			ArrayList<String> select_files = new ArrayList<String>();
 			int return_value = import_file.showOpenDialog(null);
 			if (return_value == JFileChooser.APPROVE_OPTION) {
-				File local_suite_file = import_file.getSelectedFile();
-				String path = local_suite_file.getAbsolutePath().replaceAll("\\\\", "/");
-				jt_user_file.setText(path);
+				for (File suite_file: import_file.getSelectedFiles()){
+					select_files.add(suite_file.getAbsolutePath().replaceAll("\\\\", "/"));
+				}
+				jt_user_file.setText(String.join(",", select_files));
 			}
 		}
 		if(arg0.getSource().equals(jb_unit_file)){				
 			JFileChooser import_file = new JFileChooser(public_data.DOC_EIT_PATH);
 			import_file.setDialogTitle("Select Unit Suite File");
+			import_file.setMultiSelectionEnabled(true);
+			ArrayList<String> select_files = new ArrayList<String>();
 			int return_value = import_file.showOpenDialog(null);
 			if (return_value == JFileChooser.APPROVE_OPTION) {
-				File local_suite_file = import_file.getSelectedFile();
-				String path = local_suite_file.getAbsolutePath().replaceAll("\\\\", "/");
-				jt_unit_file.setText(path);
+				for (File suite_file: import_file.getSelectedFiles()){
+					select_files.add(suite_file.getAbsolutePath().replaceAll("\\\\", "/"));
+				}
+				jt_unit_file.setText(String.join(",", select_files));
 			}
 		}		
 		if(arg0.getSource().equals(close)){
@@ -325,15 +332,15 @@ class file_pane extends JPanel implements ActionListener{
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			String user_file = jt_user_file.getText().replaceAll("\\\\", "/");
+			String user_files = jt_user_file.getText().replaceAll("\\\\", "/");
 			String user_env = jt_user_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
-			if (user_file.length() > 0){
-				impoart_local_task_data(user_file, user_env);
+			if (user_files.length() > 0){
+				impoart_local_task_data(user_files, user_env);
 			}			
-			String unit_file = jt_unit_file.getText().replaceAll("\\\\", "/");
+			String unit_files = jt_unit_file.getText().replaceAll("\\\\", "/");
 			String unit_env = jt_unit_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
-			if (unit_file.length() > 0){
-				impoart_local_task_data(unit_file, unit_env);
+			if (unit_files.length() > 0){
+				impoart_local_task_data(unit_files, unit_env);
 			}
 			tabbed_pane.dispose();
 		}
@@ -386,14 +393,14 @@ class path_pane extends JPanel implements ActionListener{
 		p1.add(jb_suite_path);
 		//step 2 : user key file 
 		jl_key_file = new JLabel("Key File:");
-		jl_key_file.setToolTipText("The key file to help client consider the path is a case path");
-		jt_key_file = new JTextField("", 128);
+		jl_key_file.setToolTipText("The key file to help client consider the path is a case");
+		jt_key_file = new JTextField("bqs.info", 128);
 		p1.add(jl_key_file);
 		p1.add(jt_key_file);
 		//step 3 : user exe file
 		jl_exe_file = new JLabel("EXE File:");
-		jl_exe_file.setToolTipText("The execute file in every case path");
-		jt_exe_file = new JTextField("", 128);
+		jl_exe_file.setToolTipText("The execute file for test case run, can be a file in case folder or absolut path to an external script/execute file.");
+		jt_exe_file = new JTextField("$work_path/DEV/bin/run_radiant.py", 128);
 		p1.add(jl_exe_file);
 		p1.add(jt_exe_file);
 		//step 4 : jl_arguments
@@ -509,23 +516,23 @@ class path_pane extends JPanel implements ActionListener{
 	}
 
 	private void impoart_local_task_data(
-			String task_path,
+			String task_paths,
 			String task_key,
 			String task_exe,
 			String task_arg,
 			String task_evn){
-		if (local_tube.suite_path_sanity_check(task_path, task_key)){
-			PATH_PANE_LOGGER.warn("Importing suite file:" + task_path);
+		if (local_tube.suite_paths_sanity_check(task_paths, task_key)){
+			PATH_PANE_LOGGER.warn("Importing suite paths:" + task_paths);
 		} else {
-			PATH_PANE_LOGGER.warn("Importing suite file failed:" + task_path);
-			String title = new String("Import suite file error");
+			PATH_PANE_LOGGER.warn("Importing suite paths failed:" + task_paths);
+			String title = new String("Import suite paths error");
 			String message = new String(local_tube.suite_file_error_msg);
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		String import_time_id = time_info.get_date_time();
 		HashMap <String, String> task_data = new HashMap <String, String>();
-		task_data.put("path", task_path);
+		task_data.put("path", task_paths);
 		task_data.put("key", task_key);
 		task_data.put("exe", task_exe);
 		task_data.put("arg", task_arg);
@@ -544,26 +551,31 @@ class path_pane extends JPanel implements ActionListener{
 		// TODO Auto-generated method stub  
 		if(arg0.getSource().equals(jb_suite_path)){
 			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_SPACE);
+			import_path.setMultiSelectionEnabled(true);
 			import_path.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//
 			import_path.setDialogTitle("Select Suite Path");
 			int return_value = import_path.showOpenDialog(null);
+			ArrayList<String> select_paths = new ArrayList<String>();
 			if (return_value == JFileChooser.APPROVE_OPTION){
-				File open_path = import_path.getSelectedFile();
-				String path = open_path.getAbsolutePath().replaceAll("\\\\", "/");
-				jt_suite_path.setText(path);
+				for (File path: import_path.getSelectedFiles()){
+					select_paths.add(path.getAbsolutePath().replaceAll("\\\\", "/"));
+				}
+				//File open_path = import_path.getSelectedFile();
+				//String path = open_path.getAbsolutePath().replaceAll("\\\\", "/");
+				jt_suite_path.setText(String.join(",", select_paths));
 			}	
 		}		
 		if(arg0.getSource().equals(close)){
 			tabbed_pane.dispose();
 		}
 		if(arg0.getSource().equals(apply)){
-			String suite_path = jt_suite_path.getText().replaceAll("\\\\", "/");
+			String suite_paths = jt_suite_path.getText().replaceAll("\\\\", "/");
 			String suite_key = jt_key_file.getText();
 			String suite_exe = jt_exe_file.getText();
 			String suite_arg = jt_arguments.getText();
 			String suite_env = jt_extra_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
-			if (suite_path.length() > 0){
-				impoart_local_task_data(suite_path, suite_key, suite_exe, suite_arg, suite_env);
+			if (suite_paths.length() > 0){
+				impoart_local_task_data(suite_paths, suite_key, suite_exe, suite_arg, suite_env);
 			}
 			tabbed_pane.dispose();
 		}

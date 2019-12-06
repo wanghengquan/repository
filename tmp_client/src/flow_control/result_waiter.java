@@ -20,10 +20,10 @@ import org.apache.logging.log4j.Logger;
 
 import connect_tube.task_data;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import gui_interface.view_data;
+import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.postrun_call;
 import utility_funcs.time_info;
@@ -489,39 +489,35 @@ public class result_waiter extends Thread {
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get(pool_attr.call_laudir);
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
-            Boolean is_windows = System.getProperty("os.name").contains("Windows");
+            //Boolean is_windows = System.getProperty("os.name").contains("Windows");
             String save_path = task_data.get("Paths").get("save_path");
             String[] tmp_path = save_path.split(",");
             int i = 1;
             //multiple save path with multiple web link show.
-            String win_href = "<a href=%s target='_explorer.exe'>%s";
-            String lin_href = "<a href=file://localhost%s  target='_blank'>%s";
+            String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
+            String lin_href = "<a href=file:///%s  target='_blank'>%s";
             for(String path: tmp_path) {
                 path = path.trim();
                 if(path.startsWith("/")){
-                     if(!is_windows){
-                         runlog.append("Save location " + i + " with Lin access ==> ");
-                         runlog.append(String.format(lin_href, path, path));
-                         runlog.append("</a>" + line_separator);
-                         if(path.startsWith("/lsh/")){
-                             path = path.replace("/lsh/", "\\\\lsh-smb02\\").replace('/', '\\');
-                             runlog.append("Save location " + i + " with Win access ==> ");
-                             runlog.append(String.format(win_href, path, path));
-                             runlog.append("</a>" + line_separator);
-                         }
-                     }
+                    runlog.append("Save location " + i + " with Lin access ==> ");
+                    runlog.append(String.format(lin_href, path, path));
+                    runlog.append("</a>" + line_separator);
+                    if(path.startsWith("/lsh/")){
+                        path = path.replace("/lsh/", "//lsh-smb02/");
+                        runlog.append("Save location " + i + " with Win access ==> ");
+                        runlog.append(String.format(win_href, path, path.replace("/", "\\")));
+                        runlog.append("</a>" + line_separator);
+                    }
                 } else {
-                     if(is_windows){
-                         runlog.append("Save location " + i + " with Win access ==> ");
-                         runlog.append(String.format(win_href, path, path));
-                         runlog.append("</a>" + line_separator);
-                         if(path.startsWith("\\\\lsh-smb02\\")){
-                             path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace('\\', '/');
-                             runlog.append("Save location " + i + " with Lin access ==> ");
-                             runlog.append(String.format(lin_href, path, path));
-                             runlog.append("</a>" + line_separator);
-                         }
-                     }
+                    runlog.append("Save location " + i + " with Win access ==> ");
+                    runlog.append(String.format(win_href, path.replace("\\", "/"), path));
+                    runlog.append("</a>" + line_separator);
+                    if(path.startsWith("\\\\lsh-smb02\\")){
+                        path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
+                        runlog.append("Save location " + i + " with Lin access ==> ");
+                        runlog.append(String.format(lin_href, path, path));
+                        runlog.append("</a>" + line_separator);
+                    }
                 }
                 i++;
             }
@@ -533,7 +529,7 @@ public class result_waiter extends Thread {
 			runlog.append(line_separator);
 			runlog.append(line_separator);
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get(pool_attr.call_output);
-			runlog.append(String.join(line_separator, runtime_output_list));
+			runlog.append(String.join(line_separator, runtime_output_filter(runtime_output_list)));
 			runlog.append(line_separator);
 			String runlog_str = runlog.toString();
 			hash_data.put("runLog", remove_xml_modifier(runlog_str));
@@ -542,9 +538,33 @@ public class result_waiter extends Thread {
 		return runtime_data;
 	}
 
+	private ArrayList<String> runtime_output_filter(ArrayList<String> output_list){
+		ArrayList<String> return_list = new ArrayList<String>();
+		Pattern start_pattern = Pattern.compile("===TMP Detail===");
+		Pattern stop_pattern = Pattern.compile("===TMP end===");
+		Boolean filter_enable = new Boolean(false);
+		for (String line:output_list){
+			Matcher start_match = start_pattern.matcher(line);
+			Matcher stop_match = stop_pattern.matcher(line);
+			if (start_match.find()){
+				filter_enable = true;
+				continue;
+			}
+			if (stop_match.find()){
+				filter_enable = false;
+				continue;
+			}
+			if (filter_enable){
+				continue;
+			}
+			return_list.add(line);
+		}
+		return return_list;
+	}
+	
 	private String remove_xml_modifier(String xml_string) {
+        xml_string = xml_string.replaceAll("&", "&amp;");
 		xml_string = xml_string.replaceAll("\"", "&quot;");
-		xml_string = xml_string.replaceAll("&", "&amp;");
 		xml_string = xml_string.replaceAll("<", "&lt;");
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
@@ -577,6 +597,7 @@ public class result_waiter extends Thread {
 			String key_check = new String("NA");
 			String defects = new String("");
 			String defects_history = new String("NA");
+			String scan_result = "";
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -591,11 +612,13 @@ public class result_waiter extends Thread {
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+                scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));				
 			}  else {
 				cmd_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
+            hash_data.put("scan_result", scan_result);
 			hash_data.put("defects", defects);
 			hash_data.put("defects_history", defects_history);
 			hash_data.put("milestone", milestone);
@@ -611,7 +634,24 @@ public class result_waiter extends Thread {
 		}
 		return case_data;
 	}
-	
+
+
+    private String get_scan_result(ArrayList<String> cmd_output) {
+        String scan_result = "";
+        if (cmd_output == null || cmd_output.isEmpty()) {
+            return scan_result;
+        }
+        Pattern p = Pattern.compile("^(\\{.+?\\})$");
+        for (String line : cmd_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+                scan_result = m.group(1);
+            }
+        }
+        return scan_result;
+    }
+
+
 	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output) {
 		HashMap<String, String> report_data = new HashMap<String, String>();
 		for (String line : cmd_output) {
@@ -651,16 +691,17 @@ public class result_waiter extends Thread {
 			break;
 		case "Timeout":
 			task_status = task_enum.TIMEOUT;
-			break;	
-		case "Blocked":
-			task_status = task_enum.BLOCKED;
 			break;
 		case "Case_Issue":
 			task_status = task_enum.CASEISSUE;
 			break;
 		case "SW_Issue":
 			task_status = task_enum.SWISSUE;
-			break;			
+			break;		
+		//web page no blocked status yet
+		//case "Blocked":
+		//	task_status = task_enum.FAILED; 
+		//	break;
 		default:
 			task_status = task_enum.OTHERS;
 		}
@@ -762,7 +803,16 @@ public class result_waiter extends Thread {
         return defects_history;
     }
 
-	private Boolean terminate_user_request_running_call() {
+    private void terminate_user_request_running_call(){
+    	// task1: this function works for both local and remote task queue stop request
+		terminate_stopped_queue_running_task();
+		// task2: terminate local user requested task case (from GUI)
+		terminate_local_user_request_running_task();
+		// task2: terminate remote user requested task case (from webpage)
+		terminate_remote_user_request_running_task();    	
+    }
+    
+	private Boolean terminate_local_user_request_running_task() {
 		Boolean cancel_status = new Boolean(true);
 		HashMap<String, ArrayList<String>> request_terminate_list = new HashMap<String, ArrayList<String>>();
 		request_terminate_list.putAll(view_info.impl_request_terminate_list());
@@ -800,7 +850,32 @@ public class result_waiter extends Thread {
 		return cancel_status;
 	}
 
-	private Boolean terminate_stopped_queue_running_call() {
+	private Boolean terminate_remote_user_request_running_task() {
+		Boolean cancel_status = new Boolean(true);
+		HashMap<String, HashMap<String, String>> request_data = new HashMap<String, HashMap<String, String>>();
+		request_data.putAll(task_info.fetch_tasks_from_received_stop_queues_map());
+		if (request_data == null || request_data.isEmpty()){
+			return cancel_status;
+		}
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			String call_id = (String) call_data.get(call_index).get(pool_attr.call_case);
+			call_state call_status = (call_state) call_data.get(call_index).get(pool_attr.call_status);
+			if (!request_data.containsKey(call_id)) {
+				continue;
+			}
+			if (!call_status.equals(call_state.PROCESSIONG)) {
+				continue;
+			}
+			cancel_status = pool_info.terminate_sys_call(call_index);
+		}
+		return cancel_status;
+	}
+	
+	private Boolean terminate_stopped_queue_running_task() {
 		Boolean cancel_status = new Boolean(true);
 		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
 		stopped_admin_queue_list.addAll(task_info.get_stopped_admin_queue_list());
@@ -905,7 +980,6 @@ public class result_waiter extends Thread {
 			}
 			// task 2 : terminate running call
 			terminate_user_request_running_call();
-			terminate_stopped_queue_running_call();
 			// task 3 : general and send task report
 			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data();

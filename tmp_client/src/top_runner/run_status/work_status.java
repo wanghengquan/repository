@@ -18,17 +18,23 @@ public class work_status extends abstract_status {
 	}
 
 	public void to_stop() {
+		//step 1. soft stop requested and still have task running
+		if(client.switch_info.get_client_soft_stop_request() && (client.pool_info.get_pool_used_threads() > 0)){
+			client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+			return;
+		}
+		//step 2. to stop actions
 		client.hall_runner.soft_stop();
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to stop");	
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to stop");	
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to work");		
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to work");		
 		client.set_current_status(client.WORK);
 	}
 
@@ -43,8 +49,8 @@ public class work_status extends abstract_status {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to maintain");		
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to maintain");		
 		client.set_current_status(client.MAINTAIN);
 	}
 	

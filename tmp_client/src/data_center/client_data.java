@@ -200,6 +200,46 @@ public class client_data {
 		}
 	}
 	
+	public HashMap<String, String> get_client_software_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		int counter = 1;
+		String id_name = new String("");
+		try {
+			Iterator<String> section = client_hash.keySet().iterator();
+			while(section.hasNext()){
+				String section_name = section.next();
+				if (section_name.equals("System") || section_name.equals("CoreScript") || section_name.equals("Machine") || section_name.equals("preference")){
+					continue;
+				}
+				id_name = "SW" + String.valueOf(counter);
+				temp.put(id_name, section_name);
+				counter += 1;
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public HashMap<String, String> get_client_software_data(String software) {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			Iterator<String> section = client_hash.keySet().iterator();
+			while(section.hasNext()){
+				String section_name = section.next();
+				if (section_name.equalsIgnoreCase(software)){
+					temp.putAll(client_hash.get(section_name));
+					break;
+				}
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
 	public HashMap<String, String> get_client_corescript_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, String> temp = new HashMap<String, String>();
@@ -365,7 +405,7 @@ public class client_data {
 		rw_lock.writeLock().lock();
 		Boolean release_result = new Boolean(true);
 		try {
-			if(!release_data.isEmpty() && release_data != null){
+			if(release_data != null && !release_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
 				Set<String> release_data_set = release_data.keySet();
@@ -421,7 +461,7 @@ public class client_data {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
-			if(!booking_data.isEmpty() && booking_data != null){
+			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
 				Set<String> booking_data_set = booking_data.keySet();
@@ -455,7 +495,7 @@ public class client_data {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = new Boolean(true);
 		try {
-			if(!booking_data.isEmpty() && booking_data != null){
+			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
 				Set<String> future_keys_set = future_soft_insts.keySet();

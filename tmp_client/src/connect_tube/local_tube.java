@@ -51,6 +51,20 @@ public class local_tube {
 		return ExcelData;
 	}
 
+	public static Boolean suite_files_sanity_check(String file_paths) {
+		Boolean all_pass = new Boolean(true);
+		for (String file:file_paths.split(",")){
+			if (!suite_file_sanity_check(file)){
+				all_pass = false;
+			}
+		}
+		if (!all_pass){
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	public static Boolean suite_file_sanity_check(String file_path) {
 		File xlsx_fobj = new File(file_path);
 		if(!xlsx_fobj.exists()){
@@ -66,11 +80,6 @@ public class local_tube {
 			System.out.println(">>>Error: Cannot find 'suite' sheet.");
 			return false;
 		}
-		//if (!ExcelData.containsKey("case")) {
-		//	suite_file_error_msg = "Error: Cannot find 'case' sheet.";
-		//	System.out.println(">>>Error: Cannot find 'case' sheet.");
-		//	return false;
-		//}
 		//check case sheet
 		Iterator<String> sheet_it = ExcelData.keySet().iterator();
 		Boolean get_sheet = new Boolean(false);
@@ -127,6 +136,7 @@ public class local_tube {
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
+		//for previously version support do not list 'Automated' in must_keys
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
 				suite_file_error_msg = "Error: case sheet title missing :" + x + ".";
@@ -222,6 +232,10 @@ public class local_tube {
 		for (int row = 0; row < suite_sheet.size(); row++) {
 			List<String> row_list = suite_sheet.get(row);
 			if (row_list.size() < 1) {
+                if(macro_area) {
+                    macro_area = false;
+                    macro_data.put(macro_name, area_list);
+                }
 				continue;
 			}
 			String item = row_list.get(0).trim().toLowerCase();
@@ -337,9 +351,9 @@ public class local_tube {
 				if (row_list.get(0).trim() == null || row_list.get(0).trim().equals("")) {
 					continue;
 				}
-				String column_order = "";
-				String column_title = "";
-				String column_flow = "";
+				String column_order = new String("");
+				String column_title = new String("");
+				String column_flow = new String("");
 				if (row_list.size() > order_index) {
 					column_order = String.valueOf(case_sheet_num) + "_" + row_list.get(order_index).trim();
 				}
@@ -356,7 +370,7 @@ public class local_tube {
 				if (!case_start) {
 					continue;
 				}
-				String case_order = "";
+				String case_order = new String("");
 				String[] flow_array = column_flow.split(";");
 				for (String flow_item : flow_array) {
 					Map<String, String> row_data = new HashMap<String, String>();
@@ -370,7 +384,7 @@ public class local_tube {
 						if (key.equals("Order")) {
 							row_data.put("Order", case_order);
 						} else if (key.equals("Flow")) {
-							row_data.put("Flow", flow_item);
+							row_data.put("Flow", flow_item);	
 						} else {
 							row_data.put(key, column_value.replaceAll("\\\\", "/"));
 						}
@@ -398,9 +412,14 @@ public class local_tube {
 			String macro_case_order = new String();
 			Map<String, String> case_data = new HashMap<String, String>();
 			case_data.putAll(raw_data.get(case_order));
-			if (case_data.get("NoUse").equalsIgnoreCase("yes")) {
+			if (case_data.containsKey("NoUse") && case_data.get("NoUse").equalsIgnoreCase("yes")) {
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping NoUse case:" + case_data.get("Order"));
 				continue;
 			}
+			if (case_data.containsKey("Automated") &&  case_data.get("Automated").equalsIgnoreCase("no")) {
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping Non-Automated case:" + case_data.get("Order"));
+				continue;
+			}		
 			if (macro_data == null || macro_data.isEmpty()) {
 				macro_case_order = "m" + macro_order.toString() + "_" + case_order;
 				case_data.put("Order", macro_case_order);
@@ -966,38 +985,42 @@ public class local_tube {
 	//===========================================================================
 	//===========================================================================
 	//for suite path support
-	public static Boolean suite_path_sanity_check(String suite_path, String suite_key) {
-		File xlsx_fobj = new File(suite_path);
-		if(!xlsx_fobj.exists()){
-			suite_path_error_msg = "Error: Suite path not exists.";
-			System.out.println(">>>Error: Suite path not exists.");
-			return false;
-		}
-		if(file_action.get_key_file_list(suite_path, suite_key).size() < 1){
-			suite_path_error_msg = "Error: Suite path no key file found.";
-			System.out.println(">>>Error: Suite path no key file found.");
-			return false;			
+	public static Boolean suite_paths_sanity_check(String suite_paths, String suite_key) {
+		for (String suite_path : suite_paths.split(",")){
+			File xlsx_fobj = new File(suite_path);
+			if(!xlsx_fobj.exists()){
+				suite_path_error_msg = "Error: Suite path not exists.";
+				System.out.println(">>>Error: Suite path not exists.");
+				return false;
+			}
+			if(file_action.get_key_file_list(suite_path, suite_key).size() < 1){
+				suite_path_error_msg = "Error: Suite path no key file found.";
+				System.out.println(">>>Error: Suite path no key file found.");
+				return false;			
+			}
 		}
 		return true;
 	}
 	
 	public void generate_suite_path_local_admin_task_queues(
+			String imported_path,
 			HashMap<String, String> imported_data){
 		//step 0: start time
 		String generate_time = time_info.get_date_time();
 		//step 1: generate queue_name
-		String queue_name = get_queue_name(imported_data, generate_time);
+		String queue_name = get_queue_name(imported_path, imported_data, generate_time);
 		//step 2: generate admin_data
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
-		admin_queue_data.putAll(get_admin_queue_data(imported_data, generate_time));
+		admin_queue_data.putAll(get_admin_queue_data(imported_path, imported_data, generate_time));
 		//step 1: generate task_data
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		task_queue_data.putAll(get_task_queue_data(imported_data, admin_queue_data));
+		task_queue_data.putAll(get_task_queue_data(imported_path, imported_data, admin_queue_data));
 		task_info.update_queue_to_received_admin_queues_treemap(queue_name, admin_queue_data);
 		task_info.update_queue_to_received_task_queues_map(queue_name, task_queue_data);
 	}
 	
 	private String get_queue_name(
+			String imported_path,
 			HashMap<String, String> imported_data,
 			String generate_time) {
 		// generate queue name
@@ -1010,8 +1033,7 @@ public class local_tube {
 		String mark_time = time_info.get_time_hhmm();
 		// queue base name
 		String admin_queue_base = new String("");
-		String suite_path = imported_data.get("path");
-		File path_obj = new File(suite_path);
+		File path_obj = new File(imported_path);
 		String suite_name = path_obj.getName();
 		if (suite_name.length() < 1){
 			admin_queue_base = "local_suite";
@@ -1027,12 +1049,13 @@ public class local_tube {
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_admin_queue_data(
+			String import_path,
 			HashMap<String, String> imported_data,
 			String generate_time){
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		//id_data create
 		HashMap<String, String> id_data = new HashMap<String, String>();
-		String suite_path = imported_data.get("path");
+		String suite_path = import_path;
 		File path_obj = new File(suite_path);
 		String suite_name = path_obj.getName();
 		if (suite_name.length() < 1){
@@ -1054,7 +1077,10 @@ public class local_tube {
 		HashMap<String, String> cmd_data = new HashMap<String, String>();
 		String exe_file = imported_data.get("exe");
 		String arg_file = imported_data.get("arg");
-		exe_file = "$case_path/" + exe_file;
+		File exe_frh = new File(exe_file);
+		if (!exe_frh.exists() && !exe_file.contains("$work_path") && !exe_file.contains("$tool_path")){
+			exe_file = "$case_path/" + exe_file;
+		}
 		if (arg_file.length() > 0){
 			exe_file = exe_file + " " + arg_file;
 		}
@@ -1120,11 +1146,12 @@ public class local_tube {
 	}
 	
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
+			String imported_path,
 			HashMap<String, String> imported_data,
 			HashMap<String, HashMap<String, String>> admin_data){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		//get case list
-		String suite_path = imported_data.get("path");
+		String suite_path = imported_path;
 		String key_file = imported_data.get("key");
 		String list_path = suite_path + "/list.txt";
 		File list_fobj = new File(list_path);
@@ -1141,7 +1168,7 @@ public class local_tube {
 				}
 				File path_obj = new File(line);
 				if(path_obj.exists()){
-					case_list.add(line);
+					case_list.add(line.replaceAll("\\\\", "/"));
 				}
 			}
 		} else {

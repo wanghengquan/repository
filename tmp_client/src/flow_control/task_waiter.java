@@ -21,9 +21,9 @@ import connect_tube.local_tube;
 import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
+import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.system_call;
 import utility_funcs.time_info;
@@ -119,10 +119,24 @@ public class task_waiter extends Thread {
 
 	private Boolean start_new_task_check(){
 		Boolean available = new Boolean(true);
+		//client soft stop request ?
+		if (switch_info.get_client_soft_stop_request()){
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for Client soft stop...");
+			}			
+			available = false;			
+		}		
+		//work space ready ?
+		if (switch_info.get_work_space_update_request()){
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for work space update...");
+			}			
+			available = false;			
+		}
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
-				TASK_WAITER_LOGGER.info(waiter_name + ":Waiting for core script update...");
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for core script update...");
 			}			
 			available = false;
 		}
@@ -136,7 +150,7 @@ public class task_waiter extends Thread {
 		//processing queue available ?
 		if (task_info.get_processing_admin_queue_list().size() < 1) {
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-				TASK_WAITER_LOGGER.info(waiter_name + ":No Processing queue found.");
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
 			}
 			available = false;
 		}		
@@ -744,6 +758,7 @@ public class task_waiter extends Thread {
 		//get launch_path
 		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
+			launch_path = launch_path.replaceAll("\\$work_path", work_space);
 		} else {
 			launch_path = task_path;
 		}
@@ -854,7 +869,7 @@ public class task_waiter extends Thread {
 		if (prepare_ok){
 			cmd_status = task_enum.PROCESSING;
 		} else {
-			cmd_status = task_enum.BLOCKED;
+			cmd_status = task_enum.FAILED;
 		}
 		ArrayList<String> task_prepare_info_list = new ArrayList<String>();
 		task_prepare_info_list.addAll(prepare_obj.task_prepare_info);
@@ -942,7 +957,7 @@ public class task_waiter extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 0 : initial preparing,  load task data for re-processing queues
 			reload_repressing_queue_data();// reload finished task data if queue changed to processing from finished
-			// task 1 : check available work thread and task queue 
+			// task 1 : check available work environments 
 			if(!start_new_task_check()){
 				continue;
 			}

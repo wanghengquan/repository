@@ -221,9 +221,8 @@ public class import_data {
 		if (!xml_frh.exists() || !xml_frh.canRead()) {
 			return queue_data;
 		}
-		xml_parser parser = new xml_parser();
 		try {
-			queue_data.putAll(parser.get_xml_file_admin_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
+			queue_data.putAll(xml_parser.get_xml_file_admin_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
@@ -239,9 +238,8 @@ public class import_data {
 		if (!xml_frh.exists() || !xml_frh.canRead()) {
 			return queue_data;
 		}
-		xml_parser parser = new xml_parser();
 		try {
-			queue_data.putAll(parser.get_xml_file_task_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
+			queue_data.putAll(xml_parser.get_xml_file_task_queue_data(xml_frh.getAbsolutePath().replaceAll("\\\\", "/")));
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();

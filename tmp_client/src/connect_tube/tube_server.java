@@ -9,11 +9,13 @@
  */
 package connect_tube;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -23,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.client_data;
 import data_center.data_server;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.status_enum;
 import data_center.switch_data;
@@ -32,7 +33,10 @@ import flow_control.pool_data;
 import flow_control.queue_enum;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
+import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
+import utility_funcs.time_info;
 
 public class tube_server extends Thread {
 	// public property
@@ -45,6 +49,7 @@ public class tube_server extends Thread {
 	private boolean stop_request = false;
 	private boolean wait_request = false;
 	private Thread tube_thread;
+	private HashMap<String, String> cmd_info;
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
@@ -55,7 +60,13 @@ public class tube_server extends Thread {
 	private int send_count = 0;
 
 	// public function
-	public tube_server(switch_data switch_info, client_data client_info, pool_data pool_info, task_data task_info) {
+	public tube_server(
+			HashMap<String, String> cmd_info, 
+			switch_data switch_info, 
+			client_data client_info, 
+			pool_data pool_info, 
+			task_data task_info) {
+		this.cmd_info = cmd_info;
 		this.switch_info = switch_info;
 		this.task_info = task_info;
 		this.client_info = client_info;
@@ -77,20 +88,47 @@ public class tube_server extends Thread {
 		Set<String> system_require_set = system_require_data.keySet();
 		Iterator<String> system_require_it = system_require_set.iterator();
 		while (system_require_it.hasNext()) {
-			String key_name = system_require_it.next();
-			String value = system_require_data.get(key_name);
-			if (!client_hash.get("System").containsKey(key_name)){
+			String request_key = system_require_it.next();
+			String request_value = system_require_data.get(request_key);
+			if (!client_hash.get("System").containsKey(request_key)){
 				system_match = false;
 				break;
 			}			
-			if (key_name.equals("min_space")) {
+			if (request_key.equals("min_space")) {
 				String client_available_space = client_hash.get("System").get("space");
-				if (Integer.valueOf(value) > Integer.valueOf(client_available_space)) {
+				if (Integer.valueOf(request_value) > Integer.valueOf(client_available_space)) {
 					system_match = false;
 					break;
 				}
 			} else {
-				if (!value.contains(client_hash.get("System").get(key_name))) {
+				// Get request value list
+				ArrayList<String> request_value_list = new ArrayList<String>();		
+				if (request_value.contains(",")){
+					request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
+				} else if (request_value.contains(";")){
+					request_value_list.addAll(Arrays.asList(request_value.split("\\s*;\\s*")));
+				} else{
+					request_value_list.add(request_value);
+				}
+				//get available value list
+				String client_value = new String(client_hash.get("System").get(request_key));
+				ArrayList<String> client_value_list = new ArrayList<String>();		
+				if (client_value.contains(",")){
+					client_value_list.addAll(Arrays.asList(client_value.split("\\s*,\\s*")));
+				} else if (client_value.contains(";")){
+					client_value_list.addAll(Arrays.asList(client_value.split("\\s*;\\s*")));
+				} else{
+					client_value_list.add(client_value);
+				}				
+				//compare data
+				Boolean item_match = new Boolean(false);
+				for (String individual: client_value_list){
+					if (request_value_list.contains(individual)){
+						item_match = true;
+						break;
+					}
+				}
+				if (!item_match){
 					system_match = false;
 					break;
 				}
@@ -104,16 +142,40 @@ public class tube_server extends Thread {
 			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
 		Boolean machine_match = new Boolean(true);
+		String client_current_private = client_hash.get("Machine").get("private");
+		//Scenario 1 local task (not remote)
+		if (queue_name.contains("0@")){
+			//this is a local task queue no private need to check
+			return machine_match;
+		}		
+		//Scenario 2 without machine requirement data
 		if (!queue_data.containsKey("Machine")) {
+			if (client_current_private.equals("1")) {
+				machine_match = false;
+			} else {
+				machine_match = true;
+			}
 			return machine_match;
 		}
-		// check machine match
+		//Scenario 3 with machine requirement data without 'terminal'
 		HashMap<String, String> machine_require_data = queue_data.get("Machine");
-		Set<String> machine_require_set = machine_require_data.keySet();
-		Iterator<String> machine_require_it = machine_require_set.iterator();
+		if (client_current_private.equals("1") && !machine_require_data.containsKey("terminal")) {
+			machine_match = false;
+			return machine_match;
+		}
+		//Scenario 4 with machine requirement data
+		Iterator<String> machine_require_it = machine_require_data.keySet().iterator();
 		while (machine_require_it.hasNext()) {
 			String request_key = machine_require_it.next();
 			String request_value = machine_require_data.get(request_key);
+			ArrayList<String> request_value_list = new ArrayList<String>();		
+			if (request_value.contains(",")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
+			} else if (request_value.contains(";")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*;\\s*")));
+			} else{
+				request_value_list.add(request_value);
+			}			
 			if (!client_hash.get("Machine").containsKey(request_key)){
 				machine_match = false;
 				break;
@@ -121,33 +183,34 @@ public class tube_server extends Thread {
 			String client_value = new String(client_hash.get("Machine").get(request_key));
 			ArrayList<String> client_value_list = new ArrayList<String>();		
 			if (client_value.contains(",")){
-				client_value_list.addAll(Arrays.asList(client_value.split(",")));
+				client_value_list.addAll(Arrays.asList(client_value.split("\\s*,\\s*")));
 			} else if (client_value.contains(";")){
-				client_value_list.addAll(Arrays.asList(client_value.split(";")));
+				client_value_list.addAll(Arrays.asList(client_value.split("\\s*;\\s*")));
 			} else{
 				client_value_list.add(client_value);
 			}
 			Boolean item_match = new Boolean(false);
+
+            for (String terminal_model: request_value_list){
+                if(terminal_model.contains("!")){
+                    item_match = true;
+                    break;
+                }
+            }
+
 			for (String individual: client_value_list){
-				if (request_value.contains(individual)){
+				if (request_value_list.contains(individual)){
 					item_match = true;
 					break;
 				}
+                if (request_value_list.contains("!" + individual)){
+                    item_match = false;
+                    break;
+                }
 			}
 			if (!item_match){
 				machine_match = false;
 				break;
-			}
-		}
-		//check private when queue come from remote(not local)
-		if (queue_name.contains("0@")){
-			//this is a local task queue no private need to check
-			return machine_match;
-		}
-		String client_current_private = client_hash.get("Machine").get("private");
-		if (client_current_private.equals("1")) {
-			if (!machine_require_data.containsKey("terminal")) {
-				machine_match = false;
 			}
 		}
 		return machine_match;
@@ -335,11 +398,10 @@ public class tube_server extends Thread {
 		}
 		// generate xml message
 		String send_msg = new String();
-		xml_parser parser = new xml_parser();
 		if (mode.equals("simple")) {
-			send_msg = parser.create_client_document_string(simple_data);
+			send_msg = xml_parser.create_client_document_string(simple_data);
 		} else {
-			send_msg = parser.create_client_document_string(complex_data);
+			send_msg = xml_parser.create_client_document_string(complex_data);
 		}
 		send_status = rmq_runner.basic_send(public_data.RMQ_CLIENT_NAME, send_msg);
 		export_data.debug_disk_client_out_status(send_msg, client_info);
@@ -367,8 +429,12 @@ public class tube_server extends Thread {
 			} else {
 				task_info.update_local_path_finished_task_map(imported_id, imported_map.get(imported_id));
 			}
+			
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
-			local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_data);
+			String imported_paths = imported_data.get("path");
+			for(String imported_path : imported_paths.split(",")){
+			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_path, imported_data);
+			}
 			counter++;
 		}
 	}	
@@ -395,28 +461,12 @@ public class tube_server extends Thread {
 			} else {
 				task_info.update_local_file_finished_task_map(imported_id, imported_map.get(imported_id));
 			}
-			String imported_file = imported_map.get(imported_id).get("path");
+			String imported_files = imported_map.get(imported_id).get("path");
 			String imported_env = imported_map.get(imported_id).get("env");
-			local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, terminal);
+			for(String imported_file : imported_files.split(",")){
+			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, terminal);
+			}
 			counter++;
-		}
-	}
-
-	private void run_import_remote_task_admin(){
-		String link_mode = client_info.get_client_preference_data().get("link_mode");
-		if (link_mode.equalsIgnoreCase("local")){
-			try {
-				rmq_runner.stop_admin_tube();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				TUBE_SERVER_LOGGER.error("Stop Link to RabbitMQ server failed.");
-			}
-		} else {
-			try {
-				rmq_runner.start_admin_tube(client_info.get_client_machine_data().get("terminal"));
-			} catch (Exception e1) {
-				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
-			}
 		}
 	}
 	
@@ -483,6 +533,103 @@ public class tube_server extends Thread {
 		task_info.set_stopped_admin_queue_list(stopped_admin_queue_list);
 	}	
 	
+	private void run_remote_tubes_control(){
+		String link_mode = client_info.get_client_preference_data().get("link_mode");
+		if (link_mode.equalsIgnoreCase("local")){
+			try {
+				rmq_runner.stop_admin_tube();
+				rmq_runner.stop_stop_tube();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				TUBE_SERVER_LOGGER.error("Stop Link to RabbitMQ server failed.");
+			}
+		} else {
+			try {
+				rmq_runner.start_admin_tube(client_info.get_client_machine_data().get("terminal"));
+				rmq_runner.start_stop_tube();
+			} catch (Exception e1) {
+				TUBE_SERVER_LOGGER.error("Link to RabbitMQ server failed.");
+			}
+		}
+	}
+	
+	private void update_cmd_suites_to_task_data(HashMap<String, String> cmd_info){
+		String suite_files = cmd_info.get("suite_file");
+		String suite_paths = cmd_info.get("suite_path");
+		String list_file = cmd_info.get("list_file");
+		String task_env = cmd_info.get("task_environ");
+		String task_key = cmd_info.get("key_file");
+		String task_exe = cmd_info.get("exe_file");
+		String task_arg = cmd_info.get("arguments");
+		//suite file inputs
+		if (suite_files.length() > 0){
+			HashMap <String, String> task_data = new HashMap <String, String>();
+			task_data.put("path", suite_files);
+			task_data.put("env", task_env);
+			task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		//suite path inputs
+		if (suite_paths.length() > 0){
+			HashMap <String, String> task_data = new HashMap <String, String>();
+			task_data.put("path", suite_paths);
+			task_data.put("key", task_key);
+			task_data.put("exe", task_exe);
+			task_data.put("arg", task_arg);
+			task_data.put("env", task_env);			
+			task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		//list file inputs
+		List<String> line_list = new ArrayList<String>();
+		line_list.addAll(file_action.read_file_lines(list_file));
+		for (String line : line_list){
+			if(line.startsWith(";")){
+				continue;
+			}
+			if(line.startsWith("#")){
+				continue;
+			}
+			File file_obj = new File(line);
+			if(!file_obj.exists()){
+				continue;
+			}
+			line = line.replaceAll("\\\\", "/");
+			if (file_obj.isDirectory()){
+				HashMap <String, String> task_data = new HashMap <String, String>();
+				task_data.put("path", file_obj.getAbsolutePath().replaceAll("\\\\", "/"));
+				task_data.put("key", task_key);
+				task_data.put("exe", task_exe);
+				task_data.put("arg", task_arg);
+				task_data.put("env", task_env);			
+				task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);				
+			} else if (file_obj.isFile()) {
+				HashMap <String, String> task_data = new HashMap <String, String>();
+				task_data.put("path", file_obj.getAbsolutePath().replaceAll("\\\\", "/"));
+				task_data.put("env", task_env);
+				task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
+			} else {
+				continue;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -498,8 +645,11 @@ public class tube_server extends Thread {
 		// ============== All static job start from here ==============
 		// initial 1 : send client detail info
 		send_client_info("complex");
-		// initial 2 : Announce tube server ready
+		// initial 2 : put command line suite file/path into task info
+		update_cmd_suites_to_task_data(cmd_info);
+		// initial 3 : Announce tube server ready
 		switch_info.set_tube_server_power_up();
+		// loop start
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -514,19 +664,19 @@ public class tube_server extends Thread {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
 			}
 			// ============== All dynamic job start from here ==============
-			// task 1: update remote admin
-			run_import_remote_task_admin();
+			// task 1: open/close remote tubes
+			run_remote_tubes_control();
 			// task 2: update local suite file admin (local file, import)
 			run_import_local_file_admin();
-			// task 3: update local suite path admin (local file, import)
+			// task 3: update local suite path admin (local path, import)
 			run_import_local_path_admin();
-			// task 3 flash tube input:
+			// task 4: flash tube input:
 			run_received_admin_sorting();
-			// task 4: flash tube output: captured and rejected treemap
+			// task 5: flash tube output: captured and rejected treemap
 			flash_tube_output();
-			// task 5: detail output list
+			// task 6: detail output list
 			update_captured_queue_detail_lists();
-			// task 5: send client info to Remote server
+			// task 7: send client info to Remote server
 			send_client_current_info();
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
@@ -569,14 +719,14 @@ public class tube_server extends Thread {
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
 		task_data task_info = new task_data();
-		data_server data_runner = new data_server(cmd_info, switch_info, task_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {
 				break;
 			}
 		}
-		tube_server tube_runner = new tube_server(switch_info, client_info, pool_info, task_info);
+		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		tube_runner.start();
 		while (true) {
 			// System.out.println(task_info.get_rejected_admin_reason_treemap());

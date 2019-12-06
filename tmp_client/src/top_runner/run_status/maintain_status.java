@@ -35,17 +35,23 @@ public class maintain_status extends abstract_status {
 	}
 
 	public void to_stop() {
+		//step 1. soft stop requested and still have task running
+		if(client.switch_info.get_client_soft_stop_request() && (client.pool_info.get_pool_used_threads() > 0)){
+			client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+			return;
+		}
+		//step 2. to stop actions		
 		client.hall_runner.soft_stop();
 		client.tube_runner.soft_stop();
 		client.data_runner.soft_stop();		
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to stop");	
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to stop");	
 		client.set_current_status(client.STOP);
 	}
 
 	public void to_work() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to work");
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to work");
 		//client.data_runner.wake_request();
 		//client.tube_runner.wake_request();
 		client.hall_runner.wake_request();
@@ -53,8 +59,8 @@ public class maintain_status extends abstract_status {
 	}
 
 	public void to_maintain() {
-		System.out.println(">>>####################");
-		client.STATUS_LOGGER.warn("Go to maintain");
+		client.STATUS_LOGGER.debug(">>>####################");
+		client.STATUS_LOGGER.info("Go to maintain");
 		client.set_current_status(client.MAINTAIN);
 	}
 	
@@ -63,35 +69,41 @@ public class maintain_status extends abstract_status {
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
 		ArrayList<maintain_enum> maintain_list = new ArrayList<maintain_enum>();
 		maintain_list.addAll(client.switch_info.get_client_maintain_list());
-		System.out.println(">>>Info:Maintain Entry is: " + maintain_list.toString());
+		client.STATUS_LOGGER.info("Maintain Entry is: " + maintain_list.toString());
 		for (maintain_enum maintain_entry: maintain_list){
 			switch (maintain_entry) {
 			case idle:
+				client.STATUS_LOGGER.warn(">>>Idle: Begin to run system idle things...");
 				implements_self_quiet_update();
 				implements_core_script_update();
 				implements_auto_restart_action();
 				break;
 			case update:
-				System.out.println(">>>Update: Begin to update DEV...");
-				implements_core_script_update();
-				client.switch_info.set_core_script_update_request(false);
+				client.STATUS_LOGGER.warn(">>>Update: Begin to update DEV...");
+				Boolean update_status = implements_core_script_update();
+				if (update_status){
+					client.switch_info.set_core_script_update_request(false);
+				} 
 				break;
 			case environ:
-				System.out.println(">>>Update: Begin to propagate env issue...");
+				client.STATUS_LOGGER.warn(">>>Environ: Begin to propagate env issue...");
 				implements_env_issue_propagate();
 				break;				
 			case cpu:
-				System.out.println(">>>CPU:" + machine_sync.get_cpu_usage());
+				client.STATUS_LOGGER.warn(">>>CPU:" + machine_sync.get_cpu_usage());
 				implements_client_cpu_action();
 				break;
 			case mem:
-				System.out.println(">>>MEM:" + machine_sync.get_mem_usage());
+				client.STATUS_LOGGER.warn(">>>MEM:" + machine_sync.get_mem_usage());
 				implements_client_mem_action();
 				break;
 			case space:
-				System.out.println(">>>Space:" + machine_sync.get_avail_space(work_space));
+				client.STATUS_LOGGER.warn(">>>Space:" + machine_sync.get_avail_space(work_space));
 				implements_client_space_action();
 				break;
+			case workspace:
+				client.STATUS_LOGGER.warn(">>>Workspace: Begin to update work space...");
+				implements_work_space_update();
 			default:
 				break;
 			}
@@ -116,17 +128,17 @@ public class maintain_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		System.out.println(">>>Info: TMP Client updated...");		
+		client.STATUS_LOGGER.info(">>>Info: TMP Client updated...");		
 	}
 	
-	private void implements_core_script_update(){
+	private Boolean implements_core_script_update(){
 		//confirm no test case running
 		int counter = 0;
 		while(true){
 			counter++;
 			if(counter > 10){
-				System.out.println(">>>Info: Core script update failed...");
-				return;
+				client.STATUS_LOGGER.warn(">>>Info: Core script update failed...");
+				return false;
 			}
 			if (client.pool_info.get_pool_used_threads() > 0){
 				try {
@@ -141,9 +153,67 @@ public class maintain_status extends abstract_status {
 			}
 		}
 		core_update my_core = new core_update(client.client_info);
-		my_core.update();
-		System.out.println(">>>Info: Core script updated...");
+		Boolean update_status = my_core.update();
+		if (update_status){
+			client.STATUS_LOGGER.info("Core script updated...PASS");
+			return update_status;
+		}
+		client.STATUS_LOGGER.info("Core script updated...FAILED");
+		HashMap<String, String> machine_data = new HashMap<String, String>();
+		machine_data.putAll(client.client_info.get_client_machine_data());
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(client.client_info.get_client_preference_data());		
+		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		if(run_mode.equals("0")){ 
+			//attended mode local showing
+			if(preference_data.get("cmd_gui").equals("gui")){
+				client.view_info.set_corescript_update_apply(true);
+			} else {
+				client.STATUS_LOGGER.warn("Manually Core Script update needed...");
+				try {
+					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}				
+			}			
+		} else {
+			//send mail
+			if (!get_core_script_issue_announced()){
+				client.switch_info.set_core_script_warning_announced_date(time_info.get_date_year());
+				send_core_script_update_issue_info();
+			}
+		}
+		return update_status;
 	}	
+	
+	private Boolean get_core_script_issue_announced(){
+		Boolean status = new Boolean(false);
+		String current_date = new String(time_info.get_date_year());
+		String history_date = new String(client.switch_info.get_core_script_warning_announced_date());
+		if (current_date.equalsIgnoreCase(history_date)){
+			status = true;
+		}
+		return status;
+	}	
+	
+	private void send_core_script_update_issue_info(){
+		String subject = new String("TMP Client: Core Script update issue, manually check needed.");
+		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
+		String line_separator = System.getProperty("line.separator");
+		StringBuilder message = new StringBuilder("");
+		message.append("Hi all:" + line_separator);
+		message.append("    TMP client get Core Script update issue, manually check needed." + line_separator);
+		message.append("    TMP client will suspended before this issue removed:" + line_separator);
+		message.append("    Possible reason are: Core script locked" + line_separator);
+		message.append("    " + line_separator);
+		message.append("    Time:" + time_info.get_date_time() + line_separator);
+		message.append("    Terminal:" + client.client_info.get_client_machine_data().get("terminal"));
+		message.append("    " + line_separator);
+		message.append("Thanks" + line_separator);
+		message.append("TMP Clients" + line_separator);
+		mail_action.simple_event_mail(subject, to_str, message.toString());
+	}
 	
 	private void implements_auto_restart_action(){
 		String unattend_mode = client.client_info.get_client_machine_data().get("unattended");
@@ -166,14 +236,12 @@ public class maintain_status extends abstract_status {
 		Matcher match = patt.matcher(current_time);
 		String run_cmd = new String("shutdown -r");
 		if(match.find()){
-			System.out.println(">>>Warn: System restarting...");
 			client.STATUS_LOGGER.warn("System restarting...");
 			try {
 				system_cmd.run(run_cmd);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				System.out.println(">>>Warn: System restart Failed...");
 				client.STATUS_LOGGER.warn("System restart Failed...");
 			}
 		}
@@ -185,7 +253,7 @@ public class maintain_status extends abstract_status {
 		while(true){
 			counter++;
 			if(counter > 5){
-				System.out.println(">>>Info: MEM maintain timeout...");
+				client.STATUS_LOGGER.info("MEM maintain timeout...");
 				break;
 			}	
 			system_data.putAll(client.client_info.get_client_system_data());
@@ -226,7 +294,7 @@ public class maintain_status extends abstract_status {
 			if(preference_data.get("cmd_gui").equals("gui")){
 				client.view_info.set_environ_issue_apply(true);
 			} else {
-				System.out.println(">>>Info: Manually Environment check needed...");
+				client.STATUS_LOGGER.info("Manually Environment check needed...");
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {
@@ -279,7 +347,7 @@ public class maintain_status extends abstract_status {
 		while(true){
 			counter++;
 			if(counter > 5){
-				System.out.println(">>>Info: CPU maintain timeout...");
+				client.STATUS_LOGGER.info("CPU maintain timeout...");
 				break;
 			}	
 			system_data.putAll(client.client_info.get_client_system_data());
@@ -321,7 +389,7 @@ public class maintain_status extends abstract_status {
 			if(preference_data.get("cmd_gui").equals("gui")){
 				client.view_info.set_space_cleanup_apply(true);
 			} else {
-				System.out.println(">>>Info: Manually Work Space cleanup needed...");
+				client.STATUS_LOGGER.info("Manually Work Space cleanup needed...");
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {
@@ -336,6 +404,44 @@ public class maintain_status extends abstract_status {
 			space_cleaned = true;
 		}
 		return space_cleaned;
+	}
+	
+	private Boolean implements_work_space_update(){
+		Boolean work_space_updated = new Boolean(false);
+		//confirm no test case running
+		int counter = 0;
+		while(true){
+			counter++;
+			if(counter > 10){
+				client.STATUS_LOGGER.warn("work space update failed...");
+				return work_space_updated;
+			}
+			if (client.pool_info.get_pool_used_threads() > 0){
+				try {
+					Thread.sleep(1000 *60);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				continue;
+			} else {
+				break;
+			}
+		}
+		//update work space
+		HashMap<String, String> preference_data = new HashMap<String, String>();
+		preference_data.putAll(deep_clone.clone(client.client_info.get_client_preference_data()));
+        String new_work_space = new String(preference_data.get("work_space_temp"));
+        //1. export new core script
+		core_update my_core = new core_update(client.client_info);
+		my_core.update_core_script(new_work_space);
+		//2. update client preference data
+		preference_data.put("work_space", new_work_space);
+		client.client_info.set_client_preference_data(preference_data);
+		client.switch_info.set_work_space_update_request(false);
+		client.switch_info.set_client_updated();
+		work_space_updated = true;
+		return work_space_updated;
 	}
 	
 	private void run_space_clean_up(){
@@ -424,7 +530,7 @@ public class maintain_status extends abstract_status {
 		finished_list.addAll(client.task_info.get_finished_admin_queue_list());
 		String earliest_date = get_earliest_task_date(finished_list);
 		if (earliest_date.equals(time_info.get_date_year())){
-			System.out.println(">>>Info: Manually Disk cleanup needed...");
+			client.STATUS_LOGGER.info("Manually Disk cleanup needed...");
 			try {
 				Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 			} catch (InterruptedException e) {

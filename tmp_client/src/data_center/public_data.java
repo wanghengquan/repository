@@ -24,10 +24,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.07.12"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20712; // version for code use
-	public final static String BASE_BUILDDATE = "2019/04/15";
-	public final static String BASE_SUITEFILEVERSION = "1.12";
+	public final static String BASE_CURRENTVERSION = "2.09.01"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20901; // version for code use
+	public final static String BASE_BUILDDATE = "2019/12/06";
+	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -52,8 +52,8 @@ public class public_data {
 	// ========================
 	// email setting servers: 1:LSHMAIL1.latticesemi.com,  2:172.25.0.3
 	public final static String MAIL_SERVER = "LSHMAIL1.latticesemi.com";
-	public final static String MAIL_SERVER_USERNAME = "jwang1";
-	public final static String MAIL_SERVER_PASSWORD = "W@lattice1";
+	public final static String MAIL_SERVER_USERNAME = "swqalab";//"jwang1";
+	public final static String MAIL_SERVER_PASSWORD = "SwQaLab!";//"Q@lattice123";
 
 	// ========================
 	// send email preference setting
@@ -116,6 +116,7 @@ public class public_data {
 	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
+	public final static String TOOLS_WHICH = SW_HOME_PATH + "/tools/which.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
 	//public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
@@ -129,17 +130,31 @@ public class public_data {
 	public final static String DOC_EIT_PATH = SW_HOME_PATH + "/doc/TMP_EIT_suites";
 
 	// ========================
-	// link to RabbitMQ configuration data only shown here
+	// link to RabbitMQ configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
-	public final static String RMQ_HOST = "linux-D50553"; // "linux-D50553", "lsh-reg01"
+	public final static String RMQ_HOST = "linux-D50553"; // "linux-D50553", "lsh-tmp"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "result";
 	public final static String RMQ_CLIENT_NAME = "monitor"; // client data
-	public final static String RMQ_TASK_NAME = "task_queue";
-	public final static String RMQ_ADMIN_NAME = "admin_queue";
+	public final static String RMQ_TASK_QUEUE = "task_queue";
+	public final static String RMQ_ADMIN_QUEUE = "admin_queue";
+	public final static String RMQ_STOP_QUEUE = "stop_queue";
 	public final static String RMQ_RUNTIME_NAME = "logs";
 
+	// ========================
+	// link to Other Clients configuration data shown here
+	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
+	public final static int SOCKET_DEF_TASK_PORT = 55533;
+	public final static int SOCKET_DEF_CMD_PORT = 33355;
+	public final static String SOCKET_DEF_ACKNOWLEDGE = "@received@";
+	public final static String SOCKET_LINK_ACKNOWLEDGE = "@linked@";
+	public final static String SOCKET_DEF_TERMINAL = "localhost";
+	
+	// ========================
+	// terminal defaults
+	public final static String TERMINAL_DEF_PROMPT = "->";	
+	
 	// ========================
 	// Encryption public key
 	public final static String ENCRY_KEY = "@Lattice";
@@ -172,7 +187,7 @@ public class public_data {
 	// performance calibration
     public final static int PERF_GUI_BASE_INTERVAL = 1;
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
-	public final static int PERF_DUP_REPORT_INTERVAL = 60;   //Case same status report interval
+	public final static int PERF_DUP_REPORT_INTERVAL = 120;   //Case same status report interval
 	public final static int PERF_POOL_CURRENT_SIZE = 3;      //current maxi size to external
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
 	public final static int PERF_POOL_LIN_MAX_SIZE = 30;

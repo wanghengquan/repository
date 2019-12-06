@@ -21,7 +21,6 @@
 		</Logger>
 		<Logger name="top_runner.run_status.client_status" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />
-			<AppenderRef ref="logfile" />
 		</Logger>		
 		<Logger name="flow_control.hall_manager" level="INFO" additivity="false">
 			<AppenderRef ref="Console_simple" />

@@ -11,6 +11,7 @@ package data_center;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.prefs.Preferences;
@@ -19,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import env_monitor.machine_sync;
+import top_runner.run_status.exit_enum;
 import top_runner.run_status.maintain_enum;
 import top_runner.run_status.state_enum;
 
@@ -39,12 +41,15 @@ public class switch_data {
 	// client house keep request
 	private int house_keep_request = 0;
 	private HashMap<exit_enum, Integer> client_stop_request = new HashMap<exit_enum, Integer>();
+	private Boolean client_soft_stop_request = new Boolean(false);
 	private Exception client_stop_exception = new Exception();
 	// Thread start sequence
 	private Boolean start_progress_power_up = new Boolean(false);
 	private Boolean main_gui_power_up = new Boolean(false);
 	private Boolean data_server_power_up = new Boolean(false);
 	private Boolean tube_server_power_up = new Boolean(false);
+	private Boolean link_server_power_up = new Boolean(false);
+	private Boolean console_server_power_up = new Boolean(false);
 	private Boolean hall_server_power_up = new Boolean(false);
 	private Boolean local_console_mode = new Boolean(false);
 	// suite file updating
@@ -65,8 +70,10 @@ public class switch_data {
 	//private String client_warn_message = new String("");
 	//private String client_error_message = new String("");
 	private Boolean core_script_update_request = new Boolean(false);
+	private Boolean work_space_update_request = new Boolean(false);
 	private String space_warning_announced_date = new String("");
 	private String environ_warning_announced_date = new String("");
+	private String corescript_warning_announced_date = new String("");
 	// public function
 	public switch_data() {
 
@@ -308,7 +315,47 @@ public class switch_data {
 		}
 		return status;
 	}
+	
+	public void set_link_server_power_up() {
+		rw_lock.writeLock().lock();
+		try {
+			this.link_server_power_up = true;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 
+	public Boolean get_link_server_power_up() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.link_server_power_up;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
+	public void set_console_server_power_up() {
+		rw_lock.writeLock().lock();
+		try {
+			this.console_server_power_up = true;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_console_server_power_up() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.console_server_power_up;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
 	public void set_hall_server_power_up() {
 		rw_lock.writeLock().lock();
 		try {
@@ -457,6 +504,22 @@ public class switch_data {
 		return temp;
 	}	
 	
+	
+	public ArrayList<exit_enum> get_client_stop_list() {
+		rw_lock.readLock().lock();
+		ArrayList<exit_enum> temp = new ArrayList<exit_enum>();
+		try {
+			Iterator<exit_enum> exit_it = client_stop_request.keySet().iterator();
+			while (exit_it.hasNext()){
+				temp.add(exit_it.next());
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
+	
 	public void set_client_run_state(state_enum run_state) {
 		rw_lock.writeLock().lock();
 		try {
@@ -477,6 +540,26 @@ public class switch_data {
 		return run_state;
 	}
 	
+	public void set_client_soft_stop_request(Boolean new_request) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_soft_stop_request = new_request;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean get_client_soft_stop_request() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.client_soft_stop_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
 	public void set_core_script_update_request(Boolean new_request) {
 		rw_lock.writeLock().lock();
 		try {
@@ -491,6 +574,26 @@ public class switch_data {
 		rw_lock.readLock().lock();
 		try {
 			status = this.core_script_update_request;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}	
+	
+	public void set_work_space_update_request(Boolean new_request) {
+		rw_lock.writeLock().lock();
+		try {
+			this.work_space_update_request = new_request;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Boolean get_work_space_update_request() {
+		Boolean status = new Boolean(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.work_space_update_request;
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -537,6 +640,25 @@ public class switch_data {
 		return date;
 	}
 	
+	public void set_core_script_warning_announced_date(String new_date) {
+		rw_lock.writeLock().lock();
+		try {
+			this.corescript_warning_announced_date = new_date;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_core_script_warning_announced_date() {
+		String date = new String("");
+		rw_lock.readLock().lock();
+		try {
+			date = this.corescript_warning_announced_date;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return date;
+	}	
 	/*
 	public void set_client_hall_status(String current_status) {
 		rw_lock.writeLock().lock();

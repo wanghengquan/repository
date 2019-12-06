@@ -229,6 +229,11 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		state_enum state_info = switch_info.get_client_run_state();
 		String state_str = state_info.get_description();
 		jt_state.setText(state_str.substring(0, 1).toUpperCase() + state_str.substring(1));
+		if (state_info.equals(state_enum.maintain)){
+			jt_state.setToolTipText("Reason:" + switch_info.get_client_maintain_list().toString());
+		} else {
+			jt_state.setToolTipText("");
+		}
 	}	
 	
 	private void update_thread_data(){

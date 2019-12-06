@@ -277,7 +277,7 @@ public class upload_dialog extends JFrame{
 					}
 				};
 				read_log.start();
-				run_processer.waitFor(7200, TimeUnit.SECONDS);
+				run_processer.waitFor(36000, TimeUnit.SECONDS);
 				run_processer.destroyForcibly();
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -129,8 +129,13 @@ public class task_prepare {
 		}
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// get source version if have
+		String source_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("version")){
+			source_version = task_data.get("CaseInfo").get("version").trim();
+		}			
 		//get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(source_path, user_name, pass_word, case_path, task_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(source_path, source_version, user_name, pass_word, case_path, task_path);
 		task_prepare_info.add(">>>Export Task case with CMD(s):");
 		task_prepare_info.addAll(export_cmd_list);		
 		//run export
@@ -143,6 +148,20 @@ public class task_prepare {
 				} else {
 					task_prepare_info.add("Warning: Previously run design remove Fail:" + case_path);
 					CASE_PREPARE_LOGGER.warn("Previously run design deleted Fail:" + case_path);
+					return false;
+				}
+			}
+			// prepare export dir
+			File case_path_parent = case_path_dobj.getParentFile();
+			if (!case_path_parent.exists()){
+				try {
+					FileUtils.forceMkdir(case_path_parent);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					// e.printStackTrace();
+					task_prepare_info.add("Error: Prepare case parent path Fail:" + case_path_parent.getAbsolutePath());
+					CASE_PREPARE_LOGGER.error("Prepare case parent path Fail:" + case_path_parent.getAbsolutePath());
+					return false;
 				}
 			}
 			// export design
@@ -155,7 +174,7 @@ public class task_prepare {
 					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
 					return false;
 				}
-			}			
+			}		
 		}
 		return true;
 	}
@@ -190,9 +209,14 @@ public class task_prepare {
 			return false;
 		}
 		String user_name = user_passwd.split("_\\+_")[0];
-		String pass_word = user_passwd.split("_\\+_")[1];		
+		String pass_word = user_passwd.split("_\\+_")[1];	
+		// get script version if have
+		String script_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("script_version")){
+			script_version = task_data.get("CaseInfo").get("script_version").trim();
+		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, user_name, pass_word, task_path, task_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, script_version, user_name, pass_word, task_path, task_path);
 		task_prepare_info.add(">>>Export Task script with CMD(s):");
 		task_prepare_info.addAll(export_cmd_list);
 		//skip export if exists
@@ -225,7 +249,8 @@ public class task_prepare {
 	 * test_suite + test_case /lsh/sw/test_test + test_suite + test_case
 	 */
 	private ArrayList<String> get_export_cmd(
-			String case_url, 
+			String case_url,
+			String case_ver,
 			String user_name, 
 			String pass_word, 
 			String case_dir,
@@ -237,7 +262,13 @@ public class task_prepare {
 		if (host_src.length() > 1 && url_array.length > 1) {
 			if (host_src.equalsIgnoreCase("http")) {
 				// svn path
-				cmd_array.add("svn export " + case_url + " " + case_dir + " --username=" + user_name + " --password="
+				String svn_str = new String("");
+				if (case_ver.length() > 0){
+					svn_str = "svn export -r " + case_ver + " ";
+				} else {
+					svn_str = "svn export ";
+				}
+				cmd_array.add(svn_str + case_url + " " + case_dir + " --username=" + user_name + " --password="
 						+ pass_word + " --no-auth-cache" + " --force");
 			} else if (host_src.equalsIgnoreCase("ftp")){
 				String account_str = new String();
@@ -317,6 +348,7 @@ public class task_prepare {
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String design_path = new String("");
+		// update launch path
 		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
 		// update launch command
 		Pattern patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe))", Pattern.CASE_INSENSITIVE);
@@ -357,7 +389,9 @@ public class task_prepare {
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		// add default --design option for Core scripts
 		String[] cmd_list = null;
-		if (launch_cmd.contains("run_lattice.py"))
+		if (launch_path.equalsIgnoreCase(case_path))
+			cmd_list = launch_cmd.split("\\s+");
+		else if (launch_cmd.contains("run_lattice.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
@@ -386,11 +420,17 @@ public class task_prepare {
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data) {
 		HashMap<String, String> run_env = new HashMap<String, String>();
-		// put Python unbuffered environ
+		// put Python unbuffered environment
 		if (task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")) {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
-		// put environ for software requirements
+		// put system level default tools path
+		run_env.put("EXTERNAL_PYTHON_PATH", System.getProperty("python"));
+		// put external core script path
+		String work_space = task_data.get("Paths").get("work_space").trim();
+		String core_path = new String(work_space + "/" + public_data.CORE_SCRIPT_NAME);
+		run_env.put("EXTERNAL_DEV_PATH", core_path);
+		// put environ for software requirements in sub process
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
@@ -407,7 +447,7 @@ public class task_prepare {
 		while (env_request_it.hasNext()) {
 			String env_name = env_request_it.next();
 			String env_value = task_data.get("Environment").get(env_name);
-			run_env.put(env_name, env_value);
+			run_env.put(env_name, get_updated_environment_string(env_value, task_data, client_data));
 		}
 		// local report 
 		task_prepare_info.add(line_separator + ">>>Prepare launch ENV:");
@@ -415,6 +455,22 @@ public class task_prepare {
 		return run_env;
 	}	
 
+	private String get_updated_environment_string(
+			String env_string,
+			HashMap<String, HashMap<String, String>> task_data,
+			HashMap<String, HashMap<String, String>> client_data
+			){
+		Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
+		while (software_request_it.hasNext()) {
+			String software_name = software_request_it.next();
+			String software_build = task_data.get("Software").get(software_name);
+			String software_path = client_data.get(software_name).get(software_build);
+			if (env_string.contains("$" + software_name)){
+				env_string = env_string.replaceAll("\\$" + software_name, software_path);
+			}
+		}		
+		return env_string;
+	}
 	
 	//following function are not used
 	//
@@ -474,6 +530,11 @@ public class task_prepare {
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// get required case version
+		String source_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("version")){
+			source_version = task_data.get("CaseInfo").get("version").trim();
+		}
 		// clean local existing case
 		File design_path_fobj = new File(design_des_url);
 		if (design_path_fobj.exists()){
@@ -484,7 +545,7 @@ public class task_prepare {
 			}
 		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, user_name, pass_word, design_des_url, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, source_version, user_name, pass_word, design_des_url, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
@@ -515,8 +576,13 @@ public class task_prepare {
 		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];
+		// get script version if have
+		String script_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("script_version")){
+			script_version = task_data.get("CaseInfo").get("script_version").trim();
+		}		
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, user_name, pass_word, case_work_path, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, script_version, user_name, pass_word, case_work_path, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {

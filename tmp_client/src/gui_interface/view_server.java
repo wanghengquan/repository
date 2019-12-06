@@ -29,13 +29,13 @@ import org.apache.logging.log4j.Logger;
 import connect_tube.task_data;
 import connect_tube.taskid_compare;
 import data_center.client_data;
-import data_center.exit_enum;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.import_data;
 import flow_control.pool_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
+import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 
 public class view_server extends Thread {
@@ -326,6 +326,10 @@ public class view_server extends Thread {
 				admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client_info));				
 			}
 			if (admin_data.isEmpty()){
+				VIEW_SERVER_LOGGER.warn("Empty admin queue found, remove it anyway.");
+				task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
+				task_info.remove_queue_from_processed_task_queues_map(queue_name);
+				task_info.remove_finished_admin_queue_list(queue_name);
 				continue;
 			}
 			// delete data in memory(Remote server may send a done queue which also need to be delete)
@@ -435,6 +439,26 @@ public class view_server extends Thread {
 		apply_space_reservation_alert(top_view);
 		//message 2. env issue alert
 		apply_environ_issue_alert(top_view);
+		//message 3. core script update alert
+		apply_corescript_update_alert(top_view);
+	}
+	
+	
+	private void apply_corescript_update_alert(main_frame top_view){
+		if (!view_info.get_corescript_update_apply()){
+			return;
+		}
+		StringBuilder message = new StringBuilder("");
+		message.append("TMP client have Core Script update issue.");
+		message.append(line_separator);
+		message.append("Possible issues: Core Script(DEV) was locked.");
+		message.append(line_separator);
+		message.append("");
+		message.append(line_separator);
+		message.append("Manually Core Script update needed.");
+		String title = new String("Warning:Client Core Script update issue.");
+		JOptionPane.showMessageDialog(top_view, message.toString(), title, JOptionPane.OK_OPTION);
+		view_info.set_corescript_update_apply(false);		
 	}
 	
 	private void apply_environ_issue_alert(main_frame top_view){
@@ -663,17 +687,22 @@ public class view_server extends Thread {
 			if (!task_import_status){
 				VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 				view_info.set_watching_queue_data(get_blank_data());
+				view_info.set_request_watching_queue("");
 				return show_update; // no data show
 			}
 		}
 		if (!task_info.get_processed_task_queues_map().containsKey(request_queue)) {
+			VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
+			view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
 		queue_data.putAll(deep_clone.clone(task_info.get_queue_data_from_processed_task_queues_map(request_queue)));
 		if (queue_data.size() < 1) {
+			VIEW_SERVER_LOGGER.warn("Empty Queue found:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
+			view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		Iterator<String> case_it = queue_data.keySet().iterator();

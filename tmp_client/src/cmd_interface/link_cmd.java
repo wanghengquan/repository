@@ -7,21 +7,16 @@
  * Date:
  * Description:
  */
-package top_runner.run_status;
+package cmd_interface;
 
-public enum maintain_enum {
-	idle(1, "system_idel"),
-	update(2, "core_update"),
-	cpu(3, "cpu_overload"),
-	mem(4, "mem_overload"),
-	space(5, "no_space"),
-	environ(6, "env_issue"),
-	workspace(7, "work_space_update"),
-	unknown(8, "unknown");
+import java.util.ArrayList;
+
+public enum link_cmd {
+	HELP(0, "Show all commands.");
 	private int index;
 	private String description;
 	
-	private maintain_enum(int index, String description){
+	private link_cmd(int index, String description){
 		this.index = index;
 		this.description = description;
 	}
@@ -32,5 +27,14 @@ public enum maintain_enum {
 	
 	public String get_description(){
 		return this.description;
+	}	
+	
+	public static ArrayList<String> get_value_list(){
+		ArrayList<String> list = new ArrayList<String>();
+		for (link_cmd cmd : link_cmd.values()){
+			list.add(cmd.toString());
+		}
+		return list;
 	}
+
 }
