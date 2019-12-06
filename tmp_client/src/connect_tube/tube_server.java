@@ -591,41 +591,52 @@ public class tube_server extends Thread {
 			}
 		}
 		//list file inputs
-		List<String> line_list = new ArrayList<String>();
-		line_list.addAll(file_action.read_file_lines(list_file));
-		for (String line : line_list){
-			if(line.startsWith(";")){
-				continue;
-			}
-			if(line.startsWith("#")){
-				continue;
-			}
-			File file_obj = new File(line);
-			if(!file_obj.exists()){
-				continue;
-			}
-			line = line.replaceAll("\\\\", "/");
-			if (file_obj.isDirectory()){
-				HashMap <String, String> task_data = new HashMap <String, String>();
-				task_data.put("path", file_obj.getAbsolutePath().replaceAll("\\\\", "/"));
-				task_data.put("key", task_key);
-				task_data.put("exe", task_exe);
-				task_data.put("arg", task_arg);
-				task_data.put("env", task_env);			
-				task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);				
-			} else if (file_obj.isFile()) {
-				HashMap <String, String> task_data = new HashMap <String, String>();
-				task_data.put("path", file_obj.getAbsolutePath().replaceAll("\\\\", "/"));
-				task_data.put("env", task_env);
-				task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
-			} else {
-				continue;
-			}
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		File list_fobj = new File(list_file);
+		if(list_fobj.exists()){
+			String list_file_dir = list_fobj.getParentFile().getAbsolutePath();
+			List<String> line_list = new ArrayList<String>();
+			line_list.addAll(file_action.read_file_lines(list_file));
+			for (String line : line_list){
+				if(line.startsWith(";")){
+					continue;
+				}
+				if(line.startsWith("#")){
+					continue;
+				}
+				File file_obj1 = new File(line);
+				File file_obj2 = new File(list_file_dir + "/" +line);
+				String suite_path = new String("");
+				if(file_obj1.exists()){
+					suite_path = file_obj1.getAbsolutePath().replaceAll("\\\\", "/");
+				} else if (file_obj2.exists()){
+					suite_path = file_obj2.getAbsolutePath().replaceAll("\\\\", "/");
+				} else {
+					TUBE_SERVER_LOGGER.warn("Cannot find path:" + line +", Skip this suite.");
+					continue;
+				}
+				File suite_obj = new File(suite_path);
+				if (suite_obj.isDirectory()){
+					HashMap <String, String> task_data = new HashMap <String, String>();
+					task_data.put("path", suite_path);
+					task_data.put("key", task_key);
+					task_data.put("exe", task_exe);
+					task_data.put("arg", task_arg);
+					task_data.put("env", task_env);			
+					task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);				
+				} else if (suite_obj.isFile()) {
+					HashMap <String, String> task_data = new HashMap <String, String>();
+					task_data.put("path", suite_path);
+					task_data.put("env", task_env);
+					task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
+				} else {
+					continue;
+				}
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
