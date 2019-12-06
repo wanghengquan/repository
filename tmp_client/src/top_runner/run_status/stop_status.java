@@ -20,6 +20,7 @@ import data_center.public_data;
 import flow_control.export_data;
 import utility_funcs.file_action;
 import utility_funcs.mail_action;
+import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
 class stop_status extends abstract_status {
@@ -191,15 +192,9 @@ class stop_status extends abstract_status {
     	if (cmd == null || cmd.equals("")){
     		return;
     	}
-    	client.STATUS_LOGGER.warn("Client running command:" + cmd);
+    	system_cmd.run_immediately(cmd);
     	try {
-			Runtime.getRuntime().exec(cmd);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-    	try {
-    		Thread.sleep(5 * 1000);
+    		Thread.sleep(1 * 1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

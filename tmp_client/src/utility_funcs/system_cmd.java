@@ -40,7 +40,6 @@ public class system_cmd {
 		 * a command line will be execute.
 		 */
 		int exit_value;
-
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
 		ArrayList<String> string_list = new ArrayList<String>();
 		string_list.add(cmd);
@@ -51,7 +50,6 @@ public class system_cmd {
 		InputStream out_str = process.getInputStream();
 		StreamGobbler read_out = new StreamGobbler(out_str, "OUTPUT", false);
 		read_out.start();
-
         boolean exit_normal = process.waitFor((long) 5*60, TimeUnit.SECONDS);
 		if (exit_normal) {
 		    exit_value = process.exitValue();
@@ -345,6 +343,25 @@ public class system_cmd {
 		return string_list;
 	}
 
+	// run0 command single string, export case, scripts
+	public static void run_immediately(
+			String cmd) {
+		/*
+		 * a command line will be execute.
+		 */
+		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
+		String[] cmd_list = cmd.split("\\s+");
+		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
+		proce_build.redirectErrorStream(true);
+		try {
+			proce_build.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			SYSTEM_CMD_LOGGER.debug("Run CMD Failed");
+		}
+	}	
+	
 	public static void main(String[] args) throws Exception {
 		String cmd = "svn --version ";
 		System.out.println(cmd);
