@@ -91,5 +91,10 @@
 			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/jline-3.12.2/jline-3.12.2-SNAPSHOT-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="D:/java_dev/lib/fastjson-1.2.62/fastjson-1.2.62.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/fastjson-1.2.62/fastjson-1.2.62-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

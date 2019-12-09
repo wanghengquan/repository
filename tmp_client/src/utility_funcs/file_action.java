@@ -2,8 +2,10 @@ package utility_funcs;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -15,6 +17,8 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.alibaba.fastjson.JSONObject;
 
 /*
  * Functions for files
@@ -339,6 +343,25 @@ public class file_action {
 			status = true;
 		}
 		return status;
+	}
+	
+	public static Map<String,Object> get_json_map_data(String file_path) {
+		File jfile = new File(file_path);
+		String json_str = new String("");
+		Map<String,Object> map_data = new HashMap<String,Object>();
+		if (!jfile.exists()){
+			return map_data;
+		}
+		try {
+			json_str = FileUtils.readFileToString(jfile, "UTF-8");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			FILE_ACTION_LOGGER.error("Read json file failed");
+			return map_data;
+		}
+		map_data = (Map<String,Object>)JSONObject.parseObject(json_str);
+		return map_data;
 	}
 	
 	public static Boolean del_lock_file(String file_path) {

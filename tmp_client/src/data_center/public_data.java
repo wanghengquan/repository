@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.43"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21043; // version for code use
-	public final static String BASE_BUILDDATE = "2019/12/06";
+	public final static String BASE_CURRENTVERSION = "2.10.44"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21044; // version for code use
+	public final static String BASE_BUILDDATE = "2019/12/09";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -98,12 +98,18 @@ public class public_data {
 	// name	
 	public final static String SUITE_DATA_REPORT_NAME = "suite_scan.csv";
 	public final static String SUITE_LOCK_FILE_NAME = "suite_lock.txt";
+	public final static String SUITE_LIST_FILE_NAME = "case_list.txt";
+	
 	// ========================
 	// case folder configuration
 	// name	
 	public final static String CASE_REPORT_NAME = "case_report.txt";
 	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
-
+	public final static String CASE_INFO_FILE = "bqs.info";
+	public final static String CASE_EXEC_FILE = "$work_path/DEV/bin/run_radiant.py";
+	public final static String CASE_CHECK_FILE = "bqs.conf";
+	public final static String CASE_DATA_FILE = "bqs.data";
+	
 	// ========================
 	// external tools based on software bin path
 	public final static String TOOLS_ROOT_PATH = SW_HOME_PATH + "/tools";

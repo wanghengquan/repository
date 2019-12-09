@@ -396,7 +396,9 @@ public class local_tube {
 		return case_data;
 	}
 
-	private Map<String, Map<String, String>> get_merge_macro_case_data(Map<String, List<List<String>>> ExcelData) {
+	private Map<String, Map<String, String>> get_merge_macro_case_data(
+			Map<String, List<List<String>>> ExcelData,
+			String task_sort) {
 		Map<String, Map<String, String>> merge_macro_data = new HashMap<String, Map<String, String>>();
 		// start
 		Map<String, List<List<String>>> macro_data = get_macro_data(ExcelData);
@@ -419,7 +421,11 @@ public class local_tube {
 			if (case_data.containsKey("Automated") &&  case_data.get("Automated").equalsIgnoreCase("no")) {
 				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping Non-Automated case:" + case_data.get("Order"));
 				continue;
-			}		
+			}
+			if (!case_data_match_task_sort(case_data, task_sort)){
+				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping mismatched case:" + case_data.get("Order"));
+				continue;				
+			}
 			if (macro_data == null || macro_data.isEmpty()) {
 				macro_case_order = "m" + macro_order.toString() + "_" + case_order;
 				case_data.put("Order", macro_case_order);
@@ -453,6 +459,61 @@ public class local_tube {
 		return merge_macro_data;
 	}
 
+	private Boolean case_data_match_task_sort(
+			Map<String, String> case_data, 
+			String task_sort){
+		Boolean case_match = new Boolean(true);
+		if (task_sort == null || task_sort.trim().equals("")){
+			return case_match;
+		}
+		Map<String, String> src_data = new HashMap<String, String>();
+		Map<String, String> req_data = new HashMap<String, String>();
+		req_data.putAll(get_sort_map_data(task_sort));
+		Iterator<String> case_it = case_data.keySet().iterator();
+		while(case_it.hasNext()){
+			String title = case_it.next();
+			String value = case_data.get(title);
+			src_data.put(title.toLowerCase(), value.toLowerCase());
+		}
+		//start to check
+		Iterator<String> req_it = req_data.keySet().iterator();
+		while(req_it.hasNext()){
+			String req_option = req_it.next();
+			String req_value = req_data.get(req_option);
+			// 1. request option do not exist
+			if (!src_data.containsKey(req_option)){
+				case_match = false;
+				break;
+			}
+			// 2. source data do have data for requested option
+			String src_value = src_data.get(req_option);
+			if (src_value == null || src_value.trim().equals("")){
+				case_match = false;
+				break;
+			}
+			if (!req_value.contains(src_value)){
+				case_match = false;
+				break;
+			}
+		}
+		return case_match;
+	}
+	
+	private Map<String, String> get_sort_map_data(String sort_str){
+		Map<String, String> return_data = new HashMap<String, String>();
+		if (sort_str == null || sort_str.equals("")){
+			return return_data;
+		}
+		for (String section : sort_str.split(";")){
+			String option = new String("");
+			String value = new String("");
+			option = section.split("=")[0].trim().toLowerCase();
+			value = section.split("=")[1].trim().toLowerCase();
+			return_data.put(option, value);
+		}
+		return return_data;
+	}
+	
 	private Boolean case_macro_check(Map<String, String> raw_data, List<List<String>> macro_data) {
 		List<List<String>> one_macro_data = new ArrayList<List<String>>(); 
 		one_macro_data.addAll(macro_data);
@@ -899,6 +960,7 @@ public class local_tube {
 	public void generate_suite_file_local_admin_task_queues(
 			String local_file,
 			String extra_env,
+			String task_sort,
 			String current_terminal) {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> xlsx_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>(); 
@@ -915,7 +977,7 @@ public class local_tube {
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		ExcelData.putAll(get_excel_data(local_file));
 		Map<String, String> suite_sheet_data = get_suite_data(ExcelData);
-		Map<String, Map<String, String>> case_sheet_data = get_merge_macro_case_data(ExcelData);
+		Map<String, Map<String, String>> case_sheet_data = get_merge_macro_case_data(ExcelData, task_sort);
 		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_sheet_data, case_sheet_data, extra_env, xlsx_dest);
 		if (merge_data == null){
 			LOCAL_TUBE_LOGGER.warn("Suite file no case found:" + local_file);
@@ -1145,6 +1207,41 @@ public class local_tube {
 		return design_list;
 	}
 	
+	private Boolean case_match_required_info(
+			String suite_path,
+			String case_path,
+			String dat_file,
+			String task_sort){
+		Boolean match_status = new Boolean(false);
+		if (task_sort == null || task_sort.trim().equals("")){
+			match_status = true;
+			return match_status;
+		}
+		String dat_path = new String(suite_path + "/" + case_path + "/" +  dat_file);
+		File dat_fobj = new File(dat_path);
+		if (!dat_fobj.exists()){
+			return match_status;
+		}
+		Map<String, Object> src_data_object = new HashMap<String, Object>();
+		src_data_object.putAll(file_action.get_json_map_data(dat_path));
+		if (src_data_object.isEmpty()){
+			return match_status;
+		}
+		Map<String, String> src_data = new HashMap<String, String>();
+		Iterator<String> src_it = src_data_object.keySet().iterator();
+		while(src_it.hasNext()){
+			String src_key = src_it.next();
+			Object src_obj = src_data_object.get(src_key);
+			src_data.put(src_key, src_obj.toString());
+		}
+		if (case_data_match_task_sort(src_data, task_sort)){
+			match_status = true;
+		} else {
+			match_status = false;
+		}
+		return match_status;
+	}
+	
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
 			String imported_path,
 			HashMap<String, String> imported_data,
@@ -1153,7 +1250,9 @@ public class local_tube {
 		//get case list
 		String suite_path = imported_path;
 		String key_file = imported_data.get("key");
-		String list_path = suite_path + "/list.txt";
+		String dat_file = imported_data.get("dat");
+		String task_sort = imported_data.get("sort");
+		String list_path = suite_path + "/" + public_data.SUITE_LIST_FILE_NAME;
 		File list_fobj = new File(list_path);
 		List<String> case_list = new ArrayList<String>();
 		if (list_fobj.exists()){
@@ -1166,7 +1265,7 @@ public class local_tube {
 				if(line.startsWith("#")){
 					continue;
 				}
-				File path_obj = new File(line);
+				File path_obj = new File(suite_path + "/" + line);
 				if(path_obj.exists()){
 					case_list.add(line.replaceAll("\\\\", "/"));
 				}
@@ -1174,12 +1273,19 @@ public class local_tube {
 		} else {
 			case_list.addAll(get_design_name_list(suite_path, key_file));
 		}
+		//sort required test case list
 		if(case_list.size() < 1){
 			return task_queue_data;
 		}
+		List<String> matched_case_list = new ArrayList<String>();
+		for(String case_path: case_list){
+			if(case_match_required_info(suite_path, case_path, dat_file, task_sort)){
+				matched_case_list.add(case_path);
+			}
+		}
 		//generate case data
 		int case_counter = 0;
-		for(String case_path: case_list){
+		for(String case_path: matched_case_list){
 			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
 			case_data.putAll(deep_clone.clone(admin_data));
 			//generate case name
@@ -1224,8 +1330,8 @@ public class local_tube {
 	public static void main(String[] argv) {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
-		String current_terminal = "D27639";
-		sheet_parser.generate_suite_file_local_admin_task_queues("C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", "", current_terminal);
+		String current_terminal = "SHITL0012";
+		sheet_parser.generate_suite_file_local_admin_task_queues("C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", "", "", current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		
