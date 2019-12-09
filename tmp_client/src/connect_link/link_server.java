@@ -63,7 +63,7 @@ public class link_server extends Thread {
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
-			LINK_SERVER_LOGGER.warn("Create link server error out, Could be port occupied.");			
+			LINK_SERVER_LOGGER.info("Create link server error out, Could be port occupied.");			
 		}
 	}
 
@@ -313,7 +313,7 @@ public class link_server extends Thread {
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				// e1.printStackTrace();
-				LINK_SERVER_LOGGER.warn("link server run error/closed.");
+				LINK_SERVER_LOGGER.info("link server run error/closed.");
 			}
 			// task 2: xxx
 			try {
