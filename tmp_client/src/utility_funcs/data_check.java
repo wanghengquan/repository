@@ -88,4 +88,17 @@ public class data_check {
 		return check_result;
 	}	
 	
+	public static Boolean str_sort_format_check(
+			String input_data){
+		Boolean check_result = new Boolean(true);
+		String [] sort_sections = input_data.split(";");
+		for (String section : sort_sections){
+			Boolean section_ok = str_regexp_check(section, "\\w\\s*=\\s*\\w");
+			if (!section_ok){
+				check_result = false;
+				break;
+			}
+		}
+		return check_result;
+	}
 }

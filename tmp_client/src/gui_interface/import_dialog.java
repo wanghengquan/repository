@@ -63,7 +63,7 @@ public class import_dialog extends JDialog implements ChangeListener{
 		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		this.setSize(600, 350);
+		this.setSize(600, 400);
 	}
 
 	private JTabbedPane construct_tab_pane(){
@@ -101,8 +101,8 @@ class file_pane extends JPanel implements ActionListener{
 	private import_dialog tabbed_pane;
 	private task_data task_info;
 	private client_data client_info;
-	private JLabel jl_user_file, jl_user_env, jl_unit_file, jl_unit_env;
-	private JTextField jt_user_file, jt_user_env, jt_unit_file, jt_unit_env;
+	private JLabel jl_user_file, jl_user_env, jl_user_sort, jl_unit_file, jl_unit_env, jl_unit_sort;
+	private JTextField jt_user_file, jt_user_env, jt_user_sort, jt_unit_file, jt_unit_env, jt_unit_sort;
 	private JButton jb_user_file, jb_unit_file;
 	private JButton close, apply;
 	
@@ -137,16 +137,22 @@ class file_pane extends JPanel implements ActionListener{
 		p1.add(jb_user_file);
 		//step 2 : user suite extra environment import
 		jl_user_env = new JLabel("Extra environ:");
-		jl_user_env.setToolTipText("User extra environments setting, optional, demo:env1=value1,env2=value2");
+		jl_user_env.setToolTipText("User extra environments setting, optional, demo:env1=value1;env2=value2");
 		jt_user_env = new JTextField("", 128);
 		p1.add(jl_user_env);
 		p1.add(jt_user_env);
-		//step 3 : Title line
+		//step 3 : user case sort import
+		jl_user_sort = new JLabel("Case Sort:");
+		jl_user_sort.setToolTipText("User test case sorting requirements, demo:opt1=value1;opt2=value2");
+		jt_user_sort = new JTextField("", 128);
+		p1.add(jl_user_sort);
+		p1.add(jt_user_sort);		
+		//step 4 : Title line
 		JPanel title2 = new JPanel(new GridLayout(1,1,5,5));
 		title2.add(new JLabel("Unit suite files inputs:"));
 		title2.setBackground(Color.LIGHT_GRAY);
 		p1.add(title2);
-		//step 4 : unit suite file import
+		//step 5 : unit suite file import
 		jl_unit_file = new JLabel("Unit Suite:");
 		jl_unit_file.setToolTipText("Unit suite file imports.");
 		jt_unit_file = new JTextField("", 128);
@@ -155,12 +161,18 @@ class file_pane extends JPanel implements ActionListener{
 		p1.add(jl_unit_file);
 		p1.add(jt_unit_file);
 		p1.add(jb_unit_file);
-		//step 5 : user suite extra environment import
+		//step 6 : user suite extra environment import
 		jl_unit_env = new JLabel("Extra environ:");
-		jl_unit_env.setToolTipText("Unit extra environments setting, optional, demo:env1=value1,env2=value2");
+		jl_unit_env.setToolTipText("Unit extra environments setting, optional, demo:env1=value1;env2=value2");
 		jt_unit_env = new JTextField("", 128);
 		p1.add(jl_unit_env);
 		p1.add(jt_unit_env);
+		//step 7 : unit sort import
+		jl_unit_sort = new JLabel("Case Sort:");
+		jl_unit_sort.setToolTipText("Unit test case sorting requirements, demo:opt1=value1;opt2=value2");
+		jt_unit_sort = new JTextField("", 128);
+		p1.add(jl_unit_sort);
+		p1.add(jt_unit_sort);		
 		//layout it 
 		GridBagConstraints layout_s = new GridBagConstraints();
 		layout_s.fill = GridBagConstraints.BOTH;
@@ -193,7 +205,17 @@ class file_pane extends JPanel implements ActionListener{
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_user_env, layout_s);		
+		part1_layout.setConstraints(jt_user_env, layout_s);	
+		//for jl_user_sort
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_user_sort, layout_s);	
+		//for jt_user_sort
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_user_sort, layout_s);			
 		//for title2
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
@@ -223,7 +245,17 @@ class file_pane extends JPanel implements ActionListener{
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_unit_env, layout_s);			
+		part1_layout.setConstraints(jt_unit_env, layout_s);	
+		//for jl_unit_sort
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_unit_sort, layout_s);	
+		//for jt_unit_env
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_unit_sort, layout_s);		
 		return p1;
 	}
 	
@@ -263,7 +295,8 @@ class file_pane extends JPanel implements ActionListener{
 
 	private void impoart_local_task_data(
 			String task_files,
-			String task_env){
+			String task_env,
+			String task_sort){
 		if (local_tube.suite_files_sanity_check(task_files)){
 			FILE_PANE_LOGGER.warn("Importing suite files:" + task_files);
 		} else {
@@ -277,6 +310,7 @@ class file_pane extends JPanel implements ActionListener{
 		HashMap <String, String> task_data = new HashMap <String, String>();
 		task_data.put("path", task_files);
 		task_data.put("env", task_env);
+		task_data.put("sort", task_sort);
 		task_info.update_local_file_imported_task_map(import_time_id, task_data);
 		try {
 			Thread.sleep(1000);
@@ -334,13 +368,15 @@ class file_pane extends JPanel implements ActionListener{
 			}
 			String user_files = jt_user_file.getText().replaceAll("\\\\", "/");
 			String user_env = jt_user_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
+			String user_sort = jt_user_sort.getText();
 			if (user_files.length() > 0){
-				impoart_local_task_data(user_files, user_env);
+				impoart_local_task_data(user_files, user_env, user_sort);
 			}			
 			String unit_files = jt_unit_file.getText().replaceAll("\\\\", "/");
 			String unit_env = jt_unit_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
+			String unit_sort = jt_unit_sort.getText();
 			if (unit_files.length() > 0){
-				impoart_local_task_data(unit_files, unit_env);
+				impoart_local_task_data(unit_files, unit_env, unit_sort);
 			}
 			tabbed_pane.dispose();
 		}
@@ -358,8 +394,8 @@ class path_pane extends JPanel implements ActionListener{
 	private task_data task_info;
 	@SuppressWarnings("unused")
 	private client_data client_info;
-	private JLabel jl_suite_path, jl_key_file, jl_exe_file, jl_arguments, jl_extra_env;
-	private JTextField jt_suite_path, jt_key_file, jt_exe_file, jt_arguments, jt_extra_env;
+	private JLabel jl_suite_path, jl_key_file, jl_exe_file, jl_dat_file, jl_arguments, jl_extra_env, jl_case_sort;
+	private JTextField jt_suite_path, jt_key_file, jt_exe_file, jt_dat_file, jt_arguments, jt_extra_env, jt_case_sort;
 	private JButton jb_suite_path, close, apply;
 	
 	public path_pane(
@@ -397,24 +433,36 @@ class path_pane extends JPanel implements ActionListener{
 		jt_key_file = new JTextField("bqs.info", 128);
 		p1.add(jl_key_file);
 		p1.add(jt_key_file);
-		//step 3 : user exe file
+		//step 3 : user data  file
+		jl_dat_file = new JLabel("Case Data:");
+		jl_dat_file.setToolTipText("The data file to record test case detail info, json format, i.e. {\"level\": 1}");
+		jt_dat_file = new JTextField(public_data.CASE_DATA_FILE, 128);
+		p1.add(jl_dat_file);
+		p1.add(jt_dat_file);
+		//step 4 : user exe file
 		jl_exe_file = new JLabel("EXE File:");
 		jl_exe_file.setToolTipText("The execute file for test case run, can be a file in case folder or absolut path to an external script/execute file.");
-		jt_exe_file = new JTextField("$work_path/DEV/bin/run_radiant.py", 128);
+		jt_exe_file = new JTextField(public_data.CASE_EXEC_FILE, 128);
 		p1.add(jl_exe_file);
-		p1.add(jt_exe_file);
-		//step 4 : jl_arguments
+		p1.add(jt_exe_file);		
+		//step 5 : jl_arguments
 		jl_arguments = new JLabel("Arguments:");
 		jl_arguments.setToolTipText("The arguments for execute file, optional");
 		jt_arguments = new JTextField("", 128);
 		p1.add(jl_arguments);
 		p1.add(jt_arguments);		
-		//step 5 : jl_extra_env
+		//step 6 : jl_extra_env
 		jl_extra_env = new JLabel("Extra environ:");
 		jl_extra_env.setToolTipText("Run extra environments setting, optional, demo:env1=value1,env2=value2");
 		jt_extra_env = new JTextField("", 128);
 		p1.add(jl_extra_env);
 		p1.add(jt_extra_env);
+		//step 7 : jl_case_sort
+		jl_case_sort = new JLabel("Case Sort:");
+		jl_case_sort.setToolTipText("Test case sorting requirements, demo:opt1=value1;opt2=value2");
+		jt_case_sort = new JTextField("", 128);
+		p1.add(jl_case_sort);
+		p1.add(jt_case_sort);		
 		//layout it 
 		GridBagConstraints layout_s = new GridBagConstraints();
 		layout_s.fill = GridBagConstraints.BOTH;
@@ -447,7 +495,17 @@ class path_pane extends JPanel implements ActionListener{
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_key_file, layout_s);		
+		part1_layout.setConstraints(jt_key_file, layout_s);	
+		//for jl_dat_file
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_dat_file, layout_s);	
+		//for jt_dat_file
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_dat_file, layout_s);		
 		//for jl_exe_file
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
@@ -477,7 +535,17 @@ class path_pane extends JPanel implements ActionListener{
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_extra_env, layout_s);			
+		part1_layout.setConstraints(jt_extra_env, layout_s);
+		//for jl_case_sort
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_case_sort, layout_s);	
+		//for jt_case_sort
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_case_sort, layout_s);		
 		return p1;
 	}
 	
@@ -518,9 +586,11 @@ class path_pane extends JPanel implements ActionListener{
 	private void impoart_local_task_data(
 			String task_paths,
 			String task_key,
+			String task_dat,
 			String task_exe,
 			String task_arg,
-			String task_evn){
+			String task_evn,
+			String task_sort){
 		if (local_tube.suite_paths_sanity_check(task_paths, task_key)){
 			PATH_PANE_LOGGER.warn("Importing suite paths:" + task_paths);
 		} else {
@@ -534,9 +604,11 @@ class path_pane extends JPanel implements ActionListener{
 		HashMap <String, String> task_data = new HashMap <String, String>();
 		task_data.put("path", task_paths);
 		task_data.put("key", task_key);
+		task_data.put("dat", task_dat);
 		task_data.put("exe", task_exe);
 		task_data.put("arg", task_arg);
 		task_data.put("env", task_evn);
+		task_data.put("sort", task_sort);
 		task_info.update_local_path_imported_task_map(import_time_id, task_data);
 		try {
 			Thread.sleep(1000);
@@ -571,11 +643,13 @@ class path_pane extends JPanel implements ActionListener{
 		if(arg0.getSource().equals(apply)){
 			String suite_paths = jt_suite_path.getText().replaceAll("\\\\", "/");
 			String suite_key = jt_key_file.getText();
+			String suite_dat = jt_dat_file.getText();
 			String suite_exe = jt_exe_file.getText();
 			String suite_arg = jt_arguments.getText();
 			String suite_env = jt_extra_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
+			String suite_sort = jt_case_sort.getText();
 			if (suite_paths.length() > 0){
-				impoart_local_task_data(suite_paths, suite_key, suite_exe, suite_arg, suite_env);
+				impoart_local_task_data(suite_paths, suite_key, suite_dat, suite_exe, suite_arg, suite_env, suite_sort);
 			}
 			tabbed_pane.dispose();
 		}

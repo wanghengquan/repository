@@ -463,8 +463,9 @@ public class tube_server extends Thread {
 			}
 			String imported_files = imported_map.get(imported_id).get("path");
 			String imported_env = imported_map.get(imported_id).get("env");
+			String imported_sort = imported_map.get(imported_id).get("sort");
 			for(String imported_file : imported_files.split(",")){
-			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, terminal);
+			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, imported_sort, terminal);
 			}
 			counter++;
 		}
@@ -560,12 +561,15 @@ public class tube_server extends Thread {
 		String task_env = cmd_info.get("task_environ");
 		String task_key = cmd_info.get("key_file");
 		String task_exe = cmd_info.get("exe_file");
+		String task_dat = cmd_info.get("dat_file");
 		String task_arg = cmd_info.get("arguments");
+		String task_sort = cmd_info.get("task_sort");
 		//suite file inputs
 		if (suite_files.length() > 0){
 			HashMap <String, String> task_data = new HashMap <String, String>();
 			task_data.put("path", suite_files);
 			task_data.put("env", task_env);
+			task_data.put("sort", task_sort);
 			task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
 			try {
 				Thread.sleep(1000);
@@ -580,8 +584,10 @@ public class tube_server extends Thread {
 			task_data.put("path", suite_paths);
 			task_data.put("key", task_key);
 			task_data.put("exe", task_exe);
+			task_data.put("dat", task_dat);
 			task_data.put("arg", task_arg);
-			task_data.put("env", task_env);			
+			task_data.put("env", task_env);	
+			task_data.put("sort", task_sort);
 			task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);
 			try {
 				Thread.sleep(1000);
@@ -620,13 +626,16 @@ public class tube_server extends Thread {
 					task_data.put("path", suite_path);
 					task_data.put("key", task_key);
 					task_data.put("exe", task_exe);
+					task_data.put("dat", task_dat);
 					task_data.put("arg", task_arg);
-					task_data.put("env", task_env);			
+					task_data.put("env", task_env);	
+					task_data.put("sort", task_sort);
 					task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);				
 				} else if (suite_obj.isFile()) {
 					HashMap <String, String> task_data = new HashMap <String, String>();
 					task_data.put("path", suite_path);
 					task_data.put("env", task_env);
+					task_data.put("sort", task_sort);
 					task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
 				} else {
 					continue;
