@@ -394,8 +394,8 @@ class path_pane extends JPanel implements ActionListener{
 	private task_data task_info;
 	@SuppressWarnings("unused")
 	private client_data client_info;
-	private JLabel jl_suite_path, jl_key_file, jl_exe_file, jl_dat_file, jl_arguments, jl_extra_env, jl_case_sort;
-	private JTextField jt_suite_path, jt_key_file, jt_exe_file, jt_dat_file, jt_arguments, jt_extra_env, jt_case_sort;
+	private JLabel jl_suite_path, jl_key_pattern, jl_exe_file, jl_dat_file, jl_arguments, jl_extra_env, jl_case_sort;
+	private JTextField jt_suite_path, jt_key_pattern, jt_exe_file, jt_dat_file, jt_arguments, jt_extra_env, jt_case_sort;
 	private JButton jb_suite_path, close, apply;
 	
 	public path_pane(
@@ -428,11 +428,11 @@ class path_pane extends JPanel implements ActionListener{
 		p1.add(jt_suite_path);
 		p1.add(jb_suite_path);
 		//step 2 : user key file 
-		jl_key_file = new JLabel("Key File:");
-		jl_key_file.setToolTipText("The key file to help client consider the path is a case");
-		jt_key_file = new JTextField("bqs.info", 128);
-		p1.add(jl_key_file);
-		p1.add(jt_key_file);
+		jl_key_pattern = new JLabel("Key Pattern:");
+		jl_key_pattern.setToolTipText("The key pattern to help client identify case in a given path, regexp supportted");
+		jt_key_pattern = new JTextField(public_data.CASE_KEY_PATTERN, 128);
+		p1.add(jl_key_pattern);
+		p1.add(jt_key_pattern);
 		//step 3 : user data  file
 		jl_dat_file = new JLabel("Case Data:");
 		jl_dat_file.setToolTipText("The data file to record test case detail info, json format, i.e. {\"level\": 1}");
@@ -440,7 +440,7 @@ class path_pane extends JPanel implements ActionListener{
 		p1.add(jl_dat_file);
 		p1.add(jt_dat_file);
 		//step 4 : user exe file
-		jl_exe_file = new JLabel("EXE File:");
+		jl_exe_file = new JLabel("Execute File:");
 		jl_exe_file.setToolTipText("The execute file for test case run, can be a file in case folder or absolut path to an external script/execute file.");
 		jt_exe_file = new JTextField(public_data.CASE_EXEC_FILE, 128);
 		p1.add(jl_exe_file);
@@ -486,16 +486,16 @@ class path_pane extends JPanel implements ActionListener{
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
 		part1_layout.setConstraints(jb_suite_path, layout_s);		
-		//for jl_key_file
+		//for jl_key_pattern
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jl_key_file, layout_s);	
-		//for jt_key_file
+		part1_layout.setConstraints(jl_key_pattern, layout_s);	
+		//for jt_key_pattern
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_key_file, layout_s);	
+		part1_layout.setConstraints(jt_key_pattern, layout_s);	
 		//for jl_dat_file
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
@@ -596,7 +596,7 @@ class path_pane extends JPanel implements ActionListener{
 		} else {
 			PATH_PANE_LOGGER.warn("Importing suite paths failed:" + task_paths);
 			String title = new String("Import suite paths error");
-			String message = new String(local_tube.suite_file_error_msg);
+			String message = new String(local_tube.suite_path_error_msg);
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
@@ -642,7 +642,7 @@ class path_pane extends JPanel implements ActionListener{
 		}
 		if(arg0.getSource().equals(apply)){
 			String suite_paths = jt_suite_path.getText().replaceAll("\\\\", "/");
-			String suite_key = jt_key_file.getText();
+			String suite_key = jt_key_pattern.getText();
 			String suite_dat = jt_dat_file.getText();
 			String suite_exe = jt_exe_file.getText();
 			String suite_arg = jt_arguments.getText();
