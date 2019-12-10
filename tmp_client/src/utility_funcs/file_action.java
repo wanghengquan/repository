@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -242,55 +244,61 @@ public class file_action {
 		}
 	}
 
-	public static List<String> get_key_file_list(String top_path, String key_file) {
+	public static List<String> get_key_file_list(String top_path, String key_pattern) {
 		key_file_list = new ArrayList<String>();
 		File top_path_obj = new File(top_path);
 		if (!top_path_obj.exists()){
 			return key_file_list;
 		}
-		scan_directory(top_path_obj, key_file);
+		scan_directory(top_path_obj, key_pattern);
 		return key_file_list;
 	}
 	
-	public static void scan_directory(File file, String key_file) {
+	public static void scan_directory(File file, String key_pattern) {
 		File flist[] = file.listFiles();
 		if (flist == null || flist.length == 0) {
 		    return;
 		}
+		Pattern pattern = Pattern.compile(key_pattern);
 		for (File f : flist){
 			if (f.isDirectory()) { 
-		        scan_directory(f, key_file);				
+		        scan_directory(f, key_pattern);				
 			} else {
 				String file_name = f.getName();
-				if (file_name.equalsIgnoreCase(key_file)){
+				Matcher key_match = pattern.matcher(file_name);
+				if (key_match.find()){
 					key_file_list.add(f.getAbsolutePath().replaceAll("\\\\", "/"));
+					break;
 				}
 			}
 		}
 	}
 	
-	public static List<String> get_key_path_list(String top_path, String key_file) {
+	public static List<String> get_key_path_list(String top_path, String key_pattern) {
 		key_file_list = new ArrayList<String>();
 		File top_path_obj = new File(top_path);
 		if (!top_path_obj.exists()){
 			return key_file_list;
 		}
-		scan_directory2(top_path_obj, key_file);
+		scan_directory2(top_path_obj, key_pattern);
 		return key_file_list;
 	}
 	
-	public static void scan_directory2(File file, String key_file) {
+	public static void scan_directory2(File file, String key_pattern) {
 		File flist[] = file.listFiles();
 		if (flist == null || flist.length == 0) {
 		    return;
 		}
+		Pattern pattern = Pattern.compile(key_pattern);
 		for (File f : flist){
 			if (f.isDirectory()) { 
-				scan_directory2(f, key_file);				
+				scan_directory2(f, key_pattern);				
 			} else {
 				String file_name = f.getName();
-				if (file_name.equalsIgnoreCase(key_file)){
+				Matcher key_match = pattern.matcher(file_name);
+				if (key_match.find()){
 					key_file_list.add(f.getAbsoluteFile().getParent().replaceAll("\\\\", "/"));
+					break;
 				}
 			}
 		}

@@ -559,7 +559,7 @@ public class tube_server extends Thread {
 		String suite_paths = cmd_info.get("suite_path");
 		String list_file = cmd_info.get("list_file");
 		String task_env = cmd_info.get("task_environ");
-		String task_key = cmd_info.get("key_file");
+		String task_key = cmd_info.get("key_pattern");
 		String task_exe = cmd_info.get("exe_file");
 		String task_dat = cmd_info.get("dat_file");
 		String task_arg = cmd_info.get("arguments");

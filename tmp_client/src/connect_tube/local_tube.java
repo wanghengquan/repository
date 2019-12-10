@@ -31,7 +31,7 @@ import utility_funcs.time_info;
 public class local_tube {
 	// public property
 	public static String suite_file_error_msg = new String();
-	public static String suite_path_error_msg = new String();
+	public static String suite_path_error_msg = new String(">>>");
 	// protected property
 	// private property
 	private final Logger LOCAL_TUBE_LOGGER = LogManager.getLogger(local_tube.class.getName());
@@ -1047,17 +1047,19 @@ public class local_tube {
 	//===========================================================================
 	//===========================================================================
 	//for suite path support
-	public static Boolean suite_paths_sanity_check(String suite_paths, String suite_key) {
+	public static Boolean suite_paths_sanity_check(
+			String suite_paths, 
+			String suite_key) {
 		for (String suite_path : suite_paths.split(",")){
-			File xlsx_fobj = new File(suite_path);
-			if(!xlsx_fobj.exists()){
-				suite_path_error_msg = "Error: Suite path not exists.";
-				System.out.println(">>>Error: Suite path not exists.");
+			File path_fobj = new File(suite_path);
+			if(!path_fobj.exists()){
+				suite_path_error_msg = "Error: Suite path not exists:" + suite_paths;
+				System.out.println(">>>Error: Suite path not exists:" + suite_paths);
 				return false;
 			}
 			if(file_action.get_key_file_list(suite_path, suite_key).size() < 1){
-				suite_path_error_msg = "Error: Suite path no key file found.";
-				System.out.println(">>>Error: Suite path no key file found.");
+				suite_path_error_msg = "Error: Suite path no key file found with search key:" + suite_key;
+				System.out.println(">>>Error: Suite path no key file found with search key:" + suite_key);
 				return false;			
 			}
 		}
@@ -1195,10 +1197,12 @@ public class local_tube {
 		return admin_queue_data;
 	}
 	
-	private List<String> get_design_name_list(String suite_path, String key_file){
+	private List<String> get_design_name_list(
+			String suite_path, 
+			String key_pattern){
 		List<String> design_list = new ArrayList<String>();
 		List<String> key_paths = new ArrayList<String>();
-		key_paths.addAll(file_action.get_key_path_list(suite_path, key_file));
+		key_paths.addAll(file_action.get_key_path_list(suite_path, key_pattern));
 		for (String key_path:key_paths){
 			key_path = key_path.replaceAll(suite_path, "");
 			key_path = key_path.replaceAll("^/", "");
@@ -1249,7 +1253,7 @@ public class local_tube {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		//get case list
 		String suite_path = imported_path;
-		String key_file = imported_data.get("key");
+		String key_pattern = imported_data.get("key");
 		String dat_file = imported_data.get("dat");
 		String task_sort = imported_data.get("sort");
 		String list_path = suite_path + "/" + public_data.SUITE_LIST_FILE_NAME;
@@ -1271,7 +1275,7 @@ public class local_tube {
 				}
 			}
 		} else {
-			case_list.addAll(get_design_name_list(suite_path, key_file));
+			case_list.addAll(get_design_name_list(suite_path, key_pattern));
 		}
 		//sort required test case list
 		if(case_list.size() < 1){

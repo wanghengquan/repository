@@ -106,11 +106,11 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("list_file", "");
 		}		
-		// 3.7 key file value
+		// 3.7 key pattern value
 		if (commandline_obj.hasOption('k')) {
-			cmd_hash.put("key_file", commandline_obj.getOptionValue('k'));
+			cmd_hash.put("key_pattern", commandline_obj.getOptionValue('k'));
 		} else {
-			cmd_hash.put("key_file", public_data.CASE_INFO_FILE);
+			cmd_hash.put("key_pattern", public_data.CASE_KEY_PATTERN);
 		}
 		// 3.8 execute file value
 		if (commandline_obj.hasOption('x')) {
@@ -314,8 +314,8 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("L").longOpt("list-file").hasArg()
 				.desc("Test suites list file for Local run")
 				.build());
-		options_obj.addOption(Option.builder("k").longOpt("key-file").hasArg()
-				.desc("The key file to help client consider the path is a case path, Work with -p(suite path), default value:" + public_data.CASE_INFO_FILE)
+		options_obj.addOption(Option.builder("k").longOpt("key-pattern").hasArg()
+				.desc("The key pattern to help client identify case in a given path, regexp supportted, default value:" + public_data.CASE_KEY_PATTERN)
 				.build());
 		options_obj.addOption(Option.builder("K").longOpt("keep-case")
 				.desc("Case mode:Keep case in it's original path(depot space) and run it in that place")
@@ -363,7 +363,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-d] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_file> -x <exe_file> [-a arguments] | -L <list_file>)] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-d] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] | -L <list_file>)] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
