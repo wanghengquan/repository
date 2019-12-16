@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.46"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21046; // version for code use
-	public final static String BASE_BUILDDATE = "2019/12/10";
+	public final static String BASE_CURRENTVERSION = "2.10.47"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21047; // version for code use
+	public final static String BASE_BUILDDATE = "2019/12/16";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -139,7 +139,7 @@ public class public_data {
 	// ========================
 	// link to RabbitMQ configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
-	public final static String RMQ_HOST = "linux-D50553"; // "linux-D50553", "lsh-tmp"
+	public final static String RMQ_HOST = "lsh-tmp"; // "linux-D50553", "lsh-tmp"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "result";
