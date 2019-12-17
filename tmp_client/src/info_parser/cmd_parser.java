@@ -242,31 +242,31 @@ public class cmd_parser {
 			switch (option_name){
 			case "ignore_request":
 				if(!data_check.str_choice_check(option_value, new String [] {"", "all", "software", "system", "machine"} )){
-					CMD_PARSER_LOGGER.error("Command line parse Failed.");
+					CMD_PARSER_LOGGER.error("Command line: Invalid ignore_request setting");
 					check_satus = false;
 				}
 				break;
 			case "max_threads":
 				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
-					CMD_PARSER_LOGGER.warn("Invalid max_threads setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid max_threads setting");
 					check_satus = false;
 				}
 				break;
 			case "pool_size":
 				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
-					CMD_PARSER_LOGGER.warn("Invalid pool_size setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid pool_size setting");
 					check_satus = false;
 				}
 				break;
 			case "save_space":
 				if (!data_check.str_path_check(option_value)){
-					CMD_PARSER_LOGGER.warn("Invalid save_space setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid save_space setting");
 					check_satus = false;
 				}
 				break;
 			case "work_space":
 				if (!data_check.str_path_check(option_value)){
-					CMD_PARSER_LOGGER.warn("Invalid work_space setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid work_space setting");
 					check_satus = false;
 				}
 				break;
@@ -275,7 +275,7 @@ public class cmd_parser {
 					break;
 				}
 				if (!data_check.str_sort_format_check(option_value)){
-					CMD_PARSER_LOGGER.warn("Invalid sorting rule setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid sorting rule setting");
 					check_satus = false;
 				}
 				break;				
@@ -363,7 +363,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-d] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] | -L <list_file>)] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
