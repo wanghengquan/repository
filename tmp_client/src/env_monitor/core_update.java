@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +30,8 @@ public class core_update {
 	private String core_addr = public_data.CORE_SCRIPT_ADDR;
 	private String svn_user = public_data.SVN_USER;
 	private String svn_pwd = public_data.SVN_PWD;
-	private String line_separator = System.getProperty("line.separator");
+	private String usr_cmd = new String(" --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache");
+	//private String line_separator = System.getProperty("line.separator");
 
 	public core_update(){
 		
@@ -42,21 +44,27 @@ public class core_update {
 	public Boolean update() {
 		Boolean update_status = new Boolean(false);
 		String work_space = client_info.get_client_preference_data().get("work_space");  
-		update_core_script(work_space);
-		update_core_script_info();
-		if(is_remote_local_version_same()){
+		//step 1: update core script
+		try {
+			update_status = update_core_script(work_space);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//step 2: update core script info
+		update_core_script_info(work_space);
+		//step 3: update check
+		if(is_remote_local_version_same(work_space)){
 			update_status = true;
 		}
 		return update_status;
 	}
 	
-	private Boolean is_remote_local_version_same(){
-		String work_space = client_info.get_client_preference_data().get("work_space");
-		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache"; 		
+	private Boolean is_remote_local_version_same(String work_space){		
 		//remote version
     	String remote_version = new String("NA");
         try {
-            String remote_info = "svn info " + core_addr +  user_cmd;
+            String remote_info = "svn info " + core_addr +  usr_cmd;
             ArrayList<String> remote_return = system_cmd.run(remote_info);
             remote_version = get_version_num(remote_return);
         }catch (InterruptedException e) {
@@ -65,9 +73,9 @@ public class core_update {
             e.printStackTrace();
         }
         //local_version
-    	String local_version = new String("NA");
+    	String local_version = new String("AN");
         try {
-            String local_info = "svn info " + core_name +  user_cmd;
+            String local_info = "svn info " + core_name +  usr_cmd;
             ArrayList<String> local_return = system_cmd.run(local_info, work_space);
             local_version = get_version_num(local_return);
         }catch (IOException e){
@@ -80,64 +88,46 @@ public class core_update {
         }
 	}
 	
-	public void update_core_script(String work_space) {
-		//String work_space = client_info.get_client_preference_data().get("work_space");
-		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
-		File trunk_handle = new File(core_name);
-		if (trunk_handle.exists() && trunk_handle.isDirectory()) {
-			// 1. go to trunk directory
-			// 2. execute svn info, find URL
-			// 3. find, execute svn update
-			// 4. else:
-			// 1. clean trunk
-			// 2. execute svn checkout
-			try {
-				// System.out.println("trunk exists");
-				ArrayList<String> info_return = system_cmd.run("svn info " + core_name + " " + user_cmd, work_space);
-				StringBuffer cmdout = new StringBuffer();
-				Boolean find_url = false;
-				for (String line : info_return) {
-					cmdout.append(line).append(line_separator);
-					if (line.matches(core_addr) || line.indexOf(core_addr) != -1)
-						find_url = true;
-				}
-				if (find_url) {
-					try {
-						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd,
-								work_space);
-						CORE_LOGGER.debug(excute_returns.toString());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						// e.printStackTrace();
-					}
-				} else {
-					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr,
-							work_space);
-					CORE_LOGGER.debug(excute_returns.toString());
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	public Boolean update_core_script(
+			String work_space) throws Exception {
+		Boolean update_status = new Boolean(false);
+		ArrayList<String> info_return = new ArrayList<String>();
+		ArrayList<String> update_return = new ArrayList<String>();
+		ArrayList<String> checkout_return = new ArrayList<String>();
+		String url_addr = new String("");
+		File core_fobj = new File(work_space + "/" + core_name);
+		if (core_fobj.exists() && core_fobj.isDirectory()) {
+			if(!core_fobj.canWrite()){
+				CORE_LOGGER.warn("Core script Read only, skip core update for:" + work_space + "/" + core_name);
+				return update_status;
+			}
+			info_return.addAll(system_cmd.run("svn info " + core_name + " " + usr_cmd, work_space));
+			url_addr = get_url_addr(info_return);
+			if (url_addr.equalsIgnoreCase(public_data.CORE_SCRIPT_ADDR)){
+				update_return.addAll(system_cmd.run("svn update " + core_name + " " + usr_cmd, work_space));
+				CORE_LOGGER.debug(update_return.toString());
+			} else {
+				//remove current core script
+				FileUtils.deleteQuietly(core_fobj);
+				Thread.sleep(1000);
+				//checkout new one
+				checkout_return.addAll(system_cmd.run("svn co " + core_addr + " " + usr_cmd, work_space));
+				CORE_LOGGER.debug(checkout_return.toString());
 			}
 		} else {
-			try {
-				ArrayList<String> excute_returns = system_cmd.run("svn co " + core_addr + " " + user_cmd, work_space);
-				CORE_LOGGER.debug(excute_returns.toString());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			checkout_return.addAll(system_cmd.run("svn co " + core_addr + " " + usr_cmd, work_space));
+			CORE_LOGGER.debug(checkout_return.toString());
 		}
+		update_status = true;
+		return update_status;
 	}
 	
-    private void update_core_script_info(){
-		String work_space = client_info.get_client_preference_data().get("work_space");
-		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache"; 
+    private void update_core_script_info(String work_space){
 		String version = new String("NA");
 		String time = new String("NA");
+		ArrayList<String> info_return = new ArrayList<String>();
         try {
-            String svn_info = "svn info " + core_name + " " + user_cmd;
-            ArrayList<String> info_return = system_cmd.run(svn_info, work_space);
+            info_return.addAll(system_cmd.run("svn info " + core_name + " " + usr_cmd, work_space));
             version = get_version_num(info_return);
             time = get_update_time(info_return);
         }catch (IOException e){
@@ -146,55 +136,6 @@ public class core_update {
         client_info.update_client_corescript_data("version", version);
         client_info.update_client_corescript_data("time", time);        
     }
-	
-	public void update(String work_space) {
-		String user_cmd = " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
-		File trunk_handle = new File(core_name);
-		if (trunk_handle.exists() && trunk_handle.isDirectory()) {
-			// 1. go to trunk directory
-			// 2. execute svn info, find URL
-			// 3. find, execute svn update
-			// 4. else:
-			// 1. clean trunk
-			// 2. execute svn checkout
-			try {
-				// System.out.println("trunk exists");
-				ArrayList<String> info_return = system_cmd.run("svn info " + core_name + " " + user_cmd, work_space);
-				StringBuffer cmdout = new StringBuffer();
-				Boolean find_url = false;
-				for (String line : info_return) {
-					cmdout.append(line).append(line_separator);
-					if (line.matches(core_addr) || line.indexOf(core_addr) != -1)
-						find_url = true;
-				}
-				if (find_url) {
-					try {
-						ArrayList<String> excute_returns = system_cmd.run("svn update " + core_name + " " + user_cmd,
-								work_space);
-						CORE_LOGGER.debug(excute_returns.toString());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						// e.printStackTrace();
-					}
-				} else {
-					ArrayList<String> excute_returns = system_cmd.run("svn co " + user_cmd + " " + core_addr,
-							work_space);
-					CORE_LOGGER.debug(excute_returns.toString());
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				ArrayList<String> excute_returns = system_cmd.run("svn co " + core_addr + " " + user_cmd, work_space);
-				CORE_LOGGER.debug(excute_returns.toString());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
 
     private String get_version_num(ArrayList<String> inputs){
     	String version = new String("NA");
@@ -222,10 +163,28 @@ public class core_update {
         return update_time;
     }    
     
+    private String get_url_addr(ArrayList<String> inputs){
+    	String url_addr = new String("");
+    	String pattern = "URL.+?(http.+?DEV)";
+        Pattern r = Pattern.compile(pattern);
+        for (String line: inputs){
+        	Matcher m = r.matcher(line);
+        	if(m.find()){
+        		url_addr = m.group(1); 
+        	}
+        }
+        return url_addr;
+    } 
+    
 	public static void main(String[] argvs) {
 		core_update updater = new core_update();
 		String work_space = new String("D:/tmp_work_space");
-		updater.update(work_space);
+		try {
+			updater.update_core_script(work_space);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println(">>>update done");
 		System.exit(exit_enum.NORMAL.get_index());
 	}
