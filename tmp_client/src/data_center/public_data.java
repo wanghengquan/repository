@@ -24,8 +24,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.48"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21048; // version for code use
+	public final static String BASE_CURRENTVERSION = "2.10.49"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21049; // version for code use
 	public final static String BASE_BUILDDATE = "2019/12/17";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -181,7 +181,7 @@ public class public_data {
 	// ========================
 	// Link to core script
 	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lshlabd0011/platform/trunk/bqs_scripts/DEV";
+	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/bqs_scripts/DEV";
 
 	// ========================
 	// task case default setting
