@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.47"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21047; // version for code use
-	public final static String BASE_BUILDDATE = "2019/12/16";
+	public final static String BASE_CURRENTVERSION = "2.10.48"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21048; // version for code use
+	public final static String BASE_BUILDDATE = "2019/12/17";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -238,6 +238,7 @@ public class public_data {
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_SPACE = "";
+	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb02/sw/qa/qadata";
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 800;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 300;
 
