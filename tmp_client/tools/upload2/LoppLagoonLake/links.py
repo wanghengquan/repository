@@ -10,14 +10,14 @@ __date__ = '15:05 2018/12/13'
 
 
 def get_guest_db():
-    guest_db = torndb.Connection(host="linux-d50553", database="testrail",
+    guest_db = torndb.Connection(host="lsh-tmp", database="testrail",
                                  user=cipher.decrypt("C=Q=O=Q=P=Q=L=R=J=Q=N=Q"),
                                  password=cipher.decrypt("E=Q=O=Q=G=Q=F=Q=H=Q"))
     return guest_db
 
 
 def get_admin_db():
-    admin_db = torndb.Connection(host="linux-d50553", database="testrail",
+    admin_db = torndb.Connection(host="lsh-tmp", database="testrail",
                                  user=cipher.decrypt("O=R=E=Q=F=Q=N=R"),
                                  password=cipher.decrypt("A=Q=K=Q=O=R=N=R=B=Q=E=Q=D=Q"))
     return admin_db
@@ -105,7 +105,7 @@ def get_tr_api(username="", password=""):
         username = cipher.decrypt(x)
     if not password:
         password = cipher.decrypt(y)
-    api = testrail.APIClient(username, password, "http://linux-d50553/testrail/")
+    api = testrail.APIClient(username, password, "http://lsh-tmp/testrail/")
     return api
 
 
