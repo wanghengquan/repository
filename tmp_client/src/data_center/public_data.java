@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.09.03"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20903; // version for code use
-	public final static String BASE_BUILDDATE = "2019/12/12";
+	public final static String BASE_CURRENTVERSION = "2.09.04"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 20904; // version for code use
+	public final static String BASE_BUILDDATE = "2019/12/20";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -82,8 +82,8 @@ public class public_data {
 	
 	// ========================
 	// Remote update path
-	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";
-	public final static String UPDATE_URL_DEV = "http://d50534/test/job_1/client_update/update_dev.xml";
+	public final static String UPDATE_URL = "http://lsh-tmp/tmp_client_release/update.xml";
+	public final static String UPDATE_URL_DEV = "http://lsh-tmp/tmp_client_release/update_dev.xml";
 	
 	// ========================
 	// workspace folder configuration, real path = work_space + following folder
@@ -139,7 +139,7 @@ public class public_data {
 	// ========================
 	// link to RabbitMQ configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
-	public final static String RMQ_HOST = "linux-D50553"; // "linux-D50553", "lsh-tmp"
+	public final static String RMQ_HOST = "lsh-tmp"; // "linux-D50553", "lsh-tmp"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "result";
@@ -181,7 +181,7 @@ public class public_data {
 	// ========================
 	// Link to core script
 	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lshlabd0011/platform/trunk/bqs_scripts/DEV";
+	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/bqs_scripts/DEV";
 
 	// ========================
 	// task case default setting
@@ -238,6 +238,7 @@ public class public_data {
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_SPACE = "";
+	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb02/sw/qa/qadata";
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 800;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 300;
 

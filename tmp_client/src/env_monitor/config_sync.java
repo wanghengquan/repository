@@ -111,7 +111,7 @@ public class config_sync extends Thread {
 				case "unattended":
 					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
 						option_value = public_data.DEF_UNATTENDED_MODE;
-						CONFIG_SYNC_LOGGER.warn("Config file:Invalid private setting:" + section_name + ">" + option_key + ", default value will be used.");
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid unattended setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
 					break;
 				case "auto_restart":
@@ -175,7 +175,11 @@ public class config_sync extends Thread {
 					}
 					break;
 				case "save_space":
-					if (!option_value.equals("") && !data_check.str_path_check(option_value)){
+					if (option_value.equals("")){
+						;
+					} else if (option_value.equalsIgnoreCase(public_data.DEF_LSH_SAVE_SPACE)){
+						;
+					} else if (!data_check.str_path_check(option_value)){
 						option_value = public_data.DEF_SAVE_SPACE;
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid save_space setting:" + section_name + ">" + option_key + ", Ignore it");
 					}
@@ -216,6 +220,12 @@ public class config_sync extends Thread {
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid thread_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
 					break;
+				case "debug":
+					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
+						option_value = public_data.DEF_CLIENT_DEBUG_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid debug setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;					
 				default:
 					break;
 				}

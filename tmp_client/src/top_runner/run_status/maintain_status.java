@@ -434,13 +434,22 @@ public class maintain_status extends abstract_status {
         String new_work_space = new String(preference_data.get("work_space_temp"));
         //1. export new core script
 		core_update my_core = new core_update(client.client_info);
-		my_core.update_core_script(new_work_space);
+		try {
+			work_space_updated = my_core.update_core_script(new_work_space);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (!work_space_updated){
+			client.STATUS_LOGGER.warn("Work Space update failed, Keep original one.");
+			return work_space_updated;
+		}
 		//2. update client preference data
 		preference_data.put("work_space", new_work_space);
 		client.client_info.set_client_preference_data(preference_data);
 		client.switch_info.set_work_space_update_request(false);
 		client.switch_info.set_client_updated();
-		work_space_updated = true;
+		client.STATUS_LOGGER.warn("Work Space updated to:" + new_work_space);
 		return work_space_updated;
 	}
 	
