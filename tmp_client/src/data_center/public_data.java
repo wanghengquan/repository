@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.50"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21050; // version for code use
-	public final static String BASE_BUILDDATE = "2019/12/18";
+	public final static String BASE_CURRENTVERSION = "2.10.51"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21051; // version for code use
+	public final static String BASE_BUILDDATE = "2019/12/20";
 	public final static String BASE_SUITEFILEVERSION = "1.14";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -82,8 +82,8 @@ public class public_data {
 	
 	// ========================
 	// Remote update path
-	public final static String UPDATE_URL = "http://d50534/test/job_1/client_update/update.xml";
-	public final static String UPDATE_URL_DEV = "http://d50534/test/job_1/client_update/update_dev.xml";
+	public final static String UPDATE_URL = "http://lsh-tmp/tmp_client_release/update.xml";
+	public final static String UPDATE_URL_DEV = "http://lsh-tmp/tmp_client_release/update_dev.xml";
 	
 	// ========================
 	// workspace folder configuration, real path = work_space + following folder
