@@ -268,7 +268,7 @@ public class task_waiter extends Thread {
 	}
 
 	private int get_srting_int(String str, String patt) {
-		int i = 0;
+		int i = 999;
 		try {
 			Pattern p = Pattern.compile(patt);
 			Matcher m = p.matcher(str);
@@ -842,7 +842,9 @@ public class task_waiter extends Thread {
 	
 	private String get_last_error_msg(ArrayList<String> message_list){
 		String return_string = new String("NA");
-		// <status>Passed</status>
+		if (message_list == null || message_list.isEmpty()) {
+			return return_string;
+		}
 		Pattern p = Pattern.compile("^error", Pattern.CASE_INSENSITIVE);		
 		for (String line : message_list) {
 			Matcher m = p.matcher(line);
