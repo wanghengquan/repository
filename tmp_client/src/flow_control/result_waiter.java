@@ -539,6 +539,9 @@ public class result_waiter extends Thread {
 
 	private ArrayList<String> runtime_output_filter(ArrayList<String> output_list){
 		ArrayList<String> return_list = new ArrayList<String>();
+		if (output_list == null || output_list.isEmpty()) {
+			return return_list;
+		}
 		Pattern start_pattern = Pattern.compile("===TMP Detail===");
 		Pattern stop_pattern = Pattern.compile("===TMP end===");
 		Boolean filter_enable = new Boolean(false);
@@ -636,7 +639,7 @@ public class result_waiter extends Thread {
 
 
     private String get_scan_result(ArrayList<String> cmd_output) {
-        String scan_result = "";
+        String scan_result = new String("");
         if (cmd_output == null || cmd_output.isEmpty()) {
             return scan_result;
         }
@@ -653,9 +656,12 @@ public class result_waiter extends Thread {
 
 	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output) {
 		HashMap<String, String> report_data = new HashMap<String, String>();
+		if (cmd_output == null || cmd_output.isEmpty()) {
+			return report_data;
+		}
+		// <status>Passed</status>
+		Pattern p = Pattern.compile("<(.+?)>(.+?)</");
 		for (String line : cmd_output) {
-			// <status>Passed</status>
-			Pattern p = Pattern.compile("<(.+?)>(.+?)</");
 			Matcher m = p.matcher(line);
 			if (m.find()) {
 				report_data.put(m.group(1), m.group(2));
@@ -667,6 +673,9 @@ public class result_waiter extends Thread {
 	private task_enum get_cmd_status(ArrayList<String> cmd_output) {
 		task_enum task_status = task_enum.OTHERS;
 		String status = new String("NA");
+		if(cmd_output == null || cmd_output.isEmpty()) {
+			return task_status;
+		}
 		// <status>Passed</status>
 		Pattern p = Pattern.compile("status>(.+?)</");
 		for (String line : cmd_output) {

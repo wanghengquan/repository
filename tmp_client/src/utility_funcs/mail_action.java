@@ -166,8 +166,11 @@ public class mail_action {
 	}
 	
 	private static ArrayList<InternetAddress> prepare_send_list(String to_string){
-		Pattern mail_patt = Pattern.compile("(\\w)+(.\\w+)*@(\\w)+((.\\w+)+)", Pattern.CASE_INSENSITIVE);
 		ArrayList<InternetAddress> mail_array = new ArrayList<InternetAddress>();
+		Pattern mail_patt = Pattern.compile("(\\w)+(.\\w+)*@(\\w)+((.\\w+)+)", Pattern.CASE_INSENSITIVE);
+		if (to_string == null) {
+			return mail_array;
+		}
 		for (String mail_addr : to_string.split(",|;")) {
 			Matcher mail_match = mail_patt.matcher(mail_addr.trim());
 			if (mail_match.find()){

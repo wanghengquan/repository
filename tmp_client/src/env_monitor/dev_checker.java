@@ -71,6 +71,9 @@ public class dev_checker extends TimerTask {
 
     private String get_version_num(ArrayList<String> inputs){
     	String version = new String("NA");
+    	if (inputs == null || inputs.isEmpty()) {
+    		return version;
+    	}
         String pattern = ".+?:\\s+(\\d+)$";
         Pattern r = Pattern.compile(pattern);
         for (String line: inputs){
@@ -84,6 +87,9 @@ public class dev_checker extends TimerTask {
     
     private String get_update_time(ArrayList<String> inputs){
     	String update_time = new String("NA");
+    	if (inputs == null || inputs.isEmpty()) {
+    		return update_time;
+    	}
     	String pattern = ".+?:\\s+(\\d\\d\\d\\d-\\d\\d-\\d\\d\\s+?\\d\\d:\\d\\d:\\d\\d)";
         Pattern r = Pattern.compile(pattern);
         for (String line: inputs){
