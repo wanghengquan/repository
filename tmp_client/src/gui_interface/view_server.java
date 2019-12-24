@@ -330,6 +330,7 @@ public class view_server extends Thread {
 				task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
 				task_info.remove_queue_from_processed_task_queues_map(queue_name);
 				task_info.remove_finished_admin_queue_list(queue_name);
+				task_info.remove_emptied_admin_queue_list(queue_name);
 				continue;
 			}
 			// delete data in memory(Remote server may send a done queue which also need to be delete)
@@ -339,6 +340,7 @@ public class view_server extends Thread {
 			task_info.remove_queue_from_processed_task_queues_map(queue_name);
 			task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
 			task_info.remove_finished_admin_queue_list(queue_name);
+			task_info.remove_emptied_admin_queue_list(queue_name);
 			// delete log in disk
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
 			File admin_path = new File(work_space + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
