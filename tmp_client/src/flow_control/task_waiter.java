@@ -255,6 +255,7 @@ public class task_waiter extends Thread {
 	}
 
 	private String get_highest_queue_name(ArrayList<String> full_list) {
+		//highest priority with earlier received time will be taken(sorted full_list)
 		int record_priority = 999;
 		String record_queue = new String();
 		for (String queue_name : full_list) {
