@@ -105,7 +105,7 @@ public class ConsoleGUI implements JupidatorGUI {
     }
 
     public void endDialog() {
-        System.out.println(_("Thank you for using Jupdater"));
+        System.out.println(_("Thank you for using Update") + "  (Jason.Wang@latticesemi.com)");
         System.out.println();
     }
 
