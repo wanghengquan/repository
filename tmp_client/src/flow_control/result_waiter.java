@@ -201,7 +201,7 @@ public class result_waiter extends Thread {
 		}
 	}	
 
-	private void report_finished_queue_data() {
+	private void dump_finished_queue_report() {
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
@@ -975,7 +975,7 @@ public class result_waiter extends Thread {
 			// task 1 : report/dump finished queue:report and data
 			update_running_queue_list();	
 			update_finished_queue_list();
-			report_finished_queue_data(); //generate csv report
+			dump_finished_queue_report(); //generate csv report
 			dump_finished_queue_data(); //to log dir xml file save memory
 			// fresh data must start from here
 			fresh_thread_pool_data(); //for all thread pools

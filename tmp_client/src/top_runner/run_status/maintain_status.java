@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.machine_sync;
+import flow_control.export_data;
 import flow_control.import_data;
 import self_update.app_update;
 import utility_funcs.deep_clone;
@@ -120,6 +121,14 @@ public class maintain_status extends abstract_status {
 		}
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
+		if (update_obj.update_skipped) {
+			client.STATUS_LOGGER.info(">>>Info: TMP Client self-update skipped...");
+		} else {
+			client.STATUS_LOGGER.info(">>>Info: TMP Client self-update launched...");
+			export_data.export_disk_processed_queue_report(client.task_info, client.client_info);
+			export_data.export_disk_finished_queue_data(client.task_info, client.client_info);
+			export_data.export_disk_memory_queue_data(client.task_info, client.client_info);
+		}
 		while(client.switch_info.get_client_console_updating()){
 			try {
 				Thread.sleep(100);
@@ -128,7 +137,6 @@ public class maintain_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		client.STATUS_LOGGER.info(">>>Info: TMP Client updated...");		
 	}
 	
 	private Boolean implements_core_script_update(){
