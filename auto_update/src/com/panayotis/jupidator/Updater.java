@@ -289,12 +289,14 @@ public class Updater {
         watcher.stopWatcher();
         gui.endDialog();
         curVersion.getUpdaterProperties().defer();
+        update_skipped = true;
     }
 
     public void actionIgnore() {
         watcher.stopWatcher();
         gui.endDialog();
         curVersion.getUpdaterProperties().ignore(curVersion.getAppElements().getNewestRelease());
+        update_skipped = true;
     }
 
     public void actionRestart() {
