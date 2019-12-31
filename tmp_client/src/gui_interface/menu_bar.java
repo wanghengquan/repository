@@ -526,7 +526,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(about)) {
 			MENU_BAR_LOGGER.info("about clicked");
-			about_dialog about_view = new about_dialog(main_view, client_info, switch_info);
+			about_dialog about_view = new about_dialog(main_view, client_info, task_info, switch_info);
 			about_view.setLocationRelativeTo(main_view);
 			about_view.setVisible(true);
 		}

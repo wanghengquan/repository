@@ -39,6 +39,78 @@ public class export_data {
 	public export_data() {
 	}
 	
+	//====================
+	//high level functions
+	public static Boolean export_disk_finished_queue_data(
+			task_data task_info,
+			client_data client_info){
+    	//by default result waiter will dump finished data except:
+    	//1) case number less than 20
+    	//2) suite is watching
+    	//so when client stopped we need to dump these finished suite
+		Boolean dump_status = new Boolean(true);
+    	ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
+    	ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
+    	finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
+    	emptied_admin_queue_list.addAll(task_info.get_emptied_admin_queue_list());
+		for (String dump_queue : finished_admin_queue_list) {
+			if (!emptied_admin_queue_list.contains(dump_queue)){
+				continue;// no dump need since this queue is not finished by this launch
+			}
+			if (!task_info.get_processed_task_queues_map().containsKey(dump_queue)) {
+				continue;// no queue data to dump (already dumped)
+			}
+			// dumping task queue
+			Boolean admin_dump = export_disk_finished_admin_queue_data(dump_queue, client_info, task_info);
+			Boolean task_dump = export_disk_finished_task_queue_data(dump_queue, client_info, task_info);
+			if (admin_dump && task_dump) {
+				task_info.remove_queue_from_processed_admin_queues_treemap(dump_queue);
+				task_info.remove_queue_from_processed_task_queues_map(dump_queue);
+			} else {
+				dump_status = false;
+			}
+		}
+		return dump_status;
+    }	
+	
+	public static Boolean export_disk_processed_queue_report(
+			task_data task_info,
+			client_data client_info){
+		//generate csv file
+    	//by default result waiter will dump finished queue report except:
+    	//1) task not finished
+		Boolean dump_status = new Boolean(true);
+    	ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
+    	reported_admin_queue_list.addAll(task_info.get_reported_admin_queue_list()); 
+    	Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+    	processed_task_queues_map.putAll(task_info.get_processed_task_queues_map());
+    	Iterator<String> queue_it = processed_task_queues_map.keySet().iterator();
+    	while(queue_it.hasNext()){
+    		String queue_name = queue_it.next();
+    		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+    		queue_data.putAll(processed_task_queues_map.get(queue_name));
+    		if (reported_admin_queue_list.contains(queue_name)){
+    			continue;
+    		}
+    		export_disk_finished_task_queue_report(queue_name, client_info, task_info);
+    	}
+    	return dump_status;
+    }	
+	
+	public static Boolean export_disk_memory_queue_data(
+			task_data task_info,
+			client_data client_info){
+		Boolean dump_status = new Boolean(true);
+		dump_disk_received_admin_data(client_info, task_info);
+		dump_disk_processed_admin_data(client_info, task_info);
+		dump_disk_received_task_data(client_info, task_info);
+		dump_disk_processed_task_data(client_info, task_info);
+		return dump_status;
+    }	
+	
+	
+	//====================
+	//lower level functions
 	public static Boolean debug_disk_client_in_task(
 			String file_name,
 			String message,

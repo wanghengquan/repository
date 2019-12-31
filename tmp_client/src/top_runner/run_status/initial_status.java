@@ -51,20 +51,20 @@ class initial_status extends abstract_status {
 		launch_main_gui();
 		// task 3: get and wait client data ready 
 		get_client_data_ready();
-		// task 4: get daemon process ready
-		get_daemon_process_ready();
-		// task 5: get tube server ready
-		get_tube_server_ready();
-		// task 6: auto restart warning message print
-		release_auto_restart_msg();		
-		// task 7 : core script update 
-		get_core_script_update();
-		// task 8: client self update
+		// task 4: client self update
 		get_client_self_update();
-		// task 9: launch link services
+		// task 5 : core script update 
+		get_core_script_update();		
+		// task 6: get daemon process ready
+		get_daemon_process_ready();
+		// task 7: auto restart warning message print
+		release_auto_restart_msg();		
+		// task 8: launch link services
 		launch_link_services();
-		// task 10: client run mode recognize
-		client_local_console_run_recognize();		
+		// task 9: client run mode recognize
+		local_console_run_recognize();
+		// task 10: get tube server ready
+		get_tube_server_ready();		
 		// task 11: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
@@ -160,6 +160,15 @@ class initial_status extends abstract_status {
 		}		
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
+		if (update_obj.update_skipped) {
+			client.STATUS_LOGGER.info(">>>Info: TMP Client self-update skipped...");
+		} else {
+			client.STATUS_LOGGER.info(">>>Info: TMP Client self-update launched...");
+			//no data for dump at the initial state
+			//export_data.export_disk_processed_queue_report(client.task_info, client.client_info);
+			//export_data.export_disk_finished_queue_data(client.task_info, client.client_info);
+			//export_data.export_disk_memory_queue_data(client.task_info, client.client_info);
+		}		
 		while(client.switch_info.get_client_console_updating()){
 			if(update_obj.update_skipped){
 				client.switch_info.set_client_console_updating(false);
@@ -210,7 +219,7 @@ class initial_status extends abstract_status {
 	}	
 	
 	//client_local_console_run_recognize
-	private void client_local_console_run_recognize(){
+	private void local_console_run_recognize(){
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.putAll(client.client_info.get_client_preference_data());
 		String link_mode = new String("");
