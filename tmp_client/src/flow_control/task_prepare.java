@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.data_check;
 import utility_funcs.des_decode;
 import utility_funcs.system_cmd;
 
@@ -47,15 +48,17 @@ public class task_prepare {
 		task_prepare_info.add(">>>Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
+		//remote task override
         if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
             String mode = task_data.get("ClientPreference").get("case_mode").trim();
-            if(mode.equals("0")) case_mode = "keep_case";
-            if(mode.equals("1") | mode.equals("2")) {
-                case_mode = "copy_case";
-            }
+			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
+				CASE_PREPARE_LOGGER.warn("Remote task:Invalid case_mode setting:" + mode + ", local value will be used.");
+			} else {
+				case_mode = mode;
+			}
         }
 		File task_path_dobj = new File(task_path);
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			if (task_path_dobj.isDirectory() && task_path_dobj.canWrite()){
 				task_prepare_info.add("Info : Task path prepare Pass:" + task_path);
 				return true;
@@ -97,15 +100,26 @@ public class task_prepare {
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
-        if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
+		String lazy_copy = client_preference_data.get("lazy_copy").trim();
+		//remote task override
+        if(task_data.get("ClientPreference").containsKey("case_mode")){
             String mode = task_data.get("ClientPreference").get("case_mode").trim();
-            if(mode.equals("0")) case_mode = "keep_case";
-            if(mode.equals("1") | mode.equals("2")) {
-                case_mode = "copy_case";
-            }
+			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
+				CASE_PREPARE_LOGGER.warn("Task:Invalid case_mode setting:" + mode + ", local value will be used.");
+			} else {
+				case_mode = mode;
+			}
+        }
+        if(task_data.get("ClientPreference").containsKey("lazy_copy")){
+            String mode = task_data.get("ClientPreference").get("lazy_copy").trim();
+			if (!data_check.str_choice_check(mode, new String [] {"false", "true"} )){
+				CASE_PREPARE_LOGGER.warn("Task:Invalid lazy_copy setting:" + mode + ", local value will be used.");
+			} else {
+				lazy_copy = mode;
+			}
         }
 		File case_path_dobj = new File(case_path);
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			if (case_path_dobj.isDirectory() && case_path_dobj.canWrite()){
 				task_prepare_info.add("Info : Case path prepare Pass:" + case_path);
 				return true;
@@ -113,7 +127,11 @@ public class task_prepare {
 				task_prepare_info.add("Error: Case path cannot write:" + case_path);
 				return false;
 			}
-		}		
+		}
+		if (lazy_copy.equalsIgnoreCase("true") && case_path_dobj.exists()){
+			task_prepare_info.add("Info : Lazy mode case path prepare Skipped:" + case_path);
+			return true;
+		}
 		//export new case if not have
 		// get access author key
 		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
