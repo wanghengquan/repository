@@ -151,7 +151,8 @@ public class data_server extends Thread {
 		preference_data.put("stable_version", public_data.DEF_STABLE_VERSION);
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);
-		preference_data.put("path_keep", public_data.DEF_COPY_PATH_KEEP);
+		preference_data.put("keep_path", public_data.DEF_COPY_KEEP_PATH);
+		preference_data.put("lazy_copy", public_data.DEF_COPY_LAZY_COPY);
 		preference_data.put("pool_size", String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
 		preference_data.put("max_threads", String.valueOf(public_data.PERF_POOL_CURRENT_SIZE));
 		preference_data.put("show_welcome", public_data.DEF_SHOW_WELCOME);

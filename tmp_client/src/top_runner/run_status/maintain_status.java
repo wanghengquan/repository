@@ -122,9 +122,9 @@ public class maintain_status extends abstract_status {
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
 		if (update_obj.update_skipped) {
-			client.STATUS_LOGGER.info(">>>Info: TMP Client self-update skipped...");
+			client.STATUS_LOGGER.info("TMP Client self-update skipped...");
 		} else {
-			client.STATUS_LOGGER.info(">>>Info: TMP Client self-update launched...");
+			client.STATUS_LOGGER.info("TMP Client self-update launched...");
 			export_data.export_disk_processed_queue_report(client.task_info, client.client_info);
 			export_data.export_disk_finished_queue_data(client.task_info, client.client_info);
 			export_data.export_disk_memory_queue_data(client.task_info, client.client_info);

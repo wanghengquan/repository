@@ -598,7 +598,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
 		String depot_space = repository + "/" + suite_path;
 		//get work_path
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			task_path = depot_space;
 		} else {
 			String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
