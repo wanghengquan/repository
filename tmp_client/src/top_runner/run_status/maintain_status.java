@@ -26,7 +26,6 @@ import flow_control.import_data;
 import self_update.app_update;
 import utility_funcs.deep_clone;
 import utility_funcs.mail_action;
-import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
 public class maintain_status extends abstract_status {
@@ -242,16 +241,9 @@ public class maintain_status extends abstract_status {
 		current_time = time_info.get_time_hhmm();
 		Pattern patt = Pattern.compile("120\\d", Pattern.CASE_INSENSITIVE);
 		Matcher match = patt.matcher(current_time);
-		String run_cmd = new String("shutdown -r");
 		if(match.find()){
-			client.STATUS_LOGGER.warn("System restarting...");
-			try {
-				system_cmd.run(run_cmd);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				client.STATUS_LOGGER.warn("System restart Failed...");
-			}
+			client.STATUS_LOGGER.warn("Host Machine restarting...");
+			client.switch_info.set_client_stop_request(exit_enum.HRN);
 		}
 	}
 	
@@ -308,8 +300,8 @@ public class maintain_status extends abstract_status {
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}				
-			}			
+				}
+			}
 		} else {
 			//send mail
 			if (get_environ_announced()){

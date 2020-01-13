@@ -92,7 +92,11 @@ public class export_data {
     		if (reported_admin_queue_list.contains(queue_name)){
     			continue;
     		}
-    		export_disk_finished_task_queue_report(queue_name, client_info, task_info);
+    		Boolean report_status = new Boolean(true);
+    		report_status = export_disk_finished_task_queue_report(queue_name, client_info, task_info);
+    		if (report_status) {
+    			task_info.update_reported_admin_queue_list(queue_name);
+    		}
     	}
     	return dump_status;
     }	
