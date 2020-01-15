@@ -101,6 +101,7 @@ public class postrun_call implements Callable<Object> {
         String[] tmp_space = save_space.split(",");
         String[] tmp_suite = save_suite.split(",");
         String[] tmp_path = save_path.split(",");
+        String os_type = System.getProperty("os.name").toLowerCase();
         for(int i=0; i<tmp_space.length; i++) {
             String save_space_index = tmp_space[i].trim();
             String save_suite_index = tmp_suite[i].trim();
@@ -111,6 +112,19 @@ public class postrun_call implements Callable<Object> {
             if (save_space_index.trim().equals("")) {
                 // no save path, skip copy
                 continue;
+            }
+            //skip unreachable path
+            if (os_type.contains("windows")) {
+            	if (save_suite_index.startsWith("/")) {
+            		run_msg.add("Windows clinet cannot access linux storage.");
+            		continue;
+            	}
+            }
+            if (os_type.contains("linux")) {
+            	if (!save_suite_index.startsWith("/")) {
+            		run_msg.add("Linux clinet cannot access Windows storage.");
+            		continue;
+            	}
             }
             //make suite level folder
     		File save_suite_fobj = new File(save_suite_index);
@@ -126,7 +140,7 @@ public class postrun_call implements Callable<Object> {
     				run_status = false;
     				continue;
     			}
-    		}          
+    		}
             //start detail case copy
             switch (result_keep.toLowerCase()) {
                 case "zipped":
@@ -136,17 +150,20 @@ public class postrun_call implements Callable<Object> {
                     if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
                     break;
                 default:// auto and any other inputs treated as auto
-                    if (cmd_status.equals(task_enum.PASSED)) {
+                	if (lsv_storage_identify(save_path_index)) {
+                		if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
+                	} else if (cmd_status.equals(task_enum.PASSED)) {
                         if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
                     } else {
                         if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
                     }
+                	break;
             }            
         }
         if (!run_status){
         	return run_status;
         }
-        //task 2: copy ok, start delete local copy
+        //task 2: copy OK, start delete local copy
         File report_path_fobj = new File(report_path);
         switch (local_clean.toLowerCase()) {
         case "keep":
@@ -160,6 +177,18 @@ public class postrun_call implements Callable<Object> {
             }
         }
         return run_status;
+	}
+	
+	private Boolean lsv_storage_identify(
+			String save_path) {
+		Boolean lsv_storage = new Boolean(false);
+		for (String key_str: public_data.DEF_LSV_STORAGE_ID) {
+			if (save_path.contains(key_str)) {
+				lsv_storage = true;
+				break;
+			}
+		}
+		return lsv_storage;
 	}
 	
 	private Boolean run_local_scan_report_generate(
@@ -298,7 +327,6 @@ public class postrun_call implements Callable<Object> {
 		if (case_path.equalsIgnoreCase(save_path)){
 			return copy_status;
 		}
-
 		File save_path_fobj = new File(save_path);
 		if (!save_path_fobj.exists()) {
 			try {
