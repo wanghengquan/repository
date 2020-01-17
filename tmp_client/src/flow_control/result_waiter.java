@@ -458,7 +458,8 @@ public class result_waiter extends Thread {
 	}
 
 	@SuppressWarnings("unchecked")
-	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data() {
+	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data(
+			HashMap<String, HashMap<String, Object>> case_report_map) {
 		HashMap<String, HashMap<String, String>> runtime_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
@@ -480,6 +481,7 @@ public class result_waiter extends Thread {
 			hash_data.put("suiteId", task_data.get("ID").get("suite"));
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
+			task_enum status = (task_enum) case_report_map.get(call_index).get("status");
 			StringBuilder runlog = new StringBuilder();
 			//step 0: generate runlog title
 			runlog.append(line_separator);
@@ -491,7 +493,7 @@ public class result_waiter extends Thread {
 			String run_path = (String) one_call_data.get(pool_attr.call_laudir);
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
 			//step 2: generate save location
-			runlog.append(save_location_generate(task_data.get("Paths").get("save_path")));
+			runlog.append(save_location_generate(task_data.get("Paths").get("save_path"), status));
 			//step 3: notes
 			runlog.append("Note:" + line_separator);
 			runlog.append("1. If the link above not work, please copy it to your file explorer manually."
@@ -513,7 +515,8 @@ public class result_waiter extends Thread {
 	}
 
 	private String save_location_generate(
-			String save_paths){
+			String save_paths,
+			task_enum status){
 		StringBuilder loc_rpt = new StringBuilder();
         String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
         String lin_href = "<a href=file:///%s  target='_blank'>%s";		
@@ -581,6 +584,10 @@ public class result_waiter extends Thread {
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);
             } else if (path.startsWith("/disks/")){
+            	//for LSV path, passed case will not be copy, so don't show link
+            	if (status.equals(task_enum.PASSED)) {
+            		continue;
+            	}
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);
@@ -589,6 +596,10 @@ public class result_waiter extends Thread {
             	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
             } else if (path.startsWith("\\\\ldc-smb01\\")) {
+            	//for LSV path, passed case will not be copy, so don't show link
+            	if (status.equals(task_enum.PASSED)) {
+            		continue;
+            	}         	
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
             	loc_rpt.append("</a>" + line_separator);
@@ -1064,7 +1075,7 @@ public class result_waiter extends Thread {
 			terminate_user_request_running_call();
 			// task 3 : general and send task report
 			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
-			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data();
+			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(case_report_data);
 			report_obj.send_tube_task_data_report(case_report_data, true);			
 			report_obj.send_tube_task_runtime_report(case_runtime_log_data);
 			// task 4 : update memory case run summary
