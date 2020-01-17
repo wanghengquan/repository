@@ -151,7 +151,11 @@ public class postrun_call implements Callable<Object> {
                     break;
                 default:// auto and any other inputs treated as auto
                 	if (lsv_storage_identify(save_path_index)) {
-                		if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
+                		if (cmd_status.equals(task_enum.PASSED)) {
+                			run_msg.add("PASSED case result copy to LSV skipped.");
+                		} else {
+                			if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
+                		}
                 	} else if (cmd_status.equals(task_enum.PASSED)) {
                         if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
                     } else {
