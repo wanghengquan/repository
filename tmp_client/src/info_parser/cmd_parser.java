@@ -143,11 +143,10 @@ public class cmd_parser {
 			cmd_hash.put("client_environ", "");
 		}
 		// 3.13 attended/unattended mode setting
-		if (commandline_obj.hasOption('A')) {
-			cmd_hash.put("unattended", "0");
-		}
 		if (commandline_obj.hasOption('U')) {
 			cmd_hash.put("unattended", "1");
+		} else {
+			cmd_hash.put("unattended", "0");
 		}
 		// 3.14 work path
 		if (commandline_obj.hasOption('w')) {
@@ -166,12 +165,15 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("task_sort", "");
 		}
-		// 3.17 max threads
+		// 3.17 threads setting
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}
 		if (commandline_obj.hasOption('T')) {
 			cmd_hash.put("pool_size", commandline_obj.getOptionValue('T'));
+		}
+		if (commandline_obj.hasOption('A')) {
+			cmd_hash.put("thread_mode", "auto");
 		}
 		// 3.18 debug mode
 		if (commandline_obj.hasOption('D')) {
@@ -304,7 +306,6 @@ public class cmd_parser {
 				Option.builder("I").longOpt("console").desc("Client will run in interactive console mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
-		options_obj.addOption(Option.builder("A").longOpt("attended").desc("Client will run in attended mode").build());
 		options_obj.addOption(
 				Option.builder("U").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
@@ -346,7 +347,10 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("s").longOpt("save-space").hasArg()
 				.desc("Storage place for case remote store, if not present will use current work_space").build());
 		options_obj.addOption(Option.builder("S").longOpt("sort").hasArg()
-				.desc("Sorting conditions for case input, option1=value1;option2=value1,value2").build());		
+				.desc("Sorting conditions for case input, option1=value1;option2=value1,value2").build());
+		options_obj.addOption(
+				Option.builder("A").longOpt("auto-threads")
+				.desc("Client will run in auto threads mode, client will automatically +/- threads based on target CPU usage:" + public_data.PERF_AUTO_MAXIMUM_CPU).build());
 		options_obj.addOption(
 				Option.builder("t").longOpt("max-threads").hasArg()
 				.desc("Client will launch $t threads, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
@@ -368,7 +372,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
