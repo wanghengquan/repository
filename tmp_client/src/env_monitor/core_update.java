@@ -67,9 +67,7 @@ public class core_update {
             String remote_info = "svn info " + core_addr +  usr_cmd;
             ArrayList<String> remote_return = system_cmd.run(remote_info);
             remote_version = get_version_num(remote_return);
-        }catch (InterruptedException e) {
-            e.printStackTrace();
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
         }
         //local_version
@@ -78,7 +76,7 @@ public class core_update {
             String local_info = "svn info " + core_name +  usr_cmd;
             ArrayList<String> local_return = system_cmd.run(local_info, work_space);
             local_version = get_version_num(local_return);
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
         }
         if (local_version.equalsIgnoreCase(remote_version)){
@@ -94,7 +92,7 @@ public class core_update {
 		ArrayList<String> info_return = new ArrayList<String>();
 		ArrayList<String> update_return = new ArrayList<String>();
 		ArrayList<String> checkout_return = new ArrayList<String>();
-		String url_addr = new String("");
+		String url_addr = new String("NA");
 		File core_fobj = new File(work_space + "/" + core_name);
 		if (core_fobj.exists() && core_fobj.isDirectory()) {
 			if(!core_fobj.canWrite()){
@@ -139,6 +137,9 @@ public class core_update {
 
     private String get_version_num(ArrayList<String> inputs){
     	String version = new String("NA");
+    	if (inputs == null || inputs.isEmpty()) {
+    		return version;
+    	}  	
         String pattern = ".+?:\\s+(\\d+)$";
         Pattern r = Pattern.compile(pattern);
         for (String line: inputs){
@@ -152,6 +153,9 @@ public class core_update {
     
     private String get_update_time(ArrayList<String> inputs){
     	String update_time = new String("NA");
+    	if (inputs == null || inputs.isEmpty()) {
+    		return update_time;
+    	}     	
     	String pattern = ".+?:\\s+(\\d\\d\\d\\d-\\d\\d-\\d\\d\\s+?\\d\\d:\\d\\d:\\d\\d)";
         Pattern r = Pattern.compile(pattern);
         for (String line: inputs){
@@ -164,7 +168,10 @@ public class core_update {
     }    
     
     private String get_url_addr(ArrayList<String> inputs){
-    	String url_addr = new String("");
+    	String url_addr = new String("NA");
+    	if (inputs == null || inputs.isEmpty()) {
+    		return url_addr;
+    	}     	
     	String pattern = "URL.+?(http.+?DEV)";
         Pattern r = Pattern.compile(pattern);
         for (String line: inputs){

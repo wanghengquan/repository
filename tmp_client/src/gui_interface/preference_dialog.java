@@ -49,8 +49,8 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 	private pool_data pool_info;
 	private JPanel preference_panel;
 	private JLabel jl_link_mode, jl_max_threads, jl_task_assign, jl_case_mode, jl_ignore_request, jl_work_path, jl_save_path;
-	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel, keep_case, copy_case;
-	private JCheckBox path_keep, ignore_software, ignore_system, ignore_machine;
+	private JRadioButton link_both, link_remote, link_local, thread_auto, thread_manual, task_auto, task_serial, task_parallel, hold_case, copy_case;
+	private JCheckBox keep_path, lazy_copy, ignore_software, ignore_system, ignore_machine;
 	private JTextField thread_text, jt_work_path, jt_save_path;
 	private JButton discard, apply, close;
 
@@ -63,7 +63,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		container.add(construct_preference_panel());
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(650, 400);
+		this.setSize(650, 500);
 	}
 	
 	private JPanel construct_preference_panel(){
@@ -124,18 +124,22 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		//step 4 : input 4th
 		JPanel jp_center4 = new JPanel(new GridLayout(1,4,5,5));
 		jl_case_mode = new JLabel("Case Mode:");
-		jl_case_mode.setToolTipText("The method for Client processing case, copy first or just run in that place.");
-		keep_case = new JRadioButton("Keep Case");
+		jl_case_mode.setToolTipText("The method for Client get case ready, copy to workspace<default> or just run in original place.");
+		hold_case = new JRadioButton("Hold Case");
 		copy_case = new JRadioButton("Copy Case");
 		ButtonGroup case_group = new ButtonGroup();
-		case_group.add(keep_case);
+		case_group.add(hold_case);
 		case_group.add(copy_case);
-		path_keep = new JCheckBox("Keep Structure");
-		initial_case_default_value(preference_data.get("case_mode"), preference_data.get("path_keep"));
+		keep_path = new JCheckBox("Keep Path");
+		lazy_copy = new JCheckBox("Lazy Copy");
+		JPanel jp_copy_option = new JPanel(new GridLayout(2,1,5,5));
+		jp_copy_option.add(keep_path);
+		jp_copy_option.add(lazy_copy);
+		initial_case_default_value(preference_data.get("case_mode"), preference_data.get("keep_path"), preference_data.get("lazy_copy"));
 		jp_center4.add(jl_case_mode);
-		jp_center4.add(keep_case);
+		jp_center4.add(hold_case);
 		jp_center4.add(copy_case);
-		jp_center4.add(path_keep);
+		jp_center4.add(jp_copy_option);
 		//step 5 : input 5th 
 		JPanel jp_center5 = new JPanel(new GridLayout(1,4,5,5));
 		jl_ignore_request = new JLabel("Ignore Request:");
@@ -251,22 +255,31 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		}
 	}
 	
-	private void initial_case_default_value(String case_mode, String keep_structure){
-		if(case_mode.equalsIgnoreCase("keep_case")){
-			keep_case.setSelected(true);
+	private void initial_case_default_value(
+			String case_mode_str, 
+			String keep_path_str,
+			String lazy_copy_str){
+		if(case_mode_str.equalsIgnoreCase("hold_case")){
+			hold_case.setSelected(true);
 			copy_case.setSelected(false);
-			path_keep.setEnabled(false);
+			keep_path.setEnabled(false);
+			lazy_copy.setEnabled(false);
 		} else {
-			keep_case.setSelected(false);
+			hold_case.setSelected(false);
 			copy_case.setSelected(true);
-			path_keep.setEnabled(true);
-			if (keep_structure.equalsIgnoreCase("true")){
-				path_keep.setSelected(true);
+			keep_path.setEnabled(true);
+			lazy_copy.setEnabled(true);
+			if (keep_path_str.equalsIgnoreCase("true")){
+				keep_path.setSelected(true);
 			} else {
-				path_keep.setSelected(false);
+				keep_path.setSelected(false);
 			}
+			if (lazy_copy_str.equalsIgnoreCase("true")){
+				lazy_copy.setSelected(true);
+			} else {
+				lazy_copy.setSelected(false);
+			}			
 		}
-		
 	}
 	
 	private void initial_ignore_default_value(String ignore_request){
@@ -375,15 +388,20 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				preference_data.put("task_mode", "parallel");
 			}
 			//case mode
-			if(keep_case.isSelected()){
-				preference_data.put("case_mode", "keep_case");
+			if(hold_case.isSelected()){
+				preference_data.put("case_mode", "hold_case");
 			} else {
 				preference_data.put("case_mode", "copy_case");
-				if(path_keep.isSelected()){
-					preference_data.put("path_keep", "true");
+				if(keep_path.isSelected()){
+					preference_data.put("keep_path", "true");
 				} else {
-					preference_data.put("path_keep", "false");
+					preference_data.put("keep_path", "false");
 				}
+				if(lazy_copy.isSelected()){
+					preference_data.put("lazy_copy", "true");
+				} else {
+					preference_data.put("lazy_copy", "false");
+				}				
 			}
 			//ignore request
 			ArrayList<String> ignore_list = new ArrayList<String>();
@@ -453,16 +471,21 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 				if(thread_auto.isSelected() && thread_text.isEnabled()){
 					thread_text.setEnabled(false);
 				}
-				if(copy_case.isSelected() && !path_keep.isEnabled()){
-					path_keep.setEnabled(true);
-					if (client_info.get_client_preference_data().get("path_keep").equalsIgnoreCase("true")){
-						path_keep.setSelected(true);
-					} else {
-						path_keep.setSelected(false);
+				if(copy_case.isSelected()){
+					if (!keep_path.isEnabled()) {
+						keep_path.setEnabled(true);
+					}
+					if (!lazy_copy.isEnabled()) {
+						lazy_copy.setEnabled(true);
 					}
 				}				
-				if(keep_case.isSelected() && path_keep.isEnabled()){
-					path_keep.setEnabled(false);
+				if(hold_case.isSelected()){
+					if (keep_path.isEnabled()) {
+						keep_path.setEnabled(false);
+					}
+					if (lazy_copy.isEnabled()) {
+						lazy_copy.setEnabled(false);
+					}
 				}
 			} else {
 				SwingUtilities.invokeLater(new Runnable(){
@@ -476,16 +499,21 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 						if(thread_auto.isSelected() && thread_text.isEnabled()){
 							thread_text.setEnabled(false);
 						}
-						if(copy_case.isSelected() && !path_keep.isEnabled()){
-							path_keep.setEnabled(true);
-							if (client_info.get_client_preference_data().get("path_keep").equalsIgnoreCase("true")){
-								path_keep.setSelected(true);
-							} else {
-								path_keep.setSelected(false);
+						if(copy_case.isSelected()){
+							if (!keep_path.isEnabled()) {
+								keep_path.setEnabled(true);
+							}
+							if (!lazy_copy.isEnabled()) {
+								lazy_copy.setEnabled(true);
 							}
 						}				
-						if(keep_case.isSelected() && path_keep.isEnabled()){
-							path_keep.setEnabled(false);
+						if(hold_case.isSelected()){
+							if (keep_path.isEnabled()) {
+								keep_path.setEnabled(false);
+							}
+							if (lazy_copy.isEnabled()) {
+								lazy_copy.setEnabled(false);
+							}
 						}
 					}
 				});

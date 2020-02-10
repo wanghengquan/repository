@@ -121,7 +121,7 @@ public class config_sync extends Thread {
 					}
 					break;
 				case "case_mode":
-					if (!data_check.str_choice_check(option_value, new String [] {"copy_case", "keep_case"} )){
+					if (!data_check.str_choice_check(option_value, new String [] {"copy_case", "hold_case"} )){
 						option_value = public_data.DEF_CLIENT_CASE_MODE;
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid case_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
@@ -162,12 +162,18 @@ public class config_sync extends Thread {
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid max_threads setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
 					break;
-				case "path_keep":
+				case "keep_path":
 					if (!data_check.str_choice_check(option_value, new String [] {"false", "true"} )){
-						option_value = public_data.DEF_COPY_PATH_KEEP;
-						CONFIG_SYNC_LOGGER.warn("Config file:Invalid path_keep setting:" + section_name + ">" + option_key + ", default value will be used.");
+						option_value = public_data.DEF_COPY_KEEP_PATH;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid keep_path setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
 					break;
+				case "lazy_copy":
+					if (!data_check.str_choice_check(option_value, new String [] {"false", "true"} )){
+						option_value = public_data.DEF_COPY_LAZY_COPY;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid lazy_copy setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;					
 				case "result_keep":
 					if (!data_check.str_choice_check(option_value, new String [] {"auto", "zipped", "unzipped"} )){
 						option_value = public_data.TASK_DEF_RESULT_KEEP;
@@ -318,7 +324,8 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("task_mode", write_data.get("preference").get("task_mode"));
 		tmp_preference_data.put("case_mode", write_data.get("preference").get("case_mode"));
 		tmp_preference_data.put("result_keep", write_data.get("preference").get("result_keep"));
-		tmp_preference_data.put("path_keep", write_data.get("preference").get("path_keep"));
+		tmp_preference_data.put("keep_path", write_data.get("preference").get("keep_path"));
+		tmp_preference_data.put("lazy_copy", write_data.get("preference").get("lazy_copy"));
 		tmp_preference_data.put("pool_size", write_data.get("preference").get("pool_size"));
 		tmp_preference_data.put("max_threads", write_data.get("preference").get("max_threads"));
 		tmp_preference_data.put("show_welcome", write_data.get("preference").get("show_welcome"));

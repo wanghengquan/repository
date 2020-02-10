@@ -143,11 +143,10 @@ public class cmd_parser {
 			cmd_hash.put("client_environ", "");
 		}
 		// 3.13 attended/unattended mode setting
-		if (commandline_obj.hasOption('A')) {
-			cmd_hash.put("unattended", "0");
-		}
 		if (commandline_obj.hasOption('U')) {
 			cmd_hash.put("unattended", "1");
+		} else {
+			cmd_hash.put("unattended", "0");
 		}
 		// 3.14 work path
 		if (commandline_obj.hasOption('w')) {
@@ -166,12 +165,15 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("task_sort", "");
 		}
-		// 3.17 max threads
+		// 3.17 threads setting
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}
 		if (commandline_obj.hasOption('T')) {
 			cmd_hash.put("pool_size", commandline_obj.getOptionValue('T'));
+		}
+		if (commandline_obj.hasOption('A')) {
+			cmd_hash.put("thread_mode", "auto");
 		}
 		// 3.18 debug mode
 		if (commandline_obj.hasOption('D')) {
@@ -180,24 +182,29 @@ public class cmd_parser {
 			cmd_hash.put("debug", "0");
 		}
 		// 3.19 case mode
-		if (commandline_obj.hasOption('K')) {
-			cmd_hash.put("case_mode", "keep_case");
+		if (commandline_obj.hasOption('H')) {
+			cmd_hash.put("case_mode", "hold_case");
 		}		
 		if (commandline_obj.hasOption('C')) {
 			cmd_hash.put("case_mode", "copy_case");
 		}	
 		// 3.20 case mode
-		if (commandline_obj.hasOption('H')) {
-			cmd_hash.put("path_keep", "true");
+		if (commandline_obj.hasOption('K')) {
+			cmd_hash.put("keep_path", "true");
+		} else {
+			cmd_hash.put("keep_path", "false");
+		}
+		// 3.21 case mode
+		if (commandline_obj.hasOption('Z')) {
+			cmd_hash.put("lazy_copy", "true");
+		} else {
+			cmd_hash.put("lazy_copy", "false");
 		}		
-		if (commandline_obj.hasOption('F')) {
-			cmd_hash.put("path_keep", "false");
-		}	
-		// 3.21 result keep value
+		// 3.22 result keep value
 		if (commandline_obj.hasOption('R')) {
 			cmd_hash.put("result_keep", commandline_obj.getOptionValue('R'));
 		}	
-		// 3.22 interactive or not
+		// 3.23 interactive or not
 		if (commandline_obj.hasOption('I')) {
 			cmd_hash.put("interactive", "1");
 			cmd_hash.put("cmd_gui", "cmd");
@@ -205,11 +212,11 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("interactive", "0");
 		}
-		// 3.23 help definition
+		// 3.24 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
-		// 3.24 run sanity check
+		// 3.25 run sanity check
 		if (!run_input_data_check(cmd_hash)){
 			get_help(options_obj);
 		}
@@ -299,7 +306,6 @@ public class cmd_parser {
 				Option.builder("I").longOpt("console").desc("Client will run in interactive console mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
-		options_obj.addOption(Option.builder("A").longOpt("attended").desc("Client will run in attended mode").build());
 		options_obj.addOption(
 				Option.builder("U").longOpt("unattended").desc("Client will run in unattended mode").build());
 		options_obj.addOption(Option.builder("i").longOpt("ignore-request").hasArg()
@@ -317,17 +323,14 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("k").longOpt("key-pattern").hasArg()
 				.desc("The key pattern to help client identify case in a given path, regexp supportted, default value:" + public_data.CASE_KEY_PATTERN)
 				.build());
-		options_obj.addOption(Option.builder("K").longOpt("keep-case")
-				.desc("Case mode:Keep case in it's original path(depot space) and run it in that place")
+		options_obj.addOption(Option.builder("H").longOpt("hold-case")
+				.desc("Case mode:Hold case in it's original path(depot space) and run it in that place")
 				.build());
 		options_obj.addOption(Option.builder("C").longOpt("copy-case")
 				.desc("Case mode:Copy case to client work space and run it in this new place, Default")
 				.build());
-		options_obj.addOption(Option.builder("H").longOpt("hierarchical")
-				.desc("Keep the original directory tree structure(which will have a potential issue about overwite results)")
-				.build());
-		options_obj.addOption(Option.builder("F").longOpt("flattened")
-				.desc("Flatten original hierarchical path into one folder with the name of task id")
+		options_obj.addOption(Option.builder("K").longOpt("keep-path")
+				.desc("Keep the hierarchy of original directory tree structure(which will have a potential issue about overwite results)")
 				.build());
 		options_obj.addOption(Option.builder("R").longOpt("result-keep").hasArg()
 				.desc("How to save the run results, available value: auto, zipped, unzipped").build());		
@@ -344,7 +347,10 @@ public class cmd_parser {
 		options_obj.addOption(Option.builder("s").longOpt("save-space").hasArg()
 				.desc("Storage place for case remote store, if not present will use current work_space").build());
 		options_obj.addOption(Option.builder("S").longOpt("sort").hasArg()
-				.desc("Sorting conditions for case input, option1=value1;option2=value1,value2").build());		
+				.desc("Sorting conditions for case input, option1=value1;option2=value1,value2").build());
+		options_obj.addOption(
+				Option.builder("A").longOpt("auto-threads")
+				.desc("Client will run in auto threads mode, client will automatically +/- threads based on target CPU usage:" + public_data.PERF_AUTO_MAXIMUM_CPU).build());
 		options_obj.addOption(
 				Option.builder("t").longOpt("max-threads").hasArg()
 				.desc("Client will launch $t threads, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
@@ -353,6 +359,9 @@ public class cmd_parser {
 				.desc("Top size for Thread Pool initial setting, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
 		options_obj.addOption(Option.builder("d").longOpt("dat-file").hasArg()
 				.desc("The data file to record test case detail info, json format, i.e. {\"level\": 1}, Work with -p(suite path), default value:" + public_data.CASE_DATA_FILE)
+				.build());
+		options_obj.addOption(Option.builder("Z").longOpt("lazy-copy")
+				.desc("Client will skip test case copy if it already exists in work space.")
 				.build());		
 		options_obj.addOption(Option.builder("D").longOpt("debug").desc("Client will run in debug mode").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
@@ -363,7 +372,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-A|-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-K|-C] [-H|-F] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3] [-T 6] [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> -k <key_pattern> -x <exe_file> [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

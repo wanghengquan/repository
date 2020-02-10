@@ -25,9 +25,11 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 
+import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.export_data;
 import self_update.app_update;
 import utility_funcs.time_info;
 
@@ -44,16 +46,19 @@ public class about_dialog extends JDialog implements ActionListener {
 	private Vector<String> support_suite = new Vector<String>();
 	private Vector<String> rumtime = new Vector<String>();
 	private client_data client_info;
+	private task_data task_info;
 	private switch_data switch_info;
 	private JCheckBox jc_test;
 	private JButton close, update;
 
 	public about_dialog(
 			main_frame main_view, 
-			client_data client_info, 
+			client_data client_info,
+			task_data task_info,
 			switch_data switch_info) {
 		super(main_view, "About TestRail Client", true);
 		this.client_info = client_info;
+		this.task_info = task_info;
 		this.switch_info = switch_info;
 		Container container = this.getContentPane();
 		about_column.add("Item");
@@ -150,24 +155,23 @@ public class about_dialog extends JDialog implements ActionListener {
 			this.dispose();
 			app_update update_obj = new app_update(client_info, switch_info);
 			update_obj.gui_manual_update();
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			if(update_obj.update_skipped){
 				String message = new String("TMP Client new version not available...");
 				String title = new String("Update message");
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				export_data.export_disk_processed_queue_report(task_info, client_info);
+				export_data.export_disk_finished_queue_data(task_info, client_info);
+				export_data.export_disk_memory_queue_data(task_info, client_info);
 			}
 		}
 	}
 	
 	public static void main(String[] args) {
 		client_data client_info = new client_data();
+		task_data task_info = new task_data();
 		switch_data switch_info = new switch_data();
-		about_dialog about_info = new about_dialog(null, client_info, switch_info);
+		about_dialog about_info = new about_dialog(null, client_info, task_info, switch_info);
 		about_info.setVisible(true);
 	}
 }

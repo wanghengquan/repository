@@ -24,6 +24,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import top_runner.run_status.exit_enum;
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import utility_funcs.system_call;
 import utility_funcs.time_info;
@@ -255,6 +256,7 @@ public class task_waiter extends Thread {
 	}
 
 	private String get_highest_queue_name(ArrayList<String> full_list) {
+		//highest priority with earlier received time will be taken(sorted full_list)
 		int record_priority = 999;
 		String record_queue = new String();
 		for (String queue_name : full_list) {
@@ -268,7 +270,7 @@ public class task_waiter extends Thread {
 	}
 
 	private int get_srting_int(String str, String patt) {
-		int i = 0;
+		int i = 999;
 		try {
 			Pattern p = Pattern.compile(patt);
 			Matcher m = p.matcher(str);
@@ -546,18 +548,18 @@ public class task_waiter extends Thread {
 		String priority = public_data.TASK_DEF_PRIORITY;
 		String timeout = public_data.TASK_DEF_TIMEOUT;
 		String result_keep = public_data.TASK_DEF_RESULT_KEEP;
-		String path_keep = public_data.DEF_COPY_PATH_KEEP;
+		String keep_path = public_data.DEF_COPY_KEEP_PATH;
 		if (preference_data.containsKey("result_keep")){
 			result_keep = preference_data.get("result_keep");
 		}
-		if (preference_data.containsKey("path_keep")){
-			path_keep = preference_data.get("path_keep");
+		if (preference_data.containsKey("keep_path")){
+			keep_path = preference_data.get("keep_path");
 		}		
 		caseinfo_hash.put("auth_key", auth_key);
 		caseinfo_hash.put("priority", priority);
 		caseinfo_hash.put("timeout", timeout);
 		caseinfo_hash.put("result_keep", result_keep);
-		caseinfo_hash.put("path_keep", path_keep);
+		caseinfo_hash.put("keep_path", keep_path);
 		if (case_data.containsKey("CaseInfo")) {
 			caseinfo_hash.putAll(case_data.get("CaseInfo"));
 		}
@@ -652,20 +654,25 @@ public class task_waiter extends Thread {
 		String work_space = paths_hash.get("work_space");//already done in previous function
         String save_space = paths_hash.get("save_space");//already done in previous function
 		String case_mode = preference_data.get("case_mode");
-		String path_keep = preference_data.get("path_keep");
-		//override case mode and path keep
+		String keep_path = preference_data.get("keep_path");
+		//override case mode and path keep      
         if(task_data.get("ClientPreference").containsKey("case_mode")){
             String mode = task_data.get("ClientPreference").get("case_mode").trim();
-            if(mode.equals("0")) case_mode = "keep_case";
-            if(mode.equals("1")) {
-                case_mode = "copy_case";
-                path_keep = "false";
-            }
-            if(mode.equals("2")) {
-                case_mode = "copy_case";
-                path_keep = "true";
-            }
+			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
+				TASK_WAITER_LOGGER.warn("Task:Invalid case_mode setting:" + mode + ", local value will be used.");
+			} else {
+				case_mode = mode;
+			}
         }
+        if(task_data.get("ClientPreference").containsKey("keep_path")){
+            String mode = task_data.get("ClientPreference").get("keep_path").trim();
+			if (!data_check.str_choice_check(mode, new String [] {"false", "true"} )){
+				TASK_WAITER_LOGGER.warn("Task:Invalid keep_path setting:" + mode + ", local value will be used.");
+			} else {
+				keep_path = mode;
+			}
+        }        
+        
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		//get depot_space
@@ -676,10 +683,10 @@ public class task_waiter extends Thread {
 		design_source = repository + "/" + suite_path + "/" + design_name;
 		paths_hash.put("design_source", design_source.replaceAll("\\\\", "/"));
 		//get case_path
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			case_path = design_source.replaceAll("\\\\", "/");
 		} else {
-			if(path_keep.equalsIgnoreCase("true")){
+			if(keep_path.equalsIgnoreCase("true")){
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name };
 				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
@@ -689,10 +696,10 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("case_path", case_path);
 		//get task_path
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			task_path = repository + "/" + suite_path;
 		} else {
-			if(path_keep.equalsIgnoreCase("true")){
+			if(keep_path.equalsIgnoreCase("true")){
 				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
 				task_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
@@ -702,7 +709,7 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("task_path", task_path);
 		//get suite local work suite path
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			work_suite = repository + "/" + suite_path;
 		} else {
 			String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name };
@@ -712,7 +719,7 @@ public class task_waiter extends Thread {
 		//get suite save path save_suite
         String[] tmp_space = save_space.split(",");
         ArrayList<String> tmp_suite = new ArrayList<String>();    
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			save_suite = repository + "/" + suite_path;
 		} else {
 		    for(String space:tmp_space) {
@@ -729,12 +736,12 @@ public class task_waiter extends Thread {
 		paths_hash.put("save_suite", save_suite);
 		//get save_path
         ArrayList<String> tmp_path = new ArrayList<String>();    
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			save_path = repository + "/" + suite_path + "/" + design_name;
 		} else {
 		    for(String space:tmp_space) {
 		        String s_path = new String("");
-                if (path_keep.equalsIgnoreCase("true")) {
+                if (keep_path.equalsIgnoreCase("true")) {
                     String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name, design_name};
                     s_path = String.join(file_seprator, path_array);
                 } else {
@@ -764,10 +771,10 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("launch_path", launch_path);
 		//get report_path
-		if (case_mode.equalsIgnoreCase("keep_case")){
+		if (case_mode.equalsIgnoreCase("hold_case")){
 			report_path = case_path;
 		} else {
-			if(path_keep.equalsIgnoreCase("true")){
+			if(keep_path.equalsIgnoreCase("true")){
 				report_path = case_path;
 			} else {
 				report_path = task_path;
@@ -842,7 +849,9 @@ public class task_waiter extends Thread {
 	
 	private String get_last_error_msg(ArrayList<String> message_list){
 		String return_string = new String("NA");
-		// <status>Passed</status>
+		if (message_list == null || message_list.isEmpty()) {
+			return return_string;
+		}
 		Pattern p = Pattern.compile("^error", Pattern.CASE_INSENSITIVE);		
 		for (String line : message_list) {
 			Matcher m = p.matcher(line);
