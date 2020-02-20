@@ -165,7 +165,10 @@ public class postrun_call implements Callable<Object> {
             }            
         }
         if (!run_status){
+        	run_msg.add("Remote copy Failed.");
         	return run_status;
+        } else {
+        	run_msg.add("Remote copy Passed.");
         }
         //task 2: copy OK, start delete local copy
         File report_path_fobj = new File(report_path);
