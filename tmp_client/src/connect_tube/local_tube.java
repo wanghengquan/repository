@@ -404,7 +404,7 @@ public class local_tube {
 		Map<String, List<List<String>>> macro_data = get_macro_data(ExcelData);
 		Map<String, Map<String, String>> raw_data = get_raw_case_data(ExcelData);
 		if (raw_data == null || raw_data.isEmpty()) {
-			LOCAL_TUBE_LOGGER.warn(">>>Warning: No test case found in suite file.");
+			LOCAL_TUBE_LOGGER.warn("No test case found in suite file.");
 			return merge_macro_data;
 		}
 		Iterator<String> data_it = raw_data.keySet().iterator();
@@ -415,15 +415,15 @@ public class local_tube {
 			Map<String, String> case_data = new HashMap<String, String>();
 			case_data.putAll(raw_data.get(case_order));
 			if (case_data.containsKey("NoUse") && case_data.get("NoUse").equalsIgnoreCase("yes")) {
-				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping NoUse case:" + case_data.get("Order"));
+				LOCAL_TUBE_LOGGER.warn("Skipping NoUse case:" + case_data.get("Order"));
 				continue;
 			}
 			if (case_data.containsKey("Automated") &&  case_data.get("Automated").equalsIgnoreCase("no")) {
-				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping Non-Automated case:" + case_data.get("Order"));
+				LOCAL_TUBE_LOGGER.warn("Skipping Non-Automated case:" + case_data.get("Order"));
 				continue;
 			}
 			if (!case_data_match_task_sort(case_data, task_sort)){
-				LOCAL_TUBE_LOGGER.warn(">>>Warning: Skipping mismatched case:" + case_data.get("Order"));
+				LOCAL_TUBE_LOGGER.warn("Skipping mismatched case:" + case_data.get("Order"));
 				continue;				
 			}
 			if (macro_data == null || macro_data.isEmpty()) {
@@ -521,7 +521,7 @@ public class local_tube {
 		Boolean condition = true;
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
-				LOCAL_TUBE_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
+				LOCAL_TUBE_LOGGER.warn("Skip macro line:" + line.toString());
 				continue;
 			}
 			String behavior = line.get(0).trim();
@@ -554,7 +554,7 @@ public class local_tube {
 		// update case data
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
-				LOCAL_TUBE_LOGGER.warn(">>>Warning: skip macro line:" + line.toString());
+				LOCAL_TUBE_LOGGER.warn("Skip macro line:" + line.toString());
 				continue;
 			}
 			String behavior = line.get(0).trim();
@@ -571,8 +571,7 @@ public class local_tube {
 			if (column_list.contains(column)) {
 				Boolean update_done = new Boolean(false);
 				if (!value.contains("=")) {
-					LOCAL_TUBE_LOGGER.warn(
-							">>>Warning: Skip macro action non key=value input for columns" + column_list.toString());
+					LOCAL_TUBE_LOGGER.warn("Skip macro action non key=value input for columns" + column_list.toString());
 					continue;
 				}
 				String[] ori_value_list = ori_value.split(";");
@@ -1175,7 +1174,7 @@ public class local_tube {
 		if(env_list.size() > 0){
 			for (String env_line: env_list){
 				if (!env_line.contains("=")){
-					LOCAL_TUBE_LOGGER.warn("ignore environ setting since no = found in:" + env_line);
+					LOCAL_TUBE_LOGGER.warn("Ignore environ setting since no = found in:" + env_line);
 					continue;
 				}
 				String key = env_line.split("=", 2)[0].trim();
@@ -1285,6 +1284,8 @@ public class local_tube {
 		for(String case_path: case_list){
 			if(case_match_required_info(suite_path, case_path, dat_file, task_sort)){
 				matched_case_list.add(case_path);
+			} else {
+				LOCAL_TUBE_LOGGER.warn("Test case ignored:" + case_path);
 			}
 		}
 		//generate case data
