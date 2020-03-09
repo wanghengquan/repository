@@ -23,6 +23,7 @@ DROP_DOWN_DICT = dict(custom_automated=dict(YES=1, NO=2),
                       custom_test_level={"1": 1, "2": 2, "3": 3},
                       custom_fpga_rtl=dict(YES=1, NO=2, unkonwn=3),
                       custom_test_bench=dict(YES=1, NO=2, unkonwn=3),
+                      custom_smoke=dict(YES=1, NO=2),
                       custom_nouse=dict(YES=2, NO=1))
 
 
@@ -518,7 +519,9 @@ class GetCasesData(object):
         key_automated = "custom_automated"
         if case_data.get(key_automated, "") != "NO":
             case_data[key_automated] = "YES"
-
+        key_smoke = "custom_smoke"
+        if case_data.get(key_smoke, "") != "YES":
+            case_data[key_smoke] = "NO"
         for int_key in self.int_keys:
             this_value = case_data.get(int_key)
             if this_value:
