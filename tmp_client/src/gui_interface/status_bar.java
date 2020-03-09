@@ -368,7 +368,7 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 			if (current_mode.equals("1")){ //Private mode
 				message.append("Client running in 'Private' mode, Would you like to switch to 'Public' mode?" + line_separator);
 				message.append("In 'Public' mode: Client accepts all matched jobs." + line_separator);
-				int user_input = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+				int user_input = JOptionPane.showConfirmDialog(main_view, message, title, JOptionPane.YES_NO_OPTION);
 				if (user_input == 0){ //yes means 0
 					client_info.update_client_machine_data("private", "0");
 					switch_info.set_client_updated();
@@ -376,7 +376,7 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 			} else {
 				message.append("Client running in 'Public' mode, Would you like to switch to 'Private' mode?" + line_separator);
 				message.append("In 'Private' mode: Client only takes assigned jobs." + line_separator);
-				int user_input = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+				int user_input = JOptionPane.showConfirmDialog(main_view, message, title, JOptionPane.YES_NO_OPTION);
 				if (user_input == 0){ //yes means 0
 					client_info.update_client_machine_data("private", "1");
 					switch_info.set_client_updated();
