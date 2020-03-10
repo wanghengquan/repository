@@ -145,8 +145,6 @@ public class cmd_parser {
 		// 3.13 attended/unattended mode setting
 		if (commandline_obj.hasOption('U')) {
 			cmd_hash.put("unattended", "1");
-		} else {
-			cmd_hash.put("unattended", "0");
 		}
 		// 3.14 work path
 		if (commandline_obj.hasOption('w')) {
@@ -267,13 +265,13 @@ public class cmd_parser {
 				break;
 			case "save_space":
 				if (!data_check.str_path_check(option_value)){
-					CMD_PARSER_LOGGER.warn("Command line: Invalid save_space setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid save_space setting, not exists:" + option_value);
 					check_satus = false;
 				}
 				break;
 			case "work_space":
 				if (!data_check.str_path_check(option_value)){
-					CMD_PARSER_LOGGER.warn("Command line: Invalid work_space setting");
+					CMD_PARSER_LOGGER.warn("Command line: Invalid work_space setting, not exists:" + option_value);
 					check_satus = false;
 				}
 				break;

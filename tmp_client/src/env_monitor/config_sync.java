@@ -187,13 +187,13 @@ public class config_sync extends Thread {
 						;
 					} else if (!data_check.str_path_check(option_value)){
 						option_value = public_data.DEF_SAVE_SPACE;
-						CONFIG_SYNC_LOGGER.warn("Config file:Invalid save_space setting:" + section_name + ">" + option_key + ", Ignore it");
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid save_space setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
 					break;
 				case "work_space":
 					if (!data_check.str_path_check(option_value)){
 						option_value = public_data.DEF_WORK_SPACE;
-						CONFIG_SYNC_LOGGER.warn("Config file:Invalid work_space setting:" + section_name + ">" + option_key + ", Ignore it");
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid work_space setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
 					break;
 				case "show_welcome":
