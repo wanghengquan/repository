@@ -176,8 +176,6 @@ public class cmd_parser {
 		// 3.18 debug mode
 		if (commandline_obj.hasOption('D')) {
 			cmd_hash.put("debug", "1");
-		} else {
-			cmd_hash.put("debug", "0");
 		}
 		// 3.19 case mode
 		if (commandline_obj.hasOption('H')) {
@@ -189,15 +187,11 @@ public class cmd_parser {
 		// 3.20 case mode
 		if (commandline_obj.hasOption('K')) {
 			cmd_hash.put("keep_path", "true");
-		} else {
-			cmd_hash.put("keep_path", "false");
 		}
 		// 3.21 case mode
 		if (commandline_obj.hasOption('Z')) {
 			cmd_hash.put("lazy_copy", "true");
-		} else {
-			cmd_hash.put("lazy_copy", "false");
-		}		
+		}	
 		// 3.22 result keep value
 		if (commandline_obj.hasOption('R')) {
 			cmd_hash.put("result_keep", commandline_obj.getOptionValue('R'));
