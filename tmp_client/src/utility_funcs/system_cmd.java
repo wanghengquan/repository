@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -239,10 +241,15 @@ public class system_cmd {
 		Iterator<String> line_it = string_list.iterator();
 		String reason = new String();
 		//Boolean TBD_flag = new Boolean(false);
+		Pattern patt = Pattern.compile("^child\\s*?killed");
 		while (line_it.hasNext()) {
 			String line = line_it.next();
+			Matcher m = patt.matcher(line);
 			if (line.toLowerCase().startsWith("error"))
 				reason = line;
+			if (m.find()) {
+				reason = line;
+			}
 		}
 		if (reason.length() > 1)
 			string_list.add("<reason>" + reason.trim() + "</reason>");
