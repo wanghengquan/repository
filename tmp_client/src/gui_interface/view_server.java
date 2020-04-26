@@ -33,6 +33,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.import_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
 import top_runner.run_status.exit_enum;
@@ -51,6 +52,7 @@ public class view_server extends Thread {
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
+	private post_data post_info;
 	@SuppressWarnings("unused")
 	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
@@ -60,14 +62,21 @@ public class view_server extends Thread {
 	// protected function
 	// private function
 
-	public view_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info,
-			task_data task_info, view_data view_info, pool_data pool_info) {
+	public view_server(
+			HashMap<String, String> cmd_info, 
+			switch_data switch_info, 
+			client_data client_info,
+			task_data task_info, 
+			view_data view_info, 
+			pool_data pool_info,
+			post_data post_info) {
 		this.cmd_info = cmd_info;
 		this.switch_info = switch_info;
 		this.task_info = task_info;
 		this.view_info = view_info;
 		this.client_info = client_info;
 		this.pool_info = pool_info;
+		this.post_info = post_info;
 	}
 
 	private HashMap<String, ArrayList<String>> get_retest_list_from_retest_area(
@@ -385,7 +394,7 @@ public class view_server extends Thread {
 				e.printStackTrace();
 			}
 		}
-		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info, post_info);
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
 			top_view.setVisible(true);

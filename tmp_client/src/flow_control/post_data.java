@@ -170,4 +170,14 @@ public class post_data {
 		return remove_result;
 	}
 	
+	public int get_postrun_call_size() {
+		rw_lock.writeLock().lock();
+		int temp = 0;
+		try {
+			temp = call_map.size();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return temp;
+	}
 }
