@@ -24,9 +24,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.70"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21070; // version for code use
-	public final static String BASE_BUILDDATE = "2020/04/07";
+	public final static String BASE_CURRENTVERSION = "2.10.71"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21071; // version for code use
+	public final static String BASE_BUILDDATE = "2020/04/26";
 	public final static String BASE_SUITEFILEVERSION = "1.15";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -79,6 +79,8 @@ public class public_data {
 	public final static String ICON_UNATTENDED_MODE = SW_HOME_PATH + "/image/robot.png";
 	public final static String ICON_PRIVATE_MODE = SW_HOME_PATH + "/image/private.png";
 	public final static String ICON_PUBLIC_MODE = SW_HOME_PATH + "/image/public.png";
+	public final static String ICON_SYNC_RUN = SW_HOME_PATH + "/image/sync.gif";
+	public final static String ICON_SYNC_DONE = SW_HOME_PATH + "/image/done.png";
 	
 	// ========================
 	// Remote update path

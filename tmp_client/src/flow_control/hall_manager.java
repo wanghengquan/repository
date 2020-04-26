@@ -652,7 +652,7 @@ public class hall_manager extends Thread {
 		view_data view_info = new view_data();
 		post_data post_info = new post_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
-		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info);
+		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info, post_info);
 		view_runner.start();
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		data_runner.start();

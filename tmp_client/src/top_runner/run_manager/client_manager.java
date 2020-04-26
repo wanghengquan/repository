@@ -263,7 +263,7 @@ public class client_manager extends Thread  {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : get all runner
-		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info);
+		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info, post_info);
 		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);

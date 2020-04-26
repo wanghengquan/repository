@@ -28,6 +28,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import top_runner.run_status.state_enum;
 
 public class status_bar extends JPanel implements Runnable, MouseListener{
@@ -39,25 +40,30 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 	private client_data client_info;
 	private switch_data switch_info;
 	private pool_data pool_info;
+	private post_data post_info;
 	private String line_separator = System.getProperty("line.separator");
 	JTextField jt_thread, jt_link, jt_state, jt_cpu, jt_mem;
-	JLabel icon_belong,icon_mode;	
-	ImageIcon engineer_image, robot_image, private_image, public_image;
+	JLabel icon_belong,icon_mode, icon_sync;	
+	ImageIcon engineer_image, robot_image, private_image, public_image, sync_image, done_image;
 
 
 	public status_bar(
 			main_frame main_view,
 			client_data client_info, 
 			switch_data switch_info, 
-			pool_data pool_info){
+			pool_data pool_info,
+			post_data post_info){
 		this.main_view = main_view;
 		this.pool_info = pool_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
+		this.post_info = post_info;
 		engineer_image = new ImageIcon(public_data.ICON_ATTENDED_MODE);
 		robot_image = new ImageIcon(public_data.ICON_UNATTENDED_MODE);
 		private_image = new ImageIcon(public_data.ICON_PRIVATE_MODE);
 		public_image = new ImageIcon(public_data.ICON_PUBLIC_MODE);
+		sync_image = new ImageIcon(public_data.ICON_SYNC_RUN);
+		done_image = new ImageIcon(public_data.ICON_SYNC_DONE);
 		this.setLayout(new GridLayout(1,1,5,5));
 		this.add(construct_status_bar());
 	}
@@ -134,6 +140,11 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		}
 		icon_belong.addMouseListener(this);
 		bar_panel.add(icon_belong);
+		//remote sync mode
+		icon_sync = new JLabel();
+		icon_sync.setIcon(done_image);
+		icon_sync.setToolTipText("No more test case sync up to remote 'Save Space'.");
+		bar_panel.add(icon_sync);
 		//Setting
 		GridBagConstraints layout_s = new GridBagConstraints();
 		layout_s.fill = GridBagConstraints.BOTH;
@@ -208,10 +219,15 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		layout_s.weighty=0;
 		status_layout.setConstraints(icon_mode, layout_s);
 		//for icon_belong
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		status_layout.setConstraints(icon_belong, layout_s);
+		//for icon_sync
 		layout_s.gridwidth=0;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
-		status_layout.setConstraints(icon_belong, layout_s);		
+		status_layout.setConstraints(icon_sync, layout_s);		
 		return bar_panel;
 	}
 	
@@ -294,6 +310,16 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		}		
 	}
 	
+	private void update_bg_sync_data(){
+		if(post_info.get_postrun_call_size() > 0){
+			icon_sync.setIcon(sync_image);
+			icon_sync.setToolTipText("Background Sync Up running..." + post_info.get_postrun_call_size());
+		} else {
+			icon_sync.setIcon(done_image);
+			icon_sync.setToolTipText("Background Sync Up done.");
+		}		
+	}
+	
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
@@ -305,6 +331,7 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 				update_system_data();
 				update_belong_data();
 				update_attended_data();
+				update_bg_sync_data();
 			} else {
 				SwingUtilities.invokeLater(new Runnable(){
 					@Override
@@ -316,6 +343,7 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 						update_system_data();
 						update_belong_data();
 						update_attended_data();
+						update_bg_sync_data();
 					}
 				});
 			}
