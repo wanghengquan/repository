@@ -149,7 +149,7 @@ public class main_frame extends JFrame {
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
-		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info, pool_info, task_info));
+		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info, pool_info, task_info, post_info));
 		work_panel task_insts = new work_panel(this, view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
 		status_bar status_insts = new status_bar(this, client_info, switch_info, pool_info, post_info);
