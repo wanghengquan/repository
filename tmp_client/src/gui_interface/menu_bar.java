@@ -29,6 +29,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import flow_control.queue_enum;
 import top_runner.run_status.exit_enum;
 
@@ -43,6 +44,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	private client_data client_info;
 	private task_data task_info;
 	private pool_data pool_info;
+	private post_data post_info;
 	private view_data view_info;
 	String work_space = new String();
 	JMenuItem imports, import_user_suite, import_unit_suite, exports, exit;
@@ -61,13 +63,15 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			client_data client_info, 
 			view_data view_info,
 			pool_data pool_info,
-			task_data task_info) {
+			task_data task_info,
+			post_data post_info) {
 		this.main_view = main_view;
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.view_info = view_info;
 		this.pool_info = pool_info;
 		this.task_info = task_info;
+		this.post_info = post_info;
 		this.add(construct_file_menu());
 		this.add(construct_view_menu());
 		this.add(construct_run_menu());
@@ -276,6 +280,28 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		return help;
 	}
 
+	private int client_stop_user_input() {
+		int user_value = 0;
+		int run_task_num = pool_info.get_pool_used_threads();
+		int run_sync_num = post_info.get_postrun_call_size();
+		if (run_task_num + run_sync_num == 0) {
+			return user_value;
+		}
+		String title = new String("Client exit confirmation");
+		StringBuilder message = new StringBuilder("");
+		message.append("Client has following job(s), would you like to stop it now?" + line_separator);
+		if (run_task_num + run_sync_num > 0) {
+			message.append("1. Tasks running in thread pool. <" + run_task_num + ">" + line_separator);
+			message.append("2. Results sync up to remote space. <" + run_sync_num + ">" + line_separator);
+			message.append(line_separator);
+			message.append("Yes    : Stop it immediately." + line_separator);
+			message.append("No     : Finish jobs (backgroud) and exit later." + line_separator);
+			message.append("Cancel : Keep client running." + line_separator);
+		}
+		user_value = JOptionPane.showConfirmDialog(main_view, message, title, JOptionPane.YES_NO_CANCEL_OPTION);
+		return user_value;
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -292,6 +318,13 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			export_view.setVisible(true);			
 		}
 		if (e.getSource().equals(exit)) {
+			int user_exit_value = client_stop_user_input();
+			if (user_exit_value == 2) {
+				return;
+			} 
+			if (user_exit_value == 1) {
+				switch_info.set_client_soft_stop_request(true);
+			}			
 			switch_info.set_client_stop_request(exit_enum.USER);
 			main_view.setVisible(false);
 		}
