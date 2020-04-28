@@ -11,6 +11,8 @@
 #
 
 import urllib2, json, base64
+import time
+import random
 
 class APIClient:
     def __init__(self, user, password, base_url):
@@ -48,7 +50,12 @@ class APIClient:
     #                     Python dict, strings must be UTF-8 encoded)
     #
     def send_post(self, uri, data):
-        return self.__send_request('POST', uri, data)
+        for i in range(4):
+            try:
+                return self.__send_request('POST', uri, data)
+            except Exception:
+                sleep_time = random.randint(5, 20) / 10.0
+                time.sleep(sleep_time)
 
     def __send_request(self, method, uri, data):
         url = self.__url + uri
