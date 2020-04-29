@@ -289,7 +289,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		String title = new String("Client exit confirmation");
 		StringBuilder message = new StringBuilder("");
-		message.append("Client has following job(s), would you like to stop it now?" + line_separator);
+		message.append("Client has following job(s), would you like to stop it <Immediately>?" + line_separator);
 		if (run_task_num + run_sync_num > 0) {
 			message.append("1. Tasks running in thread pool. <" + run_task_num + ">" + line_separator);
 			message.append("2. Results sync up to remote space. <" + run_sync_num + ">" + line_separator);
@@ -319,7 +319,8 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}
 		if (e.getSource().equals(exit)) {
 			int user_exit_value = client_stop_user_input();
-			if (user_exit_value == 2) {
+			if (user_exit_value == 2 || user_exit_value == -1) {
+				//2: cancel, -1:user close the window.
 				return;
 			} 
 			if (user_exit_value == 1) {

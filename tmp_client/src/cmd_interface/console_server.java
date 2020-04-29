@@ -35,6 +35,7 @@ import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import top_runner.run_status.exit_enum;
@@ -247,13 +248,19 @@ public class console_server extends Thread {
 			break;
 		case CORESCRIPT:
 			info_other_command_output(info_cmd.CORESCRIPT.toString());
-			break;			
+			break;	
+		case STATUS:
+			info_other_command_output(info_cmd.STATUS.toString());
+			break;				
 		case SOFTWARE:
 			if(cmd_list.length > 2){
 				info_software_command_output(info_cmd.SOFTWARE.toString(), cmd_list[2]);
 			} else {
 				info_software_command_output(info_cmd.SOFTWARE.toString(), "");
 			}
+			break;
+		case BUILD:
+			info_other_command_output(info_cmd.BUILD.toString());
 			break;			
 		default:
 			info_help_command_output();
@@ -552,9 +559,10 @@ public class console_server extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
+		post_data post_info = new post_data();
 		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		server_runner.start();		
-		link_server my_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server my_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
 		my_server.start();
 		console_server my_terminal = new console_server(switch_info);
 		my_terminal.start();
