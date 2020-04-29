@@ -30,6 +30,8 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import flow_control.pool_data;
+import flow_control.post_data;
 import info_parser.xml_parser;
 import top_runner.run_status.exit_enum;
 
@@ -47,6 +49,8 @@ public class link_server extends Thread {
 	private switch_data switch_info;
 	private client_data client_info;
 	private task_data task_info;
+	private pool_data pool_info;
+	private post_data post_info;
 	private ServerSocket server = null;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	
@@ -54,10 +58,14 @@ public class link_server extends Thread {
 			switch_data switch_info, 
 			client_data client_info,
 			task_data task_info,
+			pool_data pool_info,
+			post_data post_info,
 			int link_port) {
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.task_info = task_info;
+		this.pool_info = pool_info;
+		this.post_info = post_info;
 		try {
 			server = new ServerSocket(link_port);
 		} catch (IOException e1) {
@@ -225,6 +233,20 @@ public class link_server extends Thread {
 			} else {
 				detail_data.putAll(client_info.get_client_software_data(req_option));
 			}
+			break;
+		case STATUS:
+			String pool_status = new String("Threads");
+			String post_status = new String("Remote Copy");
+			int max_thread = pool_info.get_pool_current_size();
+			int use_thread = pool_info.get_pool_used_threads();
+			int remote_num = post_info.get_postrun_call_size();
+			String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
+			detail_data.put(pool_status, show_info);
+			detail_data.put(post_status, String.valueOf(remote_num));
+			break;
+		case BUILD:
+			detail_data.put("Version", public_data.BASE_CURRENTVERSION);
+			detail_data.put("Date", public_data.BASE_BUILDDATE);
 			break;
 		default:
 			detail_data.put("default", "NA");

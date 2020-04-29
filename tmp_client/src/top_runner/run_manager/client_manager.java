@@ -267,8 +267,8 @@ public class client_manager extends Thread  {
 		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
-		link_server task_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_TASK_PORT);
-		link_server cmd_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server task_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_TASK_PORT);
+		link_server cmd_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
 				switch_info, 

@@ -29,6 +29,7 @@ import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 
@@ -244,7 +245,8 @@ public class link_client {
 		switch_data switch_info = new switch_data();
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
-		pool_data pool_info = new pool_data(10);		
+		pool_data pool_info = new pool_data(10);	
+		post_data post_info = new post_data();
 		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		server_runner.start();
 		try {
@@ -254,7 +256,7 @@ public class link_client {
 			e.printStackTrace();
 		}
 		System.out.println(">>>client data:" + client_info.get_client_data().toString());
-		link_server my_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server my_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
 		my_server.start();
 		try {
 			Thread.sleep(2 * 1000);
