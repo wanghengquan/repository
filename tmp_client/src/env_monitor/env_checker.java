@@ -215,7 +215,7 @@ public class env_checker extends TimerTask {
 		String cmd = "python " + public_data.TOOLS_PY_ENV;
 		// Python ok
 		ArrayList<String> excute_retruns = new ArrayList<String>();
-		Boolean py_ok = new Boolean(false);
+		Boolean py_ok = Boolean.valueOf(false);
 		try {
 			excute_retruns.addAll(system_cmd.run(cmd));
 		} catch (Exception e) {
@@ -267,11 +267,11 @@ public class env_checker extends TimerTask {
 	}
 	
 	public Boolean do_self_check(String work_path) {
-		Boolean check_result = new Boolean(false);
-		Boolean python_pass = new Boolean(false);
-		Boolean python_env = new Boolean(false);
-		Boolean svn_pass = new Boolean(false);
-		Boolean writable_pass = new Boolean(false);
+		Boolean check_result = Boolean.valueOf(false);
+		Boolean python_pass = Boolean.valueOf(false);
+		Boolean python_env = Boolean.valueOf(false);
+		Boolean svn_pass = Boolean.valueOf(false);
+		Boolean writable_pass = Boolean.valueOf(false);
 		int check_counter = 0;
 		//to minimize the wrong warning any success in 3 try will be considered as env ok.
 		while(true){

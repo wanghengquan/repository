@@ -403,7 +403,7 @@ public class client_data {
 	// release 1 usage for every software
 	public Boolean release_used_soft_insts(HashMap<String, String> release_data) {
 		rw_lock.writeLock().lock();
-		Boolean release_result = new Boolean(true);
+		Boolean release_result = Boolean.valueOf(true);
 		try {
 			if(release_data != null && !release_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
@@ -431,7 +431,7 @@ public class client_data {
 
 	public Boolean release_used_soft_insts_multi(HashMap<String, Integer> release_data) {
 		rw_lock.writeLock().lock();
-		Boolean release_result = new Boolean(true);
+		Boolean release_result = Boolean.valueOf(true);
 		try {
 			HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 			future_soft_insts.putAll(use_soft_insts);
@@ -459,7 +459,7 @@ public class client_data {
 	// booking 1 usage for every used software
 	public Boolean booking_used_soft_insts(HashMap<String, String> booking_data) {
 		rw_lock.writeLock().lock();
-		Boolean booking_result = new Boolean(true);
+		Boolean booking_result = Boolean.valueOf(true);
 		try {
 			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
@@ -468,7 +468,7 @@ public class client_data {
 				Iterator<String> booking_data_it = booking_data_set.iterator();
 				while (booking_data_it.hasNext()) {
 					String sw_name = booking_data_it.next();
-					Integer sw_insts = new Integer(0);
+					Integer sw_insts = Integer.valueOf(0);
 					if (future_soft_insts.containsKey(sw_name)) {
 						sw_insts = future_soft_insts.get(sw_name);
 					}
@@ -493,7 +493,7 @@ public class client_data {
 
 	public Boolean booking_used_soft_insts_multi(HashMap<String, Integer> booking_data) {
 		rw_lock.writeLock().lock();
-		Boolean booking_result = new Boolean(true);
+		Boolean booking_result = Boolean.valueOf(true);
 		try {
 			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
@@ -531,8 +531,8 @@ public class client_data {
 			while (soft_keys_it.hasNext()) {
 				String sw_name = soft_keys_it.next();
 				Integer sw_max_insts = max_soft_insts.get(sw_name);
-				Integer sw_use_insts = new Integer(0);
-				Integer sw_free_insts = new Integer(0);
+				Integer sw_use_insts = Integer.valueOf(0);
+				Integer sw_free_insts = Integer.valueOf(0);
 				if (use_soft_insts.containsKey(sw_name)) {
 					sw_use_insts = use_soft_insts.get(sw_name);
 				}

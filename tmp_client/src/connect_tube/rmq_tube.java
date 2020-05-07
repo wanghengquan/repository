@@ -48,8 +48,8 @@ public class rmq_tube {
 	private Channel admin_channel;
 	private Connection stop_connection;
 	private Channel stop_channel;
-	private Boolean admin_work = new Boolean(false);
-	private Boolean stop_queue_work = new Boolean(false);
+	private Boolean admin_work = Boolean.valueOf(false);
+	private Boolean stop_queue_work = Boolean.valueOf(false);
 
 	// public function
 	public rmq_tube(
@@ -66,7 +66,7 @@ public class rmq_tube {
 
 	public Boolean exchange_send(String exchange_name, String content) {
 		// String EXCHANGE_NAME = "logs";
-		Boolean send_status = new Boolean(true);
+		Boolean send_status = Boolean.valueOf(true);
 		String EXCHANGE_NAME = exchange_name;
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
@@ -98,7 +98,7 @@ public class rmq_tube {
 	 * Info if the content send smoothly, 0 will be return Or 1 will be return.
 	 */
 	public Boolean basic_send(String queue_name, String content) {
-		Boolean send_status = new Boolean(true);
+		Boolean send_status = Boolean.valueOf(true);
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
 		factory.setUsername(rmq_user);
@@ -235,7 +235,7 @@ public class rmq_tube {
 	}
 	
 	private Boolean update_admin_queue(String message, String current_terminal) {
-		Boolean update_status = new Boolean(false);
+		Boolean update_status = Boolean.valueOf(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		msg_hash.putAll(xml_parser.get_rmq_xml_data(message));
@@ -339,7 +339,7 @@ public class rmq_tube {
 	}
 	
 	private Boolean update_stop_queue(String message) {
-		Boolean update_status = new Boolean(false);
+		Boolean update_status = Boolean.valueOf(false);
 		HashMap<String, HashMap<String, String>> msg_hash = new HashMap<String, HashMap<String, String>>();
 		msg_hash.putAll(xml_parser.get_rmq_xml_data2(message));
 		task_info.update_received_stop_queues_map(msg_hash);

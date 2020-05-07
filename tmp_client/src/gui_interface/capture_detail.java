@@ -119,7 +119,7 @@ public class capture_detail extends JFrame {
 	public JPanel construct_bottom_panel() {
 		JPanel jp_info = new JPanel(new GridLayout(2,1,1,1));
 		String priority_str = new String(queue_name.split("@")[0]);
-		Integer priority_int = new Integer(0);
+		Integer priority_int = Integer.valueOf(0);
 		priority_int = Integer.valueOf(priority_str);
 		int task_bit_int = priority_int / 100;
 		int match_bit_int = priority_int % 100 / 10;

@@ -42,7 +42,7 @@ public class core_update {
 	}
 	
 	public Boolean update() {
-		Boolean update_status = new Boolean(false);
+		Boolean update_status = Boolean.valueOf(false);
 		String work_space = client_info.get_client_preference_data().get("work_space");  
 		//step 1: update core script
 		try {
@@ -88,7 +88,7 @@ public class core_update {
 	
 	public Boolean update_core_script(
 			String work_space) throws Exception {
-		Boolean update_status = new Boolean(false);
+		Boolean update_status = Boolean.valueOf(false);
 		ArrayList<String> info_return = new ArrayList<String>();
 		ArrayList<String> update_return = new ArrayList<String>();
 		ArrayList<String> checkout_return = new ArrayList<String>();

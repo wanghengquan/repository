@@ -269,6 +269,7 @@ public class upload_dialog extends JFrame{
 							e.printStackTrace();
 						} finally {
 							try {
+								br1.close();
 								out_str.close();
 							} catch (IOException e) {
 								e.printStackTrace();

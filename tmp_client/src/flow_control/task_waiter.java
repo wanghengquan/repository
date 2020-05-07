@@ -119,7 +119,7 @@ public class task_waiter extends Thread {
 	}
 
 	private Boolean start_new_task_check(){
-		Boolean available = new Boolean(true);
+		Boolean available = Boolean.valueOf(true);
 		//client soft stop request ?
 		if (switch_info.get_client_soft_stop_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
@@ -209,7 +209,7 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			// with software request queue
-			Boolean match_request = new Boolean(true);
+			Boolean match_request = Boolean.valueOf(true);
 			HashMap<String, String> sw_request_data = request_data.get("Software");
 			Set<String> sw_request_set = sw_request_data.keySet();
 			Iterator<String> sw_request_it = sw_request_set.iterator();
@@ -829,8 +829,8 @@ public class task_waiter extends Thread {
 		if (m.find())
 			time_out = "3600";
 		//parse the timeout
-		Integer data = new Integer(3600);
-		Integer data_max = new Integer(Integer.MAX_VALUE -10);//discount 10 to avoid future overflow.
+		Integer data = Integer.valueOf(3600);
+		Integer data_max = Integer.valueOf(Integer.MAX_VALUE -10);//discount 10 to avoid future overflow.
 		try {
 			data = Integer.parseInt(time_out);
 		} catch (NumberFormatException e){

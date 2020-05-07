@@ -112,7 +112,7 @@ public class task_data {
 	public Boolean add_queue_data_to_received_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
 		rw_lock.writeLock().lock();
-		Boolean add_status = new Boolean(false);
+		Boolean add_status = Boolean.valueOf(false);
 		try {
 			if (!received_admin_queues_treemap.containsKey(queue_name)) {
 				received_admin_queues_treemap.put(queue_name, queue_data);
@@ -126,7 +126,7 @@ public class task_data {
 
 	public Boolean update_queue_to_received_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.received_admin_queues_treemap.put(queue_name, queue_data);
@@ -138,7 +138,7 @@ public class task_data {
 	
 	public Boolean update_received_admin_queues_treemap(
 			TreeMap<String, HashMap<String, HashMap<String, String>>> update_queues) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.received_admin_queues_treemap.putAll(update_queues);
@@ -150,7 +150,7 @@ public class task_data {
 
 	public Boolean mark_queue_in_received_admin_queues_treemap(String queue_name, queue_enum action_request) {
 		rw_lock.writeLock().lock();
-		Boolean action_status = new Boolean(true);
+		Boolean action_status = Boolean.valueOf(true);
 		try {
 			if (received_admin_queues_treemap.containsKey(queue_name)) {
 				HashMap<String, HashMap<String, String>> queue_data = received_admin_queues_treemap.get(queue_name);
@@ -164,7 +164,7 @@ public class task_data {
 	}
 
 	public Boolean remove_queue_from_received_admin_queues_treemap(String queue_name) {
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (received_admin_queues_treemap.containsKey(queue_name)) {
@@ -179,7 +179,7 @@ public class task_data {
 	}
 
 	public Boolean active_waiting_received_admin_queues_treemap(String queue_name) {
-		Boolean active_status = new Boolean(true);
+		Boolean active_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (received_admin_queues_treemap.containsKey(queue_name)) {
@@ -221,7 +221,7 @@ public class task_data {
 	
 	public Boolean update_processed_admin_queues_treemap(
 			TreeMap<String, HashMap<String, HashMap<String, String>>> update_queues) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.processed_admin_queues_treemap.putAll(update_queues);
@@ -233,7 +233,7 @@ public class task_data {
 	
 	public Boolean update_queue_to_processed_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.processed_admin_queues_treemap.put(queue_name, queue_data);
@@ -244,7 +244,7 @@ public class task_data {
 	}
 
 	public Boolean remove_queue_from_processed_admin_queues_treemap(String queue_name) {
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (processed_admin_queues_treemap.containsKey(queue_name)) {
@@ -259,7 +259,7 @@ public class task_data {
 	}
 
 	public Boolean copy_admin_from_processed_to_received_admin_queues_treemap(String queue_name) {
-		Boolean copy_status = new Boolean(true);
+		Boolean copy_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 		try {
@@ -304,7 +304,7 @@ public class task_data {
 
 	public Boolean update_captured_admin_queues_treemap(String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.captured_admin_queues_treemap.put(queue_name, queue_data);
@@ -315,7 +315,7 @@ public class task_data {
 	}
 
 	public Boolean remove_queue_from_captured_admin_queues_treemap(String queue_name) {
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (captured_admin_queues_treemap.containsKey(queue_name)) {
@@ -331,7 +331,7 @@ public class task_data {
 
 	public Boolean set_captured_admin_queues_treemap(
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queues_data) {
-		Boolean set_status = new Boolean(true);
+		Boolean set_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			captured_admin_queues_treemap.clear();
@@ -385,7 +385,7 @@ public class task_data {
 	
 	public Boolean update_received_task_queues_map(
 			Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> update_queues) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.received_task_queues_map.putAll(update_queues);
@@ -397,7 +397,7 @@ public class task_data {
 
 	public Boolean update_queue_to_received_task_queues_map(String queue_name,
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			this.received_task_queues_map.put(queue_name, queue_data);
@@ -409,7 +409,7 @@ public class task_data {
 
 	public Boolean remove_queue_from_received_task_queues_map(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		try {
 			if (received_task_queues_map.containsKey(queue_name)) {
 				received_task_queues_map.remove(queue_name);
@@ -510,7 +510,7 @@ public class task_data {
 			String case_id,
 			HashMap<String, HashMap<String, String>> case_data) {
 		rw_lock.writeLock().lock();
-		Boolean register_status = new Boolean(false);
+		Boolean register_status = Boolean.valueOf(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		HashMap<String, HashMap<String, String>> ori_case_data = new HashMap<String, HashMap<String, String>>();
 		try {
@@ -544,7 +544,7 @@ public class task_data {
 			String queue_name,
 			ArrayList<String> case_list) {
 		rw_lock.writeLock().lock();
-		Boolean copy_status = new Boolean(true);
+		Boolean copy_status = Boolean.valueOf(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (received_task_queues_map.containsKey(queue_name)) {
@@ -573,7 +573,7 @@ public class task_data {
 			String queue_name, ArrayList<String> case_list,
 			task_enum action_request) {
 		rw_lock.writeLock().lock();
-		Boolean mark_status = new Boolean(true);
+		Boolean mark_status = Boolean.valueOf(true);
 		try {
 			for (String case_id : case_list) {
 				HashMap<String, HashMap<String, String>> task_data = processed_task_queues_map.get(queue_name).get(case_id);
@@ -588,7 +588,7 @@ public class task_data {
 
 	public Boolean copy_task_queue_from_processed_to_received_task_queues_map(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean copy_status = new Boolean(true);
+		Boolean copy_status = Boolean.valueOf(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
 			if (received_task_queues_map.containsKey(queue_name)) {
@@ -619,7 +619,7 @@ public class task_data {
 
 	public Boolean mark_task_queue_for_processed_task_queues_map(String queue_name, task_enum action_request) {
 		rw_lock.writeLock().lock();
-		Boolean mark_status = new Boolean(true);
+		Boolean mark_status = Boolean.valueOf(true);
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
 				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
@@ -646,7 +646,7 @@ public class task_data {
 			task_enum ori_status,
 			task_enum new_status) {
 		rw_lock.writeLock().lock();
-		Boolean mark_status = new Boolean(true);
+		Boolean mark_status = Boolean.valueOf(true);
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
 				TreeMap<String, HashMap<String, HashMap<String, String>>> processed_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
@@ -694,7 +694,7 @@ public class task_data {
 	}
 
 	public Boolean remove_case_from_processed_task_queues_map(String queue_name, String case_id) {
-		Boolean remove_result = new Boolean(false);
+		Boolean remove_result = Boolean.valueOf(false);
 		rw_lock.writeLock().lock();
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
@@ -710,7 +710,7 @@ public class task_data {
 	}
 
 	public Boolean remove_queue_from_processed_task_queues_map(String queue_name) {
-		Boolean remove_result = new Boolean(false);
+		Boolean remove_result = Boolean.valueOf(false);
 		rw_lock.writeLock().lock();
 		try {
 			if (processed_task_queues_map.containsKey(queue_name)) {
@@ -771,7 +771,7 @@ public class task_data {
 	}
 
 	public Boolean remove_rejected_admin_reason_treemap(String queue_name) {
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (rejected_admin_reason_treemap.containsKey(queue_name)) {
@@ -808,7 +808,7 @@ public class task_data {
 
 	public Boolean decrease_processing_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean decrease_status = new Boolean(true);
+		Boolean decrease_status = Boolean.valueOf(true);
 		try {
 			if (processing_admin_queue_list.contains(queue_name)) {
 				processing_admin_queue_list.remove(queue_name);
@@ -904,7 +904,7 @@ public class task_data {
 
 	public Boolean decrease_running_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean decrease_status = new Boolean(true);
+		Boolean decrease_status = Boolean.valueOf(true);
 		try {
 			if (running_admin_queue_list.contains(queue_name)) {
 				running_admin_queue_list.remove(queue_name);
@@ -951,7 +951,7 @@ public class task_data {
 
 	public Boolean decrease_emptied_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean decrease_status = new Boolean(true);
+		Boolean decrease_status = Boolean.valueOf(true);
 		try {
 			if (emptied_admin_queue_list.contains(queue_name)) {
 				emptied_admin_queue_list.remove(queue_name);
@@ -966,7 +966,7 @@ public class task_data {
 
 	public Boolean remove_emptied_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		try {
 			if (emptied_admin_queue_list.contains(queue_name)) {
 				emptied_admin_queue_list.remove(queue_name);
@@ -1002,7 +1002,7 @@ public class task_data {
 
 	public Boolean increase_finished_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean increase_status = new Boolean(true);
+		Boolean increase_status = Boolean.valueOf(true);
 		try {
 			if (finished_admin_queue_list.contains(queue_name)) {
 				increase_status = false;
@@ -1017,7 +1017,7 @@ public class task_data {
 	
 	public Boolean update_finished_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		try {
 			if (finished_admin_queue_list.contains(queue_name)) {
 				update_status = false;
@@ -1045,7 +1045,7 @@ public class task_data {
 
 	public Boolean remove_finished_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		try {
 			if (finished_admin_queue_list.contains(queue_name)) {
 				finished_admin_queue_list.remove(queue_name);
@@ -1081,7 +1081,7 @@ public class task_data {
 	
 	public Boolean update_reported_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		try {
 			if (reported_admin_queue_list.contains(queue_name)) {
 				update_status = false;
@@ -1196,7 +1196,7 @@ public class task_data {
 	
 	public Integer get_finished_queue_dump_delay_data(String queue_name) {
 		rw_lock.readLock().lock();
-		Integer temp = new Integer(0);
+		Integer temp = Integer.valueOf(0);
 		try {
 			if (finished_queue_dump_delay_counter.containsKey(queue_name)){
 				temp = finished_queue_dump_delay_counter.get(queue_name);
@@ -1368,7 +1368,7 @@ public class task_data {
 
 	public Boolean update_warned_task_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		try {
 			if (warned_task_queue_list.contains(queue_name)) {
 				update_status = false;
@@ -1437,7 +1437,7 @@ public class task_data {
 	}
 	
 	public Boolean remove_task_from_received_stop_queues_map(String test_id) {
-		Boolean remove_status = new Boolean(true);
+		Boolean remove_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (received_stop_queues_map.containsKey(test_id)) {

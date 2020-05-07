@@ -18,7 +18,7 @@ import org.apache.commons.io.FileUtils;
 
 import data_center.public_data;
 import flow_control.task_enum;
-import utility_funcs.system_cmd;
+//import utility_funcs.system_cmd;
 
 public class postrun_call implements Callable<Object> {
 	private long start_time = 0;
@@ -59,7 +59,7 @@ public class postrun_call implements Callable<Object> {
 	}
 
 	public Object call() throws Exception {
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		start_time = System.currentTimeMillis() / 1000;
 		//cleanup run processes
 		if (!run_process_cleanup(case_path)){
@@ -96,7 +96,7 @@ public class postrun_call implements Callable<Object> {
 			String save_path,
 			String local_clean,
 			String result_keep){
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		//task 1: copy run results
         String[] tmp_space = save_space.split(",");
         String[] tmp_suite = save_suite.split(",");
@@ -188,7 +188,7 @@ public class postrun_call implements Callable<Object> {
 	
 	private Boolean lsv_storage_identify(
 			String save_path) {
-		Boolean lsv_storage = new Boolean(false);
+		Boolean lsv_storage = Boolean.valueOf(false);
 		for (String key_str: public_data.DEF_LSV_STORAGE_ID) {
 			if (save_path.contains(key_str)) {
 				lsv_storage = true;
@@ -201,7 +201,7 @@ public class postrun_call implements Callable<Object> {
 	private Boolean run_local_scan_report_generate(
 			String report_path,
 			String work_suite){
-		Boolean run_status = new Boolean(false);
+		Boolean run_status = Boolean.valueOf(false);
 		//task 1: local scan data
 		String suite_scan_file = new String(work_suite + "/" + public_data.SUITE_DATA_REPORT_NAME);
 		String suite_lock_file = new String(work_suite + "/" + public_data.SUITE_LOCK_FILE_NAME);
@@ -235,7 +235,7 @@ public class postrun_call implements Callable<Object> {
 			String save_space,
 			String work_space,
 			String save_suite){
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		String task_name = new File(report_path).getName();
 		String case_scan_file = new String(report_path + "/" + task_name + ".csv");
 		File case_scan_file_obj = new File(case_scan_file);
@@ -330,7 +330,7 @@ public class postrun_call implements Callable<Object> {
 			String save_path, 
 			String copy_type) {
 		//save_suite: top path for all save cases
-		Boolean copy_status = new Boolean(true);
+		Boolean copy_status = Boolean.valueOf(true);
 		if (case_path.equalsIgnoreCase(save_path)){
 			return copy_status;
 		}

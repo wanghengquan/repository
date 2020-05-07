@@ -233,7 +233,7 @@ public class cmd_parser {
 	
 	private Boolean run_input_data_check(
 			HashMap<String, String> cmd_hash){
-		Boolean check_satus = new Boolean(true);
+		Boolean check_satus = Boolean.valueOf(true);
 		Iterator<String> option_it = cmd_hash.keySet().iterator();
 		while(option_it.hasNext()){
 			String option_name = option_it.next();
