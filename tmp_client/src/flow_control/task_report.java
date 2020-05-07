@@ -63,7 +63,7 @@ public class task_report {
 			HashMap<String, HashMap<String, Object>> case_report_data,
 			Boolean smart_send
 			) {
-		Boolean report_status = new Boolean(true);
+		Boolean report_status = Boolean.valueOf(true);
 		String ip = client_info.get_client_machine_data().get("ip");
 		String terminal = client_info.get_client_machine_data().get("terminal");
 		// get remote date
@@ -102,7 +102,7 @@ public class task_report {
 	protected Boolean send_tube_task_runtime_report(
 			HashMap<String, HashMap<String, String>> runtime_log_data
 			) {
-		Boolean report_status = new Boolean(true);
+		Boolean report_status = Boolean.valueOf(true);
 		// get remote date
 		HashMap<String, HashMap<String, String>> remote_data = new HashMap<String, HashMap<String, String>>();
 		// get local data

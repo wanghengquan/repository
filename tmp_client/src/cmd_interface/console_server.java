@@ -101,7 +101,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean check_user_inputs(String user_inputs){
-		Boolean input_ok = new Boolean(true);
+		Boolean input_ok = Boolean.valueOf(true);
 		String [] input_list = user_inputs.split("\\s+");
 		if (input_list.length < 1){
 			input_ok = false;
@@ -166,7 +166,7 @@ public class console_server extends Thread {
 	
 	private Boolean answer_user_inputs(
 			String user_inputs){
-		Boolean run_ok = new Boolean(true);
+		Boolean run_ok = Boolean.valueOf(true);
 		String [] input_list = user_inputs.split("\\s+");		
 		switch(top_cmd.valueOf(input_list[0].toUpperCase())){
 		case H:
@@ -216,7 +216,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean link_command_answer(String [] cmd_list){
-		Boolean link_ok = new Boolean(false);
+		Boolean link_ok = Boolean.valueOf(false);
 		if(cmd_list[1].equalsIgnoreCase(link_cmd.HELP.toString())){
 			link_help_command_output();
 		} else {
@@ -232,7 +232,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean info_command_answer(String [] cmd_list){
-		Boolean info_ok = new Boolean(false);
+		Boolean info_ok = Boolean.valueOf(false);
 		switch(info_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			info_help_command_output();
@@ -338,7 +338,7 @@ public class console_server extends Thread {
 	}	
 	
 	private Boolean task_command_answer(String [] cmd_list){
-		Boolean task_ok = new Boolean(false);
+		Boolean task_ok = Boolean.valueOf(false);
 		switch(task_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			task_help_command_output();
@@ -389,7 +389,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean action_command_answer(String [] cmd_list){
-		Boolean action_ok = new Boolean(false);
+		Boolean action_ok = Boolean.valueOf(false);
 		switch(action_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			action_help_command_output();

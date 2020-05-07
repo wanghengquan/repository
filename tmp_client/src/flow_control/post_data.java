@@ -84,7 +84,7 @@ public class post_data {
 			String case_id, 			
 			int time_out) {
 		rw_lock.writeLock().lock();
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		try {
 			if (call_map.size() > public_data.DEF_CLEANUP_QUEUE_SIZE){
 				CLEANUP_DATA_LOGGER.warn("Cleanup queue: No more cleanup task available, current task size is:" + public_data.DEF_CLEANUP_QUEUE_SIZE);
@@ -157,7 +157,7 @@ public class post_data {
 	public Boolean remove_postrun_call(
 			String call_key) {
 		rw_lock.writeLock().lock();
-		Boolean remove_result = new Boolean(true);
+		Boolean remove_result = Boolean.valueOf(true);
 		try {
 			if (call_map.containsKey(call_key)) {
 				call_map.remove(call_key);

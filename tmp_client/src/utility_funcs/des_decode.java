@@ -2,16 +2,17 @@ package utility_funcs;
  
 import java.io.IOException;
 import java.security.SecureRandom;
- 
+import java.util.Base64;
+import java.util.Base64.Decoder;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
+
+import data_center.public_data;
+
  
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
- 
-@SuppressWarnings({ "restriction", "unused" })
 public class des_decode {
  
     private final static String DES = "DES";
@@ -29,9 +30,9 @@ public class des_decode {
             Exception {
         if (data == null)
             return null;
-		BASE64Decoder decoder = new BASE64Decoder();
-        byte[] buf = decoder.decodeBuffer(data);
-        byte[] bt = decrypt(buf,key.getBytes());
+        Decoder decoder = Base64.getDecoder();
+        byte[] result = decoder.decode(data);
+        byte[] bt = decrypt(result,key.getBytes());
         return new String(bt);
     }
     
@@ -53,7 +54,8 @@ public class des_decode {
     }
     
     public static void main(String[] args) throws Exception {
-        String data = "GlfbE2rHHgT9xCSyNcCsuA==";
-        System.err.println(decrypt(data, "@Lattice"));
+        //String data = "PjjD2J1CCLKLyYaFY9z+b50AGVKc7MBh";
+        String data = "mWz8BslYuSBDfJMUWfk/UB5jDoQSlk79";
+        System.err.println(decrypt(data, public_data.ENCRY_KEY));
     }    
 }

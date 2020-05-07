@@ -78,7 +78,7 @@ public class result_waiter extends Thread {
 	@SuppressWarnings("unchecked")
 	private Boolean run_local_disk_report(
 			HashMap<String, HashMap<String, Object>> case_report_map) {
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -113,7 +113,7 @@ public class result_waiter extends Thread {
 
 	private Boolean run_post_process(
 			HashMap<String, HashMap<String, Object>> case_report_map) {
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -207,7 +207,7 @@ public class result_waiter extends Thread {
 		ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 		reported_admin_queue_list.addAll(task_info.get_reported_admin_queue_list());
 		for (String queue_name : finished_admin_queue_list) {
-			Boolean report_status = new Boolean(true);
+			Boolean report_status = Boolean.valueOf(true);
 			if (reported_admin_queue_list.contains(queue_name)) {
 				continue;// finished queue already reported.
 			}
@@ -223,7 +223,7 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean queue_dump_dealy_check(String queue_name){
-		Boolean status = new Boolean(true);
+		Boolean status = Boolean.valueOf(true);
 		task_info.increase_finished_queue_dump_delay_counter(queue_name, 1);
 		int current_delay_cycle = task_info.get_finished_queue_dump_delay_data(queue_name);
 		if (current_delay_cycle < public_data.PERF_QUEUE_DUMP_DELAY){
@@ -236,7 +236,7 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean dump_finished_queue_data() {
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		// dump finished task queue data to xml file, save memory
 		ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
 		finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
@@ -282,7 +282,7 @@ public class result_waiter extends Thread {
 	}
 
 	private Boolean fresh_thread_pool_data(){
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		//fresh pool call map data
 		pool_info.fresh_sys_call();
 		post_info.fresh_postrun_call();
@@ -292,7 +292,7 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean clean_postrun_map_data(){
-		Boolean run_status = new Boolean(true);
+		Boolean run_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<post_attr, Object>> call_data = new HashMap<String, HashMap<post_attr, Object>>();
 		call_data.putAll(post_info.get_postrun_call_copy());
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -328,7 +328,7 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean release_software_usage() {
-		Boolean release_status = new Boolean(true);
+		Boolean release_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -351,7 +351,7 @@ public class result_waiter extends Thread {
 	}
 
 	private Boolean release_thread_usage() {
-		Boolean release_status = new Boolean(true);
+		Boolean release_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -374,7 +374,7 @@ public class result_waiter extends Thread {
 	
 	private Boolean update_client_run_case_summary(
 			HashMap<String, HashMap<String, Object>> case_report_map) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -425,7 +425,7 @@ public class result_waiter extends Thread {
 	private Boolean update_processed_task_data(
 			HashMap<String, HashMap<String, Object>> case_report_map
 			) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -543,7 +543,7 @@ public class result_waiter extends Thread {
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("\\", "/");
         	}
-        	Boolean path_exist = new Boolean(false);
+        	Boolean path_exist = Boolean.valueOf(false);
         	for (String path_str: uniq_paths) {
         		path_str = path_str.replace("\\", "/");
         		if (path_str.equalsIgnoreCase(match_str1) || path_str.equalsIgnoreCase(match_str2)) {
@@ -629,7 +629,7 @@ public class result_waiter extends Thread {
 		}
 		Pattern start_pattern = Pattern.compile("===TMP Detail===");
 		Pattern stop_pattern = Pattern.compile("===TMP end===");
-		Boolean filter_enable = new Boolean(false);
+		Boolean filter_enable = Boolean.valueOf(false);
 		for (String line:output_list){
 			Matcher start_match = start_pattern.matcher(line);
 			Matcher stop_match = stop_pattern.matcher(line);
@@ -906,7 +906,7 @@ public class result_waiter extends Thread {
     }
     
 	private Boolean terminate_local_user_request_running_task() {
-		Boolean cancel_status = new Boolean(true);
+		Boolean cancel_status = Boolean.valueOf(true);
 		HashMap<String, ArrayList<String>> request_terminate_list = new HashMap<String, ArrayList<String>>();
 		request_terminate_list.putAll(view_info.impl_request_terminate_list());
 		if (request_terminate_list.isEmpty()){
@@ -944,7 +944,7 @@ public class result_waiter extends Thread {
 	}
 
 	private Boolean terminate_remote_user_request_running_task() {
-		Boolean cancel_status = new Boolean(true);
+		Boolean cancel_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> request_data = new HashMap<String, HashMap<String, String>>();
 		request_data.putAll(task_info.fetch_tasks_from_received_stop_queues_map());
 		if (request_data == null || request_data.isEmpty()){
@@ -969,7 +969,7 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean terminate_stopped_queue_running_task() {
-		Boolean cancel_status = new Boolean(true);
+		Boolean cancel_status = Boolean.valueOf(true);
 		ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();
 		stopped_admin_queue_list.addAll(task_info.get_stopped_admin_queue_list());
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();

@@ -79,7 +79,7 @@ public class tube_server extends Thread {
 
 	private Boolean admin_queue_system_key_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean system_match = new Boolean(true);
+		Boolean system_match = Boolean.valueOf(true);
 		if (!queue_data.containsKey("System")) {
 			return system_match;
 		}
@@ -121,7 +121,7 @@ public class tube_server extends Thread {
 					client_value_list.add(client_value);
 				}				
 				//compare data
-				Boolean item_match = new Boolean(false);
+				Boolean item_match = Boolean.valueOf(false);
 				for (String individual: client_value_list){
 					if (request_value_list.contains(individual)){
 						item_match = true;
@@ -141,7 +141,7 @@ public class tube_server extends Thread {
 			String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean machine_match = new Boolean(true);
+		Boolean machine_match = Boolean.valueOf(true);
 		String client_current_private = client_hash.get("Machine").get("private");
 		//Scenario 1 local task (not remote)
 		if (queue_name.contains("0@")){
@@ -189,7 +189,7 @@ public class tube_server extends Thread {
 			} else{
 				client_value_list.add(client_value);
 			}
-			Boolean item_match = new Boolean(false);
+			Boolean item_match = Boolean.valueOf(false);
 
             for (String terminal_model: request_value_list){
                 if(terminal_model.contains("!")){
@@ -218,7 +218,7 @@ public class tube_server extends Thread {
 
 	private Boolean admin_queue_software_key_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean software_match = new Boolean(true);
+		Boolean software_match = Boolean.valueOf(true);
 		if (!queue_data.containsKey("Software")) {
 			return software_match;
 		}
@@ -319,7 +319,7 @@ public class tube_server extends Thread {
 	}
 	
 	private Boolean send_client_info(String mode) {
-		Boolean send_status = new Boolean(true);
+		Boolean send_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		client_hash = deep_clone.clone(client_info.get_client_data());
 		//bypass the client data sending in local model

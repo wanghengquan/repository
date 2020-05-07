@@ -24,7 +24,7 @@ public class data_check {
 			String input_data,
 			int min_value,
 			int max_value) {
-		Boolean check_result = new Boolean(true);
+		Boolean check_result = Boolean.valueOf(true);
 		int input_int = 0;
 		try {
 			input_int = Integer.valueOf(input_data);
@@ -39,7 +39,7 @@ public class data_check {
 			int input_data,
 			int min_value,
 			int max_value) {
-		Boolean check_result = new Boolean(true);
+		Boolean check_result = Boolean.valueOf(true);
 		if (input_data < min_value || input_data > max_value){
 			check_result = false;
 		}
@@ -49,7 +49,7 @@ public class data_check {
 	public static Boolean str_choice_check(
 			String input_data,
 			ArrayList<String> available_data){
-		Boolean check_result = new Boolean(false);
+		Boolean check_result = Boolean.valueOf(false);
 		if (available_data.contains(input_data)){
 			check_result = true;
 		}
@@ -59,7 +59,7 @@ public class data_check {
 	public static Boolean str_choice_check(
 			String input_data,
 			String[] available_data){
-		Boolean check_result = new Boolean(false);
+		Boolean check_result = Boolean.valueOf(false);
 		if (Arrays.asList(available_data).contains(input_data)){
 			check_result = true;
 		}
@@ -68,7 +68,7 @@ public class data_check {
 	
 	public static Boolean str_path_check(
 			String input_data){
-		Boolean check_result = new Boolean(false);
+		Boolean check_result = Boolean.valueOf(false);
 		File path_obj = new File(input_data.replaceAll("\\\\", "/"));
 		if (path_obj.exists()){
 			check_result = true;
@@ -79,7 +79,7 @@ public class data_check {
 	public static Boolean str_regexp_check(
 			String ori_str,
 			String req_pat){
-		Boolean check_result = new Boolean(false);
+		Boolean check_result = Boolean.valueOf(false);
 		Pattern p = Pattern.compile(req_pat);
 		Matcher m = p.matcher(ori_str);
 		if (m.find()) {
@@ -90,7 +90,7 @@ public class data_check {
 	
 	public static Boolean str_sort_format_check(
 			String input_data){
-		Boolean check_result = new Boolean(true);
+		Boolean check_result = Boolean.valueOf(true);
 		String [] sort_sections = input_data.split(";");
 		for (String section : sort_sections){
 			Boolean section_ok = str_regexp_check(section, "\\w\\s*=\\s*\\w");

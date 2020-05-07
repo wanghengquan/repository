@@ -308,7 +308,7 @@ public class xml_parser {
 			HashMap<String, HashMap<String, String>> admin_queue_data,
 			String queue_name, 
 			String xml_path) throws IOException {
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		root_element.addAttribute("time", time_info.get_date_time());
@@ -336,7 +336,7 @@ public class xml_parser {
 	public static Boolean dump_task_data(TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data,
 			String queue_name, 
 			String xml_path) throws IOException {
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		Document document = DocumentHelper.createDocument();
 		Element root_element = document.addElement("root");
 		root_element.addAttribute("time", time_info.get_date_time());

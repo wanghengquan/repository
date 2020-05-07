@@ -31,7 +31,7 @@ public class app_update implements UpdatedApplication  {
 	//private String line_separator = System.getProperty("line.separator");	
 	private switch_data switch_info;
 	private client_data client_info;
-	public Boolean update_skipped = new Boolean(false);
+	public Boolean update_skipped = Boolean.valueOf(false);
 	// public function
 	// protected function
 	// private function	
@@ -89,12 +89,12 @@ public class app_update implements UpdatedApplication  {
 		// user_interface gui or cmd and attended or unattended
 		String user_interface = client_info.get_client_preference_data().get("cmd_gui");
 		String unattended_mode = client_info.get_client_machine_data().get("unattended");		
-		Boolean console_update = new Boolean(false); 
+		Boolean console_update = Boolean.valueOf(false); 
 		if (user_interface.equalsIgnoreCase("cmd")){ 
 			console_update = true; 
 			switch_info.set_client_console_updating(true);
 		} 
-		Boolean unattended_update = new Boolean(false);
+		Boolean unattended_update = Boolean.valueOf(false);
 		if (unattended_mode.equalsIgnoreCase("1")){ 
 			unattended_update = true; 
 		} 			

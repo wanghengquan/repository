@@ -305,7 +305,7 @@ public class file_action {
 	}	
 	
 	public static Boolean lock_file_waiting(String file_path){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		File lock_file = new File(file_path);
 		int counter = 0;
 		while (lock_file.exists()){
@@ -329,7 +329,7 @@ public class file_action {
 	}
 	
 	public static Boolean gen_lock_file(String file_path){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		File lock_file = new File(file_path);
 		int counter = 0;
 		while (lock_file.exists()){

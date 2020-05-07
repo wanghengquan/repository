@@ -297,7 +297,7 @@ public class config_sync extends Thread {
 			ini_parser ini_runner,
 			HashMap<String, HashMap<String, String>> ini_data
 			) {
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
 		write_data.putAll(deep_clone.clone(client_info.get_client_data()));
 		CONFIG_SYNC_LOGGER.info("Dumping ini data:" + client_info.get_client_data().toString());

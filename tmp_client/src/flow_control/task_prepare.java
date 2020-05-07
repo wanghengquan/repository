@@ -375,8 +375,8 @@ public class task_prepare {
 		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		Matcher match = patt.matcher(launch_cmd);
 		String exe_path = new String("");
-		Boolean abs_path_ok = new Boolean(false);
-		Boolean ref_path_ok = new Boolean(false);
+		Boolean abs_path_ok = Boolean.valueOf(false);
+		Boolean ref_path_ok = Boolean.valueOf(false);
 		if (match.find()){
 			exe_path = match.group().trim();
 			//abs path

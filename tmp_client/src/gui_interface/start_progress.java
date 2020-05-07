@@ -39,7 +39,7 @@ public class start_progress extends JFrame implements Runnable, status_value{
 	private switch_data switch_info;
 	private JProgressBar jpb_progress;
 	private JLabel jl_info;
-	private Integer progress_count = new Integer(0);
+	private Integer progress_count = Integer.valueOf(0);
 
 	public start_progress(switch_data switch_info){
 		this.switch_info = switch_info;

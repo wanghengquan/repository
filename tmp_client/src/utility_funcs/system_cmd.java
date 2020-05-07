@@ -293,6 +293,7 @@ public class system_cmd {
 						e.printStackTrace();
 					} finally {
 						try {
+							br1.close();
 							out_str.close();
 						} catch (IOException e) {
 							e.printStackTrace();

@@ -201,7 +201,7 @@ public class data_server extends Thread {
 	// this function may get slipped condition
 	private Boolean dynamic_merge_build_data() {
 		//merge new data form: scan_dir, scan_cmd and machine data 
-		Boolean data_updated = new Boolean(false);
+		Boolean data_updated = Boolean.valueOf(false);
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> update_data = new HashMap<String, HashMap<String, String>>();
 		client_data.putAll(deep_clone.clone(client_info.get_client_data()));

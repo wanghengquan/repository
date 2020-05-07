@@ -76,7 +76,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_system_idle(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		if(pool_info.get_pool_used_threads() == 0){
 			idle_counter ++;
 		} else {
@@ -91,7 +91,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_update_available(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
         if(switch_info.get_core_script_update_request() && pool_info.get_pool_used_threads() == 0){
 		    status = true;
         }
@@ -99,7 +99,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_environ_issue(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		if(switch_info.get_client_environ_issue()){
 			status = true;
 		}
@@ -107,7 +107,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_cpu_overload(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String cpu_used = machine_sync.get_cpu_usage();
 		int cpu_used_int = 0;
 		try{
@@ -122,7 +122,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_mem_overload(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String mem_used = machine_sync.get_mem_usage();
 		int mem_used_int = 0;
 		try{
@@ -137,7 +137,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_space_overload(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String work_space = client_info.get_client_preference_data().get("work_space");
 		String space_available = machine_sync.get_avail_space(work_space);
 		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
@@ -156,7 +156,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_work_space_updated(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		if (switch_info.get_work_space_update_request() && pool_info.get_pool_used_threads() == 0){
 			status = true;
 		}

@@ -134,7 +134,7 @@ public class hall_manager extends Thread {
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
-			Integer block_num = new Integer(0);
+			Integer block_num = Integer.valueOf(0);
 			HashMap<task_enum, Integer> queue_data = new HashMap<task_enum, Integer>();
 			queue_data.putAll(summary_map.get(queue_name));
 			block_num = queue_data.getOrDefault(task_enum.BLOCKED, 0);
@@ -182,11 +182,11 @@ public class hall_manager extends Thread {
 	
 	private HashMap<task_enum, String> get_client_run_case_summary(){
 		HashMap<task_enum, String> run_summary = new HashMap<task_enum, String>();
-		Integer pass_num = new Integer(0);
-		Integer fail_num = new Integer(0);
-		Integer tbd_num = new Integer(0);
-		Integer timeout_num = new Integer(0);
-		Integer others_num = new Integer(0);
+		Integer pass_num = Integer.valueOf(0);
+		Integer fail_num = Integer.valueOf(0);
+		Integer tbd_num = Integer.valueOf(0);
+		Integer timeout_num = Integer.valueOf(0);
+		Integer others_num = Integer.valueOf(0);
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
 		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
@@ -388,13 +388,13 @@ public class hall_manager extends Thread {
 	}
 	
 	private Boolean current_system_info_record(){
-		Boolean record_status = new Boolean(true);
+		Boolean record_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		client_data.putAll(client_info.get_client_data());
 		String cpu_usage = client_data.get("System").get("cpu");
 		String mem_usage = client_data.get("System").get("mem");
-		Integer cpu_integer = new Integer(0);
-		Integer mem_integer = new Integer(0);
+		Integer cpu_integer = Integer.valueOf(0);
+		Integer mem_integer = Integer.valueOf(0);
 		try{
 			cpu_integer = Integer.valueOf(cpu_usage);
 			mem_integer = Integer.valueOf(mem_usage);

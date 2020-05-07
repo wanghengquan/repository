@@ -52,7 +52,7 @@ public class link_client {
 	
 	public Boolean link_request(
 			String host){
-		Boolean link_status = new Boolean(true);
+		Boolean link_status = Boolean.valueOf(true);
 		Socket socket = null;
 		HashMap<String, String> request_data = new HashMap<String, String>();
 		StringBuilder return_data = new StringBuilder("");

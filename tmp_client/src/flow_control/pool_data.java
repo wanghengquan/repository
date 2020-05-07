@@ -94,7 +94,7 @@ public class pool_data {
 	}
 
 	public synchronized Boolean booking_used_thread(int booking_number) {
-		Boolean booking_result = new Boolean(true);
+		Boolean booking_result = Boolean.valueOf(true);
 		int future_threads = this.pool_used_threads + booking_number;
 		if (future_threads > pool_current_size) {
 			booking_result = false;
@@ -105,7 +105,7 @@ public class pool_data {
 	}
 
 	public synchronized Boolean release_used_thread(int release_number) {
-		Boolean release_result = new Boolean(true);
+		Boolean release_result = Boolean.valueOf(true);
 		int future_threads = this.pool_used_threads - release_number;
 		if (future_threads < 0) {
 			future_threads = 0;
@@ -205,7 +205,7 @@ public class pool_data {
 	}
 	
 	public synchronized Boolean terminate_sys_call(String call_index) {
-		Boolean cancel_status = new Boolean(true);
+		Boolean cancel_status = Boolean.valueOf(true);
 		HashMap<pool_attr, Object> hash_data = call_map.get(call_index);
 		Future<?> call_back = (Future<?>) hash_data.get(pool_attr.call_back);
 		hash_data.put(pool_attr.call_terminate, true);
@@ -256,7 +256,7 @@ public class pool_data {
 			String sys_call_key,
 			HashMap<pool_attr, Object> update_data
 			) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		HashMap<pool_attr, Object> call_data = new HashMap<pool_attr, Object>();
 		if (call_map.containsKey(sys_call_key)) {
 			call_data.putAll(call_map.get(sys_call_key));
@@ -267,7 +267,7 @@ public class pool_data {
 	}
 	
 	public synchronized Boolean remove_sys_call(String sys_call_key) {
-		Boolean remove_result = new Boolean(true);
+		Boolean remove_result = Boolean.valueOf(true);
 		if (call_map.containsKey(sys_call_key)) {
 			call_map.remove(sys_call_key);
 		} else {
@@ -285,13 +285,13 @@ public class pool_data {
 	public synchronized Boolean update_history_send_data(
 			String case_index, 
 			HashMap<String, Object> update_data){
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		history_send_data.put(case_index, update_data);
 		return update_status;
 	}
 	
 	public synchronized Boolean remove_history_send_data(String case_index){
-		Boolean remove_status = new Boolean(false);
+		Boolean remove_status = Boolean.valueOf(false);
 		if (history_send_data.containsKey(case_index)){
 			history_send_data.remove(case_index);
 			remove_status = true;

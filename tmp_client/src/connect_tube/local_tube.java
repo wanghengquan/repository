@@ -52,7 +52,7 @@ public class local_tube {
 	}
 
 	public static Boolean suite_files_sanity_check(String file_paths) {
-		Boolean all_pass = new Boolean(true);
+		Boolean all_pass = Boolean.valueOf(true);
 		for (String file:file_paths.split(",")){
 			if (!suite_file_sanity_check(file)){
 				all_pass = false;
@@ -82,7 +82,7 @@ public class local_tube {
 		}
 		//check case sheet
 		Iterator<String> sheet_it = ExcelData.keySet().iterator();
-		Boolean get_sheet = new Boolean(false);
+		Boolean get_sheet = Boolean.valueOf(false);
 		while(sheet_it.hasNext()){
 			String sheet_name = sheet_it.next();
 			if (sheet_name.contains("case")){
@@ -179,7 +179,7 @@ public class local_tube {
 		String suite_start = new String("[suite_info]");
 		String pre_word = null;
 		String pre_value = null;
-		Boolean suite_area = new Boolean(false);
+		Boolean suite_area = Boolean.valueOf(false);
 		for (int row = 0; row < suite_sheet.size(); row++) {
 			List<String> row_list = suite_sheet.get(row);
 			if (row_list.size() < 1) {
@@ -226,7 +226,7 @@ public class local_tube {
 		Map<String, List<List<String>>> return_data = new HashMap<String, List<List<String>>>();
 		int macro_num = 0;
 		String macro_start = new String("[macro]");
-		Boolean macro_area = new Boolean(false);
+		Boolean macro_area = Boolean.valueOf(false);
 		List<List<String>> area_list = null;
 		String macro_name = null;
 		for (int row = 0; row < suite_sheet.size(); row++) {
@@ -410,7 +410,7 @@ public class local_tube {
 		Iterator<String> data_it = raw_data.keySet().iterator();
 		while (data_it.hasNext()) {
 			String case_order = data_it.next().trim();
-			Integer macro_order = new Integer(0);
+			Integer macro_order = Integer.valueOf(0);
 			String macro_case_order = new String();
 			Map<String, String> case_data = new HashMap<String, String>();
 			case_data.putAll(raw_data.get(case_order));
@@ -432,7 +432,7 @@ public class local_tube {
 				merge_macro_data.put(macro_case_order, case_data);
 				continue;
 			}
-			Boolean match_one = new Boolean(false);
+			Boolean match_one = Boolean.valueOf(false);
 			Iterator<String> macro_it = macro_data.keySet().iterator();
 			while (macro_it.hasNext()) {
 				macro_order = macro_order + 1;
@@ -462,7 +462,7 @@ public class local_tube {
 	private Boolean case_data_match_task_sort(
 			Map<String, String> case_data, 
 			String task_sort){
-		Boolean case_match = new Boolean(true);
+		Boolean case_match = Boolean.valueOf(true);
 		if (task_sort == null || task_sort.trim().equals("")){
 			return case_match;
 		}
@@ -569,7 +569,7 @@ public class local_tube {
 			// case have higher priority for: CaseInfo Environment LaunchCommand
 			// Software System Machine
 			if (column_list.contains(column)) {
-				Boolean update_done = new Boolean(false);
+				Boolean update_done = Boolean.valueOf(false);
 				if (!value.contains("=")) {
 					LOCAL_TUBE_LOGGER.warn("Skip macro action non key=value input for columns" + column_list.toString());
 					continue;
@@ -863,7 +863,7 @@ public class local_tube {
 	private Boolean is_request_match(HashMap<String, HashMap<String, String>> queue_data,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// compare sub map data Software, System, Machine
-		Boolean is_match = new Boolean(true);
+		Boolean is_match = Boolean.valueOf(true);
 		List<String> check_items = new ArrayList<String>();
 		check_items.add("Software");
 		check_items.add("System");
@@ -995,7 +995,7 @@ public class local_tube {
 			String case_name = case_it.next();
 			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
 			case_data.putAll(merge_data.get(case_name));
-			Boolean admin_queue_exists = new Boolean(false);
+			Boolean admin_queue_exists = Boolean.valueOf(false);
 			String queue_name = new String();
 			Iterator<String> queues_it = xlsx_received_admin_queues_treemap.keySet().iterator();
 			while (queues_it.hasNext()) {
@@ -1215,7 +1215,7 @@ public class local_tube {
 			String case_path,
 			String dat_file,
 			String task_sort){
-		Boolean match_status = new Boolean(false);
+		Boolean match_status = Boolean.valueOf(false);
 		if (task_sort == null || task_sort.trim().equals("")){
 			match_status = true;
 			return match_status;
