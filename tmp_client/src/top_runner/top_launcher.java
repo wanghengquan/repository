@@ -71,6 +71,12 @@ public class top_launcher {
 		File bin_dobj = new File(bin_path);
 		String conf_path = bin_dobj.getParentFile().toString().replaceAll("\\\\", "/") + "/conf/log4j2.xml";
 		System.out.println(">>>Info: SW log config path:" + conf_path);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		File file = new File(conf_path);
 		try {
 			source = new ConfigurationSource(new FileInputStream(file), file);
