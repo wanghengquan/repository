@@ -126,12 +126,16 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 		jl_case_mode = new JLabel("Case Mode:");
 		jl_case_mode.setToolTipText("The method for Client get case ready, copy to workspace<default> or just run in original place.");
 		hold_case = new JRadioButton("Hold Case");
+		hold_case.setToolTipText("Client run case/task in it's original place.");
 		copy_case = new JRadioButton("Copy Case");
+		copy_case.setToolTipText("Client export/copy case to current work_space first and run it.");
 		ButtonGroup case_group = new ButtonGroup();
 		case_group.add(hold_case);
 		case_group.add(copy_case);
 		keep_path = new JCheckBox("Keep Path");
+		keep_path.setToolTipText("Client keep the original task case path(relative path based on suite path).");
 		lazy_copy = new JCheckBox("Lazy Copy");
+		lazy_copy.setToolTipText("If work space have this case already, run it directly.");
 		JPanel jp_copy_option = new JPanel(new GridLayout(2,1,5,5));
 		jp_copy_option.add(keep_path);
 		jp_copy_option.add(lazy_copy);
