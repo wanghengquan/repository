@@ -245,10 +245,13 @@ public class system_cmd {
 		while (line_it.hasNext()) {
 			String line = line_it.next();
 			Matcher m = patt.matcher(line);
-			if (line.toLowerCase().startsWith("error"))
+			if (line.toLowerCase().startsWith("error")) {
 				reason = line;
+			    break;
+			}
 			if (m.find()) {
 				reason = line;
+				break;
 			}
 		}
 		if (reason.length() > 1)
