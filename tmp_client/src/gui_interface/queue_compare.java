@@ -28,10 +28,10 @@ public class queue_compare implements Comparator<String> {
 			int_pri2 = get_srting_int(queue_name2, "^(\\d+)@");
 			int_run1 = get_srting_int(queue_name1, "run_(\\d+)_?");
 			int_run2 = get_srting_int(queue_name2, "run_(\\d+)_?");
-			int_year1 = get_srting_int(queue_name1, "_\\d+?(\\d\\d)_\\d+$");
-			int_year2 = get_srting_int(queue_name2, "_\\d+?(\\d\\d)_\\d+$");			
-			int_date1 = get_srting_int(queue_name1, "_(\\d+?)\\d\\d_\\d+$");
-			int_date2 = get_srting_int(queue_name2, "_(\\d+?)\\d\\d_\\d+$");
+			int_year1 = get_srting_int(queue_name1, "_(\\d\\d)\\d+?_\\d+$");
+			int_year2 = get_srting_int(queue_name2, "_(\\d\\d)\\d+?_\\d+$");			
+			int_date1 = get_srting_int(queue_name1, "_\\d\\d(\\d+?)_\\d+$");
+			int_date2 = get_srting_int(queue_name2, "_\\d\\d(\\d+?)_\\d+$");
 			int_time1 = get_srting_int(queue_name1, "_(\\d+)$");
 			int_time2 = get_srting_int(queue_name2, "_(\\d+)$");
 		} catch (Exception e) {
