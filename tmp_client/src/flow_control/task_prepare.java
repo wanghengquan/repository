@@ -164,7 +164,7 @@ public class task_prepare {
 					task_prepare_info.add("Info : Previously run design remove Pass:" + case_path);
 					CASE_PREPARE_LOGGER.debug("Previously run design remove Pass:" + case_path);
 				} else {
-					task_prepare_info.add("Warning: Previously run design remove Fail:" + case_path);
+					task_prepare_info.add("Error: Previously run design remove Fail:" + case_path);
 					CASE_PREPARE_LOGGER.warn("Previously run design deleted Fail:" + case_path);
 					return false;
 				}

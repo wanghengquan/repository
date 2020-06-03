@@ -44,7 +44,7 @@ public class time_info {
 	}
 	
 	public static String get_date_time() {
-		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmmss");
 		return formatter.format(new Date());
 	}
 	
@@ -54,12 +54,12 @@ public class time_info {
 	}
 	
 	public static String get_date_time(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmmss");
 		return formatter.format(date);
 	}
 	
 	public static String get_date_hhmm(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmm");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmm");
 		return formatter.format(date);
 	}
 	
@@ -123,7 +123,7 @@ public class time_info {
 		System.out.println(get_time_hhmm());
 		System.out.println(System.currentTimeMillis() / 1000); 
 		System.out.println(get_time_stamp().toString());
-		System.out.println(get_week_day_num());
+		System.out.println(get_date_time());
 	}
 
 }
