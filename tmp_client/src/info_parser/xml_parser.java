@@ -372,12 +372,13 @@ public class xml_parser {
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
-		String time_modified = time_info.get_date_hhmm(new Date(time));
+		String time_modified1 = time_info.get_date_year_hhmm(new Date(time));
+		String time_modified2 = time_info.get_year_date_hhmm(new Date(time));
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.contains(time_modified)) {
+		if (!time_create.contains(time_modified1) && !time_create.contains(time_modified2)) {
 			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
 			return admin_queue_data;
 		}
@@ -401,12 +402,13 @@ public class xml_parser {
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		File xml_fobj = new File(xml_path);
 		Long time = xml_fobj.lastModified();
-		String time_modified = time_info.get_date_hhmm(new Date(time));
+		String time_modified1 = time_info.get_date_year_hhmm(new Date(time));
+		String time_modified2 = time_info.get_year_date_hhmm(new Date(time));
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.contains(time_modified)) {
+		if (!time_create.contains(time_modified1) && !time_create.contains(time_modified2)) {
 			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
 			return task_queue_data;
 		}
