@@ -1,9 +1,12 @@
 package gui_interface;
 
+import java.awt.Font;
 import java.util.Vector;
 
 import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
+
+import data_center.public_data;
 
 public interface table_define {
 	
@@ -18,6 +21,7 @@ class panel_table extends JTable{
 	
 	public panel_table(Vector<Vector<String>>rowData, Vector<String> columnNames){
 		super(rowData, columnNames);
+		this.setFont(new Font(public_data.DEF_SYSTEM_TABLE_FONT, Font.PLAIN, 18));
 		this.setRowHeight(20);
 	}
 	
@@ -40,7 +44,8 @@ class info_table extends JTable{
 	
 	public info_table(Vector<Vector<String>>rowData, Vector<String> columnNames){
 		super(rowData, columnNames);
-		this.setRowHeight(24);
+		this.setFont(new Font(null, Font.PLAIN, 18));
+		this.setRowHeight(20);
 	}
 	
 	public JTableHeader getTableHeader(){
@@ -66,7 +71,8 @@ class setting_table extends JTable{
 	
 	public setting_table(Vector<Vector<String>>rowData, Vector<String> columnNames){
 		super(rowData, columnNames);
-		this.setRowHeight(24);
+		this.setFont(new Font(null, Font.PLAIN, 18));
+		this.setRowHeight(20);
 	}
 	
 	public JTableHeader getTableHeader(){
@@ -85,7 +91,8 @@ class report_table extends JTable{
 	
 	public report_table(Vector<Vector<Object>>rowData, Vector<String> columnNames){
 		super(rowData, columnNames);
-		this.setRowHeight(24);
+		this.setFont(new Font(null, Font.PLAIN, 18));
+		this.setRowHeight(20);
 	}
 	
 	public JTableHeader getTableHeader(){

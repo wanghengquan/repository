@@ -58,8 +58,13 @@ public class time_info {
 		return formatter.format(date);
 	}
 	
-	public static String get_date_hhmm(Date date) {
+	public static String get_year_date_hhmm(Date date) {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmm");
+		return formatter.format(date);
+	}
+	
+	public static String get_date_year_hhmm(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmm");
 		return formatter.format(date);
 	}
 	
