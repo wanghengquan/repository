@@ -7,6 +7,7 @@ import win32con
 #re.compile('lattice\s+semic', re.I),
 p_cancel = [re.compile('edif2ngd\.exe', re.I),
             re.compile('par\.exe', re.I),
+            re.compile('bitgen\.exe', re.I),
             re.compile('map\.exe', re.I),
             re.compile('trce\.exe', re.I),
             re.compile('synthesis\.exe', re.I),
