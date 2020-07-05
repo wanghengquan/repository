@@ -140,7 +140,7 @@ public class result_waiter extends Thread {
 			String save_space = task_data.get("Paths").get("save_space");
 			String work_space = task_data.get("Paths").get("work_space");
 			String report_path = task_data.get("Paths").get("report_path");
-			String result_keep = task_data.get("CaseInfo").get("result_keep");
+			String result_keep = task_data.get("Preference").get("result_keep");
 			task_enum cmd_status = (task_enum) case_report_map.get(call_index).get("status");
 			ArrayList<String> post_report_list = new ArrayList<String>();
 			post_report_list.add("");

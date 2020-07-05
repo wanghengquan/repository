@@ -464,12 +464,17 @@ public class task_waiter extends Thread {
 			machine_hash.putAll(case_data.get("Machine"));
 		}
 		formated_data.put("Machine", machine_hash);
-        // ClientPreference format
+        // Task Preference format
         HashMap<String, String> client_preference = new HashMap<String, String>();
         if (case_data.containsKey("ClientPreference")) {
             client_preference.putAll(case_data.get("ClientPreference"));
         }
         formated_data.put("ClientPreference", client_preference);
+        HashMap<String, String> preference = new HashMap<String, String>();
+        if (case_data.containsKey("Preference")) {
+            preference.putAll(case_data.get("Preference"));
+        }
+        formated_data.put("Preference", preference);        
 		// System format
 		HashMap<String, String> system_hash = new HashMap<String, String>();
 		String os = new String("");
@@ -547,19 +552,17 @@ public class task_waiter extends Thread {
 		String auth_key = public_data.ENCRY_DEF_STRING;
 		String priority = public_data.TASK_DEF_PRIORITY;
 		String timeout = public_data.TASK_DEF_TIMEOUT;
-		String result_keep = public_data.TASK_DEF_RESULT_KEEP;
-		String keep_path = public_data.DEF_COPY_KEEP_PATH;
-		if (preference_data.containsKey("result_keep")){
-			result_keep = preference_data.get("result_keep");
-		}
-		if (preference_data.containsKey("keep_path")){
-			keep_path = preference_data.get("keep_path");
-		}		
+		String durl_type = public_data.TASK_DEF_DURL_TYPE;
+		String dzip_type = public_data.TASK_DEF_DZIP_TYPE;
+		String surl_type = public_data.TASK_DEF_SURL_TYPE;
+		String szip_type = public_data.TASK_DEF_SZIP_TYPE;		
 		caseinfo_hash.put("auth_key", auth_key);
 		caseinfo_hash.put("priority", priority);
 		caseinfo_hash.put("timeout", timeout);
-		caseinfo_hash.put("result_keep", result_keep);
-		caseinfo_hash.put("keep_path", keep_path);
+		caseinfo_hash.put("durl_type", durl_type);
+		caseinfo_hash.put("dzip_type", dzip_type);
+		caseinfo_hash.put("surl_type", surl_type);
+		caseinfo_hash.put("szip_type", szip_type);
 		if (case_data.containsKey("CaseInfo")) {
 			caseinfo_hash.putAll(case_data.get("CaseInfo"));
 		}
@@ -594,12 +597,24 @@ public class task_waiter extends Thread {
 			software_hash.putAll(case_data.get("Software"));
 		}
 		default_data.put("Software", software_hash);
-		// ClientPreference NA
-        HashMap<String, String> client_preference_hash = new HashMap<>();
-        if(case_data.containsKey("ClientPreference")){
-            client_preference_hash.putAll(case_data.get("ClientPreference"));
+		// task Preference NA
+        HashMap<String, String> preference_hash = new HashMap<>();
+		String result_keep = public_data.TASK_DEF_RESULT_KEEP;
+		String keep_path = public_data.DEF_COPY_KEEP_PATH;
+		String case_mode = public_data.DEF_CLIENT_CASE_MODE;
+		String lazy_copy = public_data.DEF_COPY_LAZY_COPY;
+		preference_hash.put("result_keep", result_keep);
+		preference_hash.put("keep_path", keep_path);
+		preference_hash.put("case_mode", case_mode);
+		preference_hash.put("lazy_copy", lazy_copy);
+		preference_hash.putAll(preference_data);
+        if(case_data.containsKey("ClientPreference")){  //for compatibility
+        	preference_hash.putAll(case_data.get("ClientPreference"));
         }
-        default_data.put("ClientPreference", client_preference_hash);		
+        if(case_data.containsKey("Preference")){
+        	preference_hash.putAll(case_data.get("Preference"));
+        }        
+        default_data.put("Preference", preference_hash);		
 		// Status NA
 		HashMap<String, String> status_hash = new HashMap<String, String>();
 		if (case_data.containsKey("Status")) {
@@ -614,6 +629,9 @@ public class task_waiter extends Thread {
         }		
         if (case_data.containsKey("ClientPreference") & (case_data.get("ClientPreference").containsKey("save_space"))) {
             paths_hash.put("save_space", case_data.get("ClientPreference").get("save_space"));
+        }
+        if (case_data.containsKey("Preference") & (case_data.get("Preference").containsKey("save_space"))) {
+            paths_hash.put("save_space", case_data.get("Preference").get("save_space"));
         }
         paths_hash.put("work_space", public_data.DEF_WORK_SPACE);
         if (preference_data.containsKey("work_space")) {
@@ -653,26 +671,28 @@ public class task_waiter extends Thread {
 		String task_name = "T" + task_data.get("ID").get("id");
 		String work_space = paths_hash.get("work_space");//already done in previous function
         String save_space = paths_hash.get("save_space");//already done in previous function
-		String case_mode = preference_data.get("case_mode");
-		String keep_path = preference_data.get("keep_path");
+		String case_mode = task_data.get("Preference").get("case_mode").trim();
+		String keep_path = task_data.get("Preference").get("keep_path").trim();
 		//override case mode and path keep      
-        if(task_data.get("ClientPreference").containsKey("case_mode")){
-            String mode = task_data.get("ClientPreference").get("case_mode").trim();
-			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
-				TASK_WAITER_LOGGER.warn("Task:Invalid case_mode setting:" + mode + ", local value will be used.");
+		if (!data_check.str_choice_check(case_mode, new String [] {"copy_case", "hold_case"} )){
+			TASK_WAITER_LOGGER.warn("Task:Invalid case_mode setting:" + case_mode + ", local value will be used.");
+		} else {
+			if (preference_data.containsKey("case_mode")) {
+				case_mode = preference_data.get("case_mode");
 			} else {
-				case_mode = mode;
+				case_mode = public_data.DEF_CLIENT_CASE_MODE;
 			}
-        }
-        if(task_data.get("ClientPreference").containsKey("keep_path")){
-            String mode = task_data.get("ClientPreference").get("keep_path").trim();
-			if (!data_check.str_choice_check(mode, new String [] {"false", "true"} )){
-				TASK_WAITER_LOGGER.warn("Task:Invalid keep_path setting:" + mode + ", local value will be used.");
+		}
+		if (!data_check.str_choice_check(keep_path, new String [] {"false", "true"} )){
+			TASK_WAITER_LOGGER.warn("Task:Invalid keep_path setting:" + keep_path + ", local value will be used.");
+		} else {
+			if (preference_data.containsKey("keep_path")) {
+				keep_path = preference_data.get("keep_path");
 			} else {
-				keep_path = mode;
+				keep_path = public_data.DEF_CLIENT_CASE_MODE;
 			}
-        }        
-        
+		}        
+        //get design base name
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		//get depot_space
@@ -757,11 +777,11 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("save_path", save_path);	
 		//get script_source
-		script_source = task_data.get("CaseInfo").get("script_address").trim().replaceAll("\\\\", "/");
+		script_source = task_data.get("CaseInfo").get("script_url").trim().replaceAll("\\\\", "/");
 		script_source = script_source.replaceAll("\\$work_path", work_space);// = work_space
 		script_source = script_source.replaceAll("\\$case_path", case_path);
 		script_source = script_source.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
-		paths_hash.put("script_source", script_source);
+		paths_hash.put("script_url", script_source);
 		//get launch_path
 		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
@@ -803,8 +823,7 @@ public class task_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> case_hash) {
 		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
 		// case_hash is formated
-		Set<String> case_hash_set = case_hash.keySet();
-		Iterator<String> case_hash_it = case_hash_set.iterator();
+		Iterator<String> case_hash_it = case_hash.keySet().iterator();
 		while (case_hash_it.hasNext()) {
 			String key_name = case_hash_it.next();
 			HashMap<String, String> case_info = new HashMap<String, String>();
