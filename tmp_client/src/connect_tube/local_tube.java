@@ -97,11 +97,13 @@ public class local_tube {
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
-		if ((suite_map.size() > 8) && (!suite_map.containsKey("ClientPreference"))){
+		if (suite_map.size() > 8) {
+			if (!suite_map.containsKey("ClientPreference") || !suite_map.containsKey("Preference")){
 			suite_file_error_msg = "Error: Extra option found in suite sheet::suite info.";
 			System.out.println(">>>Error: Extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
 			return false;
+			}
 		}
 		String[] suite_keys = { "project_id", "suite_name", "CaseInfo", "Environment", "LaunchCommand", "Software",
 				"System", "Machine" };
@@ -136,7 +138,7 @@ public class local_tube {
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
-		//for previously version support do not list 'Automated' in must_keys
+		//for previously version support do not list 'Automated' and 'smoke' in must_keys
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
 				suite_file_error_msg = "Error: case sheet title missing :" + x + ".";
@@ -823,10 +825,10 @@ public class local_tube {
 		return merged_data;
 	}
 
-	public static HashMap<String, String> comm_admin_task_merge(HashMap<String, String> globle_data,
+	public static HashMap<String, String> comm_admin_task_merge(
+			HashMap<String, String> globle_data,
 			HashMap<String, String> local_data) {
-		Set<String> local_set = local_data.keySet();
-		Iterator<String> local_it = local_set.iterator();
+		Iterator<String> local_it = local_data.keySet().iterator();
 		while (local_it.hasNext()) {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);

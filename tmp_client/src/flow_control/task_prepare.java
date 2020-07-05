@@ -49,8 +49,8 @@ public class task_prepare {
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = client_preference_data.get("case_mode").trim();
 		//remote task override
-        if(task_data.containsKey("ClientPreference") & task_data.get("ClientPreference").containsKey("case_mode")){
-            String mode = task_data.get("ClientPreference").get("case_mode").trim();
+        if(task_data.containsKey("Preference") & task_data.get("Preference").containsKey("case_mode")){
+            String mode = task_data.get("Preference").get("case_mode").trim();
 			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
 				CASE_PREPARE_LOGGER.warn("Remote task:Invalid case_mode setting:" + mode + ", local value will be used.");
 			} else {
@@ -90,34 +90,48 @@ public class task_prepare {
 		}		
 	}
 	
-	//export and writable
 	protected Boolean get_case_path_ready(
 			HashMap<String, HashMap<String, String>> task_data,
-			HashMap<String, String> client_preference_data
+			HashMap<String, String> preference_data
 			){
 		task_prepare_info.add(line_separator + ">>>Prepare case path:");
 		String source_path = task_data.get("Paths").get("design_source").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String task_path = task_data.get("Paths").get("task_path").trim();
-		String case_mode = client_preference_data.get("case_mode").trim();
-		String lazy_copy = client_preference_data.get("lazy_copy").trim();
-		//remote task override
-        if(task_data.get("ClientPreference").containsKey("case_mode")){
-            String mode = task_data.get("ClientPreference").get("case_mode").trim();
-			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
-				CASE_PREPARE_LOGGER.warn("Task:Invalid case_mode setting:" + mode + ", local value will be used.");
+		String case_mode = task_data.get("Preference").get("case_mode").trim();
+		String lazy_copy = task_data.get("Preference").get("lazy_copy").trim();
+		String durl_type = task_data.get("CaseInfo").get("durl_type").trim();
+		String dzip_type = task_data.get("CaseInfo").get("dzip_type").trim();
+		//sanity check	
+		if (!data_check.str_choice_check(case_mode, new String [] {"copy_case", "hold_case"} )){
+			CASE_PREPARE_LOGGER.warn("Task:Invalid case_mode setting:" + case_mode + ", local value will be used.");
+		} else {
+			if (preference_data.containsKey("case_mode")) {
+				case_mode = preference_data.get("case_mode");
 			} else {
-				case_mode = mode;
+				case_mode = public_data.DEF_CLIENT_CASE_MODE;
 			}
-        }
-        if(task_data.get("ClientPreference").containsKey("lazy_copy")){
-            String mode = task_data.get("ClientPreference").get("lazy_copy").trim();
-			if (!data_check.str_choice_check(mode, new String [] {"false", "true"} )){
-				CASE_PREPARE_LOGGER.warn("Task:Invalid lazy_copy setting:" + mode + ", local value will be used.");
+		}
+		if (!data_check.str_choice_check(lazy_copy, new String [] {"false", "true"} )){
+			CASE_PREPARE_LOGGER.warn("Task:Invalid keep_path setting:" + lazy_copy + ", local value will be used.");
+		} else {
+			if (preference_data.containsKey("lazy_copy")) {
+				lazy_copy = preference_data.get("keep_path");
 			} else {
-				lazy_copy = mode;
+				lazy_copy = public_data.DEF_COPY_LAZY_COPY;
 			}
-        }
+		}
+		if (!data_check.str_choice_check(durl_type, new String [] {"svn", "https", "http", "ftp", "remote", "local"} )){
+			CASE_PREPARE_LOGGER.warn("Task:Invalid durl_type setting:" + durl_type + ", local value will be used.");
+		} else {
+			durl_type = public_data.TASK_DEF_DURL_TYPE;
+		}
+		if (!data_check.str_choice_check(dzip_type, new String [] {"no", "7z", "zip", "gzip", "bzip2", "tar"} )){
+			CASE_PREPARE_LOGGER.warn("Task:Invalid dzip_type setting:" + dzip_type + ", local value will be used.");
+		} else {
+			dzip_type = public_data.TASK_DEF_DZIP_TYPE;
+		}		
+		//skip flow if in hold case or lazy copy mode
 		File case_path_dobj = new File(case_path);
 		if (case_mode.equalsIgnoreCase("hold_case")){
 			if (case_path_dobj.isDirectory() && case_path_dobj.canWrite()){
@@ -131,32 +145,52 @@ public class task_prepare {
 		if (lazy_copy.equalsIgnoreCase("true") && case_path_dobj.exists()){
 			task_prepare_info.add("Info : Lazy mode case path prepare Skipped:" + case_path);
 			return true;
-		}
-		//export new case if not have
-		// get access author key
-		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
+		}		
+		//get user_passwd
 		String user_passwd = new String("NA_+_NA");
+		user_passwd = get_auth_key(task_data.get("CaseInfo").get("auth_key").trim());
+		if (user_passwd.equals("")) {
+			return false;
+		}
+		String user_name = user_passwd.split("_\\+_")[0];
+		String pass_word = user_passwd.split("_\\+_")[1];		
+		//get source version if have
+		String source_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("version")){
+			source_version = task_data.get("CaseInfo").get("version").trim();
+		}
+		//get export command
+		ArrayList<String> export_cmd_list = get_export_cmd(
+				source_path, durl_type, dzip_type, source_version, user_name, pass_word, case_path, task_path);
+		task_prepare_info.add(">>>Export Task case with CMD(s):");
+		task_prepare_info.addAll(export_cmd_list);
+		//run export flow
+		Boolean export_ok = run_export_flow(case_path, export_cmd_list);
+		if (!export_ok) {
+			return false;
+		}
+		//run unzip if need
+		return true;
+	}
+	
+	private String get_auth_key(String encrypt_string) {
+		String user_passwd = new String("");
 		try {
-			user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
+			user_passwd = des_decode.decrypt(encrypt_string, public_data.ENCRY_KEY);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 			task_prepare_info.add("Error: Decode auth key failed.");
 			CASE_PREPARE_LOGGER.error("Decode auth key failed.");
-			return false;
+			return user_passwd;
 		}
-		String user_name = user_passwd.split("_\\+_")[0];
-		String pass_word = user_passwd.split("_\\+_")[1];
-		// get source version if have
-		String source_version = new String("");
-		if (task_data.get("CaseInfo").containsKey("version")){
-			source_version = task_data.get("CaseInfo").get("version").trim();
-		}			
-		//get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(source_path, source_version, user_name, pass_word, case_path, task_path);
-		task_prepare_info.add(">>>Export Task case with CMD(s):");
-		task_prepare_info.addAll(export_cmd_list);		
-		//run export
+		return user_passwd;
+	}
+	
+	private Boolean run_export_flow(
+			String case_path,
+			ArrayList<String> export_cmd_list) {
+		File case_path_dobj = new File(case_path);
 		synchronized (this.getClass()) {
 			//delete ori design
 			if (case_path_dobj.exists()){
@@ -192,7 +226,7 @@ public class task_prepare {
 					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
 					return false;
 				}
-			}		
+			}	
 		}
 		return true;
 	}
@@ -203,8 +237,10 @@ public class task_prepare {
 			){
 		task_prepare_info.add(line_separator + ">>>Prepare script path:");
 		// generate source URL
-		String script_addr = task_data.get("Paths").get("script_source").trim();
+		String script_addr = task_data.get("Paths").get("script_url").trim();
 		String task_path = task_data.get("Paths").get("task_path").trim();
+		String surl_type = task_data.get("CaseInfo").get("surl_type").trim();
+		String szip_type = task_data.get("CaseInfo").get("szip_type").trim();
 		if (script_addr.equals("") || script_addr == null) {
 			CASE_PREPARE_LOGGER.debug("Internal script used, no export need.");
 			task_prepare_info.add("Info : Internal script used, no export need.");
@@ -234,7 +270,8 @@ public class task_prepare {
 			script_version = task_data.get("CaseInfo").get("script_version").trim();
 		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, script_version, user_name, pass_word, task_path, task_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(
+				script_addr, surl_type, szip_type, script_version, user_name, pass_word, task_path, task_path);
 		task_prepare_info.add(">>>Export Task script with CMD(s):");
 		task_prepare_info.addAll(export_cmd_list);
 		//skip export if exists
@@ -268,6 +305,8 @@ public class task_prepare {
 	 */
 	private ArrayList<String> get_export_cmd(
 			String case_url,
+			String url_type,
+			String zip_type,
 			String case_ver,
 			String user_name, 
 			String pass_word, 
@@ -563,7 +602,8 @@ public class task_prepare {
 			}
 		}
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(design_src_url, source_version, user_name, pass_word, design_des_url, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(
+				design_src_url, null, null, source_version, user_name, pass_word, design_des_url, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
@@ -600,7 +640,8 @@ public class task_prepare {
 			script_version = task_data.get("CaseInfo").get("script_version").trim();
 		}		
 		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(script_addr, script_version, user_name, pass_word, case_work_path, case_work_path);
+		ArrayList<String> export_cmd_list = get_export_cmd(
+				script_addr, null, null, script_version, user_name, pass_word, case_work_path, case_work_path);
 		// export design
 		for (String run_cmd : export_cmd_list) {
 			try {
