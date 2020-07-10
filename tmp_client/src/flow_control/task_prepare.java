@@ -24,7 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
-import utility_funcs.data_check;
 import utility_funcs.des_decode;
 import utility_funcs.system_cmd;
 
@@ -40,23 +39,26 @@ public class task_prepare {
 	public task_prepare() {
 	}	
 	
+	protected Boolean get_task_case_ready(
+			HashMap<String, HashMap<String, String>> task_data
+			){
+		Boolean task_path_ok = get_task_path_ready(task_data);
+		Boolean case_path_ok = get_case_path_ready(task_data);
+		Boolean script_path_ok = get_script_path_ready(task_data);
+		if (task_path_ok && case_path_ok && script_path_ok){
+			return true;
+		} else {
+			return false;
+		}
+	}	
+	
 	//create and writable
 	protected Boolean get_task_path_ready(
-			HashMap<String, HashMap<String, String>> task_data,
-			HashMap<String, String> client_preference_data
+			HashMap<String, HashMap<String, String>> task_data
 			){
 		task_prepare_info.add(">>>Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
-		String case_mode = client_preference_data.get("case_mode").trim();
-		//remote task override
-        if(task_data.containsKey("Preference") & task_data.get("Preference").containsKey("case_mode")){
-            String mode = task_data.get("Preference").get("case_mode").trim();
-			if (!data_check.str_choice_check(mode, new String [] {"copy_case", "hold_case"} )){
-				CASE_PREPARE_LOGGER.warn("Remote task:Invalid case_mode setting:" + mode + ", local value will be used.");
-			} else {
-				case_mode = mode;
-			}
-        }
+		String case_mode = task_data.get("Preference").get("case_mode").trim();
 		File task_path_dobj = new File(task_path);
 		if (case_mode.equalsIgnoreCase("hold_case")){
 			if (task_path_dobj.isDirectory() && task_path_dobj.canWrite()){
@@ -87,51 +89,19 @@ public class task_prepare {
 		} else {
 			task_prepare_info.add("Error: Task path cannot write:" + task_path);
 			return false;
-		}		
+		}	
 	}
 	
 	protected Boolean get_case_path_ready(
-			HashMap<String, HashMap<String, String>> task_data,
-			HashMap<String, String> preference_data
+			HashMap<String, HashMap<String, String>> task_data
 			){
 		task_prepare_info.add(line_separator + ">>>Prepare case path:");
-		String source_path = task_data.get("Paths").get("design_source").trim();
+		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
-		String task_path = task_data.get("Paths").get("task_path").trim();
+		String base_name = task_data.get("Paths").get("base_name").trim();
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
-		String lazy_copy = task_data.get("Preference").get("lazy_copy").trim();
-		String durl_type = task_data.get("CaseInfo").get("durl_type").trim();
-		String dzip_type = task_data.get("CaseInfo").get("dzip_type").trim();
-		//sanity check	
-		if (!data_check.str_choice_check(case_mode, new String [] {"copy_case", "hold_case"} )){
-			CASE_PREPARE_LOGGER.warn("Task:Invalid case_mode setting:" + case_mode + ", local value will be used.");
-		} else {
-			if (preference_data.containsKey("case_mode")) {
-				case_mode = preference_data.get("case_mode");
-			} else {
-				case_mode = public_data.DEF_CLIENT_CASE_MODE;
-			}
-		}
-		if (!data_check.str_choice_check(lazy_copy, new String [] {"false", "true"} )){
-			CASE_PREPARE_LOGGER.warn("Task:Invalid keep_path setting:" + lazy_copy + ", local value will be used.");
-		} else {
-			if (preference_data.containsKey("lazy_copy")) {
-				lazy_copy = preference_data.get("keep_path");
-			} else {
-				lazy_copy = public_data.DEF_COPY_LAZY_COPY;
-			}
-		}
-		if (!data_check.str_choice_check(durl_type, new String [] {"svn", "https", "http", "ftp", "remote", "local"} )){
-			CASE_PREPARE_LOGGER.warn("Task:Invalid durl_type setting:" + durl_type + ", local value will be used.");
-		} else {
-			durl_type = public_data.TASK_DEF_DURL_TYPE;
-		}
-		if (!data_check.str_choice_check(dzip_type, new String [] {"no", "7z", "zip", "gzip", "bzip2", "tar"} )){
-			CASE_PREPARE_LOGGER.warn("Task:Invalid dzip_type setting:" + dzip_type + ", local value will be used.");
-		} else {
-			dzip_type = public_data.TASK_DEF_DZIP_TYPE;
-		}		
-		//skip flow if in hold case or lazy copy mode
+		String lazy_copy = task_data.get("Preference").get("lazy_copy").trim();	
+		//step 1: skip flow if in hold case or lazy copy mode
 		File case_path_dobj = new File(case_path);
 		if (case_mode.equalsIgnoreCase("hold_case")){
 			if (case_path_dobj.isDirectory() && case_path_dobj.canWrite()){
@@ -146,30 +116,117 @@ public class task_prepare {
 			task_prepare_info.add("Info : Lazy mode case path prepare Skipped:" + case_path);
 			return true;
 		}		
-		//get user_passwd
+		//step 2: get user_passwd
 		String user_passwd = new String("NA_+_NA");
 		user_passwd = get_auth_key(task_data.get("CaseInfo").get("auth_key").trim());
-		if (user_passwd.equals("")) {
+		if (user_passwd.equals("") || !user_passwd.contains("_+_")) {
+			task_prepare_info.add("Error : Wrong auth_key given, regenerate it with Client->Tools->Keygen");
 			return false;
 		}
 		String user_name = user_passwd.split("_\\+_")[0];
 		String pass_word = user_passwd.split("_\\+_")[1];		
-		//get source version if have
+		//step 3: get source version if have
 		String source_version = new String("");
 		if (task_data.get("CaseInfo").containsKey("version")){
 			source_version = task_data.get("CaseInfo").get("version").trim();
 		}
-		//get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(
-				source_path, durl_type, dzip_type, source_version, user_name, pass_word, case_path, task_path);
-		task_prepare_info.add(">>>Export Task case with CMD(s):");
-		task_prepare_info.addAll(export_cmd_list);
-		//run export flow
-		Boolean export_ok = run_export_flow(case_path, export_cmd_list);
+		//step 4: url/zip identify
+		url_enum durl_type = get_url_type(source_url, "durl_type", task_data.get("CaseInfo"));
+		zip_enum dzip_type = get_zip_type(source_url, "dzip_type", task_data.get("CaseInfo"));
+		//step 5: remove existing case
+		Boolean remove_ok = remove_exist_path(case_path, base_name);
+		if (!remove_ok) {
+			return false;
+		}
+		//step 6: get case parent path ready
+		Boolean parent_ok = build_parent_path(case_path);
+		if (!parent_ok) {
+			return false;
+		}
+		//step 7: get export command
+		Boolean export_ok = run_src_export(
+				source_url, durl_type, dzip_type, source_version, user_name, pass_word, case_path, base_name);
 		if (!export_ok) {
 			return false;
 		}
-		//run unzip if need
+		//step 8: run unzip if need
+		Boolean unzip_ok = run_src_unzip(dzip_type, case_path, base_name);
+		if (!unzip_ok) {
+			return false;
+		}
+		return true;
+	}
+	
+	protected Boolean get_script_path_ready(
+			HashMap<String, HashMap<String, String>> task_data
+			){
+		task_prepare_info.add(line_separator + ">>>Prepare script path:");
+		String script_url = task_data.get("Paths").get("script_url").trim();
+		String script_path = task_data.get("Paths").get("script_path").trim();
+		String script_name = task_data.get("Paths").get("script_name").trim();
+		String work_space = task_data.get("Paths").get("work_space").trim();
+		String case_path = task_data.get("Paths").get("case_path").trim();
+		String tool_path = public_data.TOOLS_ROOT_PATH;
+		String case_mode = task_data.get("Preference").get("case_mode").trim();
+		String keep_path = task_data.get("Preference").get("keep_path").trim();
+		if (script_url.equals("") || script_url == null) {
+			CASE_PREPARE_LOGGER.debug("Internal script used, no export needed.");
+			task_prepare_info.add("Info : Internal script used, no export needed.");
+			return true;
+		}
+		if(script_url.startsWith(work_space) || script_url.startsWith(case_path) || script_url.startsWith(tool_path)) {
+			CASE_PREPARE_LOGGER.debug("Local script used, no export needed.");
+			task_prepare_info.add("Info : Local script used, no export needed.");
+			return true;
+		}
+		String lazy_copy = task_data.get("Preference").get("lazy_copy").trim();		
+		File script_path_dobj = new File(script_path);
+		if (lazy_copy.equalsIgnoreCase("true") && script_path_dobj.exists()){
+			task_prepare_info.add("Info : Lazy mode script path prepare Skipped:" + case_path);
+			return true;
+		}		
+		//step 1: get user_passwd
+		String user_passwd = new String("NA_+_NA");
+		user_passwd = get_auth_key(task_data.get("CaseInfo").get("auth_key").trim());
+		if (user_passwd.equals("") || !user_passwd.contains("_+_")) {
+			task_prepare_info.add("Error : Wrong auth_key given, regenerate it with Client->Tools->Keygen");
+			return false;
+		}
+		String user_name = user_passwd.split("_\\+_")[0];
+		String pass_word = user_passwd.split("_\\+_")[1];		
+		//step 2: get source version if have
+		String script_version = new String("");
+		if (task_data.get("CaseInfo").containsKey("script_version")){
+			script_version = task_data.get("CaseInfo").get("script_version").trim();
+		}
+		//step 3: url/zip identify
+		url_enum surl_type = get_url_type(script_url, "surl_type", task_data.get("CaseInfo"));
+		zip_enum szip_type = get_zip_type(script_url, "szip_type", task_data.get("CaseInfo"));
+		//step 4: remove existing script
+		if (case_mode.equals("hold_case") || keep_path.equals("true")) {
+			task_prepare_info.add("Warn : hold_case/keep_path mode, skip existing script remove");
+		} else {
+			Boolean remove_ok = remove_exist_path(script_path, script_name);
+			if (!remove_ok) {
+				return false;
+			}
+		}
+		//step 5: get case parent path ready
+		Boolean parent_ok = build_parent_path(script_path);
+		if (!parent_ok) {
+			return false;
+		}
+		//step 6: run script export
+		Boolean export_ok = run_src_export(
+				script_url, surl_type, szip_type, script_version, user_name, pass_word, script_path, script_name);
+		if (!export_ok) {
+			return false;
+		}
+		//step 7: run unzip if need
+		Boolean unzip_ok = run_src_unzip(szip_type, script_path, script_name);
+		if (!unzip_ok) {
+			return false;
+		}
 		return true;
 	}
 	
@@ -187,43 +244,150 @@ public class task_prepare {
 		return user_passwd;
 	}
 	
-	private Boolean run_export_flow(
+	private url_enum get_url_type(
+			String url,
+			String url_category,
+			HashMap<String, String> task_caseinfo_data) {
+		//task defined type
+		if (task_caseinfo_data.containsKey(url_category)) {
+			try {
+				return url_enum.valueOf(task_caseinfo_data.get(url_category).toUpperCase());
+			} catch (Exception e) {
+				task_prepare_info.add("Error: Wrong user url type:" + task_caseinfo_data.get(url_category));
+				CASE_PREPARE_LOGGER.error("Error: Wrong user url type:" + task_caseinfo_data.get(url_category));
+			}			
+		}
+		//auto identify flow
+		String[] url_array = url.split(":", 2);
+		String host_str = url_array[0];
+		if (url.contains(public_data.SVN_URL)) {
+			return url_enum.SVN;
+		}
+		if (host_str.length() < 2 || url_array.length < 2) {
+			////lsh-prince/sw/test_dir
+			//D:/temp/regression_suite
+			return url_enum.LOCAL;
+		}
+		if (host_str.equalsIgnoreCase(url_enum.HTTPS.toString())) {
+			return url_enum.HTTPS;
+		}
+		if (host_str.equalsIgnoreCase(url_enum.HTTP.toString())) {
+			return url_enum.HTTP;
+		}
+		if (host_str.equalsIgnoreCase(url_enum.FTP.toString())) {
+			return url_enum.FTP;
+		}	
+		return url_enum.REMOTE;
+	}
+	
+	private zip_enum get_zip_type(
+			String url,
+			String zip_category,
+			HashMap<String, String> task_caseinfo_data) {
+		//task defined type
+		if (task_caseinfo_data.containsKey(zip_category)) {
+			try {
+				return zip_enum.valueOf(task_caseinfo_data.get(zip_category).toUpperCase());
+			} catch (Exception e) {
+				task_prepare_info.add("Error: Wrong user zip type:" + task_caseinfo_data.get(zip_category));
+				CASE_PREPARE_LOGGER.error("Error: Wrong user zip type:" + task_caseinfo_data.get(zip_category));
+			}			
+		}
+		//auto identify flow
+		String[] url_array = url.split("/");
+		String basename = url_array[url_array.length - 1];
+		if (!basename.contains(".")) {
+			return zip_enum.NO;
+		}
+		if (basename.contains(zip_enum.TARGZ.get_description())) {
+			return zip_enum.TARGZ;
+		}
+		if (basename.contains(zip_enum.TARBZ.get_description())) {
+			return zip_enum.TARBZ;
+		}
+		if (basename.contains(zip_enum.TARBZ2.get_description())) {
+			return zip_enum.TARBZ2;
+		}
+		if (basename.contains(zip_enum.SEVENZ.get_description())) {
+			return zip_enum.SEVENZ;
+		}
+		if (basename.contains(zip_enum.BZ2.get_description())) {
+			return zip_enum.BZ2;
+		}
+		if (basename.contains(zip_enum.BZIP2.get_description())) {
+			return zip_enum.BZIP2;
+		}
+		if (basename.contains(zip_enum.TBZ2.get_description())) {
+			return zip_enum.TBZ2;
+		}
+		if (basename.contains(zip_enum.TBZ.get_description())) {
+			return zip_enum.TBZ;
+		}
+		if (basename.contains(zip_enum.GZ.get_description())) {
+			return zip_enum.GZ;
+		}		
+		if (basename.contains(zip_enum.GZIP.get_description())) {
+			return zip_enum.GZIP;
+		}		
+		if (basename.contains(zip_enum.TGZ.get_description())) {
+			return zip_enum.TGZ;
+		}
+		if (basename.contains(zip_enum.TAR.get_description())) {
+			return zip_enum.TAR;
+		}		
+		if (basename.contains(zip_enum.ZIP.get_description())) {
+			return zip_enum.ZIP;
+		}			
+		return zip_enum.UNKNOWN;//but consider it as a file
+	}	
+	
+	private Boolean remove_exist_path(
 			String case_path,
-			ArrayList<String> export_cmd_list) {
+			String base_name) {
 		File case_path_dobj = new File(case_path);
+		File case_parent_path = case_path_dobj.getParentFile();
+		File zip_case_fobj = new File(case_parent_path.getAbsolutePath() + "/" + base_name);
 		synchronized (this.getClass()) {
 			//delete ori design
 			if (case_path_dobj.exists()){
 				if(FileUtils.deleteQuietly(case_path_dobj)){
-					task_prepare_info.add("Info : Previously run design remove Pass:" + case_path);
-					CASE_PREPARE_LOGGER.debug("Previously run design remove Pass:" + case_path);
+					task_prepare_info.add("Info : Previously directory remove Pass:" + case_path);
+					CASE_PREPARE_LOGGER.debug("Previously directory remove Pass:" + case_path);
 				} else {
-					task_prepare_info.add("Error: Previously run design remove Fail:" + case_path);
-					CASE_PREPARE_LOGGER.warn("Previously run design deleted Fail:" + case_path);
+					task_prepare_info.add("Error: Previously directory remove Fail:" + case_path);
+					CASE_PREPARE_LOGGER.warn("Previously directory remove Fail:" + case_path);
 					return false;
 				}
 			}
+			//delete ori zipped file
+			if (zip_case_fobj.exists()){
+				if(FileUtils.deleteQuietly(zip_case_fobj)){
+					task_prepare_info.add("Info : Previously file remove Pass:" + case_path);
+					CASE_PREPARE_LOGGER.debug("Previously file remove Pass:" + case_path);
+				} else {
+					task_prepare_info.add("Error: Previously file remove Fail:" + case_path);
+					CASE_PREPARE_LOGGER.warn("Previously file remove Fail:" + case_path);
+					return false;
+				}
+			}			
+		}
+		return true;
+	}	
+	
+	private Boolean build_parent_path(
+			String case_path) {
+		File case_path_dobj = new File(case_path);
+		synchronized (this.getClass()) {
 			// prepare export dir
-			File case_path_parent = case_path_dobj.getParentFile();
-			if (!case_path_parent.exists()){
+			File case_parent_path = case_path_dobj.getParentFile();
+			if (!case_parent_path.exists()){
 				try {
-					FileUtils.forceMkdir(case_path_parent);
+					FileUtils.forceMkdir(case_parent_path);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					// e.printStackTrace();
-					task_prepare_info.add("Error: Prepare case parent path Fail:" + case_path_parent.getAbsolutePath());
-					CASE_PREPARE_LOGGER.error("Prepare case parent path Fail:" + case_path_parent.getAbsolutePath());
-					return false;
-				}
-			}
-			// export design
-			for (String run_cmd : export_cmd_list) {
-				try {
-					task_prepare_info.addAll(system_cmd.run(run_cmd));
-				} catch (Exception e) {
-					// e.printStackTrace();
-					task_prepare_info.add("Error: Run cmd Fail:" + run_cmd);
-					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
+					task_prepare_info.add("Error: Prepare parent path Fail:" + case_parent_path.getAbsolutePath());
+					CASE_PREPARE_LOGGER.error("Prepare parent path Fail:" + case_parent_path.getAbsolutePath());
 					return false;
 				}
 			}	
@@ -231,171 +395,603 @@ public class task_prepare {
 		return true;
 	}
 	
-	//export and writable
-	protected Boolean get_script_path_ready(
-			HashMap<String, HashMap<String, String>> task_data
-			){
-		task_prepare_info.add(line_separator + ">>>Prepare script path:");
-		// generate source URL
-		String script_addr = task_data.get("Paths").get("script_url").trim();
-		String task_path = task_data.get("Paths").get("task_path").trim();
-		String surl_type = task_data.get("CaseInfo").get("surl_type").trim();
-		String szip_type = task_data.get("CaseInfo").get("szip_type").trim();
-		if (script_addr.equals("") || script_addr == null) {
-			CASE_PREPARE_LOGGER.debug("Internal script used, no export need.");
-			task_prepare_info.add("Info : Internal script used, no export need.");
+	private Boolean run_src_unzip(
+		zip_enum dzip_type,
+		String case_path,
+		String base_name){
+		ArrayList<String> cmd_array = new ArrayList<String>();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+		//step 1:check source
+		task_prepare_info.add(">>>Unzip Task case with CMD(s):");		
+		if(dzip_type.equals(zip_enum.NO)) {
+			task_prepare_info.add(">>>Source found, no extract needed.");
 			return true;
 		}
-		File script_dobj = new File(script_addr);
-		String script_name = script_dobj.getName();	
-		String script_path = task_path + '/' + script_name;
-		File script_path_dobj = new File(script_path);
-		// get access author key
-		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
-		String user_passwd = new String("NA_+_NA");
-		try {
-			user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			task_prepare_info.add("Error: Decode auth key failed.");
-			CASE_PREPARE_LOGGER.error("Decode auth key failed.");
+		//step 2:get unzip command
+		switch (dzip_type) {	
+		case SEVENZ:
+			cmd_array.add(get_7z_cmd_str(base_name));
+			break;
+		case BZ2:
+			cmd_array.add(get_bzip2_cmd_str(base_name));
+			break;
+		case BZIP2:
+			cmd_array.add(get_bzip2_cmd_str(base_name));
+			break;
+		case TBZ2:
+			cmd_array.addAll(get_tar_bzip2_cmd_str(base_name));
+			break;
+		case TBZ:
+			cmd_array.addAll(get_tar_bzip2_cmd_str(base_name));
+			break;
+		case GZ:
+			cmd_array.add(get_gzip_cmd_str(base_name));
+			break;
+		case GZIP:
+			cmd_array.add(get_gzip_cmd_str(base_name));
+			break;			
+		case TGZ:
+			cmd_array.addAll(get_tar_gzip_cmd_str(base_name));
+			break;
+		case TAR:
+			cmd_array.add(get_tar_cmd_str(base_name));
+			break;
+		case ZIP:
+			cmd_array.add(get_zip_cmd_str(base_name));
+			break;
+		case TARGZ:
+			cmd_array.addAll(get_tar_gzip_cmd_str(base_name));
+			break;
+		case TARBZ:
+			cmd_array.addAll(get_tar_bzip2_cmd_str(base_name));
+			break;
+		case TARBZ2:
+			cmd_array.addAll(get_tar_bzip2_cmd_str(base_name));
+			break;
+		case UNKNOWN:
+			break;			
+		default:
+			break;
+		}
+		//step 3:command lines check
+		if (cmd_array.isEmpty()) {
+			task_prepare_info.add("Warn : no unzip command found for given source:" + base_name);
 			return false;
 		}
-		String user_name = user_passwd.split("_\\+_")[0];
-		String pass_word = user_passwd.split("_\\+_")[1];	
-		// get script version if have
-		String script_version = new String("");
-		if (task_data.get("CaseInfo").containsKey("script_version")){
-			script_version = task_data.get("CaseInfo").get("script_version").trim();
+		task_prepare_info.addAll(cmd_array);
+		task_prepare_info.add(">>>Work path:" + case_parent_path);
+		//step 4:unzip commands run check
+		Boolean run_ok = run_common_cmds(cmd_array, case_parent_path);
+		if (!run_ok) {
+			return false;
 		}
-		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(
-				script_addr, surl_type, szip_type, script_version, user_name, pass_word, task_path, task_path);
-		task_prepare_info.add(">>>Export Task script with CMD(s):");
-		task_prepare_info.addAll(export_cmd_list);
-		//skip export if exists
-		if (script_path_dobj.exists()){
-			task_prepare_info.add("Info : Script exists, skip export:" + script_path);
-			CASE_PREPARE_LOGGER.info("Script exists, skip export:" + script_path);
-			return true;
+		//step 5: final case path check
+		File case_path_dobj = new File(case_path);
+		if (!case_path_dobj.exists()) {
+			return false;
+		}
+		return true;
+	}	
+	
+	private String get_7z_cmd_str(
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder("");
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_7ZA;
+		} else {
+			task_prepare_info.add("Warn : .7z file do not supported on Linux side.");
+			return exe_cmd.toString();
+		}
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append("x -y");
+		exe_cmd.append(" ");
+		exe_cmd.append(base_name);
+		return exe_cmd.toString();
+	}
+	
+	private String get_bzip2_cmd_str(
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder("");
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_7ZA;
+		} else {
+			cmd_str = "bunzip2";
 		}		
-		//run export
+		//Step2: option_str 
+		String option_str = new String("");
+		if(os_type.startsWith("windows")){
+			option_str = "x -y";
+		} else {
+			option_str = "-f";
+		}
+		//
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(option_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(base_name);
+		return exe_cmd.toString();
+	}	
+	
+	private ArrayList<String> get_tar_bzip2_cmd_str(
+			String base_name) {
+		ArrayList<String> cmd_list = new ArrayList<String>();
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		if(os_type.startsWith("windows")){
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name);
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name.split("\\.")[0] + ".tar");
+		} else {
+			cmd_list.add("tar -xj -f " + base_name);
+		}
+		return cmd_list;
+	}	
+	
+	private String get_gzip_cmd_str(
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder("");
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_7ZA;
+		} else {
+			cmd_str = "gunzip";
+		}		
+		//Step2: option_str 
+		String option_str = new String("");
+		if(os_type.startsWith("windows")){
+			option_str = "x -y";
+		} else {
+			option_str = "-f";
+		}
+		//
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(option_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(base_name);
+		return exe_cmd.toString();
+	}	
+	
+	private ArrayList<String> get_tar_gzip_cmd_str(
+			String base_name) {
+		ArrayList<String> cmd_list = new ArrayList<String>();
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		if(os_type.startsWith("windows")){
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name);
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name.split("\\.")[0] + ".tar");
+		} else {
+			cmd_list.add("tar -xz -f " + base_name);
+		}
+		return cmd_list;
+	}
+	
+	private String get_tar_cmd_str(
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder("");
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_7ZA;
+		} else {
+			cmd_str = "tar";
+		}		
+		//Step2: option_str 
+		String option_str = new String("");
+		if(os_type.startsWith("windows")){
+			option_str = "x -y";
+		} else {
+			option_str = "-x -f";
+		}
+		//
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(option_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(base_name);
+		return exe_cmd.toString();
+	}
+
+	private String get_zip_cmd_str(
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder("");
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_7ZA;
+		} else {
+			cmd_str = "unzip";
+		}		
+		//Step2: option_str 
+		String option_str = new String("");
+		if(os_type.startsWith("windows")){
+			option_str = "x -y";
+		} else {
+			option_str = "-o -q";
+		}
+		//
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(option_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(base_name);
+		return exe_cmd.toString();
+	}
+	
+	private Boolean run_src_export(
+			String case_url,
+			url_enum url_type,
+			zip_enum zip_type,
+			String ver_number,
+			String user_name, 
+			String pass_word, 
+			String case_path,
+			String base_name) {
+		ArrayList<String> cmd_array = new ArrayList<String>();
+		switch (url_type) {
+		case SVN:
+			cmd_array.add(get_svn_cmd_str(case_url, zip_type, ver_number, user_name, pass_word, case_path, base_name));
+			break;
+		case HTTPS:
+			cmd_array.add(get_https_cmd_str(case_url, zip_type, case_path, base_name));
+			break;
+		case HTTP:
+			cmd_array.add(get_http_cmd_str(case_url, zip_type, user_name, pass_word, case_path, base_name));
+			break;
+		case FTP:
+			cmd_array.add(get_ftp_cmd_str(case_url, zip_type, user_name, pass_word, case_path));
+			break;
+		case REMOTE:
+			cmd_array.add(get_remote_cmd_str(case_url, zip_type, user_name, pass_word, case_path));
+			break;
+		case LOCAL:
+			cmd_array.add(get_local_cmd_str(case_url, case_path));
+			break;	
+		default:
+			break;
+		} 
+		task_prepare_info.add(">>>Export Task case with CMD(s):");
+		task_prepare_info.addAll(cmd_array);		
+		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
+		return export_ok;
+	}
+    
+	private String get_svn_cmd_str(
+			String case_url,
+			zip_enum zip_type,
+			String ver_number,
+			String user_name, 
+			String pass_word,
+			String case_path,
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+		//get export command
+		String cmd_str = new String("");
+		if (ver_number.length() > 0){
+			cmd_str = "svn export -r " + ver_number;
+		} else {
+			cmd_str = "svn export";
+		}
+		//get export path
+		String export_path = new String("");
+		if (zip_type.equals(zip_enum.NO)) {
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path + "/" + base_name;
+		}
+		//generate command
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(case_url);
+		exe_cmd.append(" ");
+		exe_cmd.append(export_path);
+		exe_cmd.append(" --username=");
+		exe_cmd.append(user_name);
+		exe_cmd.append(" --password=");
+		exe_cmd.append(pass_word);
+		exe_cmd.append(" --no-auth-cache --force");
+		return exe_cmd.toString();
+	}
+	
+	private String get_https_cmd_str(
+			String case_url,
+			zip_enum zip_type,
+			String case_path,
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String os_type = System.getProperty("os.name").toLowerCase();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_WGET;
+		} else {
+			cmd_str = "wget";
+		}
+		//Step2: export path
+		String export_path = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path + "/" + base_name;
+		}
+		//==
+		//Stepx:command build start	
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(case_url);
+		exe_cmd.append(" -O ");
+		exe_cmd.append(export_path);
+		exe_cmd.append(" ");
+		exe_cmd.append("--no-check-certificate");
+		return exe_cmd.toString();
+	}
+	
+	private String get_http_cmd_str(
+			String case_url,
+			zip_enum zip_type,
+			String user_name, 
+			String pass_word,
+			String case_path,
+			String base_name) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String os_type = System.getProperty("os.name").toLowerCase();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_WGET;
+		} else {
+			cmd_str = "wget";
+		}
+		//Step2: export path
+		String export_path = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path + "/" + base_name;
+		}
+		//Step3: account string
+		String account_str = new String(" --http-user=" + user_name + "  --http-password=" + pass_word + " ");
+		//==
+		//Stepx:command build start	
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(case_url);
+		exe_cmd.append(" -O ");
+		exe_cmd.append(export_path);
+		exe_cmd.append(" ");
+		exe_cmd.append(account_str);
+		return exe_cmd.toString();
+	}
+	
+	private String get_ftp_cmd_str(
+			String case_url,
+			zip_enum zip_type,
+			String user_name, 
+			String pass_word,
+			String case_path) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String os_type = System.getProperty("os.name").toLowerCase();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_WGET;
+		} else {
+			cmd_str = "wget";
+		}
+		//Step2: cut_depth counting. 3 remove the depth of ftp://shitl0012, 1 for last design name	
+		int cut_depth = case_url.split("/").length - 3 - 1;
+		//Step3: export path
+		String export_path = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path;
+		}
+		//Step4: account string
+		String account_str = new String("");
+		if (user_name.equals(public_data.FTP_USER)){
+			account_str = ""; //default user means login with anonymous account (public_data.FTP_USER == anonymous)
+		} else {
+			account_str = " --ftp-user=" + user_name + "  --ftp-password=" + pass_word + " ";
+		}		
+		//==
+		//Stepx:command build start	
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(case_url);
+		exe_cmd.append(" ");
+		exe_cmd.append("-r -q -nH --cut-dirs=" + String.valueOf(cut_depth) + " -P");
+		exe_cmd.append(" ");
+		exe_cmd.append(export_path);
+		exe_cmd.append(" ");
+		exe_cmd.append(account_str);
+		return exe_cmd.toString();
+	}	
+	
+	private String get_remote_cmd_str(
+			String case_url,
+			zip_enum zip_type,
+			String user_name, 
+			String pass_word,
+			String case_path) {
+		String remote_cmd = new String();
+		String os_type = System.getProperty("os.name").toLowerCase();
+		String[] url_array = case_url.split(":", 2);
+		if(os_type.startsWith("windows")){
+			if (url_array[1].startsWith("/")) {
+				//windows client, Linux repository/source
+				remote_cmd = get_remote_cmd_winc_lins(case_url, zip_type, user_name, pass_word, case_path);
+			} else {
+				//windows client, Windows repository/source
+				remote_cmd = get_remote_cmd_winc_wins(case_url, zip_type, user_name, pass_word, case_path);
+			}
+		} else {
+			//Linux client
+			remote_cmd = get_remote_cmd_linc(case_url, zip_type, user_name, pass_word, case_path);
+		}
+		return remote_cmd;
+	}	
+	
+	private String get_remote_cmd_winc_lins(
+			String case_url,
+			zip_enum zip_type,
+			String user_name, 
+			String pass_word,
+			String case_path) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+        // win client Lin source
+		// pscp -r -p -l jwang1 -pw lattice1 lsh-comedy:/public/jason_test c:/users/jwang1/Desktop
+		//Step1: cmd_str 
+		String cmd_str = new String(public_data.TOOLS_PSCP);
+		//Step2: export path
+		String export_path = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path;
+		}		
+		//Step3: account string	
+		//==
+		//Stepx:command build start	
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append("-r -p -batch -l " + user_name + " -pw " + pass_word);
+		exe_cmd.append(" ");
+		exe_cmd.append(case_url);
+		exe_cmd.append(" ");
+		exe_cmd.append(export_path);
+		return exe_cmd.toString();		
+	}
+	
+	private String get_remote_cmd_winc_wins(
+			String case_url,
+			zip_enum zip_type,
+			String user_name, 
+			String pass_word,
+			String case_path) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+		String[] url_array = case_url.split(":", 2);
+        // win client win source
+		// D25970:D:/test_dir
+		// xcopy \\D25970\D$\auto_install.bat c:\\user\jwang1\Desktop  /E /Y /A
+		//Step1: cmd_str 
+		String cmd_str = new String("xcopy");
+		//Step2: export path
+		String export_path = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path;
+		}		
+		//Step3: option string
+		String option_str = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			option_str = " /E /Y /A /I ";	
+		} else {
+			option_str = " /Y /A";
+		}
+		//==
+		//Stepx:command build start	
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append("\\\\" + url_array[0] + "\\" +url_array[1].replaceFirst(":", "\\$").replace("/", "\\"));
+		exe_cmd.append(" ");
+		exe_cmd.append(export_path.replace("/", "\\"));
+		exe_cmd.append(" ");
+		exe_cmd.append(option_str);
+		return exe_cmd.toString();		
+	}	
+	
+	private String get_remote_cmd_linc(
+			String case_url,
+			zip_enum zip_type,
+			String user_name, 
+			String pass_word,
+			String case_path) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+        // win client Lin source
+		// pscp -r -p -l jwang1 -pw lattice1 lsh-comedy:/public/jason_test c:/users/jwang1/Desktop
+		//Step1: cmd_str 
+		String cmd_str = new String(public_data.TOOLS_SSHPASS);
+		//Step2: export path
+		String export_path = new String("");
+		if(zip_type.equals(zip_enum.NO)){
+			export_path = case_path;
+		} else {
+			export_path = case_parent_path;
+		}	
+		//==
+		//Stepx:command build start	
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append(" -p " + pass_word + " scp -r -p ");
+		exe_cmd.append(" ");
+		exe_cmd.append(user_name + "@" + case_url);
+		exe_cmd.append(" ");
+		exe_cmd.append(export_path);
+		return exe_cmd.toString();		
+	}	
+	
+	private String get_local_cmd_str(
+			String case_url,
+			String case_path) {
+		StringBuilder exe_cmd = new StringBuilder();
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+		String os_type = System.getProperty("os.name").toLowerCase();
+		//Step1: cmd_str 
+		String cmd_str = new String("");
+		if(os_type.startsWith("windows")){
+			cmd_str = public_data.TOOLS_CP;
+		} else {
+			cmd_str = "cp";
+		}
+		//generate command
+		exe_cmd.append(cmd_str);
+		exe_cmd.append(" ");
+		exe_cmd.append("-r -p");
+		exe_cmd.append(" ");
+		exe_cmd.append(case_url);
+		exe_cmd.append(" ");
+		exe_cmd.append(case_parent_path);
+		return exe_cmd.toString();
+	}	
+	
+	private Boolean run_common_cmds(
+			ArrayList<String> export_cmd_list,
+			String work_path) {
 		synchronized (this.getClass()) {
-			// export script
+			// export design
 			for (String run_cmd : export_cmd_list) {
 				try {
-					task_prepare_info.addAll(system_cmd.run(run_cmd));
+					task_prepare_info.addAll(system_cmd.run(run_cmd, work_path));
 				} catch (Exception e) {
 					// e.printStackTrace();
 					task_prepare_info.add("Error: Run cmd Fail:" + run_cmd);
 					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
 					return false;
 				}
-			}			
-		}		
+			}
+		}
 		return true;
 	}
-
-	/*
-	 * Current we support the following address: repository + suite_path +
-	 * design_name http://linux12v/test_dir + test_suite + test_case
-	 * <host>:M:/test_dir + test_suite + test_case \\lsh-smb01\test_dir +
-	 * test_suite + test_case /lsh/sw/test_test + test_suite + test_case
-	 */
-	private ArrayList<String> get_export_cmd(
-			String case_url,
-			String url_type,
-			String zip_type,
-			String case_ver,
-			String user_name, 
-			String pass_word, 
-			String case_dir,
-			String task_path) {
-		String host_run = System.getProperty("os.name").toLowerCase();
-		String[] url_array = case_url.split(":", 2);
-		String host_src = url_array[0];
-		ArrayList<String> cmd_array = new ArrayList<String>();
-		if (host_src.length() > 1 && url_array.length > 1) {
-			if (host_src.equalsIgnoreCase("http")) {
-				// svn path
-				String svn_str = new String("");
-				if (case_ver.length() > 0){
-					svn_str = "svn export -r " + case_ver + " ";
-				} else {
-					svn_str = "svn export ";
-				}
-				cmd_array.add(svn_str + case_url + " " + case_dir + " --username=" + user_name + " --password="
-						+ pass_word + " --no-auth-cache" + " --force");
-			} else if (host_src.equalsIgnoreCase("ftp")){
-				String account_str = new String();
-				if (user_name.equals(public_data.FTP_USER)){
-					account_str = ""; //default user means login with anonymous account (public_data.FTP_USER == anonymous)
-				} else {
-					account_str = " --ftp-user=" + user_name + "  --ftp-password=" + pass_word + " ";
-				}
-				String wget_str = new String();
-				if (host_run.startsWith("windows")) {
-					wget_str = public_data.TOOLS_WGET + " ";
-				} else {
-					wget_str = "wget ";
-				}
-				int cut_depth = case_url.split("/").length - 3 -1; // 3 remove the depth for ftp://shitl0012, 1 remove keep folder
-				cmd_array.add(wget_str + case_url + " -r -q -nH --cut-dirs=" + String.valueOf(cut_depth) + " -P " + task_path + account_str); 
-			} else {
-				// client path
-				if (host_run.startsWith("windows")) {
-					if (url_array[1].startsWith("/")) {
-						// 1 windows run linux src, linux path always start with
-						// pscp -r -p -l jwang1 -pw lattice1
-						// lsh-comedy:/public/jason_test/temp/src
-						// c:/users\jwang1\Desktop
-						cmd_array.add(public_data.TOOLS_PSCP + " -r -p -batch -l " + user_name + " -pw " + pass_word + " "
-								+ case_url + " " + case_dir);
-					} else {
-						// 2 windows run windows src
-						// D25970:D:/test_dir
-						// xcopy \\D25970\D$\auto_install.bat
-						// c:/user\jwang1\Desktop
-						String dest_path = url_array[1].replaceFirst(":", "\\$");
-						cmd_array.add("xcopy  \\\\" + url_array[0] + "\\" + dest_path.replace("/", "\\") + " "
-								+ case_dir.replace("/", "\\\\") + "\\ /E /Y /A");
-					}
-				} else {
-					// 1 linux run linux src
-					// ./conf/sshpass/sshpass -p "lattice1" scp -r -l jwang1
-					// lsh-opera:/public/jason_test/temp/jdk.rpm ./
-					// 2 linux run windows src
-					// ./conf/sshpass/sshpass -p "lattice" scp -r -l jwang1
-					// D27639:M:/test.txt ./
-					cmd_array.add(public_data.TOOLS_SSHPASS + " -p " + pass_word + " scp -r -p " + user_name + "@"
-							+ case_url + " " + case_dir);
-				}
-			}
-		} else {
-			// direct path: cp -r case_url case_dir
-			if (host_run.startsWith("windows")) {
-				cmd_array.add(public_data.TOOLS_CP + " -r -p " + case_url + " " + case_dir);
-			} else {
-				cmd_array.add("cp -r -p " + case_url + " " + case_dir);
-			}
-		}
-		return cmd_array;
-	}
-	
-	protected Boolean get_task_case_ready(
-			HashMap<String, HashMap<String, String>> task_data, 
-			HashMap<String, String> client_preference_data
-			){
-		Boolean task_path_ok = get_task_path_ready(task_data, client_preference_data);
-		Boolean case_path_ok = get_case_path_ready(task_data, client_preference_data);
-		Boolean script_path_ok = get_script_path_ready(task_data);
-		if (task_path_ok && case_path_ok && script_path_ok){
-			return true;
-		} else {
-			return false;
-		}
-	}	
 
 	protected String[] get_launch_command(
 			HashMap<String, HashMap<String, String>> task_data
@@ -404,37 +1000,67 @@ public class task_prepare {
 		String launch_path = task_data.get("Paths").get("launch_path").trim();
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
+		String base_name = task_data.get("Paths").get("base_name").trim();
 		String design_path = new String("");
-		// update launch path
+		String case_name = new String("");
+		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
+		//step 1: update default launch command design name
+		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
+		case_name = base_name.split("\\.")[0];
 		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
-		// update launch command
-		Pattern patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe))", Pattern.CASE_INSENSITIVE);
+		//step 2: update launch command command path
+		Pattern exe_patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe|sh|csh|bash))", Pattern.CASE_INSENSITIVE);
 		launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_space);
 		launch_cmd = launch_cmd.replaceAll("\\$case_path", " " + case_path);
 		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
-		Matcher match = patt.matcher(launch_cmd);
+		Matcher exe_match = exe_patt.matcher(launch_cmd);
 		String exe_path = new String("");
+		if (exe_match.find()){
+			exe_path = exe_match.group().trim();
+		} else {
+			task_prepare_info.add(">>>Unkown launch file found. Supported exe file type:pl,py,rb,jar,class,bat,exe,sh,csh,bash");
+			return launch_cmd.split(" ", 2);
+		}
 		Boolean abs_path_ok = Boolean.valueOf(false);
 		Boolean ref_path_ok = Boolean.valueOf(false);
-		if (match.find()){
-			exe_path = match.group().trim();
-			//abs path
-			File exe1_fobj = new File(exe_path);
-			if (exe1_fobj.exists() && exe1_fobj.isAbsolute()){
-				abs_path_ok = true;
-			}
-			//ref path
-			File exe2_fobj = new File(launch_path + "/" + exe_path);
-			if (exe2_fobj.exists()){
-				ref_path_ok = true;
-			}
-			if (!abs_path_ok && !ref_path_ok){
-				launch_cmd = match.replaceFirst(" " + work_space + "/" + exe_path);
-				//launch_cmd = match.replaceFirst(" " + work_space + "/$1");
-			}
+		Boolean par_path_ok = Boolean.valueOf(false);
+		//abs path
+		File exe1_fobj = new File(exe_path);
+		if (exe1_fobj.exists() && exe1_fobj.isAbsolute()){
+			abs_path_ok = true;
 		}
-		// replace blank space in ""
-		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
+		//ref path 1
+		File exe2_fobj = new File(launch_path + "/" + exe_path);
+		if (exe2_fobj.exists()){
+			ref_path_ok = true;
+		}
+		//parent path 2
+		File exe3_fobj = new File(case_parent_path + "/" + exe_path);
+		if (exe3_fobj.exists()){
+			launch_cmd = exe_match.replaceFirst(" " + case_parent_path + "/" + exe_path);
+			par_path_ok = true;
+		}		
+		if (!abs_path_ok && !ref_path_ok && !par_path_ok){
+			launch_cmd = exe_match.replaceFirst(" " + work_space + "/" + exe_path);
+		}
+		//step 3: update launch command design path(if have)
+		Pattern src_patt = Pattern.compile("(?:=|\\s)(" + case_name + ")\\s");
+		Matcher src_match = src_patt.matcher(launch_cmd);
+		String src_path = new String("");
+		if (src_match.find()) {
+			src_path = src_match.group().trim();
+			//case in launch path
+			File src_fobj1 = new File(launch_path + "/" + src_path);
+			if (src_fobj1.exists()){
+				launch_cmd = src_match.replaceFirst(launch_path + "/" + src_path);
+			}
+			//case in case parent path
+			File src_fobj2 = new File(case_parent_path + "/" + src_path);
+			if (src_fobj2.exists()){
+				launch_cmd = src_match.replaceFirst(case_parent_path + "/" + src_path);
+			}		
+		}
+		//step 4: replace blank space in ""
 		// python --option1="test1  test2   test3" -o "test1   test3" --test
 		Pattern patt2 = Pattern.compile("\\s(\\S+?)?\".+?\"", Pattern.CASE_INSENSITIVE);
 		Matcher match2 = patt2.matcher(launch_cmd);
@@ -444,7 +1070,7 @@ public class task_prepare {
                     .replaceAll("\"", ""));
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
-		// add default --design option for Core scripts
+		//step 5: add default --design option for Core scripts
 		String[] cmd_list = null;
 		if (launch_path.equalsIgnoreCase(case_path))
 			cmd_list = launch_cmd.split("\\s+");
@@ -529,9 +1155,7 @@ public class task_prepare {
 		return env_string;
 	}
 	
-	//following function are not used
-	//
-	//
+	//====================following methods deprecated
 	//================================================================
 	protected String get_working_dir(
 			HashMap<String, HashMap<String, String>> task_data, 
@@ -564,95 +1188,6 @@ public class task_prepare {
 			FileUtils.forceMkdir(case_work_path_fobj);
 		}
 		return case_work_path;
-	}
-
-	protected ArrayList<String> get_design_export(
-			HashMap<String, HashMap<String, String>> task_data,
-			String case_work_path
-			) throws IOException, Exception {
-		ArrayList<String> export_msg = new ArrayList<String>();
-		// generate source URL
-		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim();
-		String repository = task_data.get("CaseInfo").get("repository").trim();
-		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
-		String suite_path = task_data.get("CaseInfo").get("suite_path").trim();
-		String design_name = task_data.get("CaseInfo").get("design_name").trim();
-		String design_src_url = repository + "/" + suite_path + "/" + design_name;
-		// generate destination URL
-		File design_name_fobj = new File(design_name);
-		String design_base_name = design_name_fobj.getName();
-		String design_des_url = case_work_path + "/" + design_base_name;
-		// get access author key
-		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
-		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
-		String user_name = user_passwd.split("_\\+_")[0];
-		String pass_word = user_passwd.split("_\\+_")[1];
-		// get required case version
-		String source_version = new String("");
-		if (task_data.get("CaseInfo").containsKey("version")){
-			source_version = task_data.get("CaseInfo").get("version").trim();
-		}
-		// clean local existing case
-		File design_path_fobj = new File(design_des_url);
-		if (design_path_fobj.exists()){
-			if(FileUtils.deleteQuietly(design_path_fobj)){
-				CASE_PREPARE_LOGGER.debug("Previously run design deleted pass:" + design_des_url);
-			} else {
-				CASE_PREPARE_LOGGER.info("Previously run design deleted pass:" + design_des_url);
-			}
-		}
-		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(
-				design_src_url, null, null, source_version, user_name, pass_word, design_des_url, case_work_path);
-		// export design
-		for (String run_cmd : export_cmd_list) {
-			try {
-				for (String line : system_cmd.run(run_cmd))
-					export_msg.add(line);
-			} catch (IOException e) {
-				// e.printStackTrace();
-				CASE_PREPARE_LOGGER.warn("run cmd fail:" + run_cmd);
-			}
-		}
-		return export_msg;
-	}
-
-	protected ArrayList<String> get_script_export(HashMap<String, HashMap<String, String>> task_data,
-			String case_work_path) throws IOException, Exception {
-		ArrayList<String> export_msg = new ArrayList<String>();
-		// generate source URL
-		String script_addr = task_data.get("CaseInfo").get("script_address").trim();
-		if (script_addr.equals("") || script_addr == null) {
-			CASE_PREPARE_LOGGER.debug("Internal script used, no export need.");
-			export_msg.add("Internal script used, no export need.");
-			return export_msg;
-		}
-		// generate destination URL
-		// = case_work_path
-		// get access author key
-		String auth_key = task_data.get("CaseInfo").get("auth_key").trim();
-		String user_passwd = des_decode.decrypt(auth_key, public_data.ENCRY_KEY);
-		String user_name = user_passwd.split("_\\+_")[0];
-		String pass_word = user_passwd.split("_\\+_")[1];
-		// get script version if have
-		String script_version = new String("");
-		if (task_data.get("CaseInfo").containsKey("script_version")){
-			script_version = task_data.get("CaseInfo").get("script_version").trim();
-		}		
-		// get export command
-		ArrayList<String> export_cmd_list = get_export_cmd(
-				script_addr, null, null, script_version, user_name, pass_word, case_work_path, case_work_path);
-		// export design
-		for (String run_cmd : export_cmd_list) {
-			try {
-				for (String line : system_cmd.run(run_cmd))
-					export_msg.add(line);
-			} catch (IOException e) {
-				e.printStackTrace();
-				CASE_PREPARE_LOGGER.warn("run cmd fail:" + run_cmd);
-			}
-		}
-		return export_msg;
 	}
 
 	protected String get_run_directory(
@@ -752,19 +1287,5 @@ public class task_prepare {
 			run_env.put(env_name, env_value);
 		}
 		return run_env;
-	}
-
-	protected ArrayList<String> get_case_ready(
-			HashMap<String, HashMap<String, String>> task_data, 
-			String working_dir
-			) throws Exception {
-		ArrayList<String> export_list = new ArrayList<String>();
-		ArrayList<String> export_design = this.get_design_export(task_data, working_dir);
-		ArrayList<String> export_script = this.get_script_export(task_data, working_dir);
-		export_list.add(">>>Design export:");
-		export_list.addAll(export_design);
-		export_list.add(">>>Script export:");
-		export_list.addAll(export_script);
-		return export_list;
 	}
 }

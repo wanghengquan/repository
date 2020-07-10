@@ -85,8 +85,7 @@ public class tube_server extends Thread {
 		}
 		// check System match
 		HashMap<String, String> system_require_data = queue_data.get("System");
-		Set<String> system_require_set = system_require_data.keySet();
-		Iterator<String> system_require_it = system_require_set.iterator();
+		Iterator<String> system_require_it = system_require_data.keySet().iterator();
 		while (system_require_it.hasNext()) {
 			String request_key = system_require_it.next();
 			String request_value = system_require_data.get(request_key);
@@ -572,7 +571,7 @@ public class tube_server extends Thread {
 			task_data.put("sort", task_sort);
 			task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -590,7 +589,7 @@ public class tube_server extends Thread {
 			task_data.put("sort", task_sort);
 			task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -641,7 +640,7 @@ public class tube_server extends Thread {
 					continue;
 				}
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -10,6 +10,8 @@
 package data_center;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import top_runner.top_launcher;
 
@@ -24,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.85"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21085; // version for code use
-	public final static String BASE_BUILDDATE = "2020/07/05";
+	public final static String BASE_CURRENTVERSION = "2.10.86"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21086; // version for code use
+	public final static String BASE_BUILDDATE = "2020/07/10";
 	public final static String BASE_SUITEFILEVERSION = "1.16";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -126,6 +128,7 @@ public class public_data {
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
 	public final static String TOOLS_7ZA = SW_HOME_PATH + "/tools/7za.exe";
+	public final static String TOOLS_TAR = SW_HOME_PATH + "/tools/tar.exe";
 	public final static String TOOLS_WHICH = SW_HOME_PATH + "/tools/which.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
@@ -175,6 +178,7 @@ public class public_data {
 	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
 	public final static String SVN_PWD = "welcome";
+	public final static String SVN_URL = "http://lsh-tmp";
 
 	// ========================
 	// link to FTP default user shown here
@@ -191,11 +195,7 @@ public class public_data {
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
-    public final static String TASK_PRI_LOCALLY = "1";
-    public final static String TASK_DEF_DURL_TYPE = "svn"; //svn,https,http,ftp,remote,local
-    public final static String TASK_DEF_DZIP_TYPE = "no"; //no,7z,zip,gzip,bzip2,tar
-    public final static String TASK_DEF_SURL_TYPE = "svn"; //svn,https,http,ftp,remote,local
-    public final static String TASK_DEF_SZIP_TYPE = "no"; //no,7z,zip,gzip,bzip2,tar  
+    public final static String TASK_PRI_LOCALLY = "1"; 
 
 	// ========================
 	// performance calibration
@@ -311,5 +311,14 @@ public class public_data {
 		}
 		Thread client_thread = Thread.currentThread();
 		System.out.println(client_thread.getName());
+		//test
+		String script_url = new String("");
+		System.out.println(">" + script_url.substring(script_url.lastIndexOf("/") + 1));
+		String base_name = new String("abc.aa"); 
+		Pattern src_patt = Pattern.compile("\\s(" + base_name + ")\\s", Pattern.CASE_INSENSITIVE);
+		Matcher exe_match = src_patt.matcher("1234 abc.aa cc");
+		if (exe_match.find()){
+			System.out.println(exe_match.group());
+		}
 	}
 }

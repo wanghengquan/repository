@@ -290,6 +290,7 @@ public class task_waiter extends Thread {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_task_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		HashMap<String, HashMap<String, String>> standard_case_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> checked_task_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> task_data_path_updated = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> return_data = new HashMap<String, HashMap<String, String>>();
@@ -313,7 +314,8 @@ public class task_waiter extends Thread {
 			// model(no merge need) (consider cmd option)
 			raw_task_data.putAll(get_merged_remote_task_info(admin_data, standard_case_data));
 		}
-		task_data.putAll(merge_default_and_preference_data(raw_task_data, client_preference_data));
+		checked_task_data.putAll(raw_task_data_sanity_check(raw_task_data));
+		task_data.putAll(merge_default_and_preference_data(checked_task_data, client_preference_data));
 		task_data_path_updated.putAll(update_task_data_path_info(task_data, client_preference_data));
 		//get escaped string and replaced string back
 		return_data.putAll(replace_case_data_internal_string(task_data_path_updated));
@@ -426,12 +428,12 @@ public class task_waiter extends Thread {
 		String repository = new String("");
 		String suite_path = new String("");
 		String design_name = new String("");
-		String script_address = new String("");
+		String script_url = new String("");
 		caseinfo_hash.put("xlsx_dest", xlsx_dest);
 		caseinfo_hash.put("repository", repository);
 		caseinfo_hash.put("suite_path", suite_path);
 		caseinfo_hash.put("design_name", design_name);
-		caseinfo_hash.put("script_address", script_address);
+		caseinfo_hash.put("script_url", script_url);
 		if (case_data.containsKey("CaseInfo")) {
 			caseinfo_hash.putAll(case_data.get("CaseInfo"));
 		}
@@ -480,11 +482,9 @@ public class task_waiter extends Thread {
 		String os = new String("");
 		String os_type = new String("");
 		String os_arch = new String("");
-		String min_space = new String("");
 		system_hash.put("os", os);
 		system_hash.put("os_type", os_type);
 		system_hash.put("os_arch", os_arch);
-		system_hash.put("min_space", min_space);
 		if (case_data.containsKey("System")) {
 			system_hash.putAll(case_data.get("System"));
 		}
@@ -535,6 +535,115 @@ public class task_waiter extends Thread {
 		return formated_data;
 	}
 
+	private HashMap<String, HashMap<String, String>> raw_task_data_sanity_check(
+			HashMap<String, HashMap<String, String>> raw_task_data){
+		HashMap<String, HashMap<String, String>> checked_data = new HashMap<String, HashMap<String, String>>();
+		checked_data.putAll(deep_clone.clone(raw_task_data));
+		//CaseInfo check
+		HashMap<String, String> case_info = checked_data.get("CaseInfo");
+		if (case_info.containsKey("durl_type")) {
+			try {
+				url_enum.valueOf(case_info.get("durl_type").toUpperCase());
+			} catch (Exception e) {
+				TASK_WAITER_LOGGER.warn("Task:Invalid url type found, ignore this task setting");
+				case_info.remove("durl_type");
+			}
+		}
+		if (case_info.containsKey("dzip_type")) {
+			try {
+				zip_enum.valueOf(case_info.get("dzip_type").toUpperCase());
+			} catch (Exception e) {
+				TASK_WAITER_LOGGER.warn("Task:Invalid zip type found, ignore this task setting");
+				case_info.remove("dzip_type");
+			}
+		}
+		if (case_info.containsKey("surl_type")) {
+			try {
+				url_enum.valueOf(case_info.get("surl_type").toUpperCase());
+			} catch (Exception e) {
+				TASK_WAITER_LOGGER.warn("Task:Invalid url type found, ignore this task setting");
+				case_info.remove("surl_type");
+			}
+		}
+		if (case_info.containsKey("szip_type")) {
+			try {
+				zip_enum.valueOf(case_info.get("szip_type").toUpperCase());
+			} catch (Exception e) {
+				TASK_WAITER_LOGGER.warn("Task:Invalid zip type found, ignore this task setting");
+				case_info.remove("szip_type");
+			}
+		}
+		if (case_info.containsKey("timeout")) {
+			try {
+				Integer.parseInt(case_info.get("timeout"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Task:Invalid timeout value found, ignore this task setting");
+				case_info.remove("timeout");
+			}
+		}
+		//Environment check
+		//LaunchCommand check
+		HashMap<String, String> lcmd_data = checked_data.get("LaunchCommand");
+		if (lcmd_data.containsKey("override")) {
+			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"globle", "local"} )){
+				lcmd_data.remove("override");
+			}
+		}
+		//Software check
+		HashMap<String, String> system_data = checked_data.get("System");
+		if (system_data.containsKey("os_type")) {
+			if (!data_check.str_choice_check(system_data.get("os_type"), new String [] {"windows", "linux"} )){
+				system_data.remove("os_type");
+			}
+		}		
+		//Machine check
+		//Preference check
+		HashMap<String, String> preference_data = checked_data.get("Preference");
+		if (preference_data.containsKey("case_mode")) {
+			if (!data_check.str_choice_check(preference_data.get("case_mode"), new String [] {"copy_case", "hold_case"} )){
+				preference_data.remove("case_mode");
+			}
+		}
+		if (preference_data.containsKey("keep_path")) {
+			if (!data_check.str_choice_check(preference_data.get("keep_path"), new String [] {"false", "true"} )){
+				preference_data.remove("keep_path");
+			}
+		}
+		if (preference_data.containsKey("lazy_copy")) {
+			if (!data_check.str_choice_check(preference_data.get("lazy_copy"), new String [] {"false", "true"} )){
+				preference_data.remove("lazy_copy");
+			}
+		}
+		if (preference_data.containsKey("result_keep")) {
+			if (!data_check.str_choice_check(preference_data.get("result_keep"), new String [] {"auto", "zipped", "unzipped"} )){
+				preference_data.remove("result_keep");
+			}
+		}
+		//ClientPreference check
+		HashMap<String, String> client_pref_data = checked_data.get("ClientPreference");
+		if (client_pref_data.containsKey("case_mode")) {
+			if (!data_check.str_choice_check(client_pref_data.get("case_mode"), new String [] {"copy_case", "hold_case"} )){
+				client_pref_data.remove("case_mode");
+			}
+		}
+		if (client_pref_data.containsKey("keep_path")) {
+			if (!data_check.str_choice_check(client_pref_data.get("keep_path"), new String [] {"false", "true"} )){
+				client_pref_data.remove("keep_path");
+			}
+		}
+		if (client_pref_data.containsKey("lazy_copy")) {
+			if (!data_check.str_choice_check(client_pref_data.get("lazy_copy"), new String [] {"false", "true"} )){
+				client_pref_data.remove("lazy_copy");
+			}
+		}
+		if (client_pref_data.containsKey("result_keep")) {
+			if (!data_check.str_choice_check(client_pref_data.get("result_keep"), new String [] {"auto", "zipped", "unzipped"} )){
+				client_pref_data.remove("result_keep");
+			}
+		}		
+		return checked_data;
+	}
+	
 	private HashMap<String, HashMap<String, String>> merge_default_and_preference_data(
 			HashMap<String, HashMap<String, String>> case_data,
 			HashMap<String, String> preference_data) {
@@ -551,18 +660,10 @@ public class task_waiter extends Thread {
 		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
 		String auth_key = public_data.ENCRY_DEF_STRING;
 		String priority = public_data.TASK_DEF_PRIORITY;
-		String timeout = public_data.TASK_DEF_TIMEOUT;
-		String durl_type = public_data.TASK_DEF_DURL_TYPE;
-		String dzip_type = public_data.TASK_DEF_DZIP_TYPE;
-		String surl_type = public_data.TASK_DEF_SURL_TYPE;
-		String szip_type = public_data.TASK_DEF_SZIP_TYPE;		
+		String timeout = public_data.TASK_DEF_TIMEOUT;		
 		caseinfo_hash.put("auth_key", auth_key);
 		caseinfo_hash.put("priority", priority);
 		caseinfo_hash.put("timeout", timeout);
-		caseinfo_hash.put("durl_type", durl_type);
-		caseinfo_hash.put("dzip_type", dzip_type);
-		caseinfo_hash.put("surl_type", surl_type);
-		caseinfo_hash.put("szip_type", szip_type);
 		if (case_data.containsKey("CaseInfo")) {
 			caseinfo_hash.putAll(case_data.get("CaseInfo"));
 		}
@@ -621,23 +722,6 @@ public class task_waiter extends Thread {
 			status_hash.putAll(case_data.get("Status"));
 		}
 		default_data.put("Status", status_hash);
-		// Paths NA
-		HashMap<String, String> paths_hash = new HashMap<String, String>();
-		paths_hash.put("save_space", public_data.DEF_SAVE_SPACE);
-		if(preference_data.containsKey("save_space")){
-            paths_hash.put("save_space", preference_data.get("save_space"));
-        }		
-        if (case_data.containsKey("ClientPreference") & (case_data.get("ClientPreference").containsKey("save_space"))) {
-            paths_hash.put("save_space", case_data.get("ClientPreference").get("save_space"));
-        }
-        if (case_data.containsKey("Preference") & (case_data.get("Preference").containsKey("save_space"))) {
-            paths_hash.put("save_space", case_data.get("Preference").get("save_space"));
-        }
-        paths_hash.put("work_space", public_data.DEF_WORK_SPACE);
-        if (preference_data.containsKey("work_space")) {
-            paths_hash.put("work_space", preference_data.get("work_space"));
-        }
-        default_data.put("Paths", paths_hash);
 		return default_data;
 	}
 
@@ -646,19 +730,20 @@ public class task_waiter extends Thread {
 			HashMap<String, String> preference_data) {	
 		HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 		String depot_space = new String("");// repository + suite path
-		String design_source = new String("");
+		String design_url = new String("");
 		String case_path = new String("");
 		String task_path = new String("");
 		String work_suite = new String("");
 		String save_path = new String("");
 		String save_suite = new String("");
-		String script_source = new String("");
+		String script_url = new String("");
+		String script_name = new String("");
+		String script_path = new String("");
 		String launch_path = new String("");
 		String report_path = new String(""); //also named location in Status
 		//initialize all data
 		task_data.putAll(deep_clone.clone(case_data));
 		HashMap<String, String> paths_hash = new HashMap<String, String>();
-		paths_hash.putAll(task_data.get("Paths"));
 		//common info prepare
 		String xlsx_dest = task_data.get("CaseInfo").get("xlsx_dest").trim().replaceAll("\\\\", "/");
 		String repository = task_data.get("CaseInfo").get("repository").trim().replaceAll("\\\\", "/");	
@@ -669,48 +754,43 @@ public class task_waiter extends Thread {
 		String prj_name = "prj" + task_data.get("ID").get("project");
 		String run_name = "run" + task_data.get("ID").get("run");
 		String task_name = "T" + task_data.get("ID").get("id");
-		String work_space = paths_hash.get("work_space");//already done in previous function
-        String save_space = paths_hash.get("save_space");//already done in previous function
+		String work_space = public_data.DEF_WORK_SPACE;
+        String save_space = public_data.DEF_SAVE_SPACE;
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
-		String keep_path = task_data.get("Preference").get("keep_path").trim();
-		//override case mode and path keep      
-		if (!data_check.str_choice_check(case_mode, new String [] {"copy_case", "hold_case"} )){
-			TASK_WAITER_LOGGER.warn("Task:Invalid case_mode setting:" + case_mode + ", local value will be used.");
-		} else {
-			if (preference_data.containsKey("case_mode")) {
-				case_mode = preference_data.get("case_mode");
-			} else {
-				case_mode = public_data.DEF_CLIENT_CASE_MODE;
-			}
-		}
-		if (!data_check.str_choice_check(keep_path, new String [] {"false", "true"} )){
-			TASK_WAITER_LOGGER.warn("Task:Invalid keep_path setting:" + keep_path + ", local value will be used.");
-		} else {
-			if (preference_data.containsKey("keep_path")) {
-				keep_path = preference_data.get("keep_path");
-			} else {
-				keep_path = public_data.DEF_CLIENT_CASE_MODE;
-			}
-		}        
+		String keep_path = task_data.get("Preference").get("keep_path").trim();     
         //get design base name
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
+		paths_hash.put("base_name", design_base_name);
 		//get depot_space
 		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
 		depot_space = repository + "/" + suite_path;
 		paths_hash.put("depot_space", depot_space.replaceAll("\\\\", "/"));
+		//get work space
+        if (preference_data.containsKey("work_space")) {
+        	work_space = preference_data.get("work_space");
+        }
+        paths_hash.put("work_space", work_space.replaceAll("\\\\", "/"));
+		//get save space
+        if (preference_data.containsKey("save_space")) {
+        	save_space = preference_data.get("save_space");
+        }
+        if (task_data.get("Preference").containsKey("save_space")) {
+        	save_space = task_data.get("Preference").get("save_space");
+        }
+        paths_hash.put("save_space", save_space.replaceAll("\\\\", "/"));
 		//get source_path
-		design_source = repository + "/" + suite_path + "/" + design_name;
-		paths_hash.put("design_source", design_source.replaceAll("\\\\", "/"));
+		design_url = repository + "/" + suite_path + "/" + design_name;
+		paths_hash.put("design_url", design_url.replaceAll("\\\\", "/"));
 		//get case_path
 		if (case_mode.equalsIgnoreCase("hold_case")){
-			case_path = design_source.replaceAll("\\\\", "/");
+			case_path = design_url.replaceAll("\\\\", "/");
 		} else {
 			if(keep_path.equalsIgnoreCase("true")){
-				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name };
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name.split("\\.")[0] };
 				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
-				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name,  design_base_name};
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name, design_base_name.split("\\.")[0]};
 				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			}	
 		}
@@ -777,11 +857,27 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("save_path", save_path);	
 		//get script_source
-		script_source = task_data.get("CaseInfo").get("script_url").trim().replaceAll("\\\\", "/");
-		script_source = script_source.replaceAll("\\$work_path", work_space);// = work_space
-		script_source = script_source.replaceAll("\\$case_path", case_path);
-		script_source = script_source.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
-		paths_hash.put("script_url", script_source);
+		script_url = task_data.get("CaseInfo").get("script_url").trim().replaceAll("\\\\", "/");
+		script_url = script_url.replaceAll("\\$work_path", work_space);// = work_space
+		script_url = script_url.replaceAll("\\$case_path", case_path);
+		script_url = script_url.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
+		paths_hash.put("script_url", script_url);
+		//get script_name
+		if (script_url.equals("") || script_url == null) {
+			script_name = "";
+		} else {
+			script_name = script_url.substring(script_url.lastIndexOf("/") + 1);
+		}
+		paths_hash.put("script_name", script_name);
+		//get script_path
+		if (script_url.equals("") || script_url == null) {
+			script_path = "";
+		} else if(script_url.startsWith(work_space) || script_url.startsWith(case_path) || script_url.startsWith(public_data.TOOLS_ROOT_PATH)) {
+			script_path = script_url;
+		} else {
+			script_path = task_path + "/" + script_name.split("\\.")[0];
+		}
+		paths_hash.put("script_path", script_path);
 		//get launch_path
 		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
@@ -1075,7 +1171,7 @@ public class task_waiter extends Thread {
 			}
 			// task 7 : get test case ready
 			task_prepare prepare_obj = new task_prepare();
-			Boolean task_ready = prepare_obj.get_task_case_ready(task_data, client_info.get_client_preference_data());
+			Boolean task_ready = prepare_obj.get_task_case_ready(task_data);
 			// task 8 : launch info prepare
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
