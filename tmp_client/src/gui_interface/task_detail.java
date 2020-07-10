@@ -84,14 +84,14 @@ public class task_detail extends JFrame {
 		items.add("System");
 		items.add("Machine");
         items.add("Status");
-        items.add("ClientPreference");        
+        items.add("Preference");        
 		items.add("Paths");
 		Iterator<String> item_it = items.iterator();
 		while(item_it.hasNext()){
 			String item = item_it.next();
-			//debug mode no 'path' show
-			if (client_info.get_client_machine_data().get("debug").equals("1")){
-				if (item.equals("Paths")){
+			//debug mode has 'path' show
+			if (client_info.get_client_machine_data().get("debug").equals("0")){
+				if (item.equals("Paths") || item.equals("Preference")){
 					continue;
 				}
 			}

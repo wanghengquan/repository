@@ -164,10 +164,10 @@ public class data_server extends Thread {
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		//the following two are for history name support
 		if(config_hash.get("tmp_preference").containsKey("work_path")){
-			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path"));
+			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path").replaceAll("\\\\", "/"));
 		}
 		if(config_hash.get("tmp_preference").containsKey("save_path")){
-			preference_data.put("save_space", config_hash.get("tmp_preference").get("save_path"));
+			preference_data.put("save_space", config_hash.get("tmp_preference").get("save_path").replaceAll("\\\\", "/"));
 		}		
 		preference_data.putAll(config_hash.get("tmp_preference"));
 		preference_data.putAll(cmd_hash);
