@@ -282,6 +282,7 @@ public class hall_manager extends Thread {
 		if (local_cmd_exit_counter < 3){ //3 * 2 * base_interval
 			return;
 		}
+		local_cmd_exit_counter = 0;
 		generate_exit_report();
 		HashMap<task_enum, String> run_summary = get_client_run_case_summary();
 		if(Integer.valueOf(run_summary.get(task_enum.FAILED)) > 0 ){
@@ -291,7 +292,6 @@ public class hall_manager extends Thread {
 		} else {
 			switch_info.set_client_stop_request(exit_enum.NORMAL);
 		}
-		
 	}
 	
 	private void thread_auto_adjustment(){
