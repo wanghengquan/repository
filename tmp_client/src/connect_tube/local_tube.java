@@ -959,10 +959,12 @@ public class local_tube {
 
 	// generate different admin and task queue hash
 	public void generate_suite_file_local_admin_task_queues(
+			String generate_time,
 			String local_file,
-			String extra_env,
-			String task_sort,
+			HashMap<String, String> imported_data,
 			String current_terminal) {
+		String task_env = imported_data.get("env");
+		String task_sort = imported_data.get("sort");
 		TreeMap<String, HashMap<String, HashMap<String, String>>> xlsx_received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> xlsx_received_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>(); 
 		local_file = local_file.replaceAll("\\$unit_path", public_data.DOC_EIT_PATH);
@@ -979,7 +981,7 @@ public class local_tube {
 		ExcelData.putAll(get_excel_data(local_file));
 		Map<String, String> suite_sheet_data = get_suite_data(ExcelData);
 		Map<String, Map<String, String>> case_sheet_data = get_merge_macro_case_data(ExcelData, task_sort);
-		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_sheet_data, case_sheet_data, extra_env, xlsx_dest);
+		Map<String, HashMap<String, HashMap<String, String>>> merge_data = get_merge_suite_case_data(suite_sheet_data, case_sheet_data, task_env, xlsx_dest);
 		if (merge_data == null){
 			LOCAL_TUBE_LOGGER.warn("Suite file no case found:" + local_file);
 			return;
@@ -1014,7 +1016,7 @@ public class local_tube {
 				// get admin queue name
 				// make the new admin queue name use total received admin queues
 				// number + 1
-				String detail_time = time_info.get_date_time();//time for create queue
+				String detail_time = generate_time;//time for create queue
 				String sub_task_number = String.valueOf(xlsx_received_admin_queues_treemap.keySet().size() + 1);
 				queue_name = get_one_queue_name(admin_queue_base, detail_time, sub_task_number, current_terminal, case_data);
 				// get admin queue data
@@ -1068,10 +1070,9 @@ public class local_tube {
 	}
 	
 	public void generate_suite_path_local_admin_task_queues(
+			String generate_time,
 			String imported_path,
 			HashMap<String, String> imported_data){
-		//step 0: start time
-		String generate_time = time_info.get_date_time();
 		//step 1: generate queue_name
 		String queue_name = get_queue_name(imported_path, imported_data, generate_time);
 		//step 2: generate admin_data
@@ -1338,7 +1339,7 @@ public class local_tube {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "SHITL0012";
-		sheet_parser.generate_suite_file_local_admin_task_queues("C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", "", "", current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", null, current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

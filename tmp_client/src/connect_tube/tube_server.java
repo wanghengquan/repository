@@ -432,7 +432,7 @@ public class tube_server extends Thread {
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
 			String imported_paths = imported_data.get("path");
 			for(String imported_path : imported_paths.split(",")){
-			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_path, imported_data);
+			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_id, imported_path, imported_data);
 			}
 			counter++;
 		}
@@ -460,11 +460,10 @@ public class tube_server extends Thread {
 			} else {
 				task_info.update_local_file_finished_task_map(imported_id, imported_map.get(imported_id));
 			}
-			String imported_files = imported_map.get(imported_id).get("path");
-			String imported_env = imported_map.get(imported_id).get("env");
-			String imported_sort = imported_map.get(imported_id).get("sort");
+			HashMap<String, String> imported_data = imported_map.get(imported_id);
+			String imported_files = imported_data.get("path");
 			for(String imported_file : imported_files.split(",")){
-			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_file, imported_env, imported_sort, terminal);
+			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_id, imported_file, imported_data, terminal);
 			}
 			counter++;
 		}
@@ -571,7 +570,7 @@ public class tube_server extends Thread {
 			task_data.put("sort", task_sort);
 			task_info.update_local_file_imported_task_map(time_info.get_date_time(), task_data);
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -589,7 +588,7 @@ public class tube_server extends Thread {
 			task_data.put("sort", task_sort);
 			task_info.update_local_path_imported_task_map(time_info.get_date_time(), task_data);
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -640,7 +639,7 @@ public class tube_server extends Thread {
 					continue;
 				}
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
