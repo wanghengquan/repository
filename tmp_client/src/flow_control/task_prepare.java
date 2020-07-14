@@ -459,7 +459,7 @@ public class task_prepare {
 			return false;
 		}
 		task_prepare_info.addAll(cmd_array);
-		task_prepare_info.add(">>>Work path:" + case_parent_path);
+		task_prepare_info.add("Work Path:" + case_parent_path);
 		//step 4:unzip commands run check
 		Boolean run_ok = run_common_cmds(cmd_array, case_parent_path);
 		if (!run_ok) {
@@ -482,7 +482,7 @@ public class task_prepare {
 		if(os_type.startsWith("windows")){
 			cmd_str = public_data.TOOLS_7ZA;
 		} else {
-			task_prepare_info.add("Warn : .7z file do not supported on Linux side.");
+			task_prepare_info.add("Error: .7z file do not supported on Linux side.");
 			return exe_cmd.toString();
 		}
 		exe_cmd.append(cmd_str);
