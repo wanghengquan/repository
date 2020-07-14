@@ -98,7 +98,7 @@ public class local_tube {
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
 		if (suite_map.size() > 8) {
-			if (!suite_map.containsKey("ClientPreference") || !suite_map.containsKey("Preference")){
+			if (!suite_map.containsKey("ClientPreference") && !suite_map.containsKey("Preference")){
 			suite_file_error_msg = "Error: Extra option found in suite sheet::suite info.";
 			System.out.println(">>>Error: Extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
