@@ -57,7 +57,10 @@ public class tube_server extends Thread {
 	private rmq_tube rmq_runner;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private String line_separator = System.getProperty("line.separator");
-	private int send_count = 0;
+	private int info_send_counter = 0;
+	private int detail_send_counter = 0;
+	private int info_send_threshold = 60 / base_interval;//every 1 mins send a client info
+	private int detail_send_threshold = 5; //every 5 mins send a client detail info
 
 	// public function
 	public tube_server(
@@ -307,14 +310,20 @@ public class tube_server extends Thread {
 	}
 
 	private void send_client_current_info(){
-		//send client detail data every 1 minutes
-		if (send_count < 12) {
-			send_count++;
+		//send client simple data every 1 minutes
+		//send client detail data every 5 minutes
+		if (info_send_counter < info_send_threshold) {
+			info_send_counter++;
+			return;
+		}
+		info_send_counter = 0;
+		if (detail_send_counter < detail_send_threshold) {
+			detail_send_counter++;
 			send_client_info("simple");
 		} else {
-			send_count = 0;
+			detail_send_counter = 0;
 			send_client_info("complex");
-		}		
+		}
 	}
 	
 	private Boolean send_client_info(String mode) {
