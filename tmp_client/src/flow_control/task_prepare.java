@@ -143,7 +143,7 @@ public class task_prepare {
 		if (!parent_ok) {
 			return false;
 		}
-		//step 7: get export command
+		//step 7: run source export
 		Boolean export_ok = run_src_export(
 				source_url, durl_type, dzip_type, source_version, user_name, pass_word, case_path, base_name);
 		if (!export_ok) {
@@ -338,7 +338,7 @@ public class task_prepare {
 		if (basename.contains(zip_enum.ZIP.get_description())) {
 			return zip_enum.ZIP;
 		}			
-		return zip_enum.UNKNOWN;//but consider it as a file
+		return zip_enum.UNKNOWN;
 	}	
 	
 	private Boolean remove_exist_path(
@@ -407,6 +407,10 @@ public class task_prepare {
 			task_prepare_info.add(">>>Source found, no extract needed.");
 			return true;
 		}
+		if(dzip_type.equals(zip_enum.UNKNOWN)) {
+			task_prepare_info.add(">>>Source considered, no extract needed.");
+			return true;
+		}
 		//step 2:get unzip command
 		switch (dzip_type) {	
 		case SEVENZ:
@@ -447,15 +451,13 @@ public class task_prepare {
 			break;
 		case TARBZ2:
 			cmd_array.addAll(get_tar_bzip2_cmd_str(base_name));
-			break;
-		case UNKNOWN:
-			break;			
+			break;		
 		default:
 			break;
 		}
 		//step 3:command lines check
 		if (cmd_array.isEmpty()) {
-			task_prepare_info.add("Warn : no unzip command found for given source:" + base_name);
+			task_prepare_info.add("Warn : No unzip command found for given source:" + base_name);
 			return false;
 		}
 		task_prepare_info.addAll(cmd_array);
@@ -721,18 +723,13 @@ public class task_prepare {
 			cmd_str = "wget";
 		}
 		//Step2: export path
-		String export_path = new String("");
-		if(zip_type.equals(zip_enum.NO)){
-			export_path = case_path;
-		} else {
-			export_path = case_parent_path + "/" + base_name;
-		}
+		String export_path = new String(case_parent_path);
 		//==
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
 		exe_cmd.append(case_url);
-		exe_cmd.append(" -O ");
+		exe_cmd.append(" -P ");
 		exe_cmd.append(export_path);
 		exe_cmd.append(" ");
 		exe_cmd.append("--no-check-certificate");
@@ -770,7 +767,7 @@ public class task_prepare {
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
 		exe_cmd.append(case_url);
-		exe_cmd.append(" -O ");
+		exe_cmd.append(" -P ");
 		exe_cmd.append(export_path);
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
@@ -796,12 +793,7 @@ public class task_prepare {
 		//Step2: cut_depth counting. 3 remove the depth of ftp://shitl0012, 1 for last design name	
 		int cut_depth = case_url.split("/").length - 3 - 1;
 		//Step3: export path
-		String export_path = new String("");
-		if(zip_type.equals(zip_enum.NO)){
-			export_path = case_path;
-		} else {
-			export_path = case_parent_path;
-		}
+		String export_path = new String(case_parent_path);
 		//Step4: account string
 		String account_str = new String("");
 		if (user_name.equals(public_data.FTP_USER)){
