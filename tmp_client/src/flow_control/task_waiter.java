@@ -787,10 +787,10 @@ public class task_waiter extends Thread {
 			case_path = design_url.replaceAll("\\\\", "/");
 		} else {
 			if(keep_path.equalsIgnoreCase("true")){
-				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, design_name.split("\\.")[0] };
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, get_source_unzip_name(design_name)};
 				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			} else {
-				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name, design_base_name.split("\\.")[0]};
+				String[] path_array = new String[] { work_space, tmp_result, prj_name, run_name, task_name, get_source_unzip_name(design_base_name)};
 				case_path = String.join(file_seprator, path_array).replaceAll("\\\\", "/");
 			}	
 		}
@@ -842,7 +842,7 @@ public class task_waiter extends Thread {
 		    for(String space:tmp_space) {
 		        String s_path = new String("");
                 if (keep_path.equalsIgnoreCase("true")) {
-                    String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name, design_name};
+                    String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name, get_source_unzip_name(design_name)};
                     s_path = String.join(file_seprator, path_array);
                 } else {
                     String[] path_array = new String[]{space.trim(), tmp_result, prj_name, run_name, task_name};
@@ -875,7 +875,7 @@ public class task_waiter extends Thread {
 		} else if(script_url.startsWith(work_space) || script_url.startsWith(case_path) || script_url.startsWith(public_data.TOOLS_ROOT_PATH)) {
 			script_path = script_url;
 		} else {
-			script_path = task_path + "/" + script_name.split("\\.")[0];
+			script_path = task_path + "/" + get_source_unzip_name(script_name); 
 		}
 		paths_hash.put("script_path", script_path);
 		//get launch_path
@@ -902,6 +902,24 @@ public class task_waiter extends Thread {
 		return task_data;
 	}
 
+	private String get_source_unzip_name(
+			String ori_name) {
+		String return_str = new String("");
+		Boolean zip_file = Boolean.valueOf(false);
+		for (zip_enum zip_type : zip_enum.values()) {
+			if (ori_name.contains(zip_type.get_description())) {
+				zip_file = true;
+				break;
+			}
+		}
+		if (zip_file) {
+			return_str = ori_name.split("\\.")[0];
+		} else {
+			return_str = ori_name;
+		}
+		return return_str;
+	}
+	
 	private HashMap<String, HashMap<String, String>> get_merged_local_task_info(
 			HashMap<String, HashMap<String, String>> admin_hash, 
 			HashMap<String, HashMap<String, String>> case_hash) {
