@@ -98,6 +98,7 @@ public class task_prepare {
 		task_prepare_info.add(line_separator + ">>>Prepare case path:");
 		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
+		//String case_name = task_data.get("Paths").get("case_name").trim();
 		String base_name = task_data.get("Paths").get("base_name").trim();
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
 		String lazy_copy = task_data.get("Preference").get("lazy_copy").trim();	
@@ -163,7 +164,8 @@ public class task_prepare {
 		task_prepare_info.add(line_separator + ">>>Prepare script path:");
 		String script_url = task_data.get("Paths").get("script_url").trim();
 		String script_path = task_data.get("Paths").get("script_path").trim();
-		String script_name = task_data.get("Paths").get("script_name").trim();
+		String script_base = task_data.get("Paths").get("script_base").trim();
+		//String script_name = task_data.get("Paths").get("script_name").trim();
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String tool_path = public_data.TOOLS_ROOT_PATH;
@@ -206,7 +208,7 @@ public class task_prepare {
 		if (case_mode.equals("hold_case") || keep_path.equals("true")) {
 			task_prepare_info.add("Warn : hold_case/keep_path mode, skip existing script remove");
 		} else {
-			Boolean remove_ok = remove_exist_path(script_path, script_name);
+			Boolean remove_ok = remove_exist_path(script_path, script_base);
 			if (!remove_ok) {
 				return false;
 			}
@@ -218,12 +220,12 @@ public class task_prepare {
 		}
 		//step 6: run script export
 		Boolean export_ok = run_src_export(
-				script_url, surl_type, szip_type, script_version, user_name, pass_word, script_path, script_name);
+				script_url, surl_type, szip_type, script_version, user_name, pass_word, script_path, script_base);
 		if (!export_ok) {
 			return false;
 		}
 		//step 7: run unzip if need
-		Boolean unzip_ok = run_src_unzip(szip_type, script_path, script_name);
+		Boolean unzip_ok = run_src_unzip(szip_type, script_path, script_base);
 		if (!unzip_ok) {
 			return false;
 		}
@@ -470,6 +472,7 @@ public class task_prepare {
 		//step 5: final case path check
 		File case_path_dobj = new File(case_path);
 		if (!case_path_dobj.exists()) {
+			task_prepare_info.add("Error: Case path do not exists:" + case_path);
 			return false;
 		}
 		return true;
@@ -992,13 +995,12 @@ public class task_prepare {
 		String launch_path = task_data.get("Paths").get("launch_path").trim();
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
-		String base_name = task_data.get("Paths").get("base_name").trim();
+		String case_name = task_data.get("Paths").get("case_name").trim();
+		//String base_name = task_data.get("Paths").get("base_name").trim();
 		String design_path = new String("");
-		String case_name = new String("");
 		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
 		//step 1: update default launch command design name
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
-		case_name = base_name.split("\\.")[0];
 		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
 		//step 2: update launch command command path
 		Pattern exe_patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe|sh|csh|bash))", Pattern.CASE_INSENSITIVE);

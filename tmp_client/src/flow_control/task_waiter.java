@@ -732,12 +732,13 @@ public class task_waiter extends Thread {
 		String depot_space = new String("");// repository + suite path
 		String design_url = new String("");
 		String case_path = new String("");
+		String case_name = new String("");
 		String task_path = new String("");
 		String work_suite = new String("");
 		String save_path = new String("");
 		String save_suite = new String("");
 		String script_url = new String("");
-		String script_name = new String("");
+		String script_base = new String("");
 		String script_path = new String("");
 		String launch_path = new String("");
 		String report_path = new String(""); //also named location in Status
@@ -762,6 +763,9 @@ public class task_waiter extends Thread {
 		File design_name_fobj = new File(design_name);
 		String design_base_name = design_name_fobj.getName();
 		paths_hash.put("base_name", design_base_name);
+		//get case name
+		case_name = get_source_unzip_name(design_base_name);
+		paths_hash.put("case_name", case_name);
 		//get depot_space
 		repository = repository.replaceAll("\\$xlsx_dest", xlsx_dest);
 		depot_space = repository + "/" + suite_path;
@@ -864,24 +868,26 @@ public class task_waiter extends Thread {
 		paths_hash.put("script_url", script_url);
 		//get script_name
 		if (script_url.equals("") || script_url == null) {
-			script_name = "";
+			script_base = "";
 		} else {
-			script_name = script_url.substring(script_url.lastIndexOf("/") + 1);
+			script_base = script_url.substring(script_url.lastIndexOf("/") + 1);
 		}
-		paths_hash.put("script_name", script_name);
+		paths_hash.put("script_base", script_base);
+		paths_hash.put("script_name", get_source_unzip_name(script_base));
 		//get script_path
 		if (script_url.equals("") || script_url == null) {
 			script_path = "";
 		} else if(script_url.startsWith(work_space) || script_url.startsWith(case_path) || script_url.startsWith(public_data.TOOLS_ROOT_PATH)) {
 			script_path = script_url;
 		} else {
-			script_path = task_path + "/" + get_source_unzip_name(script_name); 
+			script_path = task_path + "/" + get_source_unzip_name(script_base); 
 		}
 		paths_hash.put("script_path", script_path);
 		//get launch_path
 		if ( launch_dir != null && launch_dir.length() > 0 ){
 			launch_path = launch_dir.replaceAll("\\$case_path", case_path);
 			launch_path = launch_path.replaceAll("\\$work_path", work_space);
+			launch_path = launch_path.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);
 		} else {
 			launch_path = task_path;
 		}
@@ -907,6 +913,9 @@ public class task_waiter extends Thread {
 		String return_str = new String("");
 		Boolean zip_file = Boolean.valueOf(false);
 		for (zip_enum zip_type : zip_enum.values()) {
+			if (zip_type.equals(zip_enum.NO) || zip_type.equals(zip_enum.UNKNOWN)) {
+				continue;
+			}
 			if (ori_name.contains(zip_type.get_description())) {
 				zip_file = true;
 				break;
