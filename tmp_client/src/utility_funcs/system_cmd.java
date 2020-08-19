@@ -249,6 +249,10 @@ public class system_cmd {
 				reason = line;
 			    break;
 			}
+			if (line.startsWith("@E:")) {
+				reason = line;
+			    break;
+			}			
 			if (m.find()) {
 				reason = line;
 				break;
