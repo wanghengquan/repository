@@ -11,3 +11,7 @@ optional arguments:
                         specify testrail user name.
   -p PASSWORD, --password PASSWORD
                         specify testrail password
+
+
+* parser.add_argument("-m", "--macro-only", action="store_true", help="Adding case MUST match the macro")
+  will not uploading cases which cannot match the macros.
