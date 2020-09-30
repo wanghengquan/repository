@@ -467,11 +467,6 @@ public class task_waiter extends Thread {
 		}
 		formated_data.put("Machine", machine_hash);
         // Task Preference format
-        HashMap<String, String> client_preference = new HashMap<String, String>();
-        if (case_data.containsKey("ClientPreference")) {
-            client_preference.putAll(case_data.get("ClientPreference"));
-        }
-        formated_data.put("ClientPreference", client_preference);
         HashMap<String, String> preference = new HashMap<String, String>();
         if (case_data.containsKey("Preference")) {
             preference.putAll(case_data.get("Preference"));
@@ -619,28 +614,6 @@ public class task_waiter extends Thread {
 				preference_data.remove("result_keep");
 			}
 		}
-		//ClientPreference check
-		HashMap<String, String> client_pref_data = checked_data.get("ClientPreference");
-		if (client_pref_data.containsKey("case_mode")) {
-			if (!data_check.str_choice_check(client_pref_data.get("case_mode"), new String [] {"copy_case", "hold_case"} )){
-				client_pref_data.remove("case_mode");
-			}
-		}
-		if (client_pref_data.containsKey("keep_path")) {
-			if (!data_check.str_choice_check(client_pref_data.get("keep_path"), new String [] {"false", "true"} )){
-				client_pref_data.remove("keep_path");
-			}
-		}
-		if (client_pref_data.containsKey("lazy_copy")) {
-			if (!data_check.str_choice_check(client_pref_data.get("lazy_copy"), new String [] {"false", "true"} )){
-				client_pref_data.remove("lazy_copy");
-			}
-		}
-		if (client_pref_data.containsKey("result_keep")) {
-			if (!data_check.str_choice_check(client_pref_data.get("result_keep"), new String [] {"auto", "zipped", "unzipped"} )){
-				client_pref_data.remove("result_keep");
-			}
-		}		
 		return checked_data;
 	}
 	

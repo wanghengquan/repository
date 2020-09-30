@@ -24,6 +24,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import top_runner.run_status.exit_enum;
 import utility_funcs.system_cmd;
+import utility_funcs.time_info;
 
 
 public class env_checker extends TimerTask {
@@ -287,12 +288,6 @@ public class env_checker extends TimerTask {
 				check_result = true;
 				break;
 			} else {
-				ENV_CHECKER_LOGGER.error("Self Check failed:");
-				ENV_CHECKER_LOGGER.error("Client Python version:" + python_pass.toString());
-				ENV_CHECKER_LOGGER.error("Client Python environ:" + python_env.toString());
-				ENV_CHECKER_LOGGER.error("Client SVN version:" + svn_pass.toString());
-				ENV_CHECKER_LOGGER.error("Work Path writable Check:" + writable_pass.toString());
-				ENV_CHECKER_LOGGER.error("Work Path"  + " " + work_path);
 				check_result = false;
 			}
 			try {
@@ -301,6 +296,15 @@ public class env_checker extends TimerTask {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		if (!check_result) {
+			ENV_CHECKER_LOGGER.error("==Self Check failed==" + time_info.get_date_time());
+			ENV_CHECKER_LOGGER.error("Client Python version:" + python_pass.toString());
+			ENV_CHECKER_LOGGER.error("Client Python environ:" + python_env.toString());
+			ENV_CHECKER_LOGGER.error("Client SVN version:" + svn_pass.toString());
+			ENV_CHECKER_LOGGER.error("Work Path writable Check:" + writable_pass.toString());
+			ENV_CHECKER_LOGGER.error("Work Path:" + work_path);
+			ENV_CHECKER_LOGGER.error("");
 		}
 		return check_result;
 	}

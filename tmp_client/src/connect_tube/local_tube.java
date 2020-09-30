@@ -785,11 +785,14 @@ public class local_tube {
 		// insert ClientPreference data
         String suite_client_preference = "";
         String case_client_preference = "";
-        if(suite_data.containsKey("ClientPreference")){
+        if(suite_data.containsKey("ClientPreference")){ //deprecated, remove it later
             suite_client_preference = suite_data.get("ClientPreference").trim();
         }
+        if(suite_data.containsKey("Preference")){
+            suite_client_preference = suite_data.get("Preference").trim();
+        }        
         HashMap<String, String> client_preference = comm_suite_case_merge(suite_client_preference, case_client_preference);
-        merge_data.put("ClientPreference", client_preference);
+        merge_data.put("Preference", client_preference);
 		return merge_data;
 	}
 

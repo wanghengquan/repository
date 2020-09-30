@@ -88,11 +88,11 @@ public class mail_action {
 			simple_mail.setSubject(subject);			
 			simple_mail.setMsg(send_massage);
 			simple_mail.send();
-		} catch (EmailException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			//  e.printStackTrace();
+			e.printStackTrace();
 			MAIL_ACTION_LOGGER.error("Send client event message error out.");
-		}			
+		}
 	}
 	
 	public static void multipart_attached_mail(
@@ -197,6 +197,6 @@ public class mail_action {
 	
 	public static void main(String[] args) {
 		System.out.println("Please start from:top_runner/top_launcher");
-		mail_action.multipart_attached_mail("events", "jason.wang@latticesemi.com", "D:/tmp_work_space/results/prj9/runtotal_eit_suites_122717_141445/Tm1_1_", ".", "testing...");
+		mail_action.simple_event_mail("events", "jason.wang@latticesemi.com", "testing...");
 	}
 }
