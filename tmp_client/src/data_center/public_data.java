@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.10.97"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21097; // version for code use
-	public final static String BASE_BUILDDATE = "2020/09/30";
+	public final static String BASE_CURRENTVERSION = "2.10.98"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21098; // version for code use
+	public final static String BASE_BUILDDATE = "2020/10/09";
 	public final static String BASE_SUITEFILEVERSION = "1.16";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -90,12 +90,19 @@ public class public_data {
 	public final static String UPDATE_URL_DEV = "http://lsh-tmp/tmp_client_release/update_dev.xml";
 	
 	// ========================
+	// Remote core script path
+	public final static String CORE_SCRIPT_NAME = "DEV";
+	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME;
+	
+	// ========================
 	// workspace folder configuration, real path = work_space + following folder
 	// name
 	public final static String WORKSPACE_RESULT_DIR = "results";
 	public final static String WORKSPACE_UPLOAD_DIR = "uploads";
 	public final static String WORKSPACE_TEMP_DIR = "temp";
 	public final static String WORKSPACE_LOG_DIR = "logs";
+	public final static String [] WORKSPACE_RESERVED_DIR = 
+		{CORE_SCRIPT_NAME, WORKSPACE_RESULT_DIR, WORKSPACE_UPLOAD_DIR, WORKSPACE_TEMP_DIR, WORKSPACE_LOG_DIR};
 	
 	// ========================
 	// suite folder configuration
@@ -109,7 +116,7 @@ public class public_data {
 	// name	
 	public final static String CASE_REPORT_NAME = "case_report.txt";
 	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
-	public final static String CASE_KEY_PATTERN = "run\\..*";
+	public final static String CASE_KEY_PATTERN = "^run\\..*";
 	public final static String CASE_INFO_FILE = "bqs.info";
 	public final static String CASE_EXEC_FILE = "$work_path/DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";
@@ -184,11 +191,6 @@ public class public_data {
 	// link to FTP default user shown here
 	public final static String FTP_USER = "guest";
 	public final static String FTP_PWD = "welcome";
-	
-	// ========================
-	// Link to core script
-	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/tmp_scripts/DEV";
 
 	// ========================
 	// task case default setting

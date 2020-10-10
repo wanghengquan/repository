@@ -10,6 +10,7 @@
 package connect_tube;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1075,6 +1076,7 @@ public class local_tube {
 	public void generate_suite_path_local_admin_task_queues(
 			String generate_time,
 			String imported_path,
+			String work_space,
 			HashMap<String, String> imported_data){
 		//step 1: generate queue_name
 		String queue_name = get_queue_name(imported_path, imported_data, generate_time);
@@ -1083,7 +1085,7 @@ public class local_tube {
 		admin_queue_data.putAll(get_admin_queue_data(imported_path, imported_data, generate_time));
 		//step 1: generate task_data
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		task_queue_data.putAll(get_task_queue_data(imported_path, imported_data, admin_queue_data));
+		task_queue_data.putAll(get_task_queue_data(imported_path, work_space, imported_data, admin_queue_data));
 		task_info.update_queue_to_received_admin_queues_treemap(queue_name, admin_queue_data);
 		task_info.update_queue_to_received_task_queues_map(queue_name, task_queue_data);
 	}
@@ -1253,6 +1255,7 @@ public class local_tube {
 	
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
 			String imported_path,
+			String work_space,
 			HashMap<String, String> imported_data,
 			HashMap<String, HashMap<String, String>> admin_data){
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
@@ -1282,12 +1285,45 @@ public class local_tube {
 		} else {
 			case_list.addAll(get_design_name_list(suite_path, key_pattern));
 		}
-		//sort required test case list
 		if(case_list.size() < 1){
 			return task_queue_data;
 		}
+		//remove abnormal test case
+		Boolean same_path = Boolean.valueOf(false);
+		List<String> valid_case_list = new ArrayList<String>();
+		List<String> invalid_case_list = new ArrayList<String>();
+		try {
+			same_path = file_action.is_path_same(suite_path, work_space);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			LOCAL_TUBE_LOGGER.warn("Path compare failed:" + suite_path + "<=>" + work_space);
+		}
+		if (same_path) {
+			for (String case_path: case_list) {
+				Boolean is_reserved = Boolean.valueOf(false);
+				for(String reserved_name:public_data.WORKSPACE_RESERVED_DIR){
+					if (case_path.equals(reserved_name) || case_path.startsWith(reserved_name + "/")) {
+						LOCAL_TUBE_LOGGER.warn("Reserved dir name removed:" + case_path);
+						is_reserved = true;
+						break;
+					}
+				}
+				if (is_reserved) {
+					invalid_case_list.add(case_path);
+				} else {
+					valid_case_list.add(case_path);
+				}
+			}
+		} else {
+			valid_case_list.addAll(case_list);
+		}
+		if (!invalid_case_list.isEmpty()) {
+			LOCAL_TUBE_LOGGER.warn("Reserved names:" +  String.join(",", public_data.WORKSPACE_RESERVED_DIR));
+		}
+		//sort required test case list
 		List<String> matched_case_list = new ArrayList<String>();
-		for(String case_path: case_list){
+		for(String case_path: valid_case_list){
 			if(case_match_required_info(suite_path, case_path, dat_file, task_sort)){
 				matched_case_list.add(case_path);
 			} else {

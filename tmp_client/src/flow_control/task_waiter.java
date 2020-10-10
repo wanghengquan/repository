@@ -755,6 +755,7 @@ public class task_waiter extends Thread {
         if (task_data.get("Preference").containsKey("save_space")) {
         	save_space = task_data.get("Preference").get("save_space");
         }
+        save_space = save_space.replaceAll("\\$xlsx_dest", xlsx_dest); 
         paths_hash.put("save_space", save_space.replaceAll("\\\\", "/"));
 		//get source_path
 		design_url = repository + "/" + suite_path + "/" + design_name;

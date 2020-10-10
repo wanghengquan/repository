@@ -188,7 +188,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		client.STATUS_LOGGER.info("TMP client updated.");
+		client.STATUS_LOGGER.info("TMP Client updated.");
 	}
 	
 	//get daemon process ready
