@@ -424,6 +424,10 @@ public class tube_server extends Thread {
 		if (imported_map.isEmpty()) {
 			return;
 		}
+		String work_space = new String(public_data.DEF_WORK_SPACE);
+        if (client_info.get_client_preference_data().containsKey("work_space")) {
+        	work_space = client_info.get_client_preference_data().get("work_space");
+        }
 		local_tube local_path_tube_parser = new local_tube(task_info);
 		Iterator<String> imported_it = imported_map.keySet().iterator();
 		int counter = 0;
@@ -441,7 +445,8 @@ public class tube_server extends Thread {
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
 			String imported_paths = imported_data.get("path");
 			for(String imported_path : imported_paths.split(",")){
-			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_id, imported_path, imported_data);
+			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(
+			    		imported_id, imported_path, work_space, imported_data);
 			}
 			counter++;
 		}

@@ -579,6 +579,7 @@ public class hall_manager extends Thread {
 		waiter_result = get_result_waiter_ready();
 		// initial 3 : Announce hall server ready
 		switch_info.set_hall_server_power_up();
+		HALL_MANAGER_LOGGER.info("Work Space:" + client_info.get_client_preference_data().get("work_space"));
 		while (!stop_request) {
 			if (wait_request) {
 				try {

@@ -377,8 +377,34 @@ public class file_action {
 		return FileUtils.deleteQuietly(delFile);
 	}
 	
+	public static Boolean is_path_same(
+			String file_path1,
+			String file_path2
+			) throws IOException {
+		File File1 = new File(file_path1);
+		File File2 = new File(file_path2);
+		if (File1.getCanonicalPath().equalsIgnoreCase(File2.getCanonicalPath())) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
+	
 	public static void main(String[] args) {
-		System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
+		//System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
+		String work_dir = System.getProperty("user.dir");
+		System.out.println(work_dir);
+		try {
+			if (is_path_same("G:/repository/TMP_client", ".")) {
+				System.out.println("same");
+			} else {
+				System.out.println("not same");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main2(String[] args) {
