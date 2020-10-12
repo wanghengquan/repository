@@ -391,6 +391,23 @@ public class file_action {
 		
 	}
 	
+	public static String get_absolute_paths(
+			String raw_paths){
+		String [] path_list = raw_paths.split(",");
+		ArrayList<String> return_list = new ArrayList<String>();
+		for (String path: path_list){
+			if (path.contains("$")){
+				//Special path variable inside skip convert
+				return_list.add(path);
+				continue;
+			}
+			File raw_file = new File(path);
+			String raw_path = new String(raw_file.getAbsolutePath().replaceAll("\\\\", "/"));
+			return_list.add(raw_path.replaceAll("/\\.", ""));
+		}
+		return String.join(",", return_list);
+	}
+	
 	public static void main(String[] args) {
 		//System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
 		String work_dir = System.getProperty("user.dir");

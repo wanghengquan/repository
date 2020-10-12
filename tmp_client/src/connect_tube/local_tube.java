@@ -1271,10 +1271,7 @@ public class local_tube {
 			List<String> line_list = new ArrayList<String>();
 			line_list.addAll(file_action.read_file_lines(list_path));
 			for (String line : line_list){
-				if(line.startsWith(";")){
-					continue;
-				}
-				if(line.startsWith("#")){
+				if(line.startsWith(";") || line.startsWith("#")){
 					continue;
 				}
 				File path_obj = new File(suite_path + "/" + line);

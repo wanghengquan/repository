@@ -9,8 +9,6 @@
  */
 package info_parser;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
@@ -22,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.public_data;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
+import utility_funcs.file_action;
 
 /*
  * PlatUML graph
@@ -88,21 +87,21 @@ public class cmd_parser {
 		// 3.4 suite file value
 		if (commandline_obj.hasOption('f')) {
 			String suite_file = new String(commandline_obj.getOptionValue('f'));
-			cmd_hash.put("suite_file", get_absolute_path(suite_file));
+			cmd_hash.put("suite_file", file_action.get_absolute_paths(suite_file));
 		} else {
 			cmd_hash.put("suite_file", "");
 		}
 		// 3.5 suite path value
 		if (commandline_obj.hasOption('p')) {
 			String suite_path = new String(commandline_obj.getOptionValue('p'));
-			cmd_hash.put("suite_path", get_absolute_path(suite_path));
+			cmd_hash.put("suite_path", file_action.get_absolute_paths(suite_path));
 		} else {
 			cmd_hash.put("suite_path", "");
 		}
 		// 3.6 suite list file for test suites inside
 		if (commandline_obj.hasOption('L')) {
 			String suite_path = new String(commandline_obj.getOptionValue('L'));
-			cmd_hash.put("list_file", get_absolute_path(suite_path));
+			cmd_hash.put("list_file", file_action.get_absolute_paths(suite_path));
 		} else {
 			cmd_hash.put("list_file", "");
 		}		
@@ -149,12 +148,12 @@ public class cmd_parser {
 		// 3.14 work path
 		if (commandline_obj.hasOption('w')) {
 			String work_space = new String(commandline_obj.getOptionValue('w'));
-			cmd_hash.put("work_space", get_absolute_path(work_space));
+			cmd_hash.put("work_space", file_action.get_absolute_paths(work_space));
 		}
 		// 3.15 save path
 		if (commandline_obj.hasOption('s')) {
 			String save_space = new String(commandline_obj.getOptionValue('s'));
-			cmd_hash.put("save_space", get_absolute_path(save_space));
+			cmd_hash.put("save_space", file_action.get_absolute_paths(save_space));
 		}
 		// 3.16 test case sorting
 		if (commandline_obj.hasOption('S')) {
@@ -215,21 +214,7 @@ public class cmd_parser {
 		return cmd_hash;
 	}
 
-	private String get_absolute_path(
-			String raw_paths){
-		String [] path_list = raw_paths.split(",");
-		ArrayList<String> return_list = new ArrayList<String>();
-		for (String path: path_list){
-			if (path.contains("$")){
-				//Special path variable inside skip convert
-				return_list.add(path);
-				continue;
-			}
-			File raw_file = new File(path);
-			return_list.add(raw_file.getAbsolutePath().replaceAll("\\\\", "/"));
-		}
-		return String.join(",", return_list);
-	}
+
 	
 	private Boolean run_input_data_check(
 			HashMap<String, String> cmd_hash){
