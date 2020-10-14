@@ -723,6 +723,7 @@ public class local_tube {
 		} else {
 			id_map.put("id", case_id);
 		}
+		id_map.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
 		merge_data.put("ID", id_map);
 		// insert CaseInfo data
 		String suite_info = suite_data.get("CaseInfo").trim();
@@ -1067,7 +1068,6 @@ public class local_tube {
 				admin_queue_data.putAll(case_data);
 				HashMap<String, String> admin_id_data = admin_queue_data.get("ID");
 				admin_id_data.put("run", admin_queue_base + "_" + detail_time);
-				admin_id_data.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
 				HashMap<String, String> admin_status_data = new HashMap<String, String>();
 				admin_status_data.put("admin_status", "processing");
 				admin_queue_data.put("Status", admin_status_data);
@@ -1178,6 +1178,7 @@ public class local_tube {
 		id_data.put("project", "x");
 		id_data.put("run", suite_name + "_" + generate_time);
 		id_data.put("suite", suite_name);
+		id_data.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
 		admin_queue_data.put("ID", id_data);
 		//CaseInfo create
 		HashMap<String, String> caseinfo_data = new HashMap<String, String>();

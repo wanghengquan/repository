@@ -253,7 +253,7 @@ class value_pane extends JPanel implements ActionListener{
 			}
 			//client_hash.putAll(client_info.get_client_data());
 			ori_data.putAll(deep_clone.clone(client_info.get_client_data().get(tab_name)));
-			new_data.put("scan_dir", jt_scan_dir.getText());
+			new_data.put("scan_dir", jt_scan_dir.getText().replaceAll("\\\\", "/"));
 			new_data.put("max_insts", jt_max_insts.getText());
 			if(ori_data.containsKey("scan_cmd")){
 				new_data.put("scan_cmd", ori_data.get("scan_cmd"));
