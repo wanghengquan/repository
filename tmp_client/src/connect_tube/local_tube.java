@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.public_data;
 import flow_control.task_enum;
 import info_parser.xls_parser;
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
@@ -894,10 +895,8 @@ public class local_tube {
 			String sub_task_number,
 			String current_terminal,
 			HashMap<String, HashMap<String, String>> design_data) {
-		// generate queue name
-		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority;
+		String priority = public_data.TASK_DEF_PRIORITY;
 		if (!design_data.containsKey("CaseInfo")) {
 			priority = public_data.TASK_PRI_LOCALLY;
 		} else if (!design_data.get("CaseInfo").containsKey("priority")) {
@@ -908,32 +907,72 @@ public class local_tube {
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
 				priority = public_data.TASK_PRI_LOCALLY;
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong CaseInfo->priority, default value" + public_data.TASK_PRI_LOCALLY + "used.");
 			}
 		}
 		// task belong to this client: 0, assign task(0) > match task(1)
-		String attribute = new String();
+		String assignment = new String();
 		String request_terminal = new String();
 		String available_terminal = current_terminal.toLowerCase();
 		if (!design_data.containsKey("Machine")) {
-			attribute = "1";
+			assignment = "1";
 		} else if (!design_data.get("Machine").containsKey("terminal")) {
-			attribute = "1";
+			assignment = "1";
 		} else {
 			request_terminal = design_data.get("Machine").get("terminal").toLowerCase();
 			if (request_terminal.contains(available_terminal)) {
-				attribute = "0"; // assign task
+				assignment = "0"; // assign task
 			} else {
-				attribute = "1"; // match task
+				assignment = "1"; // match task
 			}
+		}
+		// Max threads requirements
+		String threads = new String(public_data.TASK_DEF_MAX_THREADS);
+		if (!design_data.containsKey("Preference")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else if (!design_data.get("Preference").containsKey("max_threads")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else {
+			threads = design_data.get("Preference").get("max_threads");
+			Pattern p = Pattern.compile("^\\d$");
+			Matcher m = p.matcher(threads);
+			if (!m.find()) {
+				threads = public_data.TASK_DEF_MAX_THREADS;
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong Preference->max_threads, default value " + public_data.TASK_DEF_MAX_THREADS + " used.");
+			}
+		}		
+		// host restart requirements--for local jobs always be 0		
+		String restart_boolean = new String(public_data.TASK_DEF_HOST_RESTART);
+		if (!design_data.containsKey("Preference")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else if (!design_data.get("Preference").containsKey("host_restart")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else {
+			String request_value = new String(design_data.get("Preference").get("host_restart").trim());
+			if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
+			} else {
+				restart_boolean = request_value;
+			}
+		}
+		String restart = new String("0");
+		if (restart_boolean.equalsIgnoreCase("true")) {
+			restart = "1";
+		} else {
+			restart = "0";
 		}
 		// receive time
 		String mark_time = time_info.get_time_hhmm();
-		// pack data
-		// xx0@run_xxx_suite_time :
-		// priority:match/assign task:job_from_local@run_number
-		queue_name = priority + attribute + "0" + "@" 
-				+ "run_" + mark_time + "_" + sub_task_number + "_" + admin_queue_base + "_" + create_time;
-		return queue_name;
+		StringBuilder queue_name = new StringBuilder("");
+		queue_name.append(priority);
+		queue_name.append(assignment);
+		queue_name.append("0");//1, from remote; 0, from local
+		queue_name.append("@");
+		queue_name.append("t" + threads);
+		queue_name.append("r" + restart);
+		queue_name.append("_");
+		queue_name.append("run_" + mark_time + "_" + sub_task_number + "_" + admin_queue_base + "_" + create_time);
+		return queue_name.toString();
 	}
 
 	/*
@@ -1028,6 +1067,7 @@ public class local_tube {
 				admin_queue_data.putAll(case_data);
 				HashMap<String, String> admin_id_data = admin_queue_data.get("ID");
 				admin_id_data.put("run", admin_queue_base + "_" + detail_time);
+				admin_id_data.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
 				HashMap<String, String> admin_status_data = new HashMap<String, String>();
 				admin_status_data.put("admin_status", "processing");
 				admin_queue_data.put("Status", admin_status_data);
@@ -1094,12 +1134,10 @@ public class local_tube {
 			String imported_path,
 			HashMap<String, String> imported_data,
 			String generate_time) {
-		// generate queue name
-		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = public_data.TASK_PRI_LOCALLY;
+		String priority = new String(public_data.TASK_PRI_LOCALLY);
 		// task belong to this client: 0, assign task(0) > match task(1)
-		String attribute = new String("0");
+		String assignment = new String("0");
 		// receive time
 		String mark_time = time_info.get_time_hhmm();
 		// queue base name
@@ -1111,12 +1149,17 @@ public class local_tube {
 		} else {
 			admin_queue_base = suite_name;
 		}
-		// pack data
-		// xx0@run_xxx_suite_time :
-		// priority:match/assign task:job_from_local@run_number
-		queue_name = priority + attribute + "0" + "@" 
-				+ "run_" + mark_time + "_" + admin_queue_base + "_" + generate_time;
-		return queue_name;
+		// queue name generate
+		StringBuilder queue_name = new StringBuilder("");
+		queue_name.append(priority);
+		queue_name.append(assignment);
+		queue_name.append("0");//1, from remote; 0, from local
+		queue_name.append("@");
+		queue_name.append("t" + public_data.TASK_DEF_MAX_THREADS);
+		queue_name.append("r" + public_data.TASK_DEF_HOST_RESTART);
+		queue_name.append("_");
+		queue_name.append("run_" + mark_time + "_" + admin_queue_base + "_" + generate_time);
+		return queue_name.toString();
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_admin_queue_data(

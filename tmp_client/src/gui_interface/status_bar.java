@@ -254,7 +254,7 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 	
 	private void update_thread_data(){
 		int max_thread = pool_info.get_pool_current_size();
-		int use_thread = pool_info.get_pool_used_threads();
+		int use_thread = pool_info.get_sys_call_copy().size();
 		String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
 		jt_thread.setText(show_info);
 	}

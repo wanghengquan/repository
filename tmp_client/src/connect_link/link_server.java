@@ -282,9 +282,18 @@ public class link_server extends Thread {
 		case PROCESSING:
 			detail_data.put(task_cmd.PROCESSING.toString(), task_info.get_processing_admin_queue_list().toString());
 			break;
+		case EXECUTING:
+			detail_data.put(task_cmd.EXECUTING.toString(), task_info.get_executing_admin_queue_list().toString());
+			break;
+		case PENDING:
+			detail_data.put(task_cmd.PENDING.toString(), task_info.get_pending_admin_queue_list().toString());
+			break;				
 		case RUNNING:
 			detail_data.put(task_cmd.RUNNING.toString(), task_info.get_running_admin_queue_list().toString());
 			break;
+		case WAITING:
+			detail_data.put(task_cmd.WAITING.toString(), task_info.get_waiting_admin_queue_list().toString());
+			break;			
 		case EMPTIED:
 			detail_data.put(task_cmd.EMPTIED.toString(), task_info.get_emptied_admin_queue_list().toString());
 			break;

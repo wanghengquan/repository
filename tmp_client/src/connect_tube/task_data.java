@@ -56,13 +56,17 @@ public class task_data {
 	// private function
 	// =====updated by tube server====== queue name and reason
 	private TreeMap<String, String> rejected_admin_reason_treemap = new TreeMap<String, String>(new queue_compare());
-	// =====updated by hall manager=====
-	private ArrayList<String> warned_task_queue_list = new ArrayList<String>();
-	// ====updated by waiters====
-	// Queues updated by task waiter
 	private ArrayList<String> processing_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> paused_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> stopped_admin_queue_list = new ArrayList<String>();	
+	// =====updated by hall manager=====
+	private ArrayList<String> warned_task_queue_list = new ArrayList<String>();
+	private ArrayList<String> executing_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> pending_admin_queue_list = new ArrayList<String>();
+	private HashMap<String, HashMap<String, String>> processing_queue_system_requrement_map = new HashMap<String, HashMap<String, String>>();
+	// ====updated by waiters====
+	// Queues updated by task waiter
+	private ArrayList<String> waiting_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
@@ -785,6 +789,84 @@ public class task_data {
 		return remove_status;
 	}
 
+	public void set_waiting_admin_queue_list(ArrayList<String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.waiting_admin_queue_list.clear();
+			this.waiting_admin_queue_list.addAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public ArrayList<String> get_waiting_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.waiting_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void set_pending_admin_queue_list(ArrayList<String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.pending_admin_queue_list.clear();
+			this.pending_admin_queue_list.addAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}	
+	
+	public ArrayList<String> get_pending_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.pending_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public ArrayList<String> get_executing_admin_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(this.executing_admin_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_executing_admin_queue_list(ArrayList<String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			this.executing_admin_queue_list.clear();
+			this.executing_admin_queue_list.addAll(update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean decrease_executing_admin_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		Boolean decrease_status = Boolean.valueOf(true);
+		try {
+			if (executing_admin_queue_list.contains(queue_name)) {
+				executing_admin_queue_list.remove(queue_name);
+			} else {
+				decrease_status = false;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return decrease_status;
+	}
+
 	public ArrayList<String> get_processing_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -795,7 +877,7 @@ public class task_data {
 		}
 		return temp;
 	}
-
+	
 	public void set_processing_admin_queue_list(ArrayList<String> update_data) {
 		rw_lock.writeLock().lock();
 		try {
@@ -805,7 +887,7 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	
 	public Boolean decrease_processing_admin_queue_list(String queue_name) {
 		rw_lock.writeLock().lock();
 		Boolean decrease_status = Boolean.valueOf(true);
@@ -819,7 +901,7 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 		return decrease_status;
-	}	
+	}
 	
 	public void set_paused_admin_queue_list(ArrayList<String> update_data) {
 		rw_lock.writeLock().lock();
@@ -857,23 +939,6 @@ public class task_data {
 		ArrayList<String> temp = new ArrayList<String>();
 		try {
 			temp.addAll(this.stopped_admin_queue_list);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}
-	
-	// not used
-	public ArrayList<String> get_pending_admin_queue_list() {
-		rw_lock.readLock().lock();
-		ArrayList<String> temp = new ArrayList<String>();
-		try {
-			for (String admin_queue : processing_admin_queue_list) {
-				if (finished_admin_queue_list.contains(admin_queue)) {
-					continue;
-				}
-				temp.add(admin_queue);
-			}
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -1354,6 +1419,44 @@ public class task_data {
 			rw_lock.writeLock().unlock();
 		}
 	}	
+	
+	public HashMap<String, HashMap<String, String>> get_processing_queue_system_requrement_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
+		try {
+			temp.putAll(processing_queue_system_requrement_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}	
+	
+	public void reset_processing_queue_system_requrement_map() {
+		rw_lock.writeLock().lock();
+		try {
+			processing_queue_system_requrement_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_processing_queue_system_requrement_map(HashMap<String, HashMap<String, String>> data_map) {
+		rw_lock.writeLock().lock();
+		try {
+			processing_queue_system_requrement_map.putAll(data_map);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_processing_queue_system_requrement_map(String queue_name, HashMap<String, String> data_map) {
+		rw_lock.writeLock().lock();
+		try {
+			processing_queue_system_requrement_map.put(queue_name, data_map);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 	
 	public ArrayList<String> get_warned_task_queue_list() {
 		rw_lock.readLock().lock();

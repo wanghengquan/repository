@@ -148,10 +148,10 @@ public class task_waiter extends Thread {
 			}			
 			available = false;
 		}
-		//processing queue available ?
-		if (task_info.get_processing_admin_queue_list().size() < 1) {
+		//executing queue available ?
+		if (task_info.get_executing_admin_queue_list().size() < 1) {
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-				TASK_WAITER_LOGGER.debug(waiter_name + ":No Processing queue found.");
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No Runnable queue found.");
 			}
 			available = false;
 		}		
@@ -160,10 +160,9 @@ public class task_waiter extends Thread {
 	
 	private String get_right_task_queue() {
 		String queue_name = new String();
-		// pending_queue_list = total processing_admin_queue -
-		// finished_admin_queue
-		ArrayList<String> processing_queue_list = task_info.get_processing_admin_queue_list();
-		ArrayList<String> runable_queue_list = get_runable_queue_list(processing_queue_list);
+		// pending_queue_list = processing_admin_queue - executing_queue_list
+		ArrayList<String> executing_queue_list = task_info.get_executing_admin_queue_list();
+		ArrayList<String> runable_queue_list = get_runable_queue_list(executing_queue_list);
 		int queue_list_size = runable_queue_list.size();
 		int select_queue_index = 0;
 		if (queue_list_size == 0) {
@@ -1087,8 +1086,7 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			// task 2 : get working queue => key variable 1: queue_name OK now
-			String queue_name = new String("");
-			queue_name = get_right_task_queue();
+			String queue_name = new String(get_right_task_queue());
 			if (queue_name == null || queue_name.equals("")) {
 				//only TW_0 can report out when there is no work queue found.
 				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
@@ -1137,6 +1135,7 @@ public class task_waiter extends Thread {
 					// e.printStackTrace();
 					TASK_WAITER_LOGGER.info(waiter_name + ":Sleep error out");
 				}
+				task_info.decrease_executing_admin_queue_list(queue_name);	
 				task_info.decrease_processing_admin_queue_list(queue_name);				
 				task_info.increase_emptied_admin_queue_list(queue_name);
 				// release booking info

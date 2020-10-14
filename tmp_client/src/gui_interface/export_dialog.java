@@ -244,7 +244,7 @@ class suite_pane extends JPanel implements ActionListener{
 			} else if (processing_admin_queue_list.contains(queue_name)) {
 				status = "Processing";
 			} else if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-				status = "Unknown";
+				status = "Rejected";
 			} else {
 				status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 						.get("admin_status");
