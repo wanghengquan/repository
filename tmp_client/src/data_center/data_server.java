@@ -11,6 +11,7 @@ package data_center;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -215,7 +216,7 @@ public class data_server extends Thread {
 			}
 			HashMap<String, String> build_data = new HashMap<String, String>();
 			if(section_data.containsKey("scan_dir")){
-				build_data.putAll(get_scan_dir_build(section_data.get("scan_dir")));
+				build_data.putAll(get_multi_scan_dir_build(section_data.get("scan_dir")));
 			}
 			if(section_data.containsKey("scan_cmd")){
 				build_data.putAll(get_scan_cmd_build(section_data.get("scan_cmd")));
@@ -266,25 +267,43 @@ public class data_server extends Thread {
 		client_info.set_max_soft_insts(max_soft_insts);
 	}
 
+	private HashMap<String, String> get_multi_scan_dir_build(
+			String scan_paths
+			){
+		HashMap<String, String> build_paths = new HashMap<String, String>();
+		ArrayList<String> path_list = new ArrayList<String>();		
+		if (scan_paths.contains(",")){
+			path_list.addAll(Arrays.asList(scan_paths.split("\\s*,\\s*")));
+		} else if (scan_paths.contains(";")){
+			path_list.addAll(Arrays.asList(scan_paths.split("\\s*;\\s*")));
+		} else{
+			path_list.add(scan_paths);
+		}
+		for (String scan_path: path_list) {
+			build_paths.putAll(get_scan_dir_build(scan_path));
+		}
+		return build_paths;
+	}
+	
 	private HashMap<String, String> get_scan_dir_build(String scan_path) {
-		HashMap<String, String> scan_dirs = new HashMap<String, String>();
+		HashMap<String, String> build_paths = new HashMap<String, String>();
 		if(scan_path == null || scan_path.trim().equals("")){
 			DATA_SERVER_LOGGER.warn("Illegal Scan path find, skip");
-			return scan_dirs;
+			return build_paths;
 		}
 		File scan_handler = new File(scan_path);
 		if(!scan_handler.exists()){
 			DATA_SERVER_LOGGER.warn("Scan path not exist:" + scan_path);
-			return scan_dirs;
+			return build_paths;
 		}
 		if(!scan_handler.isDirectory()){
 			DATA_SERVER_LOGGER.warn("Scan path not a Directory:" + scan_path);
-			return scan_dirs;
+			return build_paths;
 		}	
 		File[] all_handlers = scan_handler.listFiles();
 		if (all_handlers == null){
 			DATA_SERVER_LOGGER.warn("Scan path have null sub paths:" + scan_path);
-			return scan_dirs;
+			return build_paths;
 		}		
 		for (File sub_handler : all_handlers) {
 			String build_name = sub_handler.getName();
@@ -314,10 +333,10 @@ public class data_server extends Thread {
 			DATA_SERVER_LOGGER.debug("Catch SW path:" + path);
 			File path_handler = new File(path);
 			if (path_handler.exists()){
-				scan_dirs.put("sd_" + build_name, path);
+				build_paths.put("sd_" + build_name, path);
 			}
 		}
-		return scan_dirs;
+		return build_paths;
 	}
 
 	private HashMap<String, String> get_scan_cmd_build(String scan_cmd) {
