@@ -311,6 +311,12 @@ public class Updater {
         } catch (IOException ex) {
         }
         gui.endDialog();
+        try {
+			Thread.sleep(3 * 1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         System.exit(0);  // Restarting
     }
 
