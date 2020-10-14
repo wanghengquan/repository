@@ -81,7 +81,7 @@ public class time_info {
 	public static Timestamp get_time_stamp() {
 		return new Timestamp(new Date().getTime());
 	}
-
+	
 	public static String get_runtime_string_dhms(String from_time_secs, String to_time_secs){
 		StringBuilder runtime_string = new StringBuilder();
 		long begin_time = Long.valueOf(from_time_secs).longValue();
@@ -127,7 +127,7 @@ public class time_info {
 	public static void main(String[] argv) {
 		System.out.println(get_time_hhmm());
 		System.out.println(System.currentTimeMillis() / 1000); 
-		System.out.println(get_time_stamp().toString());
+		System.out.println(get_time_stamp());
 		System.out.println(get_date_time());
 	}
 

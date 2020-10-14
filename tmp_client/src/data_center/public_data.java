@@ -26,10 +26,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.01"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21201; // version for code use
-	public final static String BASE_BUILDDATE = "2020/10/12";
-	public final static String BASE_SUITEFILEVERSION = "1.16";
+	public final static String BASE_CURRENTVERSION = "2.12.02"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21202; // version for code use
+	public final static String BASE_BUILDDATE = "2020/10/14";
+	public final static String BASE_SUITEFILEVERSION = "1.17";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static float BASE_JAVABASEVERSION = 1.8f;
@@ -197,6 +197,10 @@ public class public_data {
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
+	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
+	public final static String TASK_DEF_HOST_RESTART = "false"; //no Restart need
+	public final static long TASK_DEF_RESTART_IDENTIFY_THRESHOLD = 600;
+	public final static long TASK_DEF_RESTART_SYSTEM_THRESHOLD = 3600; //3600
     public final static String TASK_PRI_LOCALLY = "1"; 
 
 	// ========================
@@ -212,6 +216,9 @@ public class public_data {
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
+	public final static int PERF_MAX_WIN_WAITER	= 3;
+	public final static int PERF_MAX_LIN_WAITER	= 6;
+	public final static int PERF_MAX_TASK_WAITER = get_maximum_waiters();
 
 	// ========================
 	// Internal String replacement
@@ -271,6 +278,15 @@ public class public_data {
 			return public_data.PERF_POOL_WIN_MAX_SIZE;
 		} else {
 			return public_data.PERF_POOL_LIN_MAX_SIZE;
+		}
+	}
+	
+	private static int get_maximum_waiters(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_MAX_WIN_WAITER;
+		} else {
+			return public_data.PERF_MAX_LIN_WAITER;
 		}
 	}
 	

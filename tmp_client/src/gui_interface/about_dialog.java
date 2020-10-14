@@ -121,12 +121,7 @@ public class about_dialog extends JDialog implements ActionListener {
 	}
 	
 	private String get_client_runtime(){
-		String start_time = new String("0");
-		try{
-			start_time = client_info.get_client_machine_data().get("start_time");
-		} catch (Exception e){
-			return "NA";
-		}
+		String start_time = client_info.get_client_machine_data().get("start_time");
 		String current_time = String.valueOf(System.currentTimeMillis() / 1000);
 		return time_info.get_runtime_string_dhms(start_time, current_time);	
 	}
