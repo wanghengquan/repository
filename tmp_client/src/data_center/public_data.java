@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.05"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21205; // version for code use
-	public final static String BASE_BUILDDATE = "2020/10/14";
+	public final static String BASE_CURRENTVERSION = "2.12.06"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21206; // version for code use
+	public final static String BASE_BUILDDATE = "2020/10/20";
 	public final static String BASE_SUITEFILEVERSION = "1.17";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -116,7 +116,8 @@ public class public_data {
 	// name	
 	public final static String CASE_REPORT_NAME = "case_report.txt";
 	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
-	public final static String CASE_KEY_PATTERN = "^run\\..*";
+	public final static String CASE_USER_PATTERN = "^run\\..*";
+	public final static String CASE_STANDARD_PATTERN = "run_info.ini";
 	public final static String CASE_INFO_FILE = "bqs.info";
 	public final static String CASE_EXEC_FILE = "$work_path/DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";

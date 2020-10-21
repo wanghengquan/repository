@@ -354,7 +354,9 @@ public class task_waiter extends Thread {
 		return return_data;
 	}	
 	
-	private Map<String, HashMap<String, HashMap<String, String>>> get_indexed_task_data(String queue_name) {
+	private Map<String, HashMap<String, HashMap<String, String>>> get_indexed_task_data(
+			String queue_name
+			) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_case_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		// buffered task queues_tube_map
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
