@@ -141,7 +141,8 @@ public class rmq_tube {
 		factory.setPassword(rmq_pwd);
 		String v_host;
 		try {
-			queue_name = queue_name.split("@")[1];
+			//queue_name = queue_name.split("@")[1];
+			queue_name = queue_name.split("@.+?_")[1];
 			v_host = queue_name.split("_")[1];
 			v_host = "vhost_" + v_host;
 		} catch (Exception e) {
