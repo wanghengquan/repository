@@ -142,7 +142,7 @@ public class task_waiter extends Thread {
 			available = false;
 		}
 		//thread available ?
-		if (pool_info.get_available_thread() < 1){
+		if (pool_info.get_available_thread_for_reserve() < 1){
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No more threads available...");
 			}			
@@ -1112,7 +1112,7 @@ public class task_waiter extends Thread {
 			if (!software_booking) {
 				continue;
 			}
-			Boolean thread_booking = pool_info.booking_used_thread(1);
+			Boolean thread_booking = pool_info.booking_reserved_threads(1);
 			if (!thread_booking) {
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				continue;
@@ -1142,7 +1142,7 @@ public class task_waiter extends Thread {
 				task_info.increase_emptied_admin_queue_list(queue_name);
 				// release booking info
 				client_info.release_used_soft_insts(admin_data.get("Software"));
-				pool_info.release_used_thread(1);
+				pool_info.release_reserved_threads(1);
 				continue;
 			}
 			// task 6 : register task case to processed task queues map =>key variable 4: case_id OK now
@@ -1151,7 +1151,7 @@ public class task_waiter extends Thread {
 			if (case_id == "" || case_id == null){
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Task id find, ignore:" + task_data.toString());
 				client_info.release_used_soft_insts(admin_data.get("Software"));
-				pool_info.release_used_thread(1);
+				pool_info.release_reserved_threads(1);
 				continue;				
 			}
 			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id, task_data);
@@ -1168,7 +1168,7 @@ public class task_waiter extends Thread {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
 				}
 				client_info.release_used_soft_insts(admin_data.get("Software"));
-				pool_info.release_used_thread(1);
+				pool_info.release_reserved_threads(1);
 				continue;// register false, someone register this case already.
 			}
 			// task 7 : get test case ready
@@ -1183,7 +1183,7 @@ public class task_waiter extends Thread {
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){
 				client_info.release_used_soft_insts(admin_data.get("Software"));
-				pool_info.release_used_thread(1);
+				pool_info.release_reserved_threads(1);
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
 				continue;			
 			} 

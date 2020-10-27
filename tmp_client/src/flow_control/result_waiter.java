@@ -366,8 +366,8 @@ public class result_waiter extends Thread {
 			}
 			// update call map in ThreadPool
 			release_status = pool_info.remove_sys_call(call_index);
-			// update used thread in ThreadPool
-			release_status = pool_info.release_used_thread(1);
+			// update reserved thread in ThreadPool
+			release_status = pool_info.release_reserved_threads(1);
 		}
 		return release_status;
 	}

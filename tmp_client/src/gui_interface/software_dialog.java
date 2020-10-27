@@ -132,8 +132,10 @@ class value_pane extends JPanel implements ActionListener{
 	private JPanel construct_top_panel(){
 		JPanel top_panel = new JPanel(new GridLayout(2,2,5,5));
 		JLabel jl_max_insts = new JLabel("Max Instances Num:");
+		jl_max_insts.setToolTipText("Maximum instantiation number for Client to launch this Software.");
 		jt_max_insts = new JTextField("");
 		JLabel jl_scan_dir = new JLabel("Auto Scan Directory:");
+		jl_scan_dir.setToolTipText("Please separate multiple path with ';' or ','.");
 		jt_scan_dir = new JTextField("");
 		if (client_info.get_client_data().containsKey(tab_name)){
 			jt_max_insts.setText(client_info.get_client_data().get(tab_name).get("max_insts"));
