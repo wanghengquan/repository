@@ -39,7 +39,7 @@ public class pool_data {
 	// private function
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<pool_attr, Object>> call_map = new HashMap<String, HashMap<pool_attr, Object>>();
-	private int pool_used_threads = 0;
+	private int pool_reserved_threads = 0;
 	private int pool_current_size = public_data.PERF_POOL_CURRENT_SIZE;
 	private int pool_maximum_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 	private HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>> ();
@@ -75,44 +75,50 @@ public class pool_data {
 		return this.pool_current_size;
 	}
 	
-	public synchronized void set_pool_used_threads(int new_int) {
-		this.pool_used_threads = new_int;
+	public synchronized void set_pool_reserved_threads(int new_int) {
+		this.pool_reserved_threads = new_int;
+	}
+
+	public synchronized int get_pool_reserved_threads() {
+		int temp = 0;
+		temp = pool_reserved_threads;
+		return temp;
 	}
 
 	public synchronized int get_pool_used_threads() {
 		int temp = 0;
-		temp = pool_used_threads;
+		temp = call_map.size();
 		return temp;
 	}
-
-	public synchronized int get_available_thread() {
-		if (pool_current_size > pool_used_threads) {
-			return pool_current_size - pool_used_threads;
+	
+	public synchronized int get_available_thread_for_reserve() {
+		if (pool_current_size > pool_reserved_threads) {
+			return pool_current_size - pool_reserved_threads;
 		} else {
 			return 0;
 		}
 	}
 
-	public synchronized Boolean booking_used_thread(int booking_number) {
+	public synchronized Boolean booking_reserved_threads(int booking_number) {
 		Boolean booking_result = Boolean.valueOf(true);
-		int future_threads = this.pool_used_threads + booking_number;
+		int future_threads = this.pool_reserved_threads + booking_number;
 		if (future_threads > pool_current_size) {
 			booking_result = false;
 		} else {
-			this.pool_used_threads = future_threads;
+			this.pool_reserved_threads = future_threads;
 		}
 		return booking_result;
 	}
 
-	public synchronized Boolean release_used_thread(int release_number) {
+	public synchronized Boolean release_reserved_threads(int release_number) {
 		Boolean release_result = Boolean.valueOf(true);
-		int future_threads = this.pool_used_threads - release_number;
+		int future_threads = this.pool_reserved_threads - release_number;
 		if (future_threads < 0) {
 			future_threads = 0;
 			release_result = false;
 			THREAD_POOL_LOGGER.warn("Thread in pool released with warnning");
 		}
-		this.pool_used_threads = future_threads;
+		this.pool_reserved_threads = future_threads;
 		return release_result;
 	}
 
