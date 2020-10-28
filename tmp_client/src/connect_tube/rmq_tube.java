@@ -302,9 +302,9 @@ public class rmq_tube {
 		} else {
 			String request_value = new String(msg_data.get("Preference").get("host_restart").trim());
 			if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
-				restart_boolean = request_value;
-			} else {
 				RMQ_TUBE_LOGGER.warn(msg_key + ":has wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
+			} else {
+				restart_boolean = request_value;
 			}
 		}
 		String restart = new String("0");

@@ -668,6 +668,10 @@ public class hall_manager extends Thread {
 		}
 		if (max_threads > 0 && max_threads <= pool_info.get_pool_maximum_size()) {
 			pool_info.set_pool_current_size(max_threads);
+		} else {
+			String default_max_threads = client_info.get_client_preference_data().get("max_threads");
+			int def_thread = Integer.parseInt(default_max_threads);
+			pool_info.set_pool_current_size(def_thread);
 		}
 		//host restart if need.
 		Boolean host_restart = Boolean.valueOf(false);		
@@ -698,8 +702,9 @@ public class hall_manager extends Thread {
 	    	String os = System.getProperty("os.name").toLowerCase();
 			if (os.contains("windows")) {
 				HALL_MANAGER_LOGGER.warn("Host restart...");
-				switch_info.set_client_stop_request(exit_enum.HRL);
-				switch_info.set_client_soft_stop_request(true);					
+				HALL_MANAGER_LOGGER.warn("Host restart disabled for test...hall manager:line701");
+				//switch_info.set_client_stop_request(exit_enum.HRL);
+				//switch_info.set_client_soft_stop_request(true);					
 			} else {
 				HALL_MANAGER_LOGGER.warn("Host restart not support on linux side.");
 			}
