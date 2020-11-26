@@ -361,6 +361,9 @@ public class console_server extends Thread {
 		case PROCESSING:
 			task_other_command_output(task_cmd.PROCESSING.toString());
 			break;
+		case EXECUTING:
+			task_other_command_output(task_cmd.EXECUTING.toString());
+			break;			
 		case RUNNING:
 			task_other_command_output(task_cmd.RUNNING.toString());
 			break;

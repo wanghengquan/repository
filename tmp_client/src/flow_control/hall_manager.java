@@ -326,16 +326,17 @@ public class hall_manager extends Thread {
 		HashMap<String, HashMap<String, String>> requrement_map = new HashMap<String, HashMap<String, String>>();
 		requrement_map.putAll(task_info.get_processing_queue_system_requrement_map());
 		//max threads setting.
-		int max_threads = 0; //no limitation
+		int task_threads = 0; //no limitation
 		for (String queue_name : executing_queue_list) {
 			HashMap<String, String> request_data = new HashMap<String, String>();
 			request_data.putAll(requrement_map.get(queue_name));
 			int request_value = get_srting_int(request_data.get("max_threads"), "^(\\d+)$");
-			if (request_value > max_threads) {
-				max_threads = request_value;
+			if (request_value > task_threads) {
+				task_threads = request_value;
 			}
 		}
-		if (max_threads > 0) {
+		if (task_threads > 0) {
+			HALL_MANAGER_LOGGER.warn("Task threads limitation found 'Thread auto adjustment feature' disabled.");
 			return;
 		}
 		//system info record if not successfully record, skip this point
@@ -650,6 +651,7 @@ public class hall_manager extends Thread {
 	private void update_run_environment(
 			ArrayList<String> executing_list
 			) {
+		//Idle status go to default status
 		if (executing_list.isEmpty()) {
 			reset_default_max_thread();
 			return;
@@ -668,10 +670,6 @@ public class hall_manager extends Thread {
 		}
 		if (max_threads > 0 && max_threads <= pool_info.get_pool_maximum_size()) {
 			pool_info.set_pool_current_size(max_threads);
-		} else {
-			String default_max_threads = client_info.get_client_preference_data().get("max_threads");
-			int def_thread = Integer.parseInt(default_max_threads);
-			pool_info.set_pool_current_size(def_thread);
 		}
 		//host restart if need.
 		Boolean host_restart = Boolean.valueOf(false);		
@@ -702,11 +700,9 @@ public class hall_manager extends Thread {
 	    	String os = System.getProperty("os.name").toLowerCase();
 			if (os.contains("windows")) {
 				HALL_MANAGER_LOGGER.warn("Host restart...");
-				HALL_MANAGER_LOGGER.warn("Host restart disabled for test...hall manager:line701");
-				//switch_info.set_client_stop_request(exit_enum.HRL);
-				//switch_info.set_client_soft_stop_request(true);					
+				HALL_MANAGER_LOGGER.warn("Host restart disabled for test...hall manager:line701");				
 			} else {
-				HALL_MANAGER_LOGGER.warn("Host restart not support on linux side.");
+				HALL_MANAGER_LOGGER.warn("Host restart not support on Linux side.");
 			}
 		}
 		//other environment build.

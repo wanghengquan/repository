@@ -197,20 +197,21 @@ public class main_frame extends JFrame {
     }
 
     private void drag_import_local_task_data(
-            String task_file,
+            String task_files,
             String task_env){
-        if (local_tube.suite_file_sanity_check(task_file)){
-            MAIN_FRAME_LOGGER.warn("Importing suite file:" + task_file);
+        if (local_tube.suite_file_sanity_check(task_files)){
+            MAIN_FRAME_LOGGER.warn("Importing suite file:" + task_files);
         } else {
-            MAIN_FRAME_LOGGER.warn("Importing suite file failed:" + task_file);
+        	String line_separator = System.getProperty("line.separator");
+            MAIN_FRAME_LOGGER.warn("Importing suite file failed:" + task_files);
             String title = new String("Import suite file error");
-            String message = new String(local_tube.suite_file_error_msg);
+            String message = new String("File:" + task_files + line_separator + local_tube.suite_file_error_msg);
             JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         String import_time_id = time_info.get_date_time();
         HashMap <String, String> task_data = new HashMap <String, String>();
-        task_data.put("path", task_file);
+        task_data.put("path", task_files);
         task_data.put("env", task_env);
         task_info.update_local_file_imported_task_map(import_time_id, task_data);
         try {
