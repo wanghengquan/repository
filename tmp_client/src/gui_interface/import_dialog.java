@@ -308,9 +308,10 @@ class file_pane extends JPanel implements ActionListener{
 		if (local_tube.suite_files_sanity_check(task_files)){
 			FILE_PANE_LOGGER.warn("Importing suite files:" + task_files);
 		} else {
+			String line_separator = System.getProperty("line.separator");
 			FILE_PANE_LOGGER.warn("Importing suite files failed:" + task_files);
 			String title = new String("Import suite files error");
-			String message = new String(local_tube.suite_file_error_msg);
+			String message = new String("File:" + task_files + line_separator + local_tube.suite_file_error_msg);
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
