@@ -26,15 +26,16 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.10"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21210; //version for code use
-	public final static String BASE_BUILDDATE = "2020/11/26";
+	public final static String BASE_CURRENTVERSION = "2.12.11"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21211; //version for code use
+	public final static String BASE_BUILDDATE = "2020/12/07";
 	public final static String BASE_SUITEFILEVERSION = "1.17";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
-	public final static float BASE_JAVABASEVERSION = 1.8f;
-	public final static float BASE_PYTHONBASEVERSION = 2.7f;
-	public final static float BASE_SVNBASEVERSION = 1.4f;
+	public final static String BASE_JAVABASEVERSION = "1.8";
+	public final static String BASE_PYTHONBASEVERSION = "2.7";
+	public final static String BASE_PYTHONMAXVERSION = "3.0";
+	public final static String BASE_SVNBASEVERSION = "1.4";
 
 	// ========================
 	// Soft ware bin path

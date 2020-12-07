@@ -149,7 +149,7 @@ public class env_checker extends TimerTask {
 				ENV_CHECKER_LOGGER.error(item.toString());
 			}		
 		}
-		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d\\.\\d+)", Pattern.CASE_INSENSITIVE);
+		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d+\\.\\d+)", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
             if(line == null || line == "")
                 continue;
@@ -170,11 +170,10 @@ public class env_checker extends TimerTask {
 		}
 		String[] ver_array = cur_ver.split("\\.");
 		String cur_ver_str = ver_array[0] + "." + ver_array[1];
-		Float cur_ver_float = Float.parseFloat(cur_ver_str);
-		if (cur_ver_float >= public_data.BASE_JAVABASEVERSION) {
+		if (version_suitable_check(public_data.BASE_JAVABASEVERSION, cur_ver_str, null)) {
 			return true;
 		} else {
-			ENV_CHECKER_LOGGER.error("Java version out of scope.");
+			ENV_CHECKER_LOGGER.error("Java version out of scope." + cur_ver_str);
 			return false;
 		}
 	}
@@ -203,11 +202,10 @@ public class env_checker extends TimerTask {
 		}
 		String[] ver_array = cur_ver.split("\\.");
 		String cur_ver_str = ver_array[0] + "." + ver_array[1];
-		Float cur_ver_float = Float.parseFloat(cur_ver_str);
-		if (cur_ver_float >= public_data.BASE_PYTHONBASEVERSION && cur_ver_float <= 3.0f) {
+		if (version_suitable_check(public_data.BASE_PYTHONBASEVERSION, cur_ver_str, public_data.BASE_PYTHONMAXVERSION)) {
 			return true;
 		} else {
-			ENV_CHECKER_LOGGER.error("python version out of scope:" + cur_ver_float.toString());
+			ENV_CHECKER_LOGGER.error("Python version out of scope:" + cur_ver_str);
 			return false;
 		}
 	}
@@ -222,7 +220,7 @@ public class env_checker extends TimerTask {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("python env check error out");
+			ENV_CHECKER_LOGGER.error("Python env check error out");
 		}
 		Pattern ok_patt = Pattern.compile("python\\s*ok", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
@@ -244,13 +242,89 @@ public class env_checker extends TimerTask {
 		}
 		String[] ver_array = cur_ver.split("\\.");
 		String cur_ver_str = ver_array[0] + "." + ver_array[1];
-		Float cur_ver_float = Float.parseFloat(cur_ver_str);
-		if (cur_ver_float >= public_data.BASE_SVNBASEVERSION) {
+		if (version_suitable_check(public_data.BASE_SVNBASEVERSION, cur_ver_str, null)) {
 			return true;
 		} else {
-			ENV_CHECKER_LOGGER.error("SVN version out of scope:" + cur_ver_float.toString());
+			ENV_CHECKER_LOGGER.error("SVN version out of scope:" + cur_ver_str);
 			return false;
 		}
+	}
+	
+	private Boolean version_suitable_check(
+			String min_version,
+			String cur_version,
+			String max_version) {
+		//This function used to do version
+		//input: min version requirements, xx.xx
+		//		 cur version for check, xx.xx
+		//       max version requirements, xx.xx
+		//output: true or false
+		Boolean ver_status = Boolean.valueOf(false);
+		if (min_version == null || min_version == "") {
+			ENV_CHECKER_LOGGER.error("Min version error.");
+			return ver_status;
+		}
+		if (cur_version == null || cur_version == "") {
+			ENV_CHECKER_LOGGER.error("Current version error.");
+			return ver_status;
+		}
+		if (!min_version.contains(".")) {
+			ENV_CHECKER_LOGGER.error("Min version wrong format:" + min_version + ".");
+			return ver_status;
+		}		
+		if (!cur_version.contains(".")) {
+			ENV_CHECKER_LOGGER.error("Current version wrong format:" + cur_version + ".");
+			return ver_status;
+		}
+		if (max_version == null || max_version == "") {
+			ENV_CHECKER_LOGGER.info("Max version not given.");
+		} else {
+			if (!max_version.contains(".")) {
+				ENV_CHECKER_LOGGER.error("Max version wrong format:" + max_version + ".");
+				return ver_status;
+			}
+		}
+		//data parser
+		String[] min_array = min_version.split("\\.");
+		int min_main = Integer.valueOf(min_array[0]);
+		int min_sub = Integer.valueOf(min_array[1]);
+		String[] cur_array = cur_version.split("\\.");
+		int cur_main = Integer.valueOf(cur_array[0]);
+		int cur_sub = Integer.valueOf(cur_array[1]);
+		//cur version >= min version verification
+		if (min_main > cur_main) {
+			ver_status = false;
+		} else if (min_main < cur_main) {
+			ver_status = true;
+		} else {
+			if (min_sub > cur_sub) {
+				ver_status = false;
+			} else {
+				ver_status = true;
+			}
+		}
+		if (ver_status.equals(false)) {
+			return ver_status;
+		}
+		//cur version <= max
+		if (max_version == null || max_version == "") {
+			return ver_status;
+		}
+		String[] max_array = max_version.split("\\.");
+		int max_main = Integer.valueOf(max_array[0]);
+		int max_sub = Integer.valueOf(max_array[1]);
+		if (cur_main > max_main) {
+			ver_status = false;
+		} else if (cur_main < max_main) {
+			ver_status = true;
+		} else {
+			if (cur_sub > max_sub) {
+				ver_status = false;
+			} else {
+				ver_status = true;
+			}
+		}
+		return ver_status;		
 	}
 	
 	private Boolean work_path_check(String check_path) {
