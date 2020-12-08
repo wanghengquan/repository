@@ -26,8 +26,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.12"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21212; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.12.13"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21213; //version for code use
 	public final static String BASE_BUILDDATE = "2020/12/08";
 	public final static String BASE_SUITEFILEVERSION = "1.17";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -202,7 +202,7 @@ public class public_data {
 	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
 	public final static String TASK_DEF_HOST_RESTART = "false"; //no Restart need
 	public final static long TASK_DEF_RESTART_IDENTIFY_THRESHOLD = 600;
-	public final static long TASK_DEF_RESTART_SYSTEM_THRESHOLD = 300; //3600
+	public final static long TASK_DEF_RESTART_SYSTEM_THRESHOLD = 3600; //3600
     public final static String TASK_PRI_LOCALLY = "1"; 
 
 	// ========================

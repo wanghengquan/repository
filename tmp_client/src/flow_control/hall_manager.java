@@ -700,7 +700,8 @@ public class hall_manager extends Thread {
 	    	String os = System.getProperty("os.name").toLowerCase();
 			if (os.contains("windows")) {
 				HALL_MANAGER_LOGGER.warn("Host restart...");
-				HALL_MANAGER_LOGGER.warn("Host restart disabled for test...hall manager:line701");				
+				switch_info.set_client_stop_request(exit_enum.HRL);
+				switch_info.set_client_soft_stop_request(true);				
 			} else {
 				HALL_MANAGER_LOGGER.warn("Host restart not support on Linux side.");
 			}
@@ -753,7 +754,7 @@ public class hall_manager extends Thread {
 		implement_task_blocker_actions();
 	}
 	
-	private void job_report_generate() {
+	private void job_report_generation() {
 		// task 1 : make general report for non local console mode
 		implement_general_console_report();
 		// task 2 : exit apply for local command line mode
@@ -824,7 +825,7 @@ public class hall_manager extends Thread {
 			//task 2: monitor
 			job_implementation_monitor();
 			//task 3: run environment update(thread pool, task waiter)
-			job_report_generate();
+			job_report_generation();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {
