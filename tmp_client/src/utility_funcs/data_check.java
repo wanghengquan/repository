@@ -67,11 +67,31 @@ public class data_check {
 	}	
 	
 	public static Boolean str_path_check(
-			String input_data){
+			String input_path){
 		Boolean check_result = Boolean.valueOf(false);
-		File path_obj = new File(input_data.replaceAll("\\\\", "/"));
+		File path_obj = new File(input_path.replaceAll("\\\\", "/"));
 		if (path_obj.exists()){
 			check_result = true;
+		}
+		return check_result;
+	}
+	
+	public static Boolean str_paths_check(
+			String input_paths){
+		Boolean check_result = Boolean.valueOf(true);
+		ArrayList<String> path_list = new ArrayList<String>();		
+		if (input_paths.contains(",")){
+			path_list.addAll(Arrays.asList(input_paths.split("\\s*,\\s*")));
+		} else if (input_paths.contains(";")){
+			path_list.addAll(Arrays.asList(input_paths.split("\\s*;\\s*")));
+		} else{
+			path_list.add(input_paths);
+		}
+		for (String scan_path: path_list) {
+			File path_obj = new File(scan_path.replaceAll("\\\\", "/"));
+			if (!path_obj.exists()){
+				check_result = false;
+			}
 		}
 		return check_result;
 	}
