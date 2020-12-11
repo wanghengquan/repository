@@ -41,36 +41,36 @@ public class switch_data {
 	// client house keep request
 	private int house_keep_request = 0;
 	private HashMap<exit_enum, Integer> client_stop_request = new HashMap<exit_enum, Integer>();
-	private Boolean client_soft_stop_request = new Boolean(false);
+	private Boolean client_soft_stop_request = Boolean.valueOf(false);
 	private Exception client_stop_exception = new Exception();
 	// Thread start sequence
-	private Boolean start_progress_power_up = new Boolean(false);
-	private Boolean main_gui_power_up = new Boolean(false);
-	private Boolean data_server_power_up = new Boolean(false);
-	private Boolean tube_server_power_up = new Boolean(false);
-	private Boolean link_server_power_up = new Boolean(false);
-	private Boolean console_server_power_up = new Boolean(false);
-	private Boolean hall_server_power_up = new Boolean(false);
-	private Boolean local_console_mode = new Boolean(false);
+	private Boolean start_progress_power_up = Boolean.valueOf(false);
+	private Boolean main_gui_power_up = Boolean.valueOf(false);
+	private Boolean data_server_power_up = Boolean.valueOf(false);
+	private Boolean tube_server_power_up = Boolean.valueOf(false);
+	private Boolean link_server_power_up = Boolean.valueOf(false);
+	private Boolean console_server_power_up = Boolean.valueOf(false);
+	private Boolean hall_server_power_up = Boolean.valueOf(false);
+	private Boolean local_console_mode = Boolean.valueOf(false);
 	// suite file updating
 	// private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
 	// private String client_hall_status = new String("busy");
 	// Client console updating
-	private Boolean client_console_updating = new Boolean(false);
+	private Boolean client_console_updating = Boolean.valueOf(false);
 	// Client maintains mode (house keeping) assertion
-	// private Boolean client_maintain_keeping = new Boolean(false);
+	// private Boolean client_maintain_keeping = Boolean.valueOf(false);
 	private ArrayList<maintain_enum> client_maintain_list = new ArrayList<maintain_enum>();
 	// Client management update 
 	private state_enum client_run_state = state_enum.initial;
 	// Client environ update
-	private Boolean client_environ_issue = new Boolean(true);
+	private Boolean client_environ_issue = Boolean.valueOf(true);
 	// system level message
 	//private String client_info_message = new String("");
 	//private String client_warn_message = new String("");
 	//private String client_error_message = new String("");
-	private Boolean core_script_update_request = new Boolean(false);
-	private Boolean work_space_update_request = new Boolean(false);
+	private Boolean core_script_update_request = Boolean.valueOf(false);
+	private Boolean work_space_update_request = Boolean.valueOf(false);
 	private String space_warning_announced_date = new String("");
 	private String environ_warning_announced_date = new String("");
 	private String corescript_warning_announced_date = new String("");
@@ -136,7 +136,7 @@ public class switch_data {
 
 	public Boolean impl_send_admin_request() {
 		rw_lock.writeLock().lock();
-		Boolean action_need = new Boolean(false);
+		Boolean action_need = Boolean.valueOf(false);
 		try {
 			if (send_admin_request > 0) {
 				action_need = true;
@@ -150,7 +150,7 @@ public class switch_data {
 
 	public Boolean impl_dump_config_request() {
 		rw_lock.writeLock().lock();
-		Boolean action_need = new Boolean(false);
+		Boolean action_need = Boolean.valueOf(false);
 		try {
 			if (dump_config_request > 0) {
 				action_need = true;
@@ -164,7 +164,7 @@ public class switch_data {
 
 	public Boolean impl_check_core_request() {
 		rw_lock.writeLock().lock();
-		Boolean action_need = new Boolean(false);
+		Boolean action_need = Boolean.valueOf(false);
 		try {
 			if (check_core_request > 0) {
 				action_need = true;
@@ -246,7 +246,7 @@ public class switch_data {
 	}
 
 	public Boolean get_main_gui_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.main_gui_power_up;
@@ -266,7 +266,7 @@ public class switch_data {
 	}
 
 	public Boolean get_start_progress_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.start_progress_power_up;
@@ -286,7 +286,7 @@ public class switch_data {
 	}
 
 	public Boolean get_data_server_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.data_server_power_up;
@@ -306,7 +306,7 @@ public class switch_data {
 	}
 
 	public Boolean get_tube_server_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.tube_server_power_up;
@@ -326,7 +326,7 @@ public class switch_data {
 	}
 
 	public Boolean get_link_server_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.link_server_power_up;
@@ -346,7 +346,7 @@ public class switch_data {
 	}
 
 	public Boolean get_console_server_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.console_server_power_up;
@@ -366,7 +366,7 @@ public class switch_data {
 	}
 
 	public Boolean get_hall_server_power_up() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.hall_server_power_up;
@@ -395,7 +395,7 @@ public class switch_data {
 	}
 
 	public Boolean get_local_console_mode() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.local_console_mode;
@@ -416,7 +416,7 @@ public class switch_data {
 	}
 
 	public Boolean get_client_console_updating() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.client_console_updating;
@@ -437,7 +437,7 @@ public class switch_data {
 	}
 
 	public Boolean get_client_environ_issue() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.client_environ_issue;
@@ -458,7 +458,7 @@ public class switch_data {
 	}
 
 	public Boolean get_client_maintain_keeping() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.client_maintain_keeping;
@@ -479,7 +479,7 @@ public class switch_data {
 	}	
 	
 	public Boolean update_client_maintain_list(maintain_enum maintain_entry) {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		rw_lock.writeLock().lock();
 		try {
 			if (client_maintain_list.contains(maintain_entry)){
@@ -550,7 +550,7 @@ public class switch_data {
 	}
 	
 	public Boolean get_client_soft_stop_request() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.client_soft_stop_request;
@@ -570,7 +570,7 @@ public class switch_data {
 	}
 	
 	public Boolean get_core_script_update_request() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.core_script_update_request;
@@ -590,7 +590,7 @@ public class switch_data {
 	}
 	
 	public Boolean get_work_space_update_request() {
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		rw_lock.readLock().lock();
 		try {
 			status = this.work_space_update_request;

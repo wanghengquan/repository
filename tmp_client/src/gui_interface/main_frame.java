@@ -44,6 +44,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import top_runner.run_status.exit_enum;
 import utility_funcs.time_info;
 
@@ -69,17 +70,24 @@ public class main_frame extends JFrame {
 	private view_data view_info;
 	private task_data task_info;
 	private pool_data pool_info;
+	private post_data post_info;
 
 	// public function
 	// protected function
 	// private function
-	public main_frame(switch_data switch_info, client_data client_info, view_data view_info, task_data task_info,
-			pool_data pool_info) {
+	public main_frame(
+			switch_data switch_info, 
+			client_data client_info, 
+			view_data view_info, 
+			task_data task_info,
+			pool_data pool_info,
+			post_data post_info) {
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.view_info = view_info;
 		this.task_info = task_info;
 		this.pool_info = pool_info;
+		this.post_info = post_info;
 	}
 
 	public void gui_constructor() {
@@ -141,10 +149,10 @@ public class main_frame extends JFrame {
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
 		this.setIconImage(icon_image);
 		this.setTitle("TestRail Client");
-		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info, pool_info, task_info));
+		this.setJMenuBar(new menu_bar(this, switch_info, client_info, view_info, pool_info, task_info, post_info));
 		work_panel task_insts = new work_panel(this, view_info, client_info, task_info);
 		this.getContentPane().add(task_insts, BorderLayout.CENTER);
-		status_bar status_insts = new status_bar(this, client_info, switch_info, pool_info);
+		status_bar status_insts = new status_bar(this, client_info, switch_info, pool_info, post_info);
 		new Thread(status_insts).start();
 		this.getContentPane().add(status_insts, BorderLayout.SOUTH);
 		this.getContentPane().setBackground(Color.white);
@@ -189,20 +197,21 @@ public class main_frame extends JFrame {
     }
 
     private void drag_import_local_task_data(
-            String task_file,
+            String task_files,
             String task_env){
-        if (local_tube.suite_file_sanity_check(task_file)){
-            MAIN_FRAME_LOGGER.warn("Importing suite file:" + task_file);
+        if (local_tube.suite_file_sanity_check(task_files)){
+            MAIN_FRAME_LOGGER.warn("Importing suite file:" + task_files);
         } else {
-            MAIN_FRAME_LOGGER.warn("Importing suite file failed:" + task_file);
+        	String line_separator = System.getProperty("line.separator");
+            MAIN_FRAME_LOGGER.warn("Importing suite file failed:" + task_files);
             String title = new String("Import suite file error");
-            String message = new String(local_tube.suite_file_error_msg);
+            String message = new String("File:" + task_files + line_separator + local_tube.suite_file_error_msg);
             JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         String import_time_id = time_info.get_date_time();
         HashMap <String, String> task_data = new HashMap <String, String>();
-        task_data.put("path", task_file);
+        task_data.put("path", task_files);
         task_data.put("env", task_env);
         task_info.update_local_file_imported_task_map(import_time_id, task_data);
         try {
@@ -279,7 +288,8 @@ public class main_frame extends JFrame {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
-		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
+		post_data post_info = new post_data();
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info, post_info);
 		view_info.set_view_debug(true);
 		MAIN_FRAME_LOGGER.warn("GUI start");
 		if (SwingUtilities.isEventDispatchThread()) {

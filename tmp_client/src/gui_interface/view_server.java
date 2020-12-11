@@ -33,6 +33,7 @@ import data_center.public_data;
 import data_center.switch_data;
 import flow_control.import_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
 import top_runner.run_status.exit_enum;
@@ -51,6 +52,7 @@ public class view_server extends Thread {
 	private switch_data switch_info;
 	private client_data client_info;
 	private pool_data pool_info;
+	private post_data post_info;
 	@SuppressWarnings("unused")
 	private HashMap<String, String> cmd_info;
 	private String line_separator = System.getProperty("line.separator");
@@ -60,14 +62,21 @@ public class view_server extends Thread {
 	// protected function
 	// private function
 
-	public view_server(HashMap<String, String> cmd_info, switch_data switch_info, client_data client_info,
-			task_data task_info, view_data view_info, pool_data pool_info) {
+	public view_server(
+			HashMap<String, String> cmd_info, 
+			switch_data switch_info, 
+			client_data client_info,
+			task_data task_info, 
+			view_data view_info, 
+			pool_data pool_info,
+			post_data post_info) {
 		this.cmd_info = cmd_info;
 		this.switch_info = switch_info;
 		this.task_info = task_info;
 		this.view_info = view_info;
 		this.client_info = client_info;
 		this.pool_info = pool_info;
+		this.post_info = post_info;
 	}
 
 	private HashMap<String, ArrayList<String>> get_retest_list_from_retest_area(
@@ -104,7 +113,7 @@ public class view_server extends Thread {
 	}	
 	
 	private Boolean implements_retest_task_request() {
-		Boolean retest_status = new Boolean(true);
+		Boolean retest_status = Boolean.valueOf(true);
 		HashMap<String, ArrayList<String>> retest_hash = new HashMap<String, ArrayList<String>>();
 		retest_hash.putAll(view_info.impl_request_retest_list());
 		retest_hash.putAll(get_retest_list_from_retest_area(view_info.impl_request_retest_area()));
@@ -168,7 +177,7 @@ public class view_server extends Thread {
 	private Boolean run_action_legal_check(
 			queue_enum queue_status,
 			queue_enum run_action){
-		Boolean legal_run = new Boolean(true);
+		Boolean legal_run = Boolean.valueOf(true);
 		switch (queue_status){
 		case PROCESSING:
 			if (run_action.equals(queue_enum.STOPPED)){
@@ -219,7 +228,7 @@ public class view_server extends Thread {
 	}
 	
 	private Boolean implements_run_action_request(){
-		Boolean action_status = new Boolean(true);
+		Boolean action_status = Boolean.valueOf(true);
 		//get run data
 		HashMap<String, queue_enum> request_data = new HashMap<String, queue_enum>();
 		request_data.putAll(view_info.impl_run_action_request());
@@ -281,7 +290,7 @@ public class view_server extends Thread {
 
 	// dup function in work panel
 	private Boolean import_disk_admin_data_to_processed_data(String queue_name) {
-		Boolean import_status = new Boolean(false);
+		Boolean import_status = Boolean.valueOf(false);
 		HashMap<String, HashMap<String, String>> import_admin_data = new HashMap<String, HashMap<String, String>>();
 		import_admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client_info));
 		if (import_admin_data.isEmpty()) {
@@ -295,7 +304,7 @@ public class view_server extends Thread {
 
 	// dup function in work panel
 	private Boolean import_disk_task_data_to_processed_data(String queue_name) {
-		Boolean import_status = new Boolean(false);
+		Boolean import_status = Boolean.valueOf(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> import_task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		import_task_data.putAll(import_data.import_disk_finished_task_data(queue_name, client_info));
 		if (import_task_data.isEmpty()) {
@@ -385,7 +394,7 @@ public class view_server extends Thread {
 				e.printStackTrace();
 			}
 		}
-		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info);
+		main_frame top_view = new main_frame(switch_info, client_info, view_info, task_info, pool_info, post_info);
 		if (SwingUtilities.isEventDispatchThread()) {
 			top_view.gui_constructor();
 			top_view.setVisible(true);
@@ -564,7 +573,7 @@ public class view_server extends Thread {
 	*/
 	
 	private Boolean implements_rejected_queue_data_update(){
-		Boolean show_update = new Boolean(false);
+		Boolean show_update = Boolean.valueOf(false);
 		Set<String> rejected_set = new TreeSet<String>(new queue_compare(view_info.get_rejected_sorting_request()));
 		TreeMap<String, String> rejected_treemap = new TreeMap<String, String>();
 		rejected_treemap.putAll(deep_clone.clone(task_info.get_rejected_admin_reason_treemap()));
@@ -586,7 +595,7 @@ public class view_server extends Thread {
 	}
 
 	private Boolean implements_captured_queue_data_update() {
-		Boolean show_update = new Boolean(false);
+		Boolean show_update = Boolean.valueOf(false);
 		Set<String> captured_set = new TreeSet<String>(new queue_compare(view_info.get_captured_sorting_request()));
 		TreeMap<String, HashMap<String, HashMap<String, String>>> captured_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		captured_data.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));
@@ -674,7 +683,7 @@ public class view_server extends Thread {
 	}
 	
 	private Boolean implements_working_queue_data_update() {
-		Boolean show_update = new Boolean(true);
+		Boolean show_update = Boolean.valueOf(true);
 		String request_queue = view_info.get_request_watching_queue();
 		watch_enum request_area = view_info.get_request_watching_area();		
 		if (request_queue.equals("")) {

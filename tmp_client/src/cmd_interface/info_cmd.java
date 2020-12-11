@@ -17,7 +17,9 @@ public enum info_cmd {
 	MACHINE(2, "Show linked host Machine related info."),
 	PREFER(3, "Show linked host Preference related info."),
 	SOFTWARE(4, "INFO SOFTWARE <sw_name>, Show linked host sw_name related info."),
-	CORESCRIPT(5, "Show linked host Corescript related info.");
+	CORESCRIPT(5, "Show linked host Corescript related info."),
+	STATUS(6, "Show linked host status info."),
+	BUILD(7, "Show linked host build info.");
 	private int index;
 	private String description;
 	

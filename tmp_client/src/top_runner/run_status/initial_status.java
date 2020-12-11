@@ -32,9 +32,16 @@ class initial_status extends abstract_status {
 
 	public void to_stop() {
 		//step 1. soft stop requested and still have task running
-		if(client.switch_info.get_client_soft_stop_request() && (client.pool_info.get_pool_used_threads() > 0)){
-			client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
-			return;
+		if(client.switch_info.get_client_soft_stop_request()) {
+			if (client.pool_info.get_pool_used_threads() > 0){
+				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+				return;
+			}
+			int post_call_size = client.post_info.get_postrun_call_size();
+			if (post_call_size > 0){
+				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be sync..." + post_call_size);
+				return;
+			}
 		}
 		//step 2. to stop actions		
 		client.STATUS_LOGGER.debug(">>>####################");
@@ -181,7 +188,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		client.STATUS_LOGGER.info("TMP client updated.");
+		client.STATUS_LOGGER.info("TMP Client updated.");
 	}
 	
 	//get daemon process ready

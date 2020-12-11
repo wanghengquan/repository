@@ -132,8 +132,10 @@ class value_pane extends JPanel implements ActionListener{
 	private JPanel construct_top_panel(){
 		JPanel top_panel = new JPanel(new GridLayout(2,2,5,5));
 		JLabel jl_max_insts = new JLabel("Max Instances Num:");
+		jl_max_insts.setToolTipText("Maximum instantiation number for Client to launch this Software.");
 		jt_max_insts = new JTextField("");
 		JLabel jl_scan_dir = new JLabel("Auto Scan Directory:");
+		jl_scan_dir.setToolTipText("Please separate multiple path with ';' or ','.");
 		jt_scan_dir = new JTextField("");
 		if (client_info.get_client_data().containsKey(tab_name)){
 			jt_max_insts.setText(client_info.get_client_data().get(tab_name).get("max_insts"));
@@ -253,7 +255,7 @@ class value_pane extends JPanel implements ActionListener{
 			}
 			//client_hash.putAll(client_info.get_client_data());
 			ori_data.putAll(deep_clone.clone(client_info.get_client_data().get(tab_name)));
-			new_data.put("scan_dir", jt_scan_dir.getText());
+			new_data.put("scan_dir", jt_scan_dir.getText().replaceAll("\\\\", "/"));
 			new_data.put("max_insts", jt_max_insts.getText());
 			if(ori_data.containsKey("scan_cmd")){
 				new_data.put("scan_cmd", ori_data.get("scan_cmd"));

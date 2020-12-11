@@ -61,12 +61,14 @@ class UploadSuites(object):
         group.add_argument("--file-ini", help="specify input Suite ini file")
         parser.add_argument("-u", "--username", required=True, help="specify testrail user name.")
         parser.add_argument("-p", "--password", required=True, help="specify testrail password")
+        parser.add_argument("-m", "--macro-only", action="store_true", help="Adding case MUST match the macro")
         opts = parser.parse_args()
         self.debug = opts.debug
         self.file_xlsx = opts.infile
         self.username = opts.username
         self.password = opts.password
         self.file_ini = opts.file_ini
+        self.macro_only = opts.macro_only
 
     def upload_from_xlsx_file(self):
         LOGGER.info("Start upload suites by {}".format(self.file_xlsx))
@@ -207,6 +209,7 @@ class UploadSuites(object):
             if not self.macro_dict:
                 self.final_cases.append(case.copy())
                 continue
+            never_matched = 1
             for k, v in self.macro_dict.items():
                 # matched?
                 matched_list = list()
@@ -233,6 +236,7 @@ class UploadSuites(object):
                     # TODO: DO NOT add raw case currently
                     continue
                 # action!
+                never_matched = 0
                 new_case = case.copy()
                 for foo in v:
                     if foo[0] != "action":
@@ -271,6 +275,9 @@ class UploadSuites(object):
                         _show = ["{} = {}".format(k, new_dict.get(k, "")) for k in _now_keys]
                         new_case[foo[1]] = "\n".join(_show)
                 self.final_cases.append(new_case)
+            if never_matched:
+                if not self.macro_only:
+                    self.final_cases.append(case.copy())
 
     @staticmethod
     def equal_string_list_to_dict(equal_string_list):

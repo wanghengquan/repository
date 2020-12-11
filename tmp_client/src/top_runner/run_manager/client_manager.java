@@ -76,7 +76,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_system_idle(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		if(pool_info.get_pool_used_threads() == 0){
 			idle_counter ++;
 		} else {
@@ -91,7 +91,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_update_available(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
         if(switch_info.get_core_script_update_request() && pool_info.get_pool_used_threads() == 0){
 		    status = true;
         }
@@ -99,7 +99,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_environ_issue(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		if(switch_info.get_client_environ_issue()){
 			status = true;
 		}
@@ -107,7 +107,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_cpu_overload(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String cpu_used = machine_sync.get_cpu_usage();
 		int cpu_used_int = 0;
 		try{
@@ -122,7 +122,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_mem_overload(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String mem_used = machine_sync.get_mem_usage();
 		int mem_used_int = 0;
 		try{
@@ -137,7 +137,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_space_overload(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String work_space = client_info.get_client_preference_data().get("work_space");
 		String space_available = machine_sync.get_avail_space(work_space);
 		String space_reserve = client_info.get_client_preference_data().get("space_reserve");
@@ -156,7 +156,7 @@ public class client_manager extends Thread  {
 	}
 	
 	private Boolean get_work_space_updated(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		if (switch_info.get_work_space_update_request() && pool_info.get_pool_used_threads() == 0){
 			status = true;
 		}
@@ -263,12 +263,12 @@ public class client_manager extends Thread  {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
 		// initial 1 : get all runner
-		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info);
+		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info, post_info);
 		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
-		link_server task_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_TASK_PORT);
-		link_server cmd_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server task_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_TASK_PORT);
+		link_server cmd_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
 				switch_info, 

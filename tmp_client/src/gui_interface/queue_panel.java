@@ -142,7 +142,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	}	
 	
 	private Boolean is_selected_queue_deletable(){
-		Boolean run_status = new Boolean(false);
+		Boolean run_status = Boolean.valueOf(false);
 		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
 		if(task_info.get_running_admin_queue_list().contains(queue_name)){
@@ -166,7 +166,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	}
 	
 	private Boolean is_selected_queue_submitable(){
-		Boolean run_status = new Boolean(false);
+		Boolean run_status = Boolean.valueOf(false);
 		String queue_name = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
 		String status = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 1);
 		if(!status.equals(queue_enum.FINISHED.get_description())){
@@ -263,14 +263,14 @@ public class queue_panel extends JSplitPane implements Runnable {
 	}
 
 	private Boolean update_rejected_queue_data() {
-		Boolean show_update = new Boolean(false);
+		Boolean show_update = Boolean.valueOf(false);
 		reject_data.clear();
 		reject_data.addAll(view_info.get_rejected_queue_data());
 		return show_update;
 	}
 
 	private Boolean update_captured_queue_data() {
-		Boolean show_update = new Boolean(false);
+		Boolean show_update = Boolean.valueOf(false);
 		capture_data.clear();
 		capture_data.addAll(view_info.get_captured_queue_data());
 		return show_update;
@@ -278,7 +278,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 	
 	@SuppressWarnings("unused")
 	private Boolean update_select_rejected_queue() {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		String selected_queue = new String();
 		int select_index = reject_table.getSelectedRow();
 		int total_rows = reject_table.getRowCount();
@@ -293,7 +293,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 
 	@SuppressWarnings("unused")
 	private Boolean update_select_captured_queue() {
-		Boolean update_status = new Boolean(true);
+		Boolean update_status = Boolean.valueOf(true);
 		String selected_queue = new String();
 		int select_index = capture_table.getSelectedRow();
 		int total_rows = capture_table.getRowCount();

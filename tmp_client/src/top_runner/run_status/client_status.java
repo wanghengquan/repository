@@ -10,7 +10,6 @@
 package top_runner.run_status;
 
 import java.util.HashMap;
-import java.util.Observable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,13 +25,13 @@ import flow_control.hall_manager;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
-import top_runner.run_status.abstract_status;
-import top_runner.run_status.initial_status;
-import top_runner.run_status.maintain_status;
-import top_runner.run_status.stop_status;
-import top_runner.run_status.work_status;
+//import top_runner.run_status.abstract_status;
+//import top_runner.run_status.initial_status;
+//import top_runner.run_status.maintain_status;
+//import top_runner.run_status.stop_status;
+//import top_runner.run_status.work_status;
 
-public class client_status extends Observable  {
+public class client_status {
     public final abstract_status INITIAL = new initial_status(this);  
     public final abstract_status WORK = new work_status(this);  
     public final abstract_status MAINTAIN = new maintain_status(this);  
@@ -88,9 +87,7 @@ public class client_status extends Observable  {
 	
 	public void set_current_status(abstract_status new_status) {  
         this.current_status = new_status;
-        switch_info.set_client_run_state(current_status.get_current_status());
-        setChanged();  
-        notifyObservers();  
+        switch_info.set_client_run_state(current_status.get_current_status()); 
     } 
 
     public void to_work_status() { 

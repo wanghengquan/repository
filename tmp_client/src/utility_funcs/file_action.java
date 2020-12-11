@@ -305,7 +305,7 @@ public class file_action {
 	}	
 	
 	public static Boolean lock_file_waiting(String file_path){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		File lock_file = new File(file_path);
 		int counter = 0;
 		while (lock_file.exists()){
@@ -329,7 +329,7 @@ public class file_action {
 	}
 	
 	public static Boolean gen_lock_file(String file_path){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		File lock_file = new File(file_path);
 		int counter = 0;
 		while (lock_file.exists()){
@@ -377,8 +377,51 @@ public class file_action {
 		return FileUtils.deleteQuietly(delFile);
 	}
 	
+	public static Boolean is_path_same(
+			String file_path1,
+			String file_path2
+			) throws IOException {
+		File File1 = new File(file_path1);
+		File File2 = new File(file_path2);
+		if (File1.getCanonicalPath().equalsIgnoreCase(File2.getCanonicalPath())) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
+	
+	public static String get_absolute_paths(
+			String raw_paths){
+		String [] path_list = raw_paths.split(",");
+		ArrayList<String> return_list = new ArrayList<String>();
+		for (String path: path_list){
+			if (path.contains("$")){
+				//Special path variable inside skip convert
+				return_list.add(path);
+				continue;
+			}
+			File raw_file = new File(path);
+			String raw_path = new String(raw_file.getAbsolutePath().replaceAll("\\\\", "/"));
+			return_list.add(raw_path.replaceAll("/\\.", ""));
+		}
+		return String.join(",", return_list);
+	}
+	
 	public static void main(String[] args) {
-		System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
+		//System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
+		String work_dir = System.getProperty("user.dir");
+		System.out.println(work_dir);
+		try {
+			if (is_path_same("G:/repository/TMP_client", ".")) {
+				System.out.println("same");
+			} else {
+				System.out.println("not same");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main2(String[] args) {

@@ -23,7 +23,7 @@ import utility_funcs.deep_clone;
 
 public class view_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
-	private Boolean view_debug = new Boolean(false);
+	private Boolean view_debug = Boolean.valueOf(false);
 	private String current_watching_queue = new String("");
 	private String request_watching_queue = new String("");
 	private watch_enum current_watching_area = watch_enum.ALL;
@@ -37,9 +37,9 @@ public class view_data {
 	private List<String> export_title_list = new ArrayList<String>();
 	private sort_enum rejected_sorting_request = sort_enum.DEFAULT;
 	private sort_enum captured_sorting_request = sort_enum.DEFAULT;	
-	private Boolean space_cleanup_apply = new Boolean(false);
-	private Boolean environ_issue_apply = new Boolean(false);
-	private Boolean corescript_update_apply = new Boolean(false);
+	private Boolean space_cleanup_apply = Boolean.valueOf(false);
+	private Boolean environ_issue_apply = Boolean.valueOf(false);
+	private Boolean corescript_update_apply = Boolean.valueOf(false);
 	private Vector<Vector<String>> rejected_queue_data = new Vector<Vector<String>>();
 	private Vector<Vector<String>> captured_queue_data = new Vector<Vector<String>>();
 	private Vector<Vector<String>> watching_queue_data = new Vector<Vector<String>>();
@@ -56,7 +56,7 @@ public class view_data {
 	
 	public Boolean get_view_debug() {
 		rw_lock.readLock().lock();
-		Boolean temp = new Boolean(false);
+		Boolean temp = Boolean.valueOf(false);
 		try {
 			temp = view_debug;
 		} finally {
@@ -201,7 +201,7 @@ public class view_data {
 			String queue_name,
 			retest_enum area) {
 		rw_lock.writeLock().lock();
-		Boolean update_result = new Boolean(true);
+		Boolean update_result = Boolean.valueOf(true);
 		try {
 			request_retest_area.put(queue_name, area);
 		} finally {
@@ -236,7 +236,7 @@ public class view_data {
 			String queue_name,
 			ArrayList<String> case_list) {
 		rw_lock.writeLock().lock();
-		Boolean update_result = new Boolean(true);
+		Boolean update_result = Boolean.valueOf(true);
 		try {
 			request_retest_list.put(queue_name, case_list);
 		} finally {
@@ -271,7 +271,7 @@ public class view_data {
 			String queue_name,
 			ArrayList<String> case_list) {
 		rw_lock.writeLock().lock();
-		Boolean update_result = new Boolean(true);
+		Boolean update_result = Boolean.valueOf(true);
 		try {
 			request_terminate_list.put(queue_name, case_list);
 		} finally {
@@ -306,7 +306,7 @@ public class view_data {
 			String queue_name,
 			queue_enum action) {
 		rw_lock.writeLock().lock();
-		Boolean update_result = new Boolean(true);
+		Boolean update_result = Boolean.valueOf(true);
 		try {
 			run_action_request.put(queue_name, action);
 		} finally {
@@ -582,7 +582,7 @@ public class view_data {
 	}	
 	
 	public Boolean remove_case_from_watching_task_queues_data_map(String queue_name, String case_id) {
-		Boolean remove_result = new Boolean(false);
+		Boolean remove_result = Boolean.valueOf(false);
 		rw_lock.writeLock().lock();
 		try {
 			if (watching_task_queues_data_map.containsKey(queue_name)){
@@ -655,7 +655,7 @@ public class view_data {
 	//space_cleanup_dialog
 	public Boolean get_space_cleanup_apply() {
 		rw_lock.readLock().lock();
-		Boolean temp = new Boolean(false);
+		Boolean temp = Boolean.valueOf(false);
 		try {
 			temp = space_cleanup_apply;
 		} finally {
@@ -676,7 +676,7 @@ public class view_data {
 	//environ_issue_dialog
 	public Boolean get_environ_issue_apply() {
 		rw_lock.readLock().lock();
-		Boolean temp = new Boolean(false);
+		Boolean temp = Boolean.valueOf(false);
 		try {
 			temp = environ_issue_apply;
 		} finally {
@@ -697,7 +697,7 @@ public class view_data {
 	//core script update issue
 	public Boolean get_corescript_update_apply() {
 		rw_lock.readLock().lock();
-		Boolean temp = new Boolean(false);
+		Boolean temp = Boolean.valueOf(false);
 		try {
 			temp = corescript_update_apply;
 		} finally {

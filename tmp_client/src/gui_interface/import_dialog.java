@@ -63,7 +63,7 @@ public class import_dialog extends JDialog implements ChangeListener{
 		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		this.setSize(600, 400);
+		this.setSize(800, 600);
 	}
 
 	private JTabbedPane construct_tab_pane(){
@@ -172,14 +172,17 @@ class file_pane extends JPanel implements ActionListener{
 		jl_unit_sort.setToolTipText("Unit test case sorting requirements, demo:opt1=value1;opt2=value2");
 		jt_unit_sort = new JTextField("", 128);
 		p1.add(jl_unit_sort);
-		p1.add(jt_unit_sort);		
+		p1.add(jt_unit_sort);
+		//step 8 : empty line
+		JLabel empty_line = new JLabel("");
+		p1.add(empty_line);
 		//layout it 
 		GridBagConstraints layout_s = new GridBagConstraints();
 		layout_s.fill = GridBagConstraints.BOTH;
 		//for title1
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
-		layout_s.weighty=0.5;
+		layout_s.weighty=0.2;
 		part1_layout.setConstraints(title1, layout_s);
 		//for jl_user_file
 		layout_s.gridwidth=1;
@@ -219,7 +222,7 @@ class file_pane extends JPanel implements ActionListener{
 		//for title2
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
-		layout_s.weighty=0.5;
+		layout_s.weighty=0.2;
 		part1_layout.setConstraints(title2, layout_s);		
 		//for jl_unit_file
 		layout_s.gridwidth=1;
@@ -255,7 +258,12 @@ class file_pane extends JPanel implements ActionListener{
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_unit_sort, layout_s);		
+		part1_layout.setConstraints(jt_unit_sort, layout_s);	
+		//for empty line
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0.6;
+		part1_layout.setConstraints(empty_line, layout_s);
 		return p1;
 	}
 	
@@ -300,9 +308,10 @@ class file_pane extends JPanel implements ActionListener{
 		if (local_tube.suite_files_sanity_check(task_files)){
 			FILE_PANE_LOGGER.warn("Importing suite files:" + task_files);
 		} else {
+			String line_separator = System.getProperty("line.separator");
 			FILE_PANE_LOGGER.warn("Importing suite files failed:" + task_files);
 			String title = new String("Import suite files error");
-			String message = new String(local_tube.suite_file_error_msg);
+			String message = new String("File:" + task_files + line_separator + local_tube.suite_file_error_msg);
 			JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
@@ -395,8 +404,10 @@ class path_pane extends JPanel implements ActionListener{
 	@SuppressWarnings("unused")
 	private client_data client_info;
 	private JLabel jl_suite_path, jl_key_pattern, jl_exe_file, jl_dat_file, jl_arguments, jl_extra_env, jl_case_sort;
+	private JLabel jl_standard_path, jl_standard_pattern, jl_standard_extra_env, jl_standard_case_sort;
 	private JTextField jt_suite_path, jt_key_pattern, jt_exe_file, jt_dat_file, jt_arguments, jt_extra_env, jt_case_sort;
-	private JButton jb_suite_path, close, apply;
+	private JTextField jt_standard_path, jt_standard_pattern, jt_standard_extra_env, jt_standard_case_sort;
+	private JButton jb_suite_path, jb_standard_path, close, apply;
 	
 	public path_pane(
 			import_dialog tabbed_pane, 
@@ -416,6 +427,7 @@ class path_pane extends JPanel implements ActionListener{
 		//step 0 : Title line
 		JPanel title1 = new JPanel(new GridLayout(1,1,5,5));
 		title1.add(new JLabel("User suite Path inputs:"));
+		title1.setToolTipText("For freestyle case with a execute file inside, like:run.sh, run.pl, run.py..., Check 'Help'->'Usage'->'TMP_example' for Demo");
 		title1.setBackground(Color.LIGHT_GRAY);
 		p1.add(title1);
 		//step 1 : user suite path import
@@ -430,7 +442,7 @@ class path_pane extends JPanel implements ActionListener{
 		//step 2 : user key file 
 		jl_key_pattern = new JLabel("Key Pattern:");
 		jl_key_pattern.setToolTipText("The key pattern to help client identify case in a given path, regexp supportted");
-		jt_key_pattern = new JTextField(public_data.CASE_KEY_PATTERN, 128);
+		jt_key_pattern = new JTextField(public_data.CASE_USER_PATTERN, 128);
 		p1.add(jl_key_pattern);
 		p1.add(jt_key_pattern);
 		//step 3 : user data  file
@@ -462,14 +474,51 @@ class path_pane extends JPanel implements ActionListener{
 		jl_case_sort.setToolTipText("Test case sorting requirements, demo:opt1=value1;opt2=value2");
 		jt_case_sort = new JTextField("", 128);
 		p1.add(jl_case_sort);
-		p1.add(jt_case_sort);		
+		p1.add(jt_case_sort);
+		//step 8 : Standard Title line
+		JPanel title2 = new JPanel(new GridLayout(1,1,5,5));
+		title2.add(new JLabel("Standard suite Path inputs:"));
+		title2.setToolTipText("For QA standard case with \"run_info.ini\" inside. Check 'Help'->'Usage'->'TMP_example' for Demo");
+		title2.setBackground(Color.LIGHT_GRAY);
+		p1.add(title2);
+		//step 9 : user suite path import
+		jl_standard_path = new JLabel("Suite Path:");
+		jl_standard_path.setToolTipText("Standard case suite path imports.");
+		jt_standard_path = new JTextField("", 128);
+		jb_standard_path = new JButton("Select");
+		jb_standard_path.addActionListener(this);
+		p1.add(jl_standard_path);
+		p1.add(jt_standard_path);
+		p1.add(jb_standard_path);
+		//step 10 : user key file 
+		jl_standard_pattern = new JLabel("Key Pattern:");
+		jl_standard_pattern.setToolTipText("Standard Case key pattern to help client identify case in a given path.");
+		jt_standard_pattern = new JTextField(public_data.CASE_STANDARD_PATTERN, 128);
+		jt_standard_pattern.setEditable(false);
+		p1.add(jl_standard_pattern);
+		p1.add(jt_standard_pattern);		
+		//step 11 : jl_extra_env
+		jl_standard_extra_env = new JLabel("Extra environ:");
+		jl_standard_extra_env.setToolTipText("Run extra environments setting, optional, demo:env1=value1,env2=value2");
+		jt_standard_extra_env = new JTextField("", 128);
+		p1.add(jl_standard_extra_env);
+		p1.add(jt_standard_extra_env);
+		//step 12 : jl_case_sort
+		jl_standard_case_sort = new JLabel("Case Sort:");
+		jl_standard_case_sort.setToolTipText("Test case sorting requirements, demo:opt1=value1;opt2=value2");
+		jt_standard_case_sort = new JTextField("", 128);
+		p1.add(jl_standard_case_sort);
+		p1.add(jt_standard_case_sort);
+		//step 13 : empty line
+		JLabel empty_line = new JLabel("");
+		p1.add(empty_line);
 		//layout it 
 		GridBagConstraints layout_s = new GridBagConstraints();
 		layout_s.fill = GridBagConstraints.BOTH;
 		//for title1
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
-		layout_s.weighty=0.5;
+		layout_s.weighty=0.2;
 		part1_layout.setConstraints(title1, layout_s);
 		//for jl_suite_path
 		layout_s.gridwidth=1;
@@ -545,7 +594,62 @@ class path_pane extends JPanel implements ActionListener{
 		layout_s.gridwidth=0;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
-		part1_layout.setConstraints(jt_case_sort, layout_s);		
+		part1_layout.setConstraints(jt_case_sort, layout_s);
+		//for title 2
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0.2;
+		part1_layout.setConstraints(title2, layout_s);
+		//for jl_standard_path
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_standard_path, layout_s);
+		//for jt_standard_path
+		layout_s.gridwidth=3;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_standard_path, layout_s);
+		//for jb_standard_path
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jb_standard_path, layout_s);
+		//for jl_standard_pattern
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_standard_pattern, layout_s);	
+		//for jt_standard_pattern
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_standard_pattern, layout_s);		
+		//for jl_standard_extra_env
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_standard_extra_env, layout_s);	
+		//for jt_standard_extra_env
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_standard_extra_env, layout_s);
+		//for jl_standard_case_sort
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jl_standard_case_sort, layout_s);	
+		//for jt_standard_case_sort
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0;
+		part1_layout.setConstraints(jt_standard_case_sort, layout_s);
+		//for empty line
+		layout_s.gridwidth=0;
+		layout_s.weightx = 1;
+		layout_s.weighty=0.6;
+		part1_layout.setConstraints(empty_line, layout_s);		
 		return p1;
 	}
 	
@@ -636,11 +740,34 @@ class path_pane extends JPanel implements ActionListener{
 				//String path = open_path.getAbsolutePath().replaceAll("\\\\", "/");
 				jt_suite_path.setText(String.join(",", select_paths));
 			}	
+		}
+		if(arg0.getSource().equals(jb_standard_path)){
+			JFileChooser import_path =  new JFileChooser(public_data.DEF_WORK_SPACE);
+			import_path.setMultiSelectionEnabled(true);
+			import_path.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//
+			import_path.setDialogTitle("Select Standard Suite Path");
+			int return_value = import_path.showOpenDialog(null);
+			ArrayList<String> select_paths = new ArrayList<String>();
+			if (return_value == JFileChooser.APPROVE_OPTION){
+				for (File path: import_path.getSelectedFiles()){
+					select_paths.add(path.getAbsolutePath().replaceAll("\\\\", "/"));
+				}
+				//File open_path = import_path.getSelectedFile();
+				//String path = open_path.getAbsolutePath().replaceAll("\\\\", "/");
+				jt_standard_path.setText(String.join(",", select_paths));
+			}
 		}		
 		if(arg0.getSource().equals(close)){
 			tabbed_pane.dispose();
 		}
 		if(arg0.getSource().equals(apply)){
+			String link_mode = client_info.get_client_preference_data().get("link_mode");
+			if (link_mode.equals("remote")){
+				String title = new String("Link mode error");
+				String message = new String("Client run in remote mode, cannot import local suite path. Please go and setting in \"Setting --> Preference...\"");
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}			
 			String suite_paths = jt_suite_path.getText().replaceAll("\\\\", "/");
 			String suite_key = jt_key_pattern.getText();
 			String suite_dat = jt_dat_file.getText();
@@ -648,9 +775,18 @@ class path_pane extends JPanel implements ActionListener{
 			String suite_arg = jt_arguments.getText();
 			String suite_env = jt_extra_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
 			String suite_sort = jt_case_sort.getText();
+			String standard_paths = jt_standard_path.getText().replaceAll("\\\\", "/");
+			String standard_key = jt_standard_pattern.getText();
+			String standard_env = jt_standard_extra_env.getText().replaceAll("\\\\;", public_data.INTERNAL_STRING_SEMICOLON);
+			String standard_sort = jt_standard_case_sort.getText();
+			//for user case
 			if (suite_paths.length() > 0){
 				impoart_local_task_data(suite_paths, suite_key, suite_dat, suite_exe, suite_arg, suite_env, suite_sort);
 			}
+			//for standard case
+			if (standard_paths.length() > 0){
+				impoart_local_task_data(standard_paths, standard_key, "", "", "", standard_env, standard_sort);
+			}			
 			tabbed_pane.dispose();
 		}
 	}

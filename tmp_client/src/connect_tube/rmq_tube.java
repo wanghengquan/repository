@@ -26,6 +26,7 @@ import data_center.client_data;
 import data_center.public_data;
 import flow_control.export_data;
 import info_parser.xml_parser;
+import utility_funcs.data_check;
 
 /*
  * This class used to instance rabbitMQ tube between server and center processor.
@@ -48,8 +49,8 @@ public class rmq_tube {
 	private Channel admin_channel;
 	private Connection stop_connection;
 	private Channel stop_channel;
-	private Boolean admin_work = new Boolean(false);
-	private Boolean stop_queue_work = new Boolean(false);
+	private Boolean admin_work = Boolean.valueOf(false);
+	private Boolean stop_queue_work = Boolean.valueOf(false);
 
 	// public function
 	public rmq_tube(
@@ -66,7 +67,7 @@ public class rmq_tube {
 
 	public Boolean exchange_send(String exchange_name, String content) {
 		// String EXCHANGE_NAME = "logs";
-		Boolean send_status = new Boolean(true);
+		Boolean send_status = Boolean.valueOf(true);
 		String EXCHANGE_NAME = exchange_name;
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
@@ -98,7 +99,7 @@ public class rmq_tube {
 	 * Info if the content send smoothly, 0 will be return Or 1 will be return.
 	 */
 	public Boolean basic_send(String queue_name, String content) {
-		Boolean send_status = new Boolean(true);
+		Boolean send_status = Boolean.valueOf(true);
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(rmq_host);
 		factory.setUsername(rmq_user);
@@ -140,7 +141,8 @@ public class rmq_tube {
 		factory.setPassword(rmq_pwd);
 		String v_host;
 		try {
-			queue_name = queue_name.split("@")[1];
+			//queue_name = queue_name.split("@")[1];
+			queue_name = queue_name.split("@.+?_")[1];
 			v_host = queue_name.split("_")[1];
 			v_host = "vhost_" + v_host;
 		} catch (Exception e) {
@@ -235,7 +237,7 @@ public class rmq_tube {
 	}
 	
 	private Boolean update_admin_queue(String message, String current_terminal) {
-		Boolean update_status = new Boolean(false);
+		Boolean update_status = Boolean.valueOf(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_hash = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		msg_hash.putAll(xml_parser.get_rmq_xml_data(message));
@@ -249,41 +251,78 @@ public class rmq_tube {
 		String priority = public_data.TASK_DEF_PRIORITY;
 		if (!msg_data.containsKey("CaseInfo")) {
 			priority = public_data.TASK_DEF_PRIORITY;
-		} 
-		if (!msg_data.get("CaseInfo").containsKey("priority")) {
+		} else if (!msg_data.get("CaseInfo").containsKey("priority")) {
 			priority = public_data.TASK_DEF_PRIORITY;
-		}
-		if (msg_data.get("CaseInfo").containsKey("priority")){
+		} else {
 			priority = msg_data.get("CaseInfo").get("priority");
 			Pattern p = Pattern.compile("^\\d$");
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
 				priority = public_data.TASK_DEF_PRIORITY;
+				RMQ_TUBE_LOGGER.warn(msg_key + ":has wrong CaseInfo->priority, default value " + public_data.TASK_DEF_PRIORITY + " used.");
 			}
 		}
 		// task belong to this client(job_attribute): (0, assign task) > (1, match task)
-		String attribute = new String();
+		String assignment = new String();
 		String request_terminal = new String();
 		String available_terminal = current_terminal;
 		if (!msg_data.containsKey("Machine")) {
-			attribute = "1";
+			assignment = "1";
 		} else if (!msg_data.get("Machine").containsKey("terminal")) {
-			attribute = "1";
+			assignment = "1";
 		} else {
 			request_terminal = msg_data.get("Machine").get("terminal");
 			if (request_terminal.contains(available_terminal)) {
-				attribute = "0"; // assign task
+				assignment = "0"; // assign task
 			} else {
-				attribute = "1"; // match task
+				assignment = "1"; // match task
 			}
 		}
-		// receive time
-		// String time = time_info.get_date_time();
-		// pack data
-		// xxx@runxxx_time : job_from: 1, from remote; 0, from local
-		// priority:match/assign task:job_from@run_number
-		String new_title = priority + attribute + "1" + "@" + msg_key;
-		admin_hash.put(new_title, msg_data);
+		// Max threads requirements
+		String threads = new String(public_data.TASK_DEF_MAX_THREADS);
+		if (!msg_data.containsKey("Preference")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else if (!msg_data.get("Preference").containsKey("max_threads")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else {
+			threads = msg_data.get("Preference").get("max_threads");
+			Pattern p = Pattern.compile("^\\d$");
+			Matcher m = p.matcher(threads);
+			if (!m.find()) {
+				threads = public_data.TASK_DEF_MAX_THREADS;
+				RMQ_TUBE_LOGGER.warn(msg_key + ":has wrong Preference->max_threads, default value " + public_data.TASK_DEF_MAX_THREADS + " used.");
+			}
+		}
+		// host restart requirements
+		String restart_boolean = new String(public_data.TASK_DEF_HOST_RESTART);
+		if (!msg_data.containsKey("Preference")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else if (!msg_data.get("Preference").containsKey("host_restart")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else {
+			String request_value = new String(msg_data.get("Preference").get("host_restart").trim());
+			if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
+				RMQ_TUBE_LOGGER.warn(msg_key + ":has wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
+			} else {
+				restart_boolean = request_value;
+			}
+		}
+		String restart = new String("0");
+		if (restart_boolean.equalsIgnoreCase("true")) {
+			restart = "1";
+		} else {
+			restart = "0";
+		}
+		//String new_title = priority + assignment + "1@t" + threads+ "r" + restart + "_" + msg_key;
+		StringBuilder queue_name = new StringBuilder("");
+		queue_name.append(priority);
+		queue_name.append(assignment);
+		queue_name.append("1");//1, from remote; 0, from local
+		queue_name.append("@");
+		queue_name.append("t" + threads);
+		queue_name.append("r" + restart);
+		queue_name.append("_" + msg_key);
+		admin_hash.put(queue_name.toString(), msg_data);
 		task_info.update_received_admin_queues_treemap(admin_hash);
 		export_data.debug_disk_client_in_admin(msg_key + ".xml", message, client_info);
 		update_status = true;
@@ -339,7 +378,7 @@ public class rmq_tube {
 	}
 	
 	private Boolean update_stop_queue(String message) {
-		Boolean update_status = new Boolean(false);
+		Boolean update_status = Boolean.valueOf(false);
 		HashMap<String, HashMap<String, String>> msg_hash = new HashMap<String, HashMap<String, String>>();
 		msg_hash.putAll(xml_parser.get_rmq_xml_data2(message));
 		task_info.update_received_stop_queues_map(msg_hash);

@@ -44,7 +44,7 @@ public class time_info {
 	}
 	
 	public static String get_date_time() {
-		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmmss");
 		return formatter.format(new Date());
 	}
 	
@@ -54,11 +54,16 @@ public class time_info {
 	}
 	
 	public static String get_date_time(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmmss");
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmmss");
 		return formatter.format(date);
 	}
 	
-	public static String get_date_hhmm(Date date) {
+	public static String get_year_date_hhmm(Date date) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmm");
+		return formatter.format(date);
+	}
+	
+	public static String get_date_year_hhmm(Date date) {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy_HHmm");
 		return formatter.format(date);
 	}
@@ -76,7 +81,7 @@ public class time_info {
 	public static Timestamp get_time_stamp() {
 		return new Timestamp(new Date().getTime());
 	}
-
+	
 	public static String get_runtime_string_dhms(String from_time_secs, String to_time_secs){
 		StringBuilder runtime_string = new StringBuilder();
 		long begin_time = Long.valueOf(from_time_secs).longValue();
@@ -122,8 +127,8 @@ public class time_info {
 	public static void main(String[] argv) {
 		System.out.println(get_time_hhmm());
 		System.out.println(System.currentTimeMillis() / 1000); 
-		System.out.println(get_time_stamp().toString());
-		System.out.println(get_week_day_num());
+		System.out.println(get_time_stamp());
+		System.out.println(get_date_time());
 	}
 
 }

@@ -36,9 +36,16 @@ public class maintain_status extends abstract_status {
 
 	public void to_stop() {
 		//step 1. soft stop requested and still have task running
-		if(client.switch_info.get_client_soft_stop_request() && (client.pool_info.get_pool_used_threads() > 0)){
-			client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
-			return;
+		if(client.switch_info.get_client_soft_stop_request()) {
+			if (client.pool_info.get_pool_used_threads() > 0){
+				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+				return;
+			}
+			int post_call_size = client.post_info.get_postrun_call_size();
+			if (post_call_size > 0){
+				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be sync..." + post_call_size);
+				return;
+			}
 		}
 		//step 2. to stop actions		
 		client.hall_runner.soft_stop();
@@ -195,7 +202,7 @@ public class maintain_status extends abstract_status {
 	}	
 	
 	private Boolean get_core_script_issue_announced(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String current_date = new String(time_info.get_date_year());
 		String history_date = new String(client.switch_info.get_core_script_warning_announced_date());
 		if (current_date.equalsIgnoreCase(history_date)){
@@ -332,7 +339,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private Boolean get_environ_announced(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String current_date = new String(time_info.get_date_year());
 		String history_date = new String(client.switch_info.get_environ_warning_announced_date());
 		if (current_date.equalsIgnoreCase(history_date)){
@@ -378,7 +385,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private Boolean implements_client_space_action(){
-		Boolean space_cleaned = new Boolean(false);
+		Boolean space_cleaned = Boolean.valueOf(false);
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		machine_data.putAll(client.client_info.get_client_machine_data());
@@ -407,7 +414,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private Boolean implements_work_space_update(){
-		Boolean work_space_updated = new Boolean(false);
+		Boolean work_space_updated = Boolean.valueOf(false);
 		//confirm no test case running
 		int counter = 0;
 		while(true){
@@ -505,7 +512,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private Boolean get_overload_announced(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String current_date = new String(time_info.get_date_year());
 		String history_date = new String(client.switch_info.get_space_warning_announced_date());
 		if (current_date.equalsIgnoreCase(history_date)){
@@ -515,7 +522,7 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private Boolean get_overload_removed(){
-		Boolean status = new Boolean(false);
+		Boolean status = Boolean.valueOf(false);
 		String work_space = client.client_info.get_client_preference_data().get("work_space");
 		String space_available = machine_sync.get_avail_space(work_space);
 		String space_reserve = client.client_info.get_client_preference_data().get("space_reserve");

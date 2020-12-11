@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/radiant/!svn/ver/28409/trunk/design_pool/customer_design/DNG-8191/testdesign/source/impl_1
+END
+timing_constraints.ldc
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/radiant/!svn/ver/28409/trunk/design_pool/customer_design/DNG-8191/testdesign/source/impl_1/timing_constraints.ldc
+END
+rgb_led_top.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/radiant/!svn/ver/28409/trunk/design_pool/customer_design/DNG-8191/testdesign/source/impl_1/rgb_led_top.vhd
+END
+testbench.v
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/radiant/!svn/ver/28409/trunk/design_pool/customer_design/DNG-8191/testdesign/source/impl_1/testbench.v
+END
+design_constraints.pdc
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/radiant/!svn/ver/28409/trunk/design_pool/customer_design/DNG-8191/testdesign/source/impl_1/design_constraints.pdc
+END
+LED_control.v
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/radiant/!svn/ver/28409/trunk/design_pool/customer_design/DNG-8191/testdesign/source/impl_1/LED_control.v
+END

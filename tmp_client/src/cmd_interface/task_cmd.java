@@ -19,9 +19,12 @@ public enum task_cmd {
 	PAUSED(4, "Show paused task info."),
 	STOPPED(5, "Show stopped task info."),
 	PROCESSING(6, "Show processing task info."),
-	RUNNING(7, "Show running task info."),
-	EMPTIED(8, "Show emptied task info."),
-	FINISHED(9, "Show finished task info.");
+	EXECUTING(7, "Show executing task info."),
+	PENDING(8, "Show pending task info."),
+	RUNNING(9, "Show running task info."),
+	WAITING(10, "Show waiting task info."),
+	EMPTIED(11, "Show emptied task info."),
+	FINISHED(12, "Show finished task info.");
 	private int index;
 	private String description;
 	

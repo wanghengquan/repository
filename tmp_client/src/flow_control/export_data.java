@@ -48,7 +48,7 @@ public class export_data {
     	//1) case number less than 20
     	//2) suite is watching
     	//so when client stopped we need to dump these finished suite
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
     	ArrayList<String> finished_admin_queue_list = new ArrayList<String>();
     	ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
     	finished_admin_queue_list.addAll(task_info.get_finished_admin_queue_list());
@@ -79,7 +79,7 @@ public class export_data {
 		//generate csv file
     	//by default result waiter will dump finished queue report except:
     	//1) task not finished
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
     	ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
     	reported_admin_queue_list.addAll(task_info.get_reported_admin_queue_list()); 
     	Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> processed_task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
@@ -92,7 +92,7 @@ public class export_data {
     		if (reported_admin_queue_list.contains(queue_name)){
     			continue;
     		}
-    		Boolean report_status = new Boolean(true);
+    		Boolean report_status = Boolean.valueOf(true);
     		report_status = export_disk_finished_task_queue_report(queue_name, client_info, task_info);
     		if (report_status) {
     			task_info.update_reported_admin_queue_list(queue_name);
@@ -104,7 +104,7 @@ public class export_data {
 	public static Boolean export_disk_memory_queue_data(
 			task_data task_info,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		dump_disk_received_admin_data(client_info, task_info);
 		dump_disk_processed_admin_data(client_info, task_info);
 		dump_disk_received_task_data(client_info, task_info);
@@ -119,7 +119,7 @@ public class export_data {
 			String file_name,
 			String message,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		if (!client_info.get_client_machine_data().get("debug").equals("1")){
 			return dump_status;
 		}
@@ -134,7 +134,7 @@ public class export_data {
 			String file_name,
 			String message,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		if (!client_info.get_client_machine_data().get("debug").equals("1")){
 			return dump_status;
 		}
@@ -149,7 +149,7 @@ public class export_data {
 			String file_name,
 			String message,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		if (!client_info.get_client_machine_data().get("debug").equals("1")){
 			return dump_status;
 		}
@@ -163,7 +163,7 @@ public class export_data {
 	public static Boolean debug_disk_client_out_result(
 			String message,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		if (!client_info.get_client_machine_data().get("debug").equals("1")){
 			return dump_status;
 		}
@@ -177,7 +177,7 @@ public class export_data {
 	public static Boolean debug_disk_client_out_runtime(
 			String message,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		if (!client_info.get_client_machine_data().get("debug").equals("1")){
 			return dump_status;
 		}
@@ -191,7 +191,7 @@ public class export_data {
 	public static Boolean debug_disk_client_out_status(
 			String message,
 			client_data client_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		if (!client_info.get_client_machine_data().get("debug").equals("1")){
 			return dump_status;
 		}
@@ -294,7 +294,7 @@ public class export_data {
 			String queue_name,
 			client_data client_info,
 			task_data task_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 		if (task_info.get_processed_admin_queues_treemap().containsKey(queue_name)) {
 			admin_data.putAll(task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name));
@@ -312,7 +312,7 @@ public class export_data {
 			String queue_name,
 			client_data client_info,
 			task_data task_info){
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		if (task_info.get_processed_task_queues_map().containsKey(queue_name)) {
 			task_data.putAll(task_info.get_queue_data_from_processed_task_queues_map(queue_name));
@@ -330,7 +330,7 @@ public class export_data {
 		String queue_name,
 		client_data client_info,
 		task_data task_info){
-		Boolean export_status = new Boolean(false);	
+		Boolean export_status = Boolean.valueOf(false);	
 		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
 		File work_dir_fobj = new File(work_space);
 		if (!work_dir_fobj.exists()) {
@@ -392,7 +392,7 @@ public class export_data {
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data,
 			String dump_path) {
-		Boolean dump_status = new Boolean(false);
+		Boolean dump_status = Boolean.valueOf(false);
 		if (admin_data == null || admin_data.isEmpty()){
 			return dump_status;
 		}
@@ -427,7 +427,7 @@ public class export_data {
 			String queue_name,
 			TreeMap<String, HashMap<String, HashMap<String, String>>> task_data,
 			String dump_path) {
-		Boolean dump_status = new Boolean(false);
+		Boolean dump_status = Boolean.valueOf(false);
 		if (task_data == null || task_data.isEmpty()){
 			return dump_status;
 		}		

@@ -97,7 +97,7 @@ public class config_sync extends Thread {
 					}
 					break;
 				case "scan_dir":
-					if (!data_check.str_path_check(option_value)){
+					if (!data_check.str_paths_check(option_value)){
 						option_value = "";
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid scan_dir setting:" + section_name + ">" + option_key + ", Ignore it");
 					}
@@ -273,11 +273,10 @@ public class config_sync extends Thread {
 					}
 				}
 				if (section_data.containsKey("scan_dir") && !section_data.get("scan_dir").equals("")) {
-					File scan_dir = new File(section_data.get("scan_dir"));
-					if (scan_dir.exists() && scan_dir.isDirectory()) {
+					if (data_check.str_paths_check(section_data.get("scan_dir"))) {
 						update_data.put("scan_dir", section_data.get("scan_dir"));
 					} else {
-						CONFIG_SYNC_LOGGER.warn(section + ".scan_dir, not exist. skipped");
+						CONFIG_SYNC_LOGGER.warn(section + ".scan_dir, not exists. skipped");
 					}
 				}
 				if (section_data.containsKey("scan_cmd") && !section_data.get("scan_cmd").equals("")) {
@@ -297,7 +296,7 @@ public class config_sync extends Thread {
 			ini_parser ini_runner,
 			HashMap<String, HashMap<String, String>> ini_data
 			) {
-		Boolean dump_status = new Boolean(true);
+		Boolean dump_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> write_data = new HashMap<String, HashMap<String, String>>();
 		write_data.putAll(deep_clone.clone(client_info.get_client_data()));
 		CONFIG_SYNC_LOGGER.info("Dumping ini data:" + client_info.get_client_data().toString());

@@ -10,6 +10,8 @@
 package data_center;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import top_runner.top_launcher;
 
@@ -24,15 +26,16 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.09.07"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 20907; // version for code use
-	public final static String BASE_BUILDDATE = "2020/07/13";
-	public final static String BASE_SUITEFILEVERSION = "1.15";
+	public final static String BASE_CURRENTVERSION = "2.11.01"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21101; //version for code use
+	public final static String BASE_BUILDDATE = "2020/12/11";
+	public final static String BASE_SUITEFILEVERSION = "1.17";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
-	public final static float BASE_JAVABASEVERSION = 1.8f;
-	public final static float BASE_PYTHONBASEVERSION = 2.7f;
-	public final static float BASE_SVNBASEVERSION = 1.4f;
+	public final static String BASE_JAVABASEVERSION = "1.8";
+	public final static String BASE_PYTHONBASEVERSION = "2.7";
+	public final static String BASE_PYTHONMAXVERSION = "3.0";
+	public final static String BASE_SVNBASEVERSION = "1.4";
 
 	// ========================
 	// Soft ware bin path
@@ -51,9 +54,9 @@ public class public_data {
 
 	// ========================
 	// email setting servers: 1:LSHMAIL1.latticesemi.com,  2:172.25.0.3
-	public final static String MAIL_SERVER = "LSHMAIL1.latticesemi.com";
+	public final static String MAIL_SERVER = "lscmail.latticesemi.com";
 	public final static String MAIL_SERVER_USERNAME = "swqalab";//"jwang1";
-	public final static String MAIL_SERVER_PASSWORD = "SwQaLab!";//"Q@lattice123";
+	public final static String MAIL_SERVER_PASSWORD = "SwQaLab!";//"Quan@lattice123";
 
 	// ========================
 	// send email preference setting
@@ -79,11 +82,18 @@ public class public_data {
 	public final static String ICON_UNATTENDED_MODE = SW_HOME_PATH + "/image/robot.png";
 	public final static String ICON_PRIVATE_MODE = SW_HOME_PATH + "/image/private.png";
 	public final static String ICON_PUBLIC_MODE = SW_HOME_PATH + "/image/public.png";
+	public final static String ICON_SYNC_RUN = SW_HOME_PATH + "/image/sync.gif";
+	public final static String ICON_SYNC_DONE = SW_HOME_PATH + "/image/done.png";
 	
 	// ========================
 	// Remote update path
 	public final static String UPDATE_URL = "http://lsh-tmp/tmp_client_release/update.xml";
 	public final static String UPDATE_URL_DEV = "http://lsh-tmp/tmp_client_release/update_dev.xml";
+	
+	// ========================
+	// Remote core script path
+	public final static String CORE_SCRIPT_NAME = "DEV";
+	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME;
 	
 	// ========================
 	// workspace folder configuration, real path = work_space + following folder
@@ -92,6 +102,8 @@ public class public_data {
 	public final static String WORKSPACE_UPLOAD_DIR = "uploads";
 	public final static String WORKSPACE_TEMP_DIR = "temp";
 	public final static String WORKSPACE_LOG_DIR = "logs";
+	public final static String [] WORKSPACE_RESERVED_DIR = 
+		{CORE_SCRIPT_NAME, WORKSPACE_RESULT_DIR, WORKSPACE_UPLOAD_DIR, WORKSPACE_TEMP_DIR, WORKSPACE_LOG_DIR};
 	
 	// ========================
 	// suite folder configuration
@@ -105,7 +117,8 @@ public class public_data {
 	// name	
 	public final static String CASE_REPORT_NAME = "case_report.txt";
 	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
-	public final static String CASE_KEY_PATTERN = "run\\..*";
+	public final static String CASE_USER_PATTERN = "^run\\..*";
+	public final static String CASE_STANDARD_PATTERN = "run_info.ini";
 	public final static String CASE_INFO_FILE = "bqs.info";
 	public final static String CASE_EXEC_FILE = "$work_path/DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";
@@ -123,6 +136,8 @@ public class public_data {
 	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
+	public final static String TOOLS_7ZA = SW_HOME_PATH + "/tools/7za.exe";
+	public final static String TOOLS_TAR = SW_HOME_PATH + "/tools/tar.exe";
 	public final static String TOOLS_WHICH = SW_HOME_PATH + "/tools/which.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
@@ -172,23 +187,23 @@ public class public_data {
 	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
 	public final static String SVN_PWD = "welcome";
+	public final static String SVN_URL = "http://lsh-tmp";
 
 	// ========================
 	// link to FTP default user shown here
 	public final static String FTP_USER = "guest";
 	public final static String FTP_PWD = "welcome";
-	
-	// ========================
-	// Link to core script
-	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/bqs_scripts/DEV";
 
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
-    public final static String TASK_PRI_LOCALLY = "1";
+	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
+	public final static String TASK_DEF_HOST_RESTART = "false"; //no Restart need
+	public final static long TASK_DEF_RESTART_IDENTIFY_THRESHOLD = 600;
+	public final static long TASK_DEF_RESTART_SYSTEM_THRESHOLD = 3600; //3600
+    public final static String TASK_PRI_LOCALLY = "1"; 
 
 	// ========================
 	// performance calibration
@@ -203,6 +218,9 @@ public class public_data {
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
+	public final static int PERF_MAX_WIN_WAITER	= 3;
+	public final static int PERF_MAX_LIN_WAITER	= 6;
+	public final static int PERF_MAX_TASK_WAITER = get_maximum_waiters();
 
 	// ========================
 	// Internal String replacement
@@ -243,6 +261,8 @@ public class public_data {
 	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/"};
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 1000;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 600;
+	//look and feel
+	public final static String DEF_SYSTEM_TABLE_FONT = get_default_table_font();
 
 	public public_data() {
 	}
@@ -262,6 +282,24 @@ public class public_data {
 			return public_data.PERF_POOL_LIN_MAX_SIZE;
 		}
 	}
+	
+	private static int get_maximum_waiters(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_MAX_WIN_WAITER;
+		} else {
+			return public_data.PERF_MAX_LIN_WAITER;
+		}
+	}
+	
+	private static String get_default_table_font(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return "Times New Roman";
+		} else {
+			return "Bitstream Charter";
+		}
+	}	
 	
 	/*
 	 * main entry for test
@@ -293,5 +331,17 @@ public class public_data {
 		}
 		Thread client_thread = Thread.currentThread();
 		System.out.println(client_thread.getName());
+		//test
+		String script_url = new String("");
+		System.out.println(">" + script_url.substring(script_url.lastIndexOf("/") + 1));
+		String base_name = new String("abc.aa"); 
+		Pattern src_patt = Pattern.compile("\\s(" + base_name + ")\\s", Pattern.CASE_INSENSITIVE);
+		Matcher exe_match = src_patt.matcher("1234 abc.aa cc");
+		if (exe_match.find()){
+			System.out.println(exe_match.group());
+		}
+		String queue_name = new String("555@t1r1_run_55555"); 
+		queue_name = queue_name.split("@.+?_")[1];
+		System.out.println(queue_name);
 	}
 }

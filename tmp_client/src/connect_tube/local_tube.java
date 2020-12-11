@@ -10,17 +10,20 @@
 package connect_tube;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
 import flow_control.task_enum;
+import info_parser.ini_parser;
 import info_parser.xls_parser;
-import utility_funcs.deep_clone;
+import utility_funcs.data_check;
 import utility_funcs.file_action;
 import utility_funcs.time_info;
 
@@ -52,7 +55,7 @@ public class local_tube {
 	}
 
 	public static Boolean suite_files_sanity_check(String file_paths) {
-		Boolean all_pass = new Boolean(true);
+		Boolean all_pass = Boolean.valueOf(true);
 		for (String file:file_paths.split(",")){
 			if (!suite_file_sanity_check(file)){
 				all_pass = false;
@@ -82,7 +85,7 @@ public class local_tube {
 		}
 		//check case sheet
 		Iterator<String> sheet_it = ExcelData.keySet().iterator();
-		Boolean get_sheet = new Boolean(false);
+		Boolean get_sheet = Boolean.valueOf(false);
 		while(sheet_it.hasNext()){
 			String sheet_name = sheet_it.next();
 			if (sheet_name.contains("case")){
@@ -97,11 +100,13 @@ public class local_tube {
 		}
 		// suite info check
 		Map<String, String> suite_map = get_suite_data(ExcelData);
-		if ((suite_map.size() > 8) && (!suite_map.containsKey("ClientPreference"))){
+		if (suite_map.size() > 8) {
+			if (!suite_map.containsKey("ClientPreference") && !suite_map.containsKey("Preference")){
 			suite_file_error_msg = "Error: Extra option found in suite sheet::suite info.";
 			System.out.println(">>>Error: Extra option found in suite sheet::suite info.");
 			System.out.println(suite_map.keySet().toString());
 			return false;
+			}
 		}
 		String[] suite_keys = { "project_id", "suite_name", "CaseInfo", "Environment", "LaunchCommand", "Software",
 				"System", "Machine" };
@@ -136,7 +141,7 @@ public class local_tube {
 		}
 		String[] must_keys = { "Order", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
 				"Type", "Priority", "CaseInfo", "Environment", "Software", "System", "Machine", "NoUse" };
-		//for previously version support do not list 'Automated' in must_keys
+		//for previously version support do not list 'Automated' and 'smoke' in must_keys
 		for (String x : must_keys) {
 			if (!case_title.contains(x)) {
 				suite_file_error_msg = "Error: case sheet title missing :" + x + ".";
@@ -179,7 +184,7 @@ public class local_tube {
 		String suite_start = new String("[suite_info]");
 		String pre_word = null;
 		String pre_value = null;
-		Boolean suite_area = new Boolean(false);
+		Boolean suite_area = Boolean.valueOf(false);
 		for (int row = 0; row < suite_sheet.size(); row++) {
 			List<String> row_list = suite_sheet.get(row);
 			if (row_list.size() < 1) {
@@ -226,7 +231,7 @@ public class local_tube {
 		Map<String, List<List<String>>> return_data = new HashMap<String, List<List<String>>>();
 		int macro_num = 0;
 		String macro_start = new String("[macro]");
-		Boolean macro_area = new Boolean(false);
+		Boolean macro_area = Boolean.valueOf(false);
 		List<List<String>> area_list = null;
 		String macro_name = null;
 		for (int row = 0; row < suite_sheet.size(); row++) {
@@ -410,7 +415,7 @@ public class local_tube {
 		Iterator<String> data_it = raw_data.keySet().iterator();
 		while (data_it.hasNext()) {
 			String case_order = data_it.next().trim();
-			Integer macro_order = new Integer(0);
+			Integer macro_order = Integer.valueOf(0);
 			String macro_case_order = new String();
 			Map<String, String> case_data = new HashMap<String, String>();
 			case_data.putAll(raw_data.get(case_order));
@@ -432,7 +437,7 @@ public class local_tube {
 				merge_macro_data.put(macro_case_order, case_data);
 				continue;
 			}
-			Boolean match_one = new Boolean(false);
+			Boolean match_one = Boolean.valueOf(false);
 			Iterator<String> macro_it = macro_data.keySet().iterator();
 			while (macro_it.hasNext()) {
 				macro_order = macro_order + 1;
@@ -462,7 +467,7 @@ public class local_tube {
 	private Boolean case_data_match_task_sort(
 			Map<String, String> case_data, 
 			String task_sort){
-		Boolean case_match = new Boolean(true);
+		Boolean case_match = Boolean.valueOf(true);
 		if (task_sort == null || task_sort.trim().equals("")){
 			return case_match;
 		}
@@ -569,7 +574,7 @@ public class local_tube {
 			// case have higher priority for: CaseInfo Environment LaunchCommand
 			// Software System Machine
 			if (column_list.contains(column)) {
-				Boolean update_done = new Boolean(false);
+				Boolean update_done = Boolean.valueOf(false);
 				if (!value.contains("=")) {
 					LOCAL_TUBE_LOGGER.warn("Skip macro action non key=value input for columns" + column_list.toString());
 					continue;
@@ -719,6 +724,7 @@ public class local_tube {
 		} else {
 			id_map.put("id", case_id);
 		}
+		id_map.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
 		merge_data.put("ID", id_map);
 		// insert CaseInfo data
 		String suite_info = suite_data.get("CaseInfo").trim();
@@ -783,11 +789,14 @@ public class local_tube {
 		// insert ClientPreference data
         String suite_client_preference = "";
         String case_client_preference = "";
-        if(suite_data.containsKey("ClientPreference")){
+        if(suite_data.containsKey("ClientPreference")){ //deprecated, remove it later
             suite_client_preference = suite_data.get("ClientPreference").trim();
         }
+        if(suite_data.containsKey("Preference")){
+            suite_client_preference = suite_data.get("Preference").trim();
+        }        
         HashMap<String, String> client_preference = comm_suite_case_merge(suite_client_preference, case_client_preference);
-        merge_data.put("ClientPreference", client_preference);
+        merge_data.put("Preference", client_preference);
 		return merge_data;
 	}
 
@@ -823,10 +832,10 @@ public class local_tube {
 		return merged_data;
 	}
 
-	public static HashMap<String, String> comm_admin_task_merge(HashMap<String, String> globle_data,
+	public static HashMap<String, String> comm_admin_task_merge(
+			HashMap<String, String> globle_data,
 			HashMap<String, String> local_data) {
-		Set<String> local_set = local_data.keySet();
-		Iterator<String> local_it = local_set.iterator();
+		Iterator<String> local_it = local_data.keySet().iterator();
 		while (local_it.hasNext()) {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
@@ -841,7 +850,7 @@ public class local_tube {
 					continue;
 				} else {
 					String local_cmd = local_data.get("cmd");
-					String globle_cmd = globle_data.get("cmd");
+					String globle_cmd = globle_data.getOrDefault("cmd", "");
 					String overall_cmd = globle_cmd + " " + local_cmd;
 					globle_data.put("cmd", overall_cmd);
 				}
@@ -863,7 +872,7 @@ public class local_tube {
 	private Boolean is_request_match(HashMap<String, HashMap<String, String>> queue_data,
 			HashMap<String, HashMap<String, String>> design_data) {
 		// compare sub map data Software, System, Machine
-		Boolean is_match = new Boolean(true);
+		Boolean is_match = Boolean.valueOf(true);
 		List<String> check_items = new ArrayList<String>();
 		check_items.add("Software");
 		check_items.add("System");
@@ -888,10 +897,8 @@ public class local_tube {
 			String sub_task_number,
 			String current_terminal,
 			HashMap<String, HashMap<String, String>> design_data) {
-		// generate queue name
-		String queue_name = new String();
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority;
+		String priority = public_data.TASK_DEF_PRIORITY;
 		if (!design_data.containsKey("CaseInfo")) {
 			priority = public_data.TASK_PRI_LOCALLY;
 		} else if (!design_data.get("CaseInfo").containsKey("priority")) {
@@ -902,32 +909,72 @@ public class local_tube {
 			Matcher m = p.matcher(priority);
 			if (!m.find()) {
 				priority = public_data.TASK_PRI_LOCALLY;
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong CaseInfo->priority, default value" + public_data.TASK_PRI_LOCALLY + "used.");
 			}
 		}
 		// task belong to this client: 0, assign task(0) > match task(1)
-		String attribute = new String();
+		String assignment = new String();
 		String request_terminal = new String();
 		String available_terminal = current_terminal.toLowerCase();
 		if (!design_data.containsKey("Machine")) {
-			attribute = "1";
+			assignment = "1";
 		} else if (!design_data.get("Machine").containsKey("terminal")) {
-			attribute = "1";
+			assignment = "1";
 		} else {
 			request_terminal = design_data.get("Machine").get("terminal").toLowerCase();
 			if (request_terminal.contains(available_terminal)) {
-				attribute = "0"; // assign task
+				assignment = "0"; // assign task
 			} else {
-				attribute = "1"; // match task
+				assignment = "1"; // match task
 			}
+		}
+		// Max threads requirements
+		String threads = new String(public_data.TASK_DEF_MAX_THREADS);
+		if (!design_data.containsKey("Preference")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else if (!design_data.get("Preference").containsKey("max_threads")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else {
+			threads = design_data.get("Preference").get("max_threads");
+			Pattern p = Pattern.compile("^\\d$");
+			Matcher m = p.matcher(threads);
+			if (!m.find()) {
+				threads = public_data.TASK_DEF_MAX_THREADS;
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong Preference->max_threads, default value " + public_data.TASK_DEF_MAX_THREADS + " used.");
+			}
+		}		
+		// host restart requirements--for local jobs always be 0		
+		String restart_boolean = new String(public_data.TASK_DEF_HOST_RESTART);
+		if (!design_data.containsKey("Preference")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else if (!design_data.get("Preference").containsKey("host_restart")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else {
+			String request_value = new String(design_data.get("Preference").get("host_restart").trim());
+			if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
+			} else {
+				restart_boolean = request_value;
+			}
+		}
+		String restart = new String("0");
+		if (restart_boolean.equalsIgnoreCase("true")) {
+			restart = "1";
+		} else {
+			restart = "0";
 		}
 		// receive time
 		String mark_time = time_info.get_time_hhmm();
-		// pack data
-		// xx0@run_xxx_suite_time :
-		// priority:match/assign task:job_from_local@run_number
-		queue_name = priority + attribute + "0" + "@" 
-				+ "run_" + mark_time + "_" + sub_task_number + "_" + admin_queue_base + "_" + create_time;
-		return queue_name;
+		StringBuilder queue_name = new StringBuilder("");
+		queue_name.append(priority);
+		queue_name.append(assignment);
+		queue_name.append("0");//1, from remote; 0, from local
+		queue_name.append("@");
+		queue_name.append("t" + threads);
+		queue_name.append("r" + restart);
+		queue_name.append("_");
+		queue_name.append("run_" + mark_time + "_" + sub_task_number + "_" + admin_queue_base + "_" + create_time);
+		return queue_name.toString();
 	}
 
 	/*
@@ -997,7 +1044,7 @@ public class local_tube {
 			String case_name = case_it.next();
 			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
 			case_data.putAll(merge_data.get(case_name));
-			Boolean admin_queue_exists = new Boolean(false);
+			Boolean admin_queue_exists = Boolean.valueOf(false);
 			String queue_name = new String();
 			Iterator<String> queues_it = xlsx_received_admin_queues_treemap.keySet().iterator();
 			while (queues_it.hasNext()) {
@@ -1069,57 +1116,439 @@ public class local_tube {
 	
 	public void generate_suite_path_local_admin_task_queues(
 			String generate_time,
-			String imported_path,
+			String suite_path,
+			String work_space,
 			HashMap<String, String> imported_data){
-		//step 1: generate queue_name
-		String queue_name = get_queue_name(imported_path, imported_data, generate_time);
-		//step 2: generate admin_data
-		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
-		admin_queue_data.putAll(get_admin_queue_data(imported_path, imported_data, generate_time));
-		//step 1: generate task_data
-		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		task_queue_data.putAll(get_task_queue_data(imported_path, imported_data, admin_queue_data));
-		task_info.update_queue_to_received_admin_queues_treemap(queue_name, admin_queue_data);
-		task_info.update_queue_to_received_task_queues_map(queue_name, task_queue_data);
+		//step 1:generate original case list
+		List<String> case_list = new ArrayList<String>();
+		case_list.addAll(get_case_list(suite_path, work_space, imported_data));
+		//step 2:get case type
+		case_enum case_type = get_case_type(suite_path, case_list);
+		//step 3:generate overall case data
+		TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		all_case_data.putAll(get_local_case_data(suite_path, case_list, imported_data, case_type));
+		//step 4:generate valid case data, case sorting
+		TreeMap<String, HashMap<String, HashMap<String, String>>> valid_case_data =  new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		valid_case_data.putAll(get_valid_case_data(all_case_data, imported_data));
+		//step 5:generate admin queue data
+		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		admin_queues_map.putAll(get_local_admin_queues_data(generate_time, suite_path, case_type, imported_data, valid_case_data));
+		task_info.update_received_admin_queues_treemap(admin_queues_map);
+		//step 6:generate task queue data
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		task_queues_map.putAll(get_local_task_queues_data(case_type, admin_queues_map, valid_case_data));
+		task_info.update_received_task_queues_map(task_queues_map);
+		//System.out.println("Admin:" + admin_queues_map);
+		//System.out.println("Task:" + task_queues_map);
 	}
 	
-	private String get_queue_name(
-			String imported_path,
+	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_local_task_queues_data(
+			case_enum case_style,
+			TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map,
+			TreeMap<String, HashMap<String, HashMap<String, String>>> valid_case_data
+			){
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		switch (case_style) {
+		case FREESTYLE:
+			task_queues_map.putAll(get_freestyle_task_queues_data(admin_queues_map, valid_case_data));
+			break;
+		case STANDARD:
+			task_queues_map.putAll(get_standard_task_queues_data(admin_queues_map, valid_case_data));
+			break;
+		default:
+			break;
+		}
+		return task_queues_map;
+	}
+	
+	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_freestyle_task_queues_data(
+			TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map,
+			TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data
+			){
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		Iterator<String> admin_queues_it = admin_queues_map.keySet().iterator();
+		while(admin_queues_it.hasNext()){
+			String queue_name = admin_queues_it.next();
+			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+			admin_data.putAll(admin_queues_map.get(queue_name));
+			TreeMap<String, HashMap<String, HashMap<String, String>>> current_queue_case_map = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			Iterator<String> all_case_data_it = all_case_data.keySet().iterator();
+			while(all_case_data_it.hasNext()){
+				String case_id = all_case_data_it.next();
+				HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>(); 
+				case_data.putAll(all_case_data.get(case_id));
+				current_queue_case_map.put(case_id, merge_admin_task_data(admin_data, case_data));
+			}
+			task_queues_map.put(queue_name, current_queue_case_map);
+		}
+		return task_queues_map;
+	}
+	
+	private Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> get_standard_task_queues_data(
+			TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map,
+			TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data
+			){
+		Map<String, TreeMap<String, HashMap<String, HashMap<String, String>>>> task_queues_map = new HashMap<String, TreeMap<String, HashMap<String, HashMap<String, String>>>>();
+		Iterator<String> admin_queues_it = admin_queues_map.keySet().iterator();
+		while(admin_queues_it.hasNext()){
+			String queue_name = admin_queues_it.next();
+			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+			admin_data.putAll(admin_queues_map.get(queue_name));
+			TreeMap<String, HashMap<String, HashMap<String, String>>> current_queue_case_map = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+			Iterator<String> all_case_data_it = all_case_data.keySet().iterator();
+			while(all_case_data_it.hasNext()){
+				String case_id = all_case_data_it.next();
+				HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+				case_data.putAll(all_case_data.get(case_id));
+				HashMap<String, String> valid_admin_data = new HashMap<String, String>();
+				valid_admin_data.putAll(get_valid_request_data(admin_data));
+				HashMap<String, String> valid_case_data = new HashMap<String, String>();
+				valid_case_data.putAll(get_valid_request_data(case_data));
+				if (admin_case_request_same(valid_admin_data, valid_case_data)) {
+					current_queue_case_map.put(case_id, merge_admin_task_data(admin_data, case_data));
+				}
+			}
+			task_queues_map.put(queue_name, current_queue_case_map);
+		}
+		return task_queues_map;
+	}
+	
+	private HashMap<String, HashMap<String, String>> merge_admin_task_data(
+			HashMap<String, HashMap<String, String>> admin_data,
+			HashMap<String, HashMap<String, String>> task_data
+			){
+		HashMap<String, HashMap<String, String>> merge_data = new HashMap<String, HashMap<String, String>>();
+		Iterator<String> task_data_it = task_data.keySet().iterator();
+		while(task_data_it.hasNext()){
+			String section_name = task_data_it.next();
+			HashMap<String, String> task_section_data = new HashMap<String, String>();
+			task_section_data.putAll(task_data.get(section_name));
+			if (!admin_data.containsKey(section_name)) {
+				merge_data.put(section_name, task_section_data);
+				continue;
+			}
+			HashMap<String, String> admin_section_data = new HashMap<String, String>();
+			admin_section_data.putAll(admin_data.get(section_name));
+			merge_data.put(section_name, comm_admin_task_merge(admin_section_data, task_section_data));
+		}
+		return merge_data;
+	}
+	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_local_admin_queues_data(
+			String generate_time,
+			String suite_path,
+			case_enum case_style,
 			HashMap<String, String> imported_data,
-			String generate_time) {
-		// generate queue name
-		String queue_name = new String();
+			TreeMap<String, HashMap<String, HashMap<String, String>>> valid_case_data
+			){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		switch (case_style) {
+		case FREESTYLE:
+			admin_queues_map.putAll(get_freestyle_admin_queues_data(generate_time, suite_path, imported_data));
+			break;
+		case STANDARD:
+			admin_queues_map.putAll(get_standard_admin_queues_data(generate_time, suite_path, valid_case_data, imported_data));
+			break;
+		default:
+			break;
+		}
+		return admin_queues_map;
+	}
+	
+	private HashMap<String, HashMap<String, HashMap<String, String>>> get_standard_admin_queues_data(
+			String generate_time,
+			String suite_path,
+			TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data,
+			HashMap<String, String> imported_data
+			){
+		HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		int queue_num = 0;
+		Iterator<String> all_case_it = all_case_data.keySet().iterator();
+		while(all_case_it.hasNext()){
+			String case_id = all_case_it.next();
+			HashMap<String, HashMap<String, String>> one_case_data = new HashMap<String, HashMap<String, String>>();
+			one_case_data.putAll(all_case_data.get(case_id));
+			//check case belonging
+			String queue_name = new String("");
+			queue_name = get_matching_admin_queue(admin_queues_map, one_case_data);
+			if (queue_name == null || queue_name.equals("")) {
+				queue_name = get_standard_admin_queue_name(String.valueOf(queue_num), generate_time, suite_path, one_case_data);
+				HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+				admin_data.putAll(get_standard_admin_queue_data(generate_time, suite_path, one_case_data, imported_data));
+				admin_queues_map.put(queue_name, admin_data);
+				queue_num++;
+			}
+		}
+		return admin_queues_map;
+	}
+	
+	private HashMap<String, HashMap<String, String>> get_standard_admin_queue_data(
+			String generate_time,
+			String suite_path,			
+			HashMap<String, HashMap<String, String>> case_data,
+			HashMap<String, String> imported_data
+			) {
+		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
+		//id_data create
+		HashMap<String, String> id_data = new HashMap<String, String>();
+		File path_obj = new File(suite_path);
+		String suite_name = path_obj.getName();
+		if (suite_name.length() < 1){
+			suite_name = "local_suite";	
+		}
+		id_data.put("project", "y");
+		id_data.put("run", suite_name + "_" + generate_time);
+		id_data.put("suite", suite_name);
+		id_data.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
+		admin_queue_data.put("ID", id_data);
+		//CaseInfo create
+		HashMap<String, String> caseinfo_data = new HashMap<String, String>();
+		caseinfo_data.put("suite_path", ".");
+		caseinfo_data.put("repository", suite_path);
+		admin_queue_data.put("CaseInfo", caseinfo_data);
+		//LaunchCommand
+		HashMap<String, String> cmd_data = new HashMap<String, String>();
+		admin_queue_data.put("LaunchCommand", cmd_data);
+		//Environment
+		HashMap<String, String> env_data = new HashMap<String, String>();
+		String extra_env = imported_data.get("env");
+		List<String> env_list = new ArrayList<String>();
+		if (extra_env.length() > 0){
+			if (extra_env.contains(",")){
+				env_list.addAll(Arrays.asList(extra_env.split(",")));
+			} else if (extra_env.contains(";")){
+				env_list.addAll(Arrays.asList(extra_env.split(";")));
+			} else{
+				env_list.add(extra_env);
+			}
+		}		
+		if(env_list.size() > 0){
+			for (String env_line: env_list){
+				if (!env_line.contains("=")){
+					LOCAL_TUBE_LOGGER.warn("Ignore environ setting since no = found in:" + env_line);
+					continue;
+				}
+				String key = env_line.split("=", 2)[0].trim();
+				String value = env_line.split("=", 2)[1].trim();
+				env_data.put(key, value);
+			}
+		}		
+		admin_queue_data.put("Environment", env_data);
+		//Machine
+		admin_queue_data.put("Machine", case_data.get("Machine"));		
+		//System
+		admin_queue_data.put("System", case_data.get("System"));
+		//Software
+		admin_queue_data.put("Software", case_data.get("Software"));
+		//Software
+		admin_queue_data.put("Preference", case_data.get("Preference"));
+		//Status
+		HashMap<String, String> status_data = new HashMap<String, String>();
+		status_data.put("admin_status", "processing");
+		admin_queue_data.put("Status", status_data);
+		return admin_queue_data;
+	}
+	
+	private String get_standard_admin_queue_name(
+			String sub_id,
+			String generate_time,
+			String suite_path,
+			HashMap<String, HashMap<String, String>> case_data
+			) {
 		// admin queue priority check:0>1>2..>5(default)>...8>9
-		String priority = public_data.TASK_PRI_LOCALLY;
+		String priority = new String(public_data.TASK_PRI_LOCALLY);
+		if (case_data.get("CaseInfo").containsKey("priority")) {
+			priority = case_data.get("CaseInfo").get("priority");
+		}
 		// task belong to this client: 0, assign task(0) > match task(1)
-		String attribute = new String("0");
+		String assignment = new String("0");
 		// receive time
 		String mark_time = time_info.get_time_hhmm();
 		// queue base name
 		String admin_queue_base = new String("");
-		File path_obj = new File(imported_path);
+		File path_obj = new File(suite_path);
 		String suite_name = path_obj.getName();
 		if (suite_name.length() < 1){
 			admin_queue_base = "local_suite";
 		} else {
 			admin_queue_base = suite_name;
 		}
-		// pack data
-		// xx0@run_xxx_suite_time :
-		// priority:match/assign task:job_from_local@run_number
-		queue_name = priority + attribute + "0" + "@" 
-				+ "run_" + mark_time + "_" + admin_queue_base + "_" + generate_time;
+		// Max threads requirements
+		String threads = new String(public_data.TASK_DEF_MAX_THREADS);
+		if (!case_data.containsKey("Preference")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else if (!case_data.get("Preference").containsKey("max_threads")) {
+			threads = public_data.TASK_DEF_MAX_THREADS;
+		} else {
+			threads = case_data.get("Preference").get("max_threads");
+			Pattern p = Pattern.compile("^\\d$");
+			Matcher m = p.matcher(threads);
+			if (!m.find()) {
+				threads = public_data.TASK_DEF_MAX_THREADS;
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong Preference->max_threads, default value " + public_data.TASK_DEF_MAX_THREADS + " used.");
+			}
+		}		
+		// host restart requirements--for local jobs always be 0		
+		String restart_boolean = new String(public_data.TASK_DEF_HOST_RESTART);
+		if (!case_data.containsKey("Preference")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else if (!case_data.get("Preference").containsKey("host_restart")) {
+			restart_boolean = public_data.TASK_DEF_HOST_RESTART;
+		} else {
+			String request_value = new String(case_data.get("Preference").get("host_restart").trim());
+			if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
+				LOCAL_TUBE_LOGGER.warn(admin_queue_base + ":has wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
+			} else {
+				restart_boolean = request_value;
+			}
+		}
+		String restart = new String("0");
+		if (restart_boolean.equalsIgnoreCase("true")) {
+			restart = "1";
+		} else {
+			restart = "0";
+		}
+		// queue name generate
+		StringBuilder queue_name = new StringBuilder("");
+		queue_name.append(priority);
+		queue_name.append(assignment);
+		queue_name.append("0");//1, from remote; 0, from local
+		queue_name.append("@");
+		queue_name.append("t" + threads);
+		queue_name.append("r" + restart);
+		queue_name.append("_");
+		queue_name.append("run_" + mark_time + "_" + sub_id + "_" + admin_queue_base + "_" + generate_time);
+		return queue_name.toString();
+	}
+	
+	private String get_matching_admin_queue(
+			HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map,
+			HashMap<String, HashMap<String, String>> case_data
+			) {
+		String queue_name = new String("");
+		Iterator<String> all_queues_it = admin_queues_map.keySet().iterator();
+		while(all_queues_it.hasNext()){
+			String current_queue = all_queues_it.next();
+			HashMap<String, String> valid_admin_data = new HashMap<String, String>();
+			valid_admin_data.putAll(get_valid_request_data(admin_queues_map.get(current_queue)));
+			HashMap<String, String> valid_case_data = new HashMap<String, String>();
+			valid_case_data.putAll(get_valid_request_data(case_data));
+			if (admin_case_request_same(valid_admin_data, valid_case_data)) {
+				queue_name = current_queue;
+				break;
+			}
+		}
 		return queue_name;
 	}
 	
-	private HashMap<String, HashMap<String, String>> get_admin_queue_data(
-			String import_path,
-			HashMap<String, String> imported_data,
-			String generate_time){
+	private Boolean admin_case_request_same(
+			HashMap<String, String> admin_request_data,
+			HashMap<String, String> case_request_data
+			) {
+		Boolean status = Boolean.valueOf(true);
+		if (admin_request_data.size() != case_request_data.size()) {
+			return false;
+		}
+		Iterator<String> admin_it = admin_request_data.keySet().iterator();
+		while(admin_it.hasNext()){
+			String admin_option_name = admin_it.next();
+			String admin_option_value = admin_request_data.get(admin_option_name);
+			if (!case_request_data.containsKey(admin_option_name)) {
+				status = false;
+				break;
+			}
+			String case_option_value = case_request_data.get(admin_option_name);
+			if (!admin_option_value.equalsIgnoreCase(case_option_value)) {
+				status = false;
+				break;
+			}
+		}
+		return status;
+	}
+	
+	private HashMap<String, String> get_valid_request_data(
+			HashMap<String, HashMap<String, String>> case_data
+			) {
+		HashMap<String, String> merge_data = new HashMap<String, String>();
+		HashMap<String, String> valid_data = new HashMap<String, String>();
+		if (case_data.containsKey("Software")) {
+			merge_data.putAll(case_data.get("Software"));
+		}
+		if (case_data.containsKey("System")) {
+			merge_data.putAll(case_data.get("System"));
+		}
+		if (case_data.containsKey("Machine")) {
+			merge_data.putAll(case_data.get("Machine"));
+		}
+		if (case_data.containsKey("Preference")) {
+			merge_data.putAll(case_data.get("Preference"));
+		}
+		Iterator<String> merge_data_it = merge_data.keySet().iterator();
+		while(merge_data_it.hasNext()){
+			String option_name = merge_data_it.next();
+			String option_value = merge_data.get(option_name);
+			if (option_value == null || option_value.equalsIgnoreCase("")) {
+				continue;
+			}
+			valid_data.put(option_name, option_value);
+		}
+		return valid_data;
+	}
+	
+	private HashMap<String, HashMap<String, HashMap<String, String>>> get_freestyle_admin_queues_data(
+			String generate_time,
+			String suite_path,
+			HashMap<String, String> imported_data
+			){
+		HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		String queue_name = new String();
+		queue_name = get_freestyle_admin_queue_name(generate_time, suite_path);
+		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		queue_data.putAll(get_freestyle_admin_queue_data(generate_time, suite_path, imported_data));
+		admin_queues_map.put(queue_name, queue_data);
+		return admin_queues_map;
+	}
+	
+	private String get_freestyle_admin_queue_name(
+			String generate_time,
+			String suite_path
+			) {
+		// admin queue priority check:0>1>2..>5(default)>...8>9
+		String priority = new String(public_data.TASK_PRI_LOCALLY);
+		// task belong to this client: 0, assign task(0) > match task(1)
+		String assignment = new String("0");
+		// receive time
+		String mark_time = time_info.get_time_hhmm();
+		// queue base name
+		String admin_queue_base = new String("");
+		File path_obj = new File(suite_path);
+		String suite_name = path_obj.getName();
+		if (suite_name.length() < 1){
+			admin_queue_base = "local_suite";
+		} else {
+			admin_queue_base = suite_name;
+		}
+		// queue name generate
+		StringBuilder queue_name = new StringBuilder("");
+		queue_name.append(priority);
+		queue_name.append(assignment);
+		queue_name.append("0");//1, from remote; 0, from local
+		queue_name.append("@");
+		queue_name.append("t" + public_data.TASK_DEF_MAX_THREADS);
+		queue_name.append("r0");
+		queue_name.append("_");
+		queue_name.append("run_" + mark_time + "_" + admin_queue_base + "_" + generate_time);
+		return queue_name.toString();
+	}
+	
+	private HashMap<String, HashMap<String, String>> get_freestyle_admin_queue_data(
+			String generate_time,
+			String suite_path,
+			HashMap<String, String> imported_data
+			){
 		HashMap<String, HashMap<String, String>> admin_queue_data = new HashMap<String, HashMap<String, String>>();
 		//id_data create
 		HashMap<String, String> id_data = new HashMap<String, String>();
-		String suite_path = import_path;
 		File path_obj = new File(suite_path);
 		String suite_name = path_obj.getName();
 		if (suite_name.length() < 1){
@@ -1128,6 +1557,7 @@ public class local_tube {
 		id_data.put("project", "x");
 		id_data.put("run", suite_name + "_" + generate_time);
 		id_data.put("suite", suite_name);
+		id_data.put("epoch_time", String.valueOf(System.currentTimeMillis() / 1000));
 		admin_queue_data.put("ID", id_data);
 		//CaseInfo create
 		HashMap<String, String> caseinfo_data = new HashMap<String, String>();
@@ -1199,7 +1629,8 @@ public class local_tube {
 	
 	private List<String> get_design_name_list(
 			String suite_path, 
-			String key_pattern){
+			String key_pattern
+			){
 		List<String> design_list = new ArrayList<String>();
 		List<String> key_paths = new ArrayList<String>();
 		key_paths.addAll(file_action.get_key_path_list(suite_path, key_pattern));
@@ -1211,62 +1642,43 @@ public class local_tube {
 		return design_list;
 	}
 	
-	private Boolean case_match_required_info(
+	private case_enum get_case_type(
 			String suite_path,
-			String case_path,
-			String dat_file,
-			String task_sort){
-		Boolean match_status = new Boolean(false);
-		if (task_sort == null || task_sort.trim().equals("")){
-			match_status = true;
-			return match_status;
+			List<String> case_list
+			) {
+		case_enum case_type = case_enum.FREESTYLE;
+		int standard_num = 0;
+		for (String case_name:case_list) {
+			String run_info = new String(suite_path + "/" + case_name + "/" + public_data.CASE_STANDARD_PATTERN);
+			File info_fobj = new File(run_info);
+			if(info_fobj.exists()) {
+				standard_num ++;
+			}
 		}
-		String dat_path = new String(suite_path + "/" + case_path + "/" +  dat_file);
-		File dat_fobj = new File(dat_path);
-		if (!dat_fobj.exists()){
-			return match_status;
-		}
-		Map<String, Object> src_data_object = new HashMap<String, Object>();
-		src_data_object.putAll(file_action.get_json_map_data(dat_path));
-		if (src_data_object.isEmpty()){
-			return match_status;
-		}
-		Map<String, String> src_data = new HashMap<String, String>();
-		Iterator<String> src_it = src_data_object.keySet().iterator();
-		while(src_it.hasNext()){
-			String src_key = src_it.next();
-			Object src_obj = src_data_object.get(src_key);
-			src_data.put(src_key, src_obj.toString());
-		}
-		if (case_data_match_task_sort(src_data, task_sort)){
-			match_status = true;
+		if (standard_num > case_list.size() / 2 ) {
+			case_type = case_enum.STANDARD;
 		} else {
-			match_status = false;
+			case_type = case_enum.FREESTYLE;
 		}
-		return match_status;
+		LOCAL_TUBE_LOGGER.warn("Suite path:" + suite_path);
+		LOCAL_TUBE_LOGGER.warn("Case type:" + case_type.get_description());
+		return case_type;
 	}
 	
-	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_task_queue_data(
-			String imported_path,
-			HashMap<String, String> imported_data,
-			HashMap<String, HashMap<String, String>> admin_data){
-		TreeMap<String, HashMap<String, HashMap<String, String>>> task_queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
-		//get case list
-		String suite_path = imported_path;
+	private List<String> get_case_list(
+			String suite_path,
+			String work_space,
+			HashMap<String, String> imported_data
+			){
 		String key_pattern = imported_data.get("key");
-		String dat_file = imported_data.get("dat");
-		String task_sort = imported_data.get("sort");
-		String list_path = suite_path + "/" + public_data.SUITE_LIST_FILE_NAME;
+		String list_path = suite_path + "/" + public_data.SUITE_LIST_FILE_NAME;	
 		File list_fobj = new File(list_path);
 		List<String> case_list = new ArrayList<String>();
 		if (list_fobj.exists()){
 			List<String> line_list = new ArrayList<String>();
 			line_list.addAll(file_action.read_file_lines(list_path));
 			for (String line : line_list){
-				if(line.startsWith(";")){
-					continue;
-				}
-				if(line.startsWith("#")){
+				if(line.startsWith(";") || line.startsWith("#")){
 					continue;
 				}
 				File path_obj = new File(suite_path + "/" + line);
@@ -1277,59 +1689,298 @@ public class local_tube {
 		} else {
 			case_list.addAll(get_design_name_list(suite_path, key_pattern));
 		}
-		//sort required test case list
-		if(case_list.size() < 1){
-			return task_queue_data;
+		//remove abnormal test case like DEV, results, log... folders
+		Boolean same_path = Boolean.valueOf(false);
+		List<String> valid_case_list = new ArrayList<String>();
+		List<String> invalid_case_list = new ArrayList<String>();
+		try {
+			same_path = file_action.is_path_same(suite_path, work_space);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			LOCAL_TUBE_LOGGER.warn("Path compare failed:" + suite_path + "<=>" + work_space);
 		}
-		List<String> matched_case_list = new ArrayList<String>();
-		for(String case_path: case_list){
-			if(case_match_required_info(suite_path, case_path, dat_file, task_sort)){
-				matched_case_list.add(case_path);
-			} else {
-				LOCAL_TUBE_LOGGER.warn("Test case ignored:" + case_path);
+		if (same_path) {
+			for (String case_path: case_list) {
+				Boolean is_reserved = Boolean.valueOf(false);
+				for(String reserved_name:public_data.WORKSPACE_RESERVED_DIR){
+					if (case_path.equals(reserved_name) || case_path.startsWith(reserved_name + "/")) {
+						LOCAL_TUBE_LOGGER.warn("Reserved dir name removed:" + case_path);
+						is_reserved = true;
+						break;
+					}
+				}
+				if (is_reserved) {
+					invalid_case_list.add(case_path);
+				} else {
+					valid_case_list.add(case_path);
+				}
 			}
+		} else {
+			valid_case_list.addAll(case_list);
 		}
-		//generate case data
-		int case_counter = 0;
-		for(String case_path: matched_case_list){
-			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
-			case_data.putAll(deep_clone.clone(admin_data));
-			//generate case name
-			String case_name = String.valueOf(case_counter);
-			//generate TestID
-			HashMap<String, String> id_data = new HashMap<String, String>();
-			id_data.put("id", case_name);
-			if(case_data.containsKey("TestID")){
-				HashMap<String, String> link_data = case_data.get("TestID");
-				link_data.putAll(id_data);
-			} else {
-				case_data.put("TestID", id_data);
-			}
-			//generate CaseInfo
-			HashMap<String, String> info_data = new HashMap<String, String>();
-			info_data.put("design_name", case_path);
-			if(case_data.containsKey("CaseInfo")){
-				HashMap<String, String> link_data = case_data.get("CaseInfo");
-				link_data.putAll(info_data);
-			} else {
-				case_data.put("CaseInfo", info_data);
-			}			
-			//Status
-			HashMap<String, String> status_data = new HashMap<String, String>();
-			status_data.put("cmd_status", task_enum.WAITING.get_description());
-			if(case_data.containsKey("Status")){
-				HashMap<String, String> link_data = case_data.get("Status");
-				link_data.putAll(status_data);
-			} else {
-				case_data.put("Status", status_data);
-			}			
-			//return
-			task_queue_data.put(case_name, case_data);
-			case_counter++;
+		if (!invalid_case_list.isEmpty()) {
+			LOCAL_TUBE_LOGGER.warn("Reserved names:" +  String.join(",", public_data.WORKSPACE_RESERVED_DIR));
 		}
-		return task_queue_data;
+		return valid_case_list;
 	}
 	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_valid_case_data(
+			TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data,
+			HashMap<String, String> imported_data
+			){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> valid_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		String sort_str = imported_data.get("sort");
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		request_data.putAll(get_sort_map_data(sort_str));
+		Iterator<String> all_case_it = all_case_data.keySet().iterator();
+		while(all_case_it.hasNext()){
+			String case_id = all_case_it.next();
+			HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
+			case_data.putAll(all_case_data.get(case_id));
+			String design_name = case_data.get("CaseInfo").get("design_name");
+			Boolean valid_case = Boolean.valueOf(true);
+			Iterator<String> request_it = request_data.keySet().iterator();
+			while(request_it.hasNext()) {
+				String request_option = request_it.next();
+				String request_value = request_data.get(request_option);
+				HashMap<String, String> check_data = new HashMap<String, String>();
+				Iterator<String> section_it = case_data.keySet().iterator();
+				while(section_it.hasNext()) {
+					String section_name = section_it.next();
+					if(section_name.equalsIgnoreCase("CaseInfo") || section_name.equalsIgnoreCase("LaunchCommand") ||section_name.equalsIgnoreCase("Environment")) {
+						continue;
+					}
+					check_data.putAll(case_data.get(section_name));
+				}
+				if (!check_data.containsKey(request_option)) {
+					valid_case = false;
+					break;
+				}
+				if (!check_data.get(request_option).equalsIgnoreCase(request_value)) {
+					valid_case = false;
+					break;
+				}
+			}
+			if (valid_case) {
+				valid_data.put(case_id, case_data);
+			} else {
+				LOCAL_TUBE_LOGGER.warn(design_name + "Ignored, doesn't match:" + sort_str);
+			}
+		}
+		return valid_data;		
+	}
+	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_local_case_data(
+			String suite_path,
+			List<String> case_list,
+			HashMap<String, String> imported_data,
+			case_enum case_style
+			){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> case_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		switch (case_style) {
+		case FREESTYLE:
+			case_data.putAll(get_freestyle_case_data(suite_path, case_list, imported_data));
+			break;
+		case STANDARD:
+			case_data.putAll(get_standard_case_data(suite_path, case_list));
+			break;
+		default:
+			break;
+		}
+		return case_data;
+	}
+	
+	private HashMap<String, String> get_json_file_data(
+			String file_path
+			){
+		HashMap<String, String> json_data = new HashMap<String, String>();
+		File data_fobj = new File(file_path);
+		if (!data_fobj.exists()){
+			return json_data;
+		}
+		Map<String, Object> json_data_object = new HashMap<String, Object>();
+		json_data_object.putAll(file_action.get_json_map_data(file_path));
+		if (json_data_object.isEmpty()){
+			return json_data;
+		}			
+		Iterator<String> src_it = json_data_object.keySet().iterator();
+		while(src_it.hasNext()){
+			String json_key = src_it.next();
+			Object json_obj = json_data_object.get(json_key);
+			json_data.put(json_key, json_obj.toString());
+		}
+		return json_data;
+	}
+	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_freestyle_case_data(
+			String suite_path,
+			List<String> case_list,
+			HashMap<String, String> imported_data
+			){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		//generate case data
+		int case_counter = 0;
+		String data_file = imported_data.get("dat");
+		for(String design_name: case_list){
+			HashMap<String, HashMap<String, String>> one_case_data = new HashMap<String, HashMap<String, String>>();
+			//generate case name
+			String case_id = String.valueOf(case_counter);
+			//generate TestID
+			HashMap<String, String> testid_data = new HashMap<String, String>();
+			testid_data.put("id", case_id);
+			one_case_data.put("TestID", testid_data);
+			//generate ID
+			HashMap<String, String> id_data = new HashMap<String, String>();
+			id_data.put("id", case_id);
+			one_case_data.put("ID", id_data);			
+			//generate CaseInfo
+			HashMap<String, String> info_data = new HashMap<String, String>();
+			info_data.put("design_name", design_name);
+			one_case_data.put("CaseInfo", info_data);
+			//generate Environment
+			HashMap<String, String> environment = new HashMap<String, String>();
+			one_case_data.put("Environment", environment);
+			//generate LaunchCommand
+			HashMap<String, String> launchcommand = new HashMap<String, String>();
+			one_case_data.put("LaunchCommand", launchcommand);			
+			//generate Machine
+			HashMap<String, String> machine_data = new HashMap<String, String>();
+			one_case_data.put("Machine", machine_data);
+			//generate System
+			HashMap<String, String> system_data = new HashMap<String, String>();
+			one_case_data.put("System", system_data);
+			//generate Software
+			HashMap<String, String> software_data = new HashMap<String, String>();
+			one_case_data.put("Software", software_data);
+			//generate Preference
+			HashMap<String, String> preference_data = new HashMap<String, String>();
+			one_case_data.put("Preference", preference_data);			
+			//generate Status
+			HashMap<String, String> status_data = new HashMap<String, String>();
+			status_data.put("cmd_status", task_enum.WAITING.get_description());
+			one_case_data.put("Status", status_data);
+			//generate general
+			HashMap<String, String> general_data = new HashMap<String, String>();
+			String data_path = new String(suite_path + "/" + design_name + "/" +  data_file);
+			general_data.putAll(get_json_file_data(data_path));
+			one_case_data.put("General", general_data);
+			//return
+			all_case_data.put(case_id, one_case_data);
+			case_counter++;
+		}
+		return all_case_data;
+	}
+	
+	private TreeMap<String, HashMap<String, HashMap<String, String>>> get_standard_case_data(
+			String suite_path,
+			List<String> case_list
+			){
+		TreeMap<String, HashMap<String, HashMap<String, String>>> all_case_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
+		int case_counter = 0;
+		for(String design_name: case_list){
+			HashMap<String, HashMap<String, String>> one_case_data = new HashMap<String, HashMap<String, String>>();
+			//generate case name
+			String case_id = String.valueOf(case_counter);
+			//generate TestID
+			HashMap<String, String> testid_data = new HashMap<String, String>();
+			testid_data.put("id", case_id);
+			one_case_data.put("TestID", testid_data);
+			//generate ID
+			HashMap<String, String> id_data = new HashMap<String, String>();
+			id_data.put("id", case_id);
+			one_case_data.put("ID", id_data);			
+			//generate CaseInfo
+			HashMap<String, String> info_data = new HashMap<String, String>();
+			info_data.put("design_name", design_name);//default design name, will be override later
+			one_case_data.put("CaseInfo", info_data);
+			//generate Status
+			HashMap<String, String> status_data = new HashMap<String, String>();
+			status_data.put("cmd_status", task_enum.WAITING.get_description());
+			one_case_data.put("Status", status_data);
+			//generate Environment
+			HashMap<String, String> environment = new HashMap<String, String>();
+			one_case_data.put("Environment", environment);
+			//generate LaunchCommand
+			HashMap<String, String> launchcommand = new HashMap<String, String>();
+			one_case_data.put("LaunchCommand", launchcommand);			
+			//generate Machine
+			HashMap<String, String> machine_data = new HashMap<String, String>();
+			one_case_data.put("Machine", machine_data);
+			//generate System
+			HashMap<String, String> system_data = new HashMap<String, String>();
+			one_case_data.put("System", system_data);
+			//generate Software
+			HashMap<String, String> software_data = new HashMap<String, String>();
+			one_case_data.put("Software", software_data);
+			//generate Preference
+			HashMap<String, String> preference_data = new HashMap<String, String>();
+			one_case_data.put("Preference", preference_data);			
+			//get ini file data, override previously
+			String info_file = new String(suite_path + "/" + design_name + "/" +  public_data.CASE_STANDARD_PATTERN);
+			ini_parser ini_runner = new ini_parser(info_file);
+			HashMap<String, HashMap<String, String>> raw_ini_data = new HashMap<String, HashMap<String, String>>();
+			try {
+				raw_ini_data.putAll(ini_runner.read_ini_data());
+			} catch (ConfigurationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				LOCAL_TUBE_LOGGER.warn("Parser case info file failed:" + info_file);
+			}
+			//override case data with valid ini data
+			HashMap<String, HashMap<String, String>> valid_ini_data = new HashMap<String, HashMap<String, String>>();
+			valid_ini_data.putAll(get_valid_ini_data(raw_ini_data));
+			Iterator<String> valid_ini_data_it = valid_ini_data.keySet().iterator();
+			while(valid_ini_data_it.hasNext()){
+				String section_name = valid_ini_data_it.next();
+				HashMap<String, String> ini_data = valid_ini_data.get(section_name);
+				if (!one_case_data.containsKey(section_name)) {
+					one_case_data.put(section_name, ini_data);
+				} else {
+					HashMap<String, String> case_data = one_case_data.get(section_name);
+					case_data.putAll(ini_data);
+				}
+			}
+			if (one_case_data.containsKey("General")) {
+				if (one_case_data.get("General").containsKey("nouse")) {
+					if (one_case_data.get("General").get("nouse").equalsIgnoreCase("yes")) {
+						LOCAL_TUBE_LOGGER.warn(design_name + " nouse asserted, skip this case.");
+						continue;
+					}
+				}
+			}
+			//skip ignore case
+			//include case
+			all_case_data.put(case_id, one_case_data);
+			case_counter++;
+		}
+		return all_case_data;
+	}
+	
+	private HashMap<String, HashMap<String, String>> get_valid_ini_data(
+			HashMap<String, HashMap<String, String>> raw_data
+			) {
+		HashMap<String, HashMap<String, String>> valid_data = new HashMap<String, HashMap<String, String>>();
+		Iterator<String> raw_data_it = raw_data.keySet().iterator();
+		while(raw_data_it.hasNext()){
+			String section_name = raw_data_it.next();
+			HashMap<String, String> raw_section_data = new HashMap<String, String> ();
+			raw_section_data.putAll(raw_data.get(section_name));
+			HashMap<String, String> valid_section_data = new HashMap<String, String> ();
+			Iterator<String> raw_section_it = raw_section_data.keySet().iterator();
+			while(raw_section_it.hasNext()) {
+				String option_name = raw_section_it.next();
+				String option_value = raw_section_data.get(option_name).trim();
+				if (option_value == null || option_value.equals("")) {
+					continue;
+				}
+				valid_section_data.put(option_name, option_value);
+			}
+			valid_data.put(section_name, valid_section_data);
+		}
+		return valid_data;
+	}
+		//generate case data	
 	//===========================================================================
 	//===========================================================================
 	//main	

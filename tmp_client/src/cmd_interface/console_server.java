@@ -35,6 +35,7 @@ import data_center.data_server;
 import data_center.public_data;
 import data_center.switch_data;
 import flow_control.pool_data;
+import flow_control.post_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import top_runner.run_status.exit_enum;
@@ -100,7 +101,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean check_user_inputs(String user_inputs){
-		Boolean input_ok = new Boolean(true);
+		Boolean input_ok = Boolean.valueOf(true);
 		String [] input_list = user_inputs.split("\\s+");
 		if (input_list.length < 1){
 			input_ok = false;
@@ -165,7 +166,7 @@ public class console_server extends Thread {
 	
 	private Boolean answer_user_inputs(
 			String user_inputs){
-		Boolean run_ok = new Boolean(true);
+		Boolean run_ok = Boolean.valueOf(true);
 		String [] input_list = user_inputs.split("\\s+");		
 		switch(top_cmd.valueOf(input_list[0].toUpperCase())){
 		case H:
@@ -215,7 +216,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean link_command_answer(String [] cmd_list){
-		Boolean link_ok = new Boolean(false);
+		Boolean link_ok = Boolean.valueOf(false);
 		if(cmd_list[1].equalsIgnoreCase(link_cmd.HELP.toString())){
 			link_help_command_output();
 		} else {
@@ -231,7 +232,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean info_command_answer(String [] cmd_list){
-		Boolean info_ok = new Boolean(false);
+		Boolean info_ok = Boolean.valueOf(false);
 		switch(info_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			info_help_command_output();
@@ -247,13 +248,19 @@ public class console_server extends Thread {
 			break;
 		case CORESCRIPT:
 			info_other_command_output(info_cmd.CORESCRIPT.toString());
-			break;			
+			break;	
+		case STATUS:
+			info_other_command_output(info_cmd.STATUS.toString());
+			break;				
 		case SOFTWARE:
 			if(cmd_list.length > 2){
 				info_software_command_output(info_cmd.SOFTWARE.toString(), cmd_list[2]);
 			} else {
 				info_software_command_output(info_cmd.SOFTWARE.toString(), "");
 			}
+			break;
+		case BUILD:
+			info_other_command_output(info_cmd.BUILD.toString());
 			break;			
 		default:
 			info_help_command_output();
@@ -331,7 +338,7 @@ public class console_server extends Thread {
 	}	
 	
 	private Boolean task_command_answer(String [] cmd_list){
-		Boolean task_ok = new Boolean(false);
+		Boolean task_ok = Boolean.valueOf(false);
 		switch(task_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			task_help_command_output();
@@ -354,6 +361,9 @@ public class console_server extends Thread {
 		case PROCESSING:
 			task_other_command_output(task_cmd.PROCESSING.toString());
 			break;
+		case EXECUTING:
+			task_other_command_output(task_cmd.EXECUTING.toString());
+			break;			
 		case RUNNING:
 			task_other_command_output(task_cmd.RUNNING.toString());
 			break;
@@ -382,7 +392,7 @@ public class console_server extends Thread {
 	}
 	
 	private Boolean action_command_answer(String [] cmd_list){
-		Boolean action_ok = new Boolean(false);
+		Boolean action_ok = Boolean.valueOf(false);
 		switch(action_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			action_help_command_output();
@@ -552,9 +562,10 @@ public class console_server extends Thread {
 		task_data task_info = new task_data();
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
+		post_data post_info = new post_data();
 		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
 		server_runner.start();		
-		link_server my_server = new link_server(switch_info, client_info, task_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server my_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
 		my_server.start();
 		console_server my_terminal = new console_server(switch_info);
 		my_terminal.start();

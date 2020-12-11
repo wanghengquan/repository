@@ -12,6 +12,7 @@ package gui_interface;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -243,7 +244,7 @@ class suite_pane extends JPanel implements ActionListener{
 			} else if (processing_admin_queue_list.contains(queue_name)) {
 				status = "Processing";
 			} else if (!task_info.get_captured_admin_queues_treemap().containsKey(queue_name)){
-				status = "Unknown";
+				status = "Rejected";
 			} else {
 				status = task_info.get_captured_admin_queues_treemap().get(queue_name).get("Status")
 						.get("admin_status");
@@ -268,7 +269,8 @@ class suite_pane extends JPanel implements ActionListener{
 				repaint();
 			}
 		}; 
-		suite_table.setRowHeight(24);
+		suite_table.setFont(new Font(null, Font.PLAIN, 18));
+		suite_table.setRowHeight(20);
 		suite_table.getColumn("Select").setCellEditor(
 				new checkbox_editor(new JCheckBox()));
 		suite_table.getColumn("Select").setCellRenderer(new checkbox_render());
@@ -370,7 +372,8 @@ class title_pane extends JPanel implements ActionListener{
 				repaint();
 			}
 		}; 
-		title_table.setRowHeight(24);
+		title_table.setFont(new Font(null, Font.PLAIN, 18));
+		title_table.setRowHeight(20);
 		title_table.getColumn("Select").setCellEditor(
 				new checkbox_editor(new JCheckBox()));
 		title_table.getColumn("Select").setCellRenderer(new checkbox_render());
@@ -454,7 +457,8 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 		data_model.setDataVector(table_data, table_column);
 		preview_table = new JTable(data_model); 
 		//preview_table.getColumn("ID").setMaxWidth(50);
-		preview_table.setRowHeight(24);
+		preview_table.setFont(new Font(null, Font.PLAIN, 18));
+		preview_table.setRowHeight(20);
 		JScrollPane scro_panel = new JScrollPane(preview_table);
 		top_panel.add(scro_panel, BorderLayout.CENTER);
 		return top_panel;

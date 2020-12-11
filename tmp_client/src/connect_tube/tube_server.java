@@ -57,7 +57,10 @@ public class tube_server extends Thread {
 	private rmq_tube rmq_runner;
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private String line_separator = System.getProperty("line.separator");
-	private int send_count = 0;
+	private int info_send_counter = 0;
+	private int detail_send_counter = 0;
+	private int info_send_threshold = 60 / base_interval;//every 1 mins send a client info
+	private int detail_send_threshold = 5; //every 5 mins send a client detail info
 
 	// public function
 	public tube_server(
@@ -79,14 +82,13 @@ public class tube_server extends Thread {
 
 	private Boolean admin_queue_system_key_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean system_match = new Boolean(true);
+		Boolean system_match = Boolean.valueOf(true);
 		if (!queue_data.containsKey("System")) {
 			return system_match;
 		}
 		// check System match
 		HashMap<String, String> system_require_data = queue_data.get("System");
-		Set<String> system_require_set = system_require_data.keySet();
-		Iterator<String> system_require_it = system_require_set.iterator();
+		Iterator<String> system_require_it = system_require_data.keySet().iterator();
 		while (system_require_it.hasNext()) {
 			String request_key = system_require_it.next();
 			String request_value = system_require_data.get(request_key);
@@ -121,7 +123,7 @@ public class tube_server extends Thread {
 					client_value_list.add(client_value);
 				}				
 				//compare data
-				Boolean item_match = new Boolean(false);
+				Boolean item_match = Boolean.valueOf(false);
 				for (String individual: client_value_list){
 					if (request_value_list.contains(individual)){
 						item_match = true;
@@ -141,7 +143,7 @@ public class tube_server extends Thread {
 			String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean machine_match = new Boolean(true);
+		Boolean machine_match = Boolean.valueOf(true);
 		String client_current_private = client_hash.get("Machine").get("private");
 		//Scenario 1 local task (not remote)
 		if (queue_name.contains("0@")){
@@ -189,7 +191,7 @@ public class tube_server extends Thread {
 			} else{
 				client_value_list.add(client_value);
 			}
-			Boolean item_match = new Boolean(false);
+			Boolean item_match = Boolean.valueOf(false);
 
             for (String terminal_model: request_value_list){
                 if(terminal_model.contains("!")){
@@ -218,7 +220,7 @@ public class tube_server extends Thread {
 
 	private Boolean admin_queue_software_key_check(HashMap<String, HashMap<String, String>> queue_data,
 			Map<String, HashMap<String, String>> client_hash) {
-		Boolean software_match = new Boolean(true);
+		Boolean software_match = Boolean.valueOf(true);
 		if (!queue_data.containsKey("Software")) {
 			return software_match;
 		}
@@ -308,18 +310,24 @@ public class tube_server extends Thread {
 	}
 
 	private void send_client_current_info(){
-		//send client detail data every 1 minutes
-		if (send_count < 12) {
-			send_count++;
+		//send client simple data every 1 minutes
+		//send client detail data every 5 minutes
+		if (info_send_counter < info_send_threshold) {
+			info_send_counter++;
+			return;
+		}
+		info_send_counter = 0;
+		if (detail_send_counter < detail_send_threshold) {
+			detail_send_counter++;
 			send_client_info("simple");
 		} else {
-			send_count = 0;
+			detail_send_counter = 0;
 			send_client_info("complex");
-		}		
+		}
 	}
 	
 	private Boolean send_client_info(String mode) {
-		Boolean send_status = new Boolean(true);
+		Boolean send_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 		client_hash = deep_clone.clone(client_info.get_client_data());
 		//bypass the client data sending in local model
@@ -416,6 +424,10 @@ public class tube_server extends Thread {
 		if (imported_map.isEmpty()) {
 			return;
 		}
+		String work_space = new String(public_data.DEF_WORK_SPACE);
+        if (client_info.get_client_preference_data().containsKey("work_space")) {
+        	work_space = client_info.get_client_preference_data().get("work_space");
+        }
 		local_tube local_path_tube_parser = new local_tube(task_info);
 		Iterator<String> imported_it = imported_map.keySet().iterator();
 		int counter = 0;
@@ -433,7 +445,8 @@ public class tube_server extends Thread {
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
 			String imported_paths = imported_data.get("path");
 			for(String imported_path : imported_paths.split(",")){
-			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(imported_id, imported_path, imported_data);
+			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(
+			    		imported_id, imported_path, work_space, imported_data);
 			}
 			counter++;
 		}

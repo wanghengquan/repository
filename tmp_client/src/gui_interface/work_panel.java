@@ -191,7 +191,7 @@ public class work_panel extends JSplitPane implements Runnable{
 	}
 	
 	private Boolean update_working_queue_data() {
-		Boolean show_update = new Boolean(true);
+		Boolean show_update = Boolean.valueOf(true);
 		String watching_queue = view_info.get_current_watching_queue();
 		if (watching_queue.equals("")) {
 			return show_update; // no watching queue selected
@@ -401,35 +401,35 @@ class table_pop_memu extends JPopupMenu implements ActionListener {
 		}		
 		if (arg0.getSource().equals(view_all)) {
 			System.out.println("view all");
-			view_info.set_current_watching_area(watch_enum.ALL);
+			view_info.set_request_watching_area(watch_enum.ALL);
 		}
 		if (arg0.getSource().equals(view_processing)) {
 			System.out.println("view failed");
-			view_info.set_current_watching_area(watch_enum.PROCESSING);
+			view_info.set_request_watching_area(watch_enum.PROCESSING);
 		}
 		if (arg0.getSource().equals(view_waiting)) {
 			System.out.println("view waiting");
-			view_info.set_current_watching_area(watch_enum.WAITING);
+			view_info.set_request_watching_area(watch_enum.WAITING);
 		}			
 		if (arg0.getSource().equals(view_failed)) {
 			System.out.println("view failed");
-			view_info.set_current_watching_area(watch_enum.FAILED);
+			view_info.set_request_watching_area(watch_enum.FAILED);
 		}
 		if (arg0.getSource().equals(view_passed)) {
 			System.out.println("view passed");
-			view_info.set_current_watching_area(watch_enum.PASSED);
+			view_info.set_request_watching_area(watch_enum.PASSED);
 		}
 		if (arg0.getSource().equals(view_tbd)) {
 			System.out.println("view tbd");
-			view_info.set_current_watching_area(watch_enum.TBD);
+			view_info.set_request_watching_area(watch_enum.TBD);
 		}
 		if (arg0.getSource().equals(view_timeout)) {
 			System.out.println("view timeout");
-			view_info.set_current_watching_area(watch_enum.TIMEOUT);
+			view_info.set_request_watching_area(watch_enum.TIMEOUT);
 		}
 		if (arg0.getSource().equals(view_halted)) {
 			System.out.println("view halted");
-			view_info.set_current_watching_area(watch_enum.HALTED);
+			view_info.set_request_watching_area(watch_enum.HALTED);
 		}
 		if (arg0.getSource().equals(details)) {
 			System.out.println("details clicked");
