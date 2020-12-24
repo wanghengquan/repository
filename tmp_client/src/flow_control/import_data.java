@@ -55,7 +55,10 @@ public class import_data {
 			if (!file.getName().contains("@")) {
 				continue;
 			}
-			String queue_name = file.getName().split("\\.")[0];
+			//String queue_name = file.getName().split("\\.")[0];
+			String file_name = new String(file.getName());
+			int dot = file_name.lastIndexOf(".");
+			String queue_name = file_name.substring(0, dot);
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
 			if (queue_data.isEmpty()){
@@ -88,7 +91,10 @@ public class import_data {
 			if (!file.getName().contains("@")) {
 				continue;
 			}
-			String queue_name = file.getName().split("\\.")[0];
+			//String queue_name = file.getName().split("\\.")[0];
+			String file_name = new String(file.getName());
+			int dot = file_name.lastIndexOf(".");
+			String queue_name = file_name.substring(0, dot);			
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
 			queue_data.putAll(import_admin_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
 			if (queue_data.isEmpty()){
@@ -121,7 +127,10 @@ public class import_data {
 			if (!file.getName().contains("@")) {
 				continue;
 			}
-			String queue_name = file.getName().split("\\.")[0];
+			//String queue_name = file.getName().split("\\.")[0];
+			String file_name = new String(file.getName());
+			int dot = file_name.lastIndexOf(".");
+			String queue_name = file_name.substring(0, dot);			
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			queue_data.putAll(import_task_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
 			if (queue_data.isEmpty()){
@@ -154,7 +163,10 @@ public class import_data {
 			if (!file.getName().contains("@")) {
 				continue;
 			}
-			String queue_name = file.getName().split("\\.")[0];
+			//String queue_name = file.getName().split("\\.")[0];
+			String file_name = new String(file.getName());
+			int dot = file_name.lastIndexOf(".");
+			String queue_name = file_name.substring(0, dot);			
 			TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 			queue_data.putAll(import_task_data(file.getAbsolutePath().replaceAll("\\\\", "/")));
 			if (queue_data.isEmpty()){
