@@ -1157,15 +1157,15 @@ public class task_waiter extends Thread {
 			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id, task_data);
 			if (register_status) {
 				if (switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.debug(waiter_name + ":Launched " + queue_name + "," + case_id);
+					TASK_WAITER_LOGGER.debug(waiter_name + ":Launching " + queue_name + "," + case_id);
 				} else {
-					TASK_WAITER_LOGGER.info(waiter_name + ":Launched " + queue_name + "," + case_id);
+					TASK_WAITER_LOGGER.info(waiter_name + ":Launching " + queue_name + "," + case_id);
 				}
 			} else {
 				if (switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.debug(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
+					TASK_WAITER_LOGGER.debug(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
 				} else {
-					TASK_WAITER_LOGGER.info(waiter_name + ":Register " + queue_name + "," + case_id + "Failed, skip.");
+					TASK_WAITER_LOGGER.info(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
 				}
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_reserved_threads(1);
@@ -1185,12 +1185,14 @@ public class task_waiter extends Thread {
 				client_info.release_used_soft_insts(admin_data.get("Software"));
 				pool_info.release_reserved_threads(1);
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
+				TASK_WAITER_LOGGER.info("Task launch failed:" + queue_name + "," + case_id);
 				continue;			
 			} 
 			// task 10 : launch
 			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, case_time_out);
+			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
 		}
 	}
 
