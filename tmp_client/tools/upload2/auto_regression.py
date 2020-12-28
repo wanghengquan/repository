@@ -34,12 +34,14 @@ COLUMN_WIDTH_DICT = dict(Title=25, Section=18, design_name=25, CaseInfo=30,
                          Environment=25, LaunchCommand=30, Software=22)
 SUITE_INFO = [
     "[suite_info]",
-    ("project_id", 9),
+    ("project_id", 6),
     ("suite_name", "CR-Regression"),
     ("CaseInfo", "repository={svn_path}"),
     ("", "suite_path={suite_name}"),
+    ("Environment", ""),
     ("LaunchCommand", "cmd={base_cmd}"),
     ("Software", "{base_sw}"),
+    ("System", ""),
     ("Machine", "{base_machine}"),
     "",
     "",
@@ -66,8 +68,8 @@ def get_value_with_comma(a_dict):
 
 class AutoRegression(object):
     def __init__(self):
-        self.info_name = "run_info.txt"
-        self.default_svn = "http://lshlabd0011/radiant/trunk/customer_cr"
+        self.info_name = "run_info.ini"  # previous is .txt
+        self.default_svn = "http://lsh-tmp/radiant/trunk/customer_cr"
         self.diamond_options_shelve_file = "diamond.shelve"
         self.radiant_options_shelve_file = "radiant.shelve"
         self.diamond_suite_excel_file = "diamond.xlsx"
@@ -155,6 +157,7 @@ class AutoRegression(object):
     def generate_suite_excel_file(self, vendor, shelve_file, suite_excel_file):
         if not os.path.isfile(shelve_file):
             return
+        self.vendor = vendor
         options = shelve.open(shelve_file)
         wb = Workbook()
         suite_sheet = wb.create_sheet("suite", 0)
@@ -208,7 +211,10 @@ class AutoRegression(object):
                 b_list = b.split()
                 for timon in b_list:
                     if self.p_dev_py.search(timon):
-                        _command.append("cmd = {}".format(" ".join(b_list[2:])))
+                        if "runSquish" in b_list[1]:
+                            _command.append("cmd = {}".format(" ".join(b_list[:])))
+                        else:
+                            _command.append("cmd = {}".format(" ".join(b_list[2:])))
                         break
                 else:
                     _command.append("{} = {}".format(a, b))
