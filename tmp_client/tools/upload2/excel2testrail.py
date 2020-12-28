@@ -206,6 +206,12 @@ class UploadSuites(object):
     def get_final_cases(self):
         self.final_cases = list()
         for case in self.raw_cases:
+            # design_name cannot be an empty string
+            dn = case.get("design_name")
+            if dn:
+                dn = dn.strip()
+            if not dn:
+                continue
             if not self.macro_dict:
                 self.final_cases.append(case.copy())
                 continue
