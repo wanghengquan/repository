@@ -77,8 +77,8 @@ public class task_prepare {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					// e.printStackTrace();
-					task_prepare_info.add("Error: Prepare task path Fail:" + task_path);
-					CASE_PREPARE_LOGGER.error("Prepare task path Fail:" + task_path);
+					task_prepare_info.add("Error: Create task path Failed:" + task_path);
+					CASE_PREPARE_LOGGER.warn("Create task path Failed:" + task_path);
 					return false;
 				}
 			}

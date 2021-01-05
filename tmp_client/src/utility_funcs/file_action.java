@@ -129,7 +129,7 @@ public class file_action {
 			out.close();
 			return 0;
 		} catch (Exception e) {
-			FILE_ACTION_LOGGER.warn("Append file error");
+			FILE_ACTION_LOGGER.warn("Append Error:" + file);
 			return 1;
 		}
 	}
