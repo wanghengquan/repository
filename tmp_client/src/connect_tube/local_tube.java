@@ -1720,6 +1720,8 @@ public class local_tube {
 			valid_case_list.addAll(case_list);
 		}
 		if (!invalid_case_list.isEmpty()) {
+			LOCAL_TUBE_LOGGER.warn("Following case removed due to System reserved name impacting:");
+			LOCAL_TUBE_LOGGER.warn(invalid_case_list.toString());
 			LOCAL_TUBE_LOGGER.warn("Reserved names:" +  String.join(",", public_data.WORKSPACE_RESERVED_DIR));
 		}
 		return valid_case_list;
@@ -1748,7 +1750,16 @@ public class local_tube {
 				Iterator<String> section_it = case_data.keySet().iterator();
 				while(section_it.hasNext()) {
 					String section_name = section_it.next();
-					if(section_name.equalsIgnoreCase("CaseInfo") || section_name.equalsIgnoreCase("LaunchCommand") ||section_name.equalsIgnoreCase("Environment")) {
+					if(section_name.equalsIgnoreCase("CaseInfo")) {
+						continue;
+					}
+					if(section_name.equalsIgnoreCase("LaunchCommand")) {
+						continue;
+					}
+					if(section_name.equalsIgnoreCase("Environment")) {
+						continue;
+					}
+					if(section_name.equalsIgnoreCase("Preference")) {
 						continue;
 					}
 					check_data.putAll(case_data.get(section_name));
@@ -1757,7 +1768,9 @@ public class local_tube {
 					valid_case = false;
 					break;
 				}
-				if (!check_data.get(request_option).equalsIgnoreCase(request_value)) {
+				String case_value = new String(check_data.get(request_option).toLowerCase());
+				//if (!check_data.get(request_option).equalsIgnoreCase(request_value)) {
+				if (!Arrays.asList(request_value.split(",")).contains(case_value)) {
 					valid_case = false;
 					break;
 				}
@@ -1765,7 +1778,7 @@ public class local_tube {
 			if (valid_case) {
 				valid_data.put(case_id, case_data);
 			} else {
-				LOCAL_TUBE_LOGGER.warn(design_name + "Ignored, doesn't match:" + sort_str);
+				LOCAL_TUBE_LOGGER.warn(design_name + ": Ignored, doesn't match:" + sort_str);
 			}
 		}
 		return valid_data;		
@@ -1944,7 +1957,7 @@ public class local_tube {
 			if (one_case_data.containsKey("General")) {
 				if (one_case_data.get("General").containsKey("nouse")) {
 					if (one_case_data.get("General").get("nouse").equalsIgnoreCase("yes")) {
-						LOCAL_TUBE_LOGGER.warn(design_name + " nouse asserted, skip this case.");
+						LOCAL_TUBE_LOGGER.warn(design_name + " 'nouse' asserted, skip this case.");
 						continue;
 					}
 				}
