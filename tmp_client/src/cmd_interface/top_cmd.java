@@ -21,7 +21,9 @@ public enum top_cmd {
 	A(6, "Show linked host available actions."),
 	ACTION(7, "Show linked host available actions."),
 	L(8, "Link to a remote machine, default is localhost."),
-	LINK(9, "Link to a remote machine, default is localhost.");
+	LINK(9, "Link to a remote machine, default is localhost."),
+	E(10, "Exit Client Inteactive Mode."),
+	EXIT(11, "Exit Client Inteactive Mode.");
 	private int index;
 	private String description;
 	
