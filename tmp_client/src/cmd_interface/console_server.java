@@ -10,6 +10,7 @@
 package cmd_interface;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -113,10 +114,15 @@ public class console_server extends Thread {
 			return input_ok;
 		}
 		if (input_list.length == 1){
-			if (!first_word.equalsIgnoreCase("HELP") && !first_word.equalsIgnoreCase("H")){
+			ArrayList<String> one_word_cmd_lst = new ArrayList<String>();
+			one_word_cmd_lst.add(top_cmd.E.toString());
+			one_word_cmd_lst.add(top_cmd.H.toString());
+			one_word_cmd_lst.add(top_cmd.EXIT.toString());
+			one_word_cmd_lst.add(top_cmd.HELP.toString());
+			if(!one_word_cmd_lst.contains(first_word.toUpperCase())) {
 				input_ok = false;
 				return input_ok;
-			}
+			};
 		}
 		if (input_list.length > 1){
 			String second_word = input_list[1].toUpperCase();
@@ -156,7 +162,13 @@ public class console_server extends Thread {
 				if (!action_cmd.get_value_list().contains(second_word)){
 					input_ok = false;
 				}
-				break;	
+				break;
+			case E:
+				input_ok = false;
+				break;
+			case EXIT:
+				input_ok = false;
+				break;				
 			default:
 			    break;		
 			}
@@ -198,7 +210,13 @@ public class console_server extends Thread {
 			break;
 		case LINK:
 			link_command_answer(input_list);			
-			break;			
+			break;
+		case E:
+			exit_command_answer();
+			break;
+		case EXIT:
+			exit_command_answer();			
+			break;
 		default:
 			help_command_answer();
 			break;
@@ -207,12 +225,17 @@ public class console_server extends Thread {
 	}	
 	
 	private void help_command_answer(){
-		System.out.println("Welcome to TMP client console mode");
-		System.out.println("TMP commends:");
+		System.out.println("TMP Client Interactive Mode Commands:");
 		for (top_cmd cmd: top_cmd.values()){
 			System.out.format("  %8s  --  %s" + line_separator, cmd.toString(), cmd.get_description());
 		}
 		System.out.println("You may type: '<command> help' for more info");
+	}
+	
+	private void exit_command_answer(){
+		System.out.println("Exiting TMP client Interactive Mode");
+		switch_info.set_client_stop_request(exit_enum.CRN);
+		switch_info.set_client_soft_stop_request(false);
 	}
 	
 	private Boolean link_command_answer(String [] cmd_list){
@@ -493,6 +516,7 @@ public class console_server extends Thread {
 		        .history(new DefaultHistory())
 		        .build();		
 		switch_info.set_console_server_power_up();
+		System.out.println("==========" + "Welcome to TMP Client Interactive Mode" + "==========");
 		while (!stop_request) {
 			if (wait_request) {
 				try {
@@ -523,7 +547,7 @@ public class console_server extends Thread {
 				help_command_answer();
 			}
 			try {
-				Thread.sleep(base_interval * 1 * 1);
+				Thread.sleep(base_interval * 1 * 100);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
