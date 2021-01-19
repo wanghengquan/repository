@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
+import sys
+import shutil
 import re
 import json
 import csv
@@ -39,7 +41,6 @@ def get_drop_down_value(raw_case_data):
 class UploadSuites(object):
     def __init__(self):
         self.db = links.get_guest_db()
-        ## self.tr = links.get_tr_api()
         self.des_key = "description"
         self.cmd_key = "LaunchCommand"
         self.default_user = ""
@@ -74,6 +75,12 @@ class UploadSuites(object):
     def upload_from_xlsx_file(self):
         LOGGER.info("Start upload suites by {}".format(self.file_xlsx))
         self.target_path = os.path.abspath("{}_tmp".format(tools.get_filename(self.file_xlsx)))
+        if os.path.isdir(self.target_path):
+            try:
+                shutil.rmtree(self.target_path)
+            except OSError:
+                LOGGER.error("Failed to REMOVE {}".format(self.target_path))
+                sys.exit()
         self.tmp_ini_file = os.path.join(self.target_path, "local_tmp.ini")
         for func in (self.transfer_xlsx_to_csv,
                      self.parse_suite_sheet,
@@ -182,6 +189,7 @@ class UploadSuites(object):
                         continue
                     simple_case[k] = v
                 else:
+                    self.set_default_author(simple_case)
                     self.raw_cases.append(simple_case)
 
     def write_section_cases(self):
@@ -288,11 +296,9 @@ class UploadSuites(object):
                         _now_keys.sort()
                         _show = ["{} = {}".format(k, new_dict.get(k, "")) for k in _now_keys]
                         new_case[foo[1]] = "\n".join(_show)
-                self.set_default_author(new_case)
                 self.final_cases.append(new_case)
             if never_matched:
                 if not self.macro_only:
-                    self.set_default_author(case)
                     self.final_cases.append(case)
 
     @staticmethod
