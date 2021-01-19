@@ -3,13 +3,13 @@
     <Options/>
     <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
         <Options def_top="led_top"/>
-        <Source name="../source/impl_1/LED_control.v" type="Verilog" type_short="Verilog">
+        <Source name="../source/LED_control.v" type="Verilog" type_short="Verilog">
             <Options/>
         </Source>
-        <Source name="../source/impl_1/rgb_led_top.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../source/rgb_led_top.vhd" type="VHDL" type_short="VHDL">
             <Options top_module="led_top"/>
         </Source>
-        <Source name="../source/impl_1/testbench.v" type="Verilog" type_short="Verilog" syn_sim="SimOnly">
+        <Source name="../sim/testbench.v" type="Verilog" type_short="Verilog" syn_sim="SimOnly">
             <Options/>
         </Source>
         <Source name="../models/pll_24M/pll_24M.ipx" type="IPX_Module" type_short="IPX">
