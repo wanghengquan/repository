@@ -42,6 +42,7 @@ class UploadSuites(object):
         ## self.tr = links.get_tr_api()
         self.des_key = "description"
         self.cmd_key = "LaunchCommand"
+        self.default_user = ""
 
     def process(self):
         self.get_options()
@@ -114,6 +115,7 @@ class UploadSuites(object):
             foo_0, foo_1, foo_2 = _
             if not start:
                 start = foo_0 == "[suite_info]"
+                self.default_user = foo_1
                 continue
             if foo_0 in ("[macro]", "END"):
                 break
@@ -203,6 +205,12 @@ class UploadSuites(object):
         tools.write_file(self.tmp_ini_file, case_lines, append=True)
         self.file_ini = self.tmp_ini_file
 
+    def set_default_author(self, case_data):
+        if self.default_user:
+            now_author = case_data.get("Author")
+            if not now_author:
+                case_data["Author"] = self.default_user
+
     def get_final_cases(self):
         self.final_cases = list()
         for case in self.raw_cases:
@@ -280,10 +288,12 @@ class UploadSuites(object):
                         _now_keys.sort()
                         _show = ["{} = {}".format(k, new_dict.get(k, "")) for k in _now_keys]
                         new_case[foo[1]] = "\n".join(_show)
+                self.set_default_author(new_case)
                 self.final_cases.append(new_case)
             if never_matched:
                 if not self.macro_only:
-                    self.final_cases.append(case.copy())
+                    self.set_default_author(case)
+                    self.final_cases.append(case)
 
     @staticmethod
     def equal_string_list_to_dict(equal_string_list):

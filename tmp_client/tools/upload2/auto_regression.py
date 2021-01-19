@@ -28,13 +28,13 @@ EXCEL_WIDTH = [21, 29]
 EXCEL_FIELDS = ["Order", "NoUse", "Title", "Section", "design_name", "TestLevel",
                 "TestScenarios", "Description", "Type", "Priority", "Automated",
                 "CaseInfo", "Environment", "LaunchCommand", "Software", "System",
-                "Machine", "Sorting", "CRs", "Create", "Update", "Family", "Slice",
+                "Machine", "Sorting", "CRs", "Author", "Create", "Update", "Family", "Slice",
                 "PIO", "DSP", "EBR", "RTL", "TestBench", "Flow"]
 COLUMN_WIDTH_DICT = dict(Title=25, Section=18, design_name=25, CaseInfo=30,
                          Environment=25, LaunchCommand=30, Software=22)
 SUITE_INFO = [
     "[suite_info]",
-    ("project_id", 6),
+    ("project_id", 8),
     ("suite_name", "CR-Regression"),
     ("CaseInfo", "repository={svn_path}"),
     ("", "suite_path={suite_name}"),
@@ -262,6 +262,7 @@ class AutoRegression(object):
             machine_dict = v.get("Machine", dict())
             case_info_dict = v.get("CaseInfo", dict())
             system_dict = v.get("System", dict())
+            base_dict = v.get("Base", dict())
             general_dict = v.get("General", dict())
             env_dict = v.get("Environment", dict())
             cmd_dict = v.get("LaunchCommand", dict())
@@ -286,6 +287,7 @@ class AutoRegression(object):
             case_data["System"] = get_value_with_comma(system_dict)
             case_data["Machine"] = self.get_machine(machine_dict)
             case_data["CRs"] = get_value("crs", general_dict, "")
+            case_data["Author"] = get_value("author", base_dict, "")
             for col, bar in enumerate(EXCEL_FIELDS):
                 sheet.cell(row=i+3, column=col + 1, value=case_data.get(bar, ""))
 
