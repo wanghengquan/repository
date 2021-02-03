@@ -56,6 +56,8 @@ public class core_update {
 		//step 3: update check
 		if(is_remote_local_version_same(work_space)){
 			update_status = true;
+		} else {
+			update_status = false;
 		}
 		return update_status;
 	}

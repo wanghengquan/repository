@@ -235,12 +235,14 @@ public class link_server extends Thread {
 			}
 			break;
 		case STATUS:
+			String current_status = new String("Status");
 			String pool_status = new String("Threads");
 			String post_status = new String("Remote Copy");
 			int max_thread = pool_info.get_pool_current_size();
 			int use_thread = pool_info.get_pool_used_threads();
 			int remote_num = post_info.get_postrun_call_size();
 			String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
+			detail_data.put(current_status, switch_info.get_client_run_state().toString());
 			detail_data.put(pool_status, show_info);
 			detail_data.put(post_status, String.valueOf(remote_num));
 			break;
