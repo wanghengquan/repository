@@ -278,7 +278,7 @@ public class client_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-	
+
 	public void update_client_corescript_data(String key, String value) {
 		rw_lock.writeLock().lock();
 		try {

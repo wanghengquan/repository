@@ -26,7 +26,7 @@ public class dev_checker extends TimerTask {
         this.switch_info = switch_info;
         this.client_info = client_info;
         this.core_addr = public_data.CORE_SCRIPT_ADDR;
-        this.core_UUID = get_remote_corescript_version();
+        this.core_UUID = get_local_corescript_version(client_info.get_client_preference_data().get("work_space"));
     }
 
 	public void run() {
@@ -138,6 +138,19 @@ public class dev_checker extends TimerTask {
         }
         return remote_version;
     }	
+    
+    private String get_local_corescript_version(String work_space){
+    	String remote_version = new String("NA");
+        try {
+            String svn_info = "svn info " + public_data.CORE_SCRIPT_NAME +  " --username="
+                                + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
+            ArrayList<String> info_return = system_cmd.run(svn_info, work_space);
+            remote_version = get_version_num(info_return);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return remote_version;
+    }  
     
     public static void main(String[] argvs){
 		Timer my_timer = new Timer();
