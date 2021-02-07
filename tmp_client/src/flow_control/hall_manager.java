@@ -670,6 +670,8 @@ public class hall_manager extends Thread {
 		}
 		if (max_threads > 0 && max_threads <= pool_info.get_pool_maximum_size()) {
 			pool_info.set_pool_current_size(max_threads);
+		} else {
+			reset_default_max_thread();
 		}
 		//host restart if need.
 		Boolean host_restart = Boolean.valueOf(false);		
