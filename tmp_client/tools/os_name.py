@@ -52,5 +52,5 @@ else:
 
 os_bit = os_bits()
 
-print os_name + "_" + os_bit
+print (os_name + "_" + os_bit)
 	

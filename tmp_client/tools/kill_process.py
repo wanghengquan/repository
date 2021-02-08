@@ -66,7 +66,7 @@ def get_current_user():
         import pwd
         # pwd is unix only
         return pwd.getpwuid(os.getuid())[0]
-    except ImportError, e:
+    except ImportError:
         import getpass
         return getpass.getuser()
 
@@ -77,13 +77,13 @@ class HandleExceptionProcess:
     def handle_process(self, kill_work_path):
         self.process_dict = self.create_process_dict()
         if self.debug:
-            print
-            print '/*' * 20
-            print "DEBUG: Monitoring Processes: "
+            print ('')
+            print ('/*' * 20)
+            print ("DEBUG: Monitoring Processes: ")
             for key, value in self.process_dict.items():
-                print key, "==>", value
-            print '/*' * 20
-            print
+                print (key, "==>", value)
+            print ('/*' * 20)
+            print ('')
         self.process_on_dict(kill_work_path)
 
     def create_process_dict(self):
@@ -113,7 +113,7 @@ class HandleExceptionProcess:
         ps_cmd = 'ps -eo user,pid,command | grep "%s "' % user_name
         sts, text = get_status_output(ps_cmd)
         if sts:
-            print "ERROR: Failed to run %s" % ps_cmd
+            print ("ERROR: Failed to run %s" % ps_cmd)
             return process_dict
         for item in text:
             item_list = re.split("\s+", item)
@@ -154,7 +154,7 @@ class HandleExceptionProcess:
                     self.pop_and_record(key)
 
     def pop_and_record(self, key):
-        print "Kill %s successfully" % key
+        print ("Kill %s successfully" % key)
         self.process_dict.pop(key)
         
     def match_kill_path(self, kill_work_path, process_work_path):
@@ -171,4 +171,4 @@ class HandleExceptionProcess:
 if __name__ == "__main__":
     my_tst = HandleExceptionProcess(debug=False)
     my_tst.handle_process(kill_path)
-    print "Scan_finished"
+    print ("Scan_finished")

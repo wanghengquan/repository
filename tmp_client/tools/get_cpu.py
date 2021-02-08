@@ -8,4 +8,4 @@ ON_WIN = sys.platform.startswith("win")
 if not ON_WIN:
     sys.exit('0')
 cpu_usage = psutil.cpu_percent(interval=5)
-print int(cpu_usage)
+print (int(cpu_usage))

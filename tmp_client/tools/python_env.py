@@ -1,14 +1,14 @@
 import os
-print 'os ok'
+print ('os ok')
 import re
-print 're ok'
+print ('re ok')
 import sys
-print 'sys ok'
+print ('sys ok')
 import shutil
-print 'shutil ok'
+print ('shutil ok')
 #import MySQL
 #print 'MySQL ok'
 import psutil
-print 'psutil ok'
-print ''
-print 'Python ok'
+print ('psutil ok')
+print ('')
+print ('Python ok')

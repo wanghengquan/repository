@@ -1,6 +1,7 @@
 import sys,time,os,sys
 import re
 import string
+import win32gui
 from win32gui import *
 import win32con
 
@@ -44,7 +45,7 @@ def kill_error_box(break_title=""):
             titles.add(GetWindowText(hwnd))
             del nouse
     while True:
-        print  "sleep......."
+        print  ("sleep.......")
         try:
             EnumWindows(foo, 0)
             lt = [t for t in titles if t]
@@ -65,7 +66,7 @@ def kill_error_box(break_title=""):
                     break  # exit the while loop
             break
         except:
-            print 1
+            print (1)
             pass
 
 
