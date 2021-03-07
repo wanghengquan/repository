@@ -27,7 +27,8 @@ public class core_update {
 	private static final Logger CORE_LOGGER = LogManager.getLogger(core_update.class.getName());
 	private client_data client_info;
 	private String core_name = public_data.CORE_SCRIPT_NAME;
-	private String core_addr = public_data.CORE_SCRIPT_ADDR;
+	private String core_addr = public_data.CORE_SCRIPT_REMOTE_URL;
+	private String svn_cmd = public_data.DEF_SVN_PATH;
 	private String svn_user = public_data.SVN_USER;
 	private String svn_pwd = public_data.SVN_PWD;
 	private String usr_cmd = new String(" --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache");
@@ -37,13 +38,16 @@ public class core_update {
 		
 	}
 	
-	public core_update(client_data client_info){
+	public core_update(
+			client_data client_info
+			){
 		this.client_info = client_info;
+		this.svn_cmd = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
 	}
 	
 	public Boolean update() {
 		Boolean update_status = Boolean.valueOf(false);
-		String work_space = client_info.get_client_preference_data().get("work_space");  
+		String work_space = client_info.get_client_preference_data().get("work_space"); 
 		//step 1: update core script
 		try {
 			update_status = update_core_script(work_space);
@@ -66,7 +70,7 @@ public class core_update {
 		//remote version
     	String remote_version = new String("NA");
         try {
-            String remote_info = "svn info " + core_addr +  usr_cmd;
+            String remote_info = svn_cmd + " info " + core_addr +  usr_cmd;
             ArrayList<String> remote_return = system_cmd.run(remote_info);
             remote_version = get_version_num(remote_return);
         }catch (Exception e){
@@ -75,7 +79,7 @@ public class core_update {
         //local_version
     	String local_version = new String("AN");
         try {
-            String local_info = "svn info " + core_name +  usr_cmd;
+            String local_info = svn_cmd + " info " + core_name +  usr_cmd;
             ArrayList<String> local_return = system_cmd.run(local_info, work_space);
             local_version = get_version_num(local_return);
         }catch (Exception e){
@@ -101,21 +105,21 @@ public class core_update {
 				CORE_LOGGER.warn("Core script Read only, skip core update for:" + work_space + "/" + core_name);
 				return update_status;
 			}
-			info_return.addAll(system_cmd.run("svn info " + core_name + " " + usr_cmd, work_space));
+			info_return.addAll(system_cmd.run(svn_cmd + " info " + core_name + " " + usr_cmd, work_space));
 			url_addr = get_url_addr(info_return);
-			if (url_addr.equalsIgnoreCase(public_data.CORE_SCRIPT_ADDR)){
-				update_return.addAll(system_cmd.run("svn update " + core_name + " " + usr_cmd, work_space));
+			if (url_addr.equalsIgnoreCase(public_data.CORE_SCRIPT_REMOTE_URL)){
+				update_return.addAll(system_cmd.run(svn_cmd + " update " + core_name + " " + usr_cmd, work_space));
 				CORE_LOGGER.debug(update_return.toString());
 			} else {
 				//remove current core script
 				FileUtils.deleteQuietly(core_fobj);
 				Thread.sleep(1000);
 				//checkout new one
-				checkout_return.addAll(system_cmd.run("svn co " + core_addr + " " + usr_cmd, work_space));
+				checkout_return.addAll(system_cmd.run(svn_cmd + " co " + core_addr + " " + usr_cmd, work_space));
 				CORE_LOGGER.debug(checkout_return.toString());
 			}
 		} else {
-			checkout_return.addAll(system_cmd.run("svn co " + core_addr + " " + usr_cmd, work_space));
+			checkout_return.addAll(system_cmd.run(svn_cmd + " co " + core_addr + " " + usr_cmd, work_space));
 			CORE_LOGGER.debug(checkout_return.toString());
 		}
 		update_status = true;
@@ -127,7 +131,7 @@ public class core_update {
 		String time = new String("NA");
 		ArrayList<String> info_return = new ArrayList<String>();
         try {
-            info_return.addAll(system_cmd.run("svn info " + core_name + " " + usr_cmd, work_space));
+            info_return.addAll(system_cmd.run(svn_cmd + " info " + core_name + " " + usr_cmd, work_space));
             version = get_version_num(info_return);
             time = get_update_time(info_return);
         }catch (IOException e){

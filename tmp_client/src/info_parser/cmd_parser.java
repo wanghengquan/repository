@@ -203,17 +203,37 @@ public class cmd_parser {
 		} else {
 			cmd_hash.put("interactive", "0");
 		}
-		// 3.24 help definition
+		// 3.24 Script path
+		if (commandline_obj.hasOption("python")) {
+			String python = new String(commandline_obj.getOptionValue("python"));
+			cmd_hash.put("python", file_action.get_absolute_paths(python));
+		}
+		if (commandline_obj.hasOption("perl")) {
+			String perl = new String(commandline_obj.getOptionValue("perl"));
+			cmd_hash.put("perl", file_action.get_absolute_paths(perl));
+		}		
+		if (commandline_obj.hasOption("ruby")) {
+			String ruby = new String(commandline_obj.getOptionValue("ruby"));
+			cmd_hash.put("ruby", file_action.get_absolute_paths(ruby));
+		}
+		if (commandline_obj.hasOption("svn")) {
+			String svn = new String(commandline_obj.getOptionValue("svn"));
+			cmd_hash.put("svn", file_action.get_absolute_paths(svn));
+		}
+		if (commandline_obj.hasOption("git")) {
+			String git = new String(commandline_obj.getOptionValue("git"));
+			cmd_hash.put("git", file_action.get_absolute_paths(git));
+		}
+		// 3.25 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
-		// 3.25 run sanity check
+		// 3.26 run sanity check
 		if (!run_input_data_check(cmd_hash)){
 			get_help(options_obj);
 		}
 		return cmd_hash;
 	}
-
 
 	
 	private Boolean run_input_data_check(
@@ -339,7 +359,17 @@ public class cmd_parser {
 				.build());
 		options_obj.addOption(Option.builder("Z").longOpt("lazy-copy")
 				.desc("Client will skip test case copy if it already exists in work space.")
-				.build());		
+				.build());
+		options_obj.addOption(Option.builder().longOpt("python").hasArg()
+				.desc("Python install path, Client launch case with specified tool path").build());
+		options_obj.addOption(Option.builder().longOpt("ruby").hasArg()
+				.desc("Ruby install path, Client launch case with specified tool path").build());
+		options_obj.addOption(Option.builder().longOpt("perl").hasArg()
+				.desc("perl install path, Client launch case with specified tool path").build());
+		options_obj.addOption(Option.builder().longOpt("svn").hasArg()
+				.desc("svn install path, Client export case with specified tool path").build());
+		options_obj.addOption(Option.builder().longOpt("git").hasArg()
+				.desc("git install path, Client export case with specified tool path").build());
 		options_obj.addOption(Option.builder("D").longOpt("debug").desc("Client will run in debug mode").build());
 		options_obj.addOption(Option.builder("h").longOpt("help").desc("Client will run in help mode").build());
 		return options_obj;
@@ -349,7 +379,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>][--python <python path> | --perl <perl path> | --ruby <ruby path>] [--svn <svn path> | --git <git path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();

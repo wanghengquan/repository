@@ -1,0 +1,34 @@
+-a "%(family)s"
+-d %(pty)s
+-t %(pkg)s
+-s %(spd)s
+-frequency 200.00
+-optimization_goal %(goal)s
+-bram_utilization 100
+-ramstyle Auto
+-romstyle auto
+-use_carry_chain 1
+-carry_chain_length 0
+-force_gsr Auto
+-resource_sharing 1
+-propagate_constants 1
+-remove_duplicate_regs 1
+-mux_style Auto
+-max_fanout 1000
+-fsm_encoding_style Auto
+-twr_paths 3
+-use_io_insertion 1
+-resolve_mixed_drivers 0
+-use_io_reg 1
+
+-p %(search_path)s
+
+-lpf 1
+%(source_files)s
+%(top_module)s
+
+
+
+
+-ngd "%(ngd_file)s"
+

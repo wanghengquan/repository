@@ -161,6 +161,45 @@ public class client_data {
 		}
 	}
 	
+	public HashMap<String, String> get_client_tools_data() {
+		rw_lock.readLock().lock();
+		HashMap<String, String> temp = new HashMap<String, String>();
+		try {
+			if (client_hash.containsKey("tools")){
+				temp.putAll(client_hash.get("tools"));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void set_client_tools_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			if(client_hash.containsKey("tools")){
+				client_hash.remove("tools");
+			}
+			client_hash.put("tools", update_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_tools_data(HashMap<String, String> update_data) {
+		rw_lock.writeLock().lock();
+		try {
+			HashMap<String, String> tools_data = new HashMap<String, String>();
+			if(client_hash.containsKey("tools")){
+				tools_data.putAll(client_hash.get("tools"));
+			}
+			tools_data.putAll(update_data);
+			client_hash.put("tools", tools_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public HashMap<String, String> get_client_preference_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, String> temp = new HashMap<String, String>();

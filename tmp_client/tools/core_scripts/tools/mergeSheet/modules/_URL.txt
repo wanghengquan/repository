@@ -1,3 +1,0 @@
-http://sourceforge.net/projects/pyexcelerator/
-https://pypi.python.org/pypi/openpyxl
-https://pypi.python.org/simple/jdcal/

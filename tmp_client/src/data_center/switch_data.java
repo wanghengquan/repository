@@ -34,6 +34,8 @@ public class switch_data {
 	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// System start client record
 	private int system_client_insts = sys_pref.getInt("", 0);
+	private Boolean system_svn_exists = Boolean.valueOf(false);
+	private Boolean remote_corescript_linked = Boolean.valueOf(false);
 	// client update
 	private int send_admin_request = 1; // for client start up
 	private int dump_config_request = 0;
@@ -64,7 +66,7 @@ public class switch_data {
 	// Client management update 
 	private state_enum client_run_state = state_enum.initial;
 	// Client environ update
-	private Boolean client_environ_issue = Boolean.valueOf(true);
+	private Boolean client_environ_issue = Boolean.valueOf(false);
 	// system level message
 	//private String client_info_message = new String("");
 	//private String client_warn_message = new String("");
@@ -447,6 +449,45 @@ public class switch_data {
 		return status;
 	}
 	
+	public void set_system_svn_exists(Boolean new_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.system_svn_exists = new_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_system_svn_exists() {
+		Boolean status = Boolean.valueOf(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.system_svn_exists;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}
+	
+	public void set_remote_corescript_linked(Boolean new_status) {
+		rw_lock.writeLock().lock();
+		try {
+			this.remote_corescript_linked = new_status;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public Boolean get_remote_corescript_linked() {
+		Boolean status = Boolean.valueOf(false);
+		rw_lock.readLock().lock();
+		try {
+			status = this.remote_corescript_linked;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return status;
+	}	
 	/*
 	public void set_client_maintain_keeping(Boolean new_status) {
 		rw_lock.writeLock().lock();

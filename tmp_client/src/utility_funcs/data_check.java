@@ -76,6 +76,16 @@ public class data_check {
 		return check_result;
 	}
 	
+	public static Boolean str_file_check(
+			String file_path){
+		Boolean check_result = Boolean.valueOf(false);
+		File path_obj = new File(file_path.replaceAll("\\\\", "/"));
+		if (path_obj.exists() && path_obj.isFile()){
+			check_result = true;
+		}
+		return check_result;
+	}
+	
 	public static Boolean str_paths_check(
 			String input_paths){
 		Boolean check_result = Boolean.valueOf(true);

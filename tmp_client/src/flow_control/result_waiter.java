@@ -1035,7 +1035,7 @@ public class result_waiter extends Thread {
 		// ============== All static job start from here ==============
 		// this run cannot launch multiple threads
 		result_thread = Thread.currentThread();
-		String waiter_name = "RW_0";
+		String waiter_name = new String("RW");
 		while (!stop_request) {
 			if (wait_request) {
 				try {
