@@ -9,8 +9,12 @@
  */
 package top_runner.run_status;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +25,8 @@ import data_center.public_data;
 import env_monitor.core_update;
 import env_monitor.kill_winpop;
 import self_update.app_update;
+import utility_funcs.data_check;
+import utility_funcs.system_cmd;
 import env_monitor.dev_checker;
 import env_monitor.env_checker;
 
@@ -60,8 +66,8 @@ class initial_status extends abstract_status {
 		get_client_data_ready();
 		// task 4: client self update
 		get_client_self_update();
-		// task 5 : core script update 
-		get_core_script_update();		
+		// task 5 : core script select 
+		get_core_script_ready();		
 		// task 6: get daemon process ready
 		get_daemon_process_ready();
 		// task 7: auto restart warning message print
@@ -146,11 +152,49 @@ class initial_status extends abstract_status {
 	}
 	
 	//core script update
-	private void get_core_script_update(){
-		core_update my_core = new core_update(client.client_info);
-		my_core.update();
-		client.STATUS_LOGGER.info("Core Script updated.");
-	}	
+	private void get_core_script_ready(){
+		//Two core script available:remote(locate in subversion), local(integrated in Client)
+		//if SVN tool available use remote one, otherwise use local one.
+		String svn_path = new String(public_data.DEF_SVN_PATH);
+		svn_path = client.client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
+		if(data_check.str_file_check(svn_path) && remote_corescript_available(svn_path)) {
+			client.STATUS_LOGGER.info("Remote CoreScript linked.");
+			client.switch_info.set_remote_corescript_linked(true);
+			core_update my_core = new core_update(client.client_info);
+			my_core.update();
+			client.STATUS_LOGGER.info("CoreScript updated.");
+		} else {
+			client.STATUS_LOGGER.info("Local CoreScript linked.");
+			client.switch_info.set_remote_corescript_linked(false);
+			client.STATUS_LOGGER.info("No CoreScript update support.");
+		}
+	}
+	
+	private Boolean remote_corescript_available(
+			String svn_path){
+		Boolean status = Boolean.valueOf(false);
+		String core_addr = public_data.CORE_SCRIPT_REMOTE_URL;
+		String svn_user = public_data.SVN_USER;
+		String svn_pwd = public_data.SVN_PWD;
+		String usr_cmd = new String(" --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache");
+		String work_space = client.client_info.get_client_preference_data().get("work_space");
+		ArrayList<String> info_return = new ArrayList<String>();
+        try {
+            info_return.addAll(system_cmd.run(svn_path + " info " + core_addr + " " + usr_cmd, work_space));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        Pattern patt = Pattern.compile(".+?:\\s+(\\d+)$");
+        for (String line: info_return){
+        	Matcher m = patt.matcher(line);
+        	if(m.find()){
+        		status = true;
+        		break;
+        	}
+        }
+        return status;
+	}
+	
 	//self update
 	private void get_client_self_update(){ 
 		//wait until main GUI start and then start update self
@@ -168,9 +212,9 @@ class initial_status extends abstract_status {
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
 		if (update_obj.update_skipped) {
-			client.STATUS_LOGGER.info("TMP Client self-update skipped...");
+			client.STATUS_LOGGER.info("Client self-update skipped.");
 		} else {
-			client.STATUS_LOGGER.info("TMP Client self-update launched...");
+			client.STATUS_LOGGER.info("Client self-update launched.");
 			//no data for dump at the initial state
 			//export_data.export_disk_processed_queue_report(client.task_info, client.client_info);
 			//export_data.export_disk_finished_queue_data(client.task_info, client.client_info);
@@ -188,7 +232,7 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		client.STATUS_LOGGER.info("TMP Client updated.");
+		client.STATUS_LOGGER.debug("TMP Client updated.");
 	}
 	
 	//get daemon process ready
@@ -199,10 +243,12 @@ class initial_status extends abstract_status {
 		if (os.contains("windows")) {
 			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info), 1000*0, 1000*10);
 		}
-		//task 2: dev check
-		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*5, 1000*10);
+		//task 2: dev check only available on remote svn linked
+		if(client.switch_info.get_remote_corescript_linked()) {
+			misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*3, 1000*10);
+		}
 		//task 3: environ check
-		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*10, 1000*10);
+		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*6, 1000*10);
 	}
 	
 	//get tube server start and wait it ready

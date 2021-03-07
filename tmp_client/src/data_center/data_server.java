@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +27,7 @@ import info_parser.cmd_parser;
 import info_parser.ini_parser;
 import top_runner.run_status.exit_enum;
 import top_runner.run_status.state_enum;
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import utility_funcs.system_cmd;
 
@@ -61,6 +64,12 @@ import utility_funcs.system_cmd;
  * 					unattended = 0/1
  * 					stable_version = 0/1
  * 					start_time = xxxxx
+ * 
+ * 		tools   :   python = xxxx
+ * 					perl   = xxxx
+ *					ruby   = xxxx
+ *					git    = xxxx
+ *					svn    = xxxx
  * 
  * 	 preference :	thread_mode = xx
  * 					task_mode = xx
@@ -108,6 +117,50 @@ public class data_server extends Thread {
 		this.machine_runner = new machine_sync(switch_info);
 	}
 	
+	private String get_environ_tool_path(String tool) {
+		String which_cmd = new String("");
+		String host_run = System.getProperty("os.name").toLowerCase();
+		if (host_run.startsWith("windows")) {
+			which_cmd = public_data.TOOLS_WHICH + " ";
+		} else {
+			which_cmd = "which ";
+		}
+		String cmd = new String(which_cmd + " " + tool);
+		ArrayList<String> excute_retruns = new ArrayList<String>();
+		String path_str = new String("unknown");
+		try {
+			excute_retruns.addAll(system_cmd.run(cmd));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			DATA_SERVER_LOGGER.error("Run command failed:" + cmd);
+			DATA_SERVER_LOGGER.error(e.toString());
+			for(Object item: e.getStackTrace()){
+				DATA_SERVER_LOGGER.error(item.toString());
+			}			
+		}
+		Pattern path_patt = Pattern.compile(tool, Pattern.CASE_INSENSITIVE);
+		for (String line : excute_retruns){
+		    if(line == null || line == "")
+		        continue;
+		    if(line.contains("which")){
+		    	continue;
+		    }
+			Matcher path_match = path_patt.matcher(line);
+			if (path_match.find()) {
+				path_str = line;
+				break;
+			}
+		}
+		if (path_str.equals("unknown")){
+			DATA_SERVER_LOGGER.error("Got unknown info for command:" + cmd);
+			for(String item: excute_retruns){
+				DATA_SERVER_LOGGER.error(item);
+			}
+		}
+		return path_str;
+	}
+	
 	private void initial_merge_client_data(HashMap<String, String> cmd_hash) {
 		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> machine_hash = new HashMap<String, HashMap<String, String>>();
@@ -134,7 +187,9 @@ public class data_server extends Thread {
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
 		machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
-		machine_data.putAll(config_hash.get("tmp_machine")); // configuration
+		if (config_hash.containsKey("tmp_machine")) {
+			machine_data.putAll(config_hash.get("tmp_machine")); // configuration
+		}
 		if(cmd_hash.containsKey("unattended")){				// add command line data
 			machine_data.put("unattended", cmd_hash.get("unattended"));
 		}
@@ -142,7 +197,58 @@ public class data_server extends Thread {
 			machine_data.put("debug", cmd_hash.get("debug"));
 		}
 		client_data.put("Machine", machine_data);
-		// 4. merge preference data (for software use):
+		// 4. merge tools data
+		// cmd >  conf > env > default
+		HashMap<String, String> tools_data = new HashMap<String, String>();
+		// Default
+		tools_data.put("python", public_data.DEF_PYTHON_PATH);
+		tools_data.put("perl", public_data.DEF_PERL_PATH);
+		tools_data.put("ruby", public_data.DEF_RUBY_PATH);
+		tools_data.put("svn", public_data.DEF_SVN_PATH);
+		tools_data.put("git", public_data.DEF_GIT_PATH);
+		// environ
+		String env_python = new String(get_environ_tool_path("python"));
+		if (data_check.str_file_check(env_python)) {
+			tools_data.put("python", env_python);
+		}
+		String env_perl = new String(get_environ_tool_path("perl"));
+		if (data_check.str_file_check(env_perl)) {
+			tools_data.put("perl", env_perl);
+		}
+		String env_ruby = new String(get_environ_tool_path("ruby"));
+		if (data_check.str_file_check(env_ruby)) {
+			tools_data.put("ruby", env_ruby);
+		}
+		String env_svn = new String(get_environ_tool_path("svn"));
+		if (data_check.str_file_check(env_svn)) {
+			tools_data.put("svn", env_svn);
+		}
+		String env_git = new String(get_environ_tool_path("git"));
+		if (data_check.str_file_check(env_git)) {
+			tools_data.put("git", env_git);
+		}
+		// config file
+		if(config_hash.containsKey("tmp_tools")) {
+			tools_data.putAll(config_hash.get("tmp_tools"));
+		}
+		// command line
+		if(cmd_hash.containsKey("python")){
+			tools_data.put("python", cmd_hash.get("python"));
+		}
+		if(cmd_hash.containsKey("perl")){
+			tools_data.put("perl", cmd_hash.get("perl"));
+		}
+		if(cmd_hash.containsKey("ruby")){
+			tools_data.put("ruby", cmd_hash.get("ruby"));
+		}
+		if(cmd_hash.containsKey("svn")){
+			tools_data.put("svn", cmd_hash.get("svn"));
+		}
+		if(cmd_hash.containsKey("git")){
+			tools_data.put("git", cmd_hash.get("git"));
+		}		
+		client_data.put("tools", tools_data);
+		// 5. merge preference data (for software use):
 		// command data > configuration data > default data in public_data
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.put("thread_mode", public_data.DEF_MAX_THREAD_MODE);
@@ -211,7 +317,7 @@ public class data_server extends Thread {
 			String section_name = section.next();
 			HashMap<String, String> section_data = new HashMap<String, String>();
 			section_data.putAll(client_data.get(section_name));
-			if (section_name.equals("System") || section_name.equals("CoreScript") || section_name.equals("Machine") || section_name.equals("preference")){
+			if (section_name.equals("System") || section_name.equals("CoreScript") || section_name.equals("Machine") || section_name.equals("tools") || section_name.equals("preference")){
 				continue;
 			}
 			HashMap<String, String> build_data = new HashMap<String, String>();
@@ -251,7 +357,10 @@ public class data_server extends Thread {
 			}
 			if (key.equalsIgnoreCase("system")) {
 				continue;
-			}			
+			}
+			if (key.equalsIgnoreCase("tools")) {
+				continue;
+			}
 			if (!client_hash.get(key).containsKey("max_insts")) {
 				continue;
 			}
@@ -424,7 +533,10 @@ public class data_server extends Thread {
 			}
 			if (section.equals("CoreScript")) {
 				continue;
-			}			
+			}
+			if (section.equals("tools")) {
+				continue;
+			}
 			Iterator<String> option_it = section_data.keySet().iterator();
 			while (option_it.hasNext()) {
 				String option = option_it.next();
@@ -458,7 +570,6 @@ public class data_server extends Thread {
 	private status_enum calculate_client_current_status(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		system_data.putAll(client_info.get_client_system_data());
-		
 		state_enum client_state = switch_info.get_client_run_state();
 		if (client_state.equals(state_enum.maintain)){
 			return status_enum.SUSPEND;

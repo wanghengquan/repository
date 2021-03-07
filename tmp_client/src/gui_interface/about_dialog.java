@@ -72,8 +72,8 @@ public class about_dialog extends JDialog implements ActionListener {
 		corescript.add("Core Version:");
 		String version = new String("");
 		String status = new String("");
-		version = client_info.get_client_corescript_data().get("version");
-		status = client_info.get_client_corescript_data().get("status");
+		version = client_info.get_client_corescript_data().getOrDefault("version", "NA");
+		status = client_info.get_client_corescript_data().getOrDefault("status", "NA");
 		corescript.add(version + "<" + status + ">");
 		about_data.add(corescript);
 		support_suite.add("Support Suite File:");

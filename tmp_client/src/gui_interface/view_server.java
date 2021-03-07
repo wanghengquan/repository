@@ -479,7 +479,7 @@ public class view_server extends Thread {
 		StringBuilder message = new StringBuilder("");
 		message.append("TMP client have wrong environment.");
 		message.append(line_separator);
-		message.append("Possible issues: Python/svn issue, no system resource.");
+		message.append("Possible issues: Python issue, no system resource.");
 		message.append(line_separator);
 		message.append("");
 		message.append(line_separator);

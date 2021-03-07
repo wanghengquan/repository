@@ -40,11 +40,12 @@ public class task_prepare {
 	}	
 	
 	protected Boolean get_task_case_ready(
+			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
 			){
 		Boolean task_path_ok = get_task_path_ready(task_data);
-		Boolean case_path_ok = get_case_path_ready(task_data);
-		Boolean script_path_ok = get_script_path_ready(task_data);
+		Boolean case_path_ok = get_case_path_ready(client_tools, task_data);
+		Boolean script_path_ok = get_script_path_ready(client_tools, task_data);
 		if (task_path_ok && case_path_ok && script_path_ok){
 			return true;
 		} else {
@@ -93,8 +94,8 @@ public class task_prepare {
 	}
 	
 	protected Boolean get_case_path_ready(
-			HashMap<String, HashMap<String, String>> task_data
-			){
+			HashMap<String, String> client_tools,
+			HashMap<String, HashMap<String, String>> task_data){
 		task_prepare_info.add(line_separator + ">>>Prepare case path:");
 		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
@@ -145,8 +146,7 @@ public class task_prepare {
 			return false;
 		}
 		//step 7: run source export
-		Boolean export_ok = run_src_export(
-				source_url, durl_type, dzip_type, source_version, user_name, pass_word, case_path, base_name);
+		Boolean export_ok = run_src_export(source_url, durl_type, dzip_type, source_version, user_name, pass_word, case_path, base_name, client_tools);
 		if (!export_ok) {
 			return false;
 		}
@@ -159,6 +159,7 @@ public class task_prepare {
 	}
 	
 	protected Boolean get_script_path_ready(
+			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
 			){
 		task_prepare_info.add(line_separator + ">>>Prepare script path:");
@@ -220,7 +221,7 @@ public class task_prepare {
 		}
 		//step 6: run script export
 		Boolean export_ok = run_src_export(
-				script_url, surl_type, szip_type, script_version, user_name, pass_word, script_path, script_base);
+				script_url, surl_type, szip_type, script_version, user_name, pass_word, script_path, script_base, client_tools);
 		if (!export_ok) {
 			return false;
 		}
@@ -642,11 +643,13 @@ public class task_prepare {
 			String user_name, 
 			String pass_word, 
 			String case_path,
-			String base_name) {
+			String base_name,
+			HashMap<String, String> client_tools) {
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		switch (url_type) {
 		case SVN:
-			cmd_array.add(get_svn_cmd_str(case_url, zip_type, ver_number, user_name, pass_word, case_path, base_name));
+			String svn_cmd = new String(client_tools.getOrDefault("svn", public_data.DEF_SVN_PATH));
+			cmd_array.add(get_svn_cmd_str(svn_cmd, case_url, zip_type, ver_number, user_name, pass_word, case_path, base_name));
 			break;
 		case HTTPS:
 			cmd_array.add(get_https_cmd_str(case_url, zip_type, case_path, base_name));
@@ -673,6 +676,7 @@ public class task_prepare {
 	}
     
 	private String get_svn_cmd_str(
+			String svn_cmd,
 			String case_url,
 			zip_enum zip_type,
 			String ver_number,
@@ -685,9 +689,9 @@ public class task_prepare {
 		//get export command
 		String cmd_str = new String("");
 		if (ver_number.length() > 0){
-			cmd_str = "svn export -r " + ver_number;
+			cmd_str = svn_cmd + " export -r " + ver_number;
 		} else {
-			cmd_str = "svn export";
+			cmd_str = svn_cmd + " export";
 		}
 		//get export path
 		String export_path = new String("");
@@ -989,6 +993,8 @@ public class task_prepare {
 	}
 
 	protected String[] get_launch_command(
+			Boolean corescript_link_status,
+			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
 			) {
 		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim().replaceAll("\\\\", "/");
@@ -999,14 +1005,23 @@ public class task_prepare {
 		//String base_name = task_data.get("Paths").get("base_name").trim();
 		String design_path = new String("");
 		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
-		//step 1: update default launch command design name
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
-		//step 2: update launch command command path
-		Pattern exe_patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe|sh|csh|bash))", Pattern.CASE_INSENSITIVE);
 		launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_space);
 		launch_cmd = launch_cmd.replaceAll("\\$case_path", " " + case_path);
-		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
+		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);		
+		//step 1: update command line tool path
+		for (String tool:client_tools.keySet()) {
+			Pattern tool_patt = Pattern.compile(String.format("^\\s*(%s)\\s", tool), Pattern.CASE_INSENSITIVE);
+			Matcher tool_match = tool_patt.matcher(launch_cmd);
+			if (tool_match.find()){
+				//update tool to abs path
+				//remove tool .exe to avoid future impacting in exe_patt replacing
+				launch_cmd = tool_match.replaceFirst(client_tools.get(tool).replace(".exe", "") + " ");
+			}
+		}
+		//step 2: update launch command command path
+		Pattern exe_patt = Pattern.compile("(?:^|\\s)(\\S*\\.(?:pl|py|rb|jar|class|bat|exe|sh|csh|bash))", Pattern.CASE_INSENSITIVE);
 		Matcher exe_match = exe_patt.matcher(launch_cmd);
 		String exe_path = new String("");
 		if (exe_match.find()){
@@ -1035,7 +1050,13 @@ public class task_prepare {
 			par_path_ok = true;
 		}		
 		if (!abs_path_ok && !ref_path_ok && !par_path_ok){
-			launch_cmd = exe_match.replaceFirst(" " + work_space + "/" + exe_path);
+			String corescript_path = new String("");
+			if(corescript_link_status) {
+				corescript_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+			} else {
+				corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR;
+			}	
+			launch_cmd = exe_match.replaceFirst(" " + corescript_path.replace(public_data.CORE_SCRIPT_NAME, "") + exe_path);
 		}
 		//step 3: update launch command design path(if have)
 		Pattern src_patt = Pattern.compile("(?:=|\\s)(" + case_name + ")\\s");
@@ -1094,6 +1115,7 @@ public class task_prepare {
 	}	
 	
 	protected HashMap<String, String> get_launch_environment(
+			Boolean corescript_link_status,
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data) {
 		HashMap<String, String> run_env = new HashMap<String, String>();
@@ -1102,10 +1124,19 @@ public class task_prepare {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
 		// put system level default tools path
-		run_env.put("EXTERNAL_PYTHON_PATH", System.getProperty("python"));
+		String python_path = new String();
+		python_path = client_data.get("tools").getOrDefault("python", public_data.DEF_PYTHON_PATH);
+		File python_fobj = new File(python_path);
+		python_fobj.getParent().replaceAll("\\\\", "/");
+		run_env.put("EXTERNAL_PYTHON_PATH", python_fobj.getParent().replaceAll("\\\\", "/"));
 		// put external core script path
 		String work_space = task_data.get("Paths").get("work_space").trim();
-		String core_path = new String(work_space + "/" + public_data.CORE_SCRIPT_NAME);
+		String core_path = new String(public_data.CORE_SCRIPT_NAME);
+		if (corescript_link_status) {
+			core_path = work_space + "/" + public_data.CORE_SCRIPT_NAME;
+		} else {
+			core_path = public_data.LOCAL_CORE_SCRIPT_DIR;
+		}
 		run_env.put("EXTERNAL_DEV_PATH", core_path);
 		// put environ for software requirements in sub process
 		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);

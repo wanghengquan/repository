@@ -26,10 +26,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.25"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21225; //version for code use
-	public final static String BASE_BUILDDATE = "2021/02/08";
-	public final static String BASE_SUITEFILEVERSION = "1.18";
+	public final static String BASE_CURRENTVERSION = "2.12.26"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21226; //version for code use
+	public final static String BASE_BUILDDATE = "2021/03/08";
+	public final static String BASE_SUITEFILEVERSION = "1.19";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -38,14 +38,16 @@ public class public_data {
 	public final static String BASE_SVNBASEVERSION = "1.4";
 
 	// ========================
-	// Soft ware bin path
+	// Software bin path
 	public final static String SW_HOME_PATH = get_home_path();
 
 	// ========================
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
 	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
-	public final static String RUN_LIMITATION_SPACE = "5";//client suspend when disk space less than this value
+	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
+	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
+	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
 	
 	// ========================
 	// log setting
@@ -93,8 +95,10 @@ public class public_data {
 	// ========================
 	// Remote core script path
 	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME;
-	
+	public final static String CORE_SCRIPT_REMOTE_URL = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME;
+	public final static String REMOTE_CORE_SCRIPT_DIR = "$work_path/" + CORE_SCRIPT_NAME;
+	public final static String LOCAL_CORE_SCRIPT_DIR = SW_HOME_PATH + "/tools/corescripts/" + CORE_SCRIPT_NAME;
+			
 	// ========================
 	// workspace folder configuration, real path = work_space + following folder
 	// name
@@ -238,6 +242,12 @@ public class public_data {
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	public final static int DEF_SCAN_CMD_TAKE_LINE = 10;
 	public final static int DEF_GUI_BUILD_SHOW_LINE = 50;
+	// Tools
+	public final static String DEF_PYTHON_PATH = "python";
+	public final static String DEF_PERL_PATH = "perl";
+	public final static String DEF_RUBY_PATH = "ruby";
+	public final static String DEF_SVN_PATH = "svn";
+	public final static String DEF_GIT_PATH = "git";	
 	// Machine
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
@@ -299,7 +309,7 @@ public class public_data {
 		} else {
 			return "Bitstream Charter";
 		}
-	}	
+	}
 	
 	/*
 	 * main entry for test
@@ -343,5 +353,9 @@ public class public_data {
 		String queue_name = new String("555@t1r1_run_55555"); 
 		queue_name = queue_name.split("@.+?_")[1];
 		System.out.println(queue_name);
+		System.out.println("====");
+		System.out.println(System.getProperty("os.name"));
+		System.out.println(System.getProperty("os.arch"));
+		System.out.println(System.getProperty("os.version"));
 	}
 }

@@ -47,54 +47,12 @@ public class env_checker extends TimerTask {
 	}
 	
 	public env_checker() {
-	}	
-	
-	private String get_tools_path(String tool) {
-		String which_cmd = new String("");
-		String host_run = System.getProperty("os.name").toLowerCase();
-		if (host_run.startsWith("windows")) {
-			which_cmd = public_data.TOOLS_WHICH + " ";
-		} else {
-			which_cmd = "which ";
-		}
-		String cmd = new String(which_cmd + " " + tool);
-		ArrayList<String> excute_retruns = new ArrayList<String>();
-		String path_str = new String("unknown");
-		try {
-			excute_retruns.addAll(system_cmd.run(cmd));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("Run command failed:" + cmd);
-			ENV_CHECKER_LOGGER.error(e.toString());
-			for(Object item: e.getStackTrace()){
-				ENV_CHECKER_LOGGER.error(item.toString());
-			}			
-		}
-		Pattern path_patt = Pattern.compile(tool, Pattern.CASE_INSENSITIVE);
-		for (String line : excute_retruns){
-		    if(line == null || line == "")
-		        continue;
-		    if(line.contains("which")){
-		    	continue;
-		    }
-			Matcher path_match = path_patt.matcher(line);
-			if (path_match.find()) {
-				path_str = line;
-				break;
-			}
-		}
-		if (path_str.equals("unknown")){
-			ENV_CHECKER_LOGGER.error("Got unknown info for command:" + cmd);
-			for(String item: excute_retruns){
-				ENV_CHECKER_LOGGER.error(item);
-			}
-		}
-		return path_str;
 	}
 	
 	private String get_python_version() {
-		String cmd = "python --version ";
+		String python_path = new String("");
+		python_path = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
+		String cmd = python_path + " --version ";
 		// Python 2.7.2
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		String ver_str = new String("unknown");
@@ -107,9 +65,9 @@ public class env_checker extends TimerTask {
 			ENV_CHECKER_LOGGER.error(e.toString());
 			for(Object item: e.getStackTrace()){
 				ENV_CHECKER_LOGGER.error(item.toString());
-			}			
+			}
 		}
-		Pattern version_patt = Pattern.compile("python\\s(\\d\\.\\d+.\\d+)", Pattern.CASE_INSENSITIVE);
+		Pattern version_patt = Pattern.compile("python\\s(\\d*\\.\\d*.\\d*)", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
 		    if(line == null || line == "")
 		        continue;
@@ -134,7 +92,9 @@ public class env_checker extends TimerTask {
 	}
 
 	private String get_svn_version() {
-		String cmd = "svn --version";
+		String svn_path = new String("");
+		svn_path = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
+		String cmd = svn_path + " --version";
 		// svn, version 1.6.11 (r934486)
 		String ver_str = "unknown";
 		ArrayList<String> excute_retruns = new ArrayList<String>();
@@ -177,22 +137,6 @@ public class env_checker extends TimerTask {
 			return false;
 		}
 	}
-
-	private Boolean tool_path_check(String tool_name) {
-		String tool_path = get_tools_path(tool_name);
-		if (tool_path.equals("unknown")) {
-			ENV_CHECKER_LOGGER.error("Get " + tool_name + " path error");
-			return false;
-		}
-		ENV_CHECKER_LOGGER.info(tool_name.toUpperCase() + " default path:" + tool_path);
-		File tool = new File(tool_path);
-		if (!tool.canExecute()){
-			ENV_CHECKER_LOGGER.error(tool_name.toUpperCase() + " is not executable");
-			return false;
-		}
-		System.setProperty(tool_name.toLowerCase(), tool.getParent().replaceAll("\\\\", "/"));
-		return true;
-	}
 	
 	private Boolean python_version_check() {
 		String cur_ver = get_python_version();
@@ -211,7 +155,9 @@ public class env_checker extends TimerTask {
 	}
 
 	private Boolean python_environ_check() {
-		String cmd = "python " + public_data.TOOLS_PY_ENV;
+		String python_path = new String("");
+		python_path = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
+		String cmd = python_path + " " + public_data.TOOLS_PY_ENV;
 		// Python ok
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		Boolean py_ok = Boolean.valueOf(false);
@@ -235,6 +181,7 @@ public class env_checker extends TimerTask {
 		return py_ok;
 	}		
 	
+	@SuppressWarnings("unused")
 	private Boolean svn_version_check() {
 		String cur_ver = get_svn_version();
 		if (cur_ver.equals("unknown")) {
@@ -336,16 +283,10 @@ public class env_checker extends TimerTask {
 		}
 	}
 	
-	public void report_default_tools(){
-		tool_path_check("python");
-		tool_path_check("svn");
-	}
-	
 	public Boolean do_self_check(String work_path) {
 		Boolean check_result = Boolean.valueOf(false);
 		Boolean python_pass = Boolean.valueOf(false);
 		Boolean python_env = Boolean.valueOf(false);
-		Boolean svn_pass = Boolean.valueOf(false);
 		Boolean writable_pass = Boolean.valueOf(false);
 		int check_counter = 0;
 		//to minimize the wrong warning any success in 3 try will be considered as env ok.
@@ -355,10 +296,9 @@ public class env_checker extends TimerTask {
 				break;
 			}
 			python_pass = python_version_check();
-			python_env = python_environ_check();
-			svn_pass = svn_version_check();	
+			python_env = python_environ_check();	
 			writable_pass = work_path_check(work_path);
-			if (python_pass && python_env && svn_pass && writable_pass) {
+			if (python_pass && python_env && writable_pass) {
 				check_result = true;
 				break;
 			} else {
@@ -373,10 +313,9 @@ public class env_checker extends TimerTask {
 		}
 		if (!check_result) {
 			ENV_CHECKER_LOGGER.error("==Self Check failed==" + time_info.get_date_time());
-			ENV_CHECKER_LOGGER.error("Client Python version:" + python_pass.toString());
-			ENV_CHECKER_LOGGER.error("Client Python environ:" + python_env.toString());
-			ENV_CHECKER_LOGGER.error("Client SVN version:" + svn_pass.toString());
-			ENV_CHECKER_LOGGER.error("Work Path writable Check:" + writable_pass.toString());
+			ENV_CHECKER_LOGGER.error("Client Python Version:" + python_pass.toString());
+			ENV_CHECKER_LOGGER.error("Client Python Environ:" + python_env.toString());
+			ENV_CHECKER_LOGGER.error("Work Path Writable Check:" + writable_pass.toString());
 			ENV_CHECKER_LOGGER.error("Work Path:" + work_path);
 			ENV_CHECKER_LOGGER.error("");
 		}
