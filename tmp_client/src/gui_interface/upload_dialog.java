@@ -54,7 +54,9 @@ public class upload_dialog extends JFrame{
 	private Process run_processer;
 	String work_space = new String();
 	
-	public upload_dialog(client_data client_info){
+	public upload_dialog(
+			client_data client_info
+			){
 		//super(main_view, "Suite Upload", true);
 		super();
 		this.client_info = client_info;
@@ -222,7 +224,11 @@ public class upload_dialog extends JFrame{
 		public void run() {
 			// TODO Auto-generated method stub
 			ArrayList<String> cmd_args = new ArrayList<String>();
-			cmd_args.add("python");
+			String python_cmd = new String(public_data.DEF_PYTHON_PATH);
+			if(client_info.get_client_data().containsKey("tools")){
+				python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);	
+			}
+			cmd_args.add(python_cmd);
 			cmd_args.add(public_data.TOOLS_UPLOAD);
 			cmd_args.add("-f");
 			cmd_args.add(file);
