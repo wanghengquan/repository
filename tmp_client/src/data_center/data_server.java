@@ -133,11 +133,7 @@ public class data_server extends Thread {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			DATA_SERVER_LOGGER.error("Run command failed:" + cmd);
-			DATA_SERVER_LOGGER.error(e.toString());
-			for(Object item: e.getStackTrace()){
-				DATA_SERVER_LOGGER.error(item.toString());
-			}			
+			DATA_SERVER_LOGGER.warn("Run command failed:" + cmd);			
 		}
 		Pattern path_patt = Pattern.compile(tool, Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
@@ -153,10 +149,7 @@ public class data_server extends Thread {
 			}
 		}
 		if (path_str.equals("unknown")){
-			DATA_SERVER_LOGGER.error("Got unknown info for command:" + cmd);
-			for(String item: excute_retruns){
-				DATA_SERVER_LOGGER.error(item);
-			}
+			DATA_SERVER_LOGGER.warn("No tool find according ENV PATH setting:" + cmd);
 		}
 		return path_str;
 	}
@@ -610,7 +603,7 @@ public class data_server extends Thread {
 		config_runner.start();
 		machine_runner.start();
 		while (true) {
-			if (machine_sync.machine_hash.containsKey("System") && machine_sync.machine_hash.get("System").size() > 3) {
+			if (machine_sync.machine_hash.containsKey("System") && config_sync.config_hash.containsKey("tmp_preference")) {
 				break;
 			}
 		}
