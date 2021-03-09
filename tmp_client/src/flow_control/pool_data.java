@@ -150,7 +150,8 @@ public class pool_data {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void fresh_sys_call() {
+	public synchronized void fresh_sys_call(
+			HashMap<String,String> tools_data) {
 		Iterator<String> call_map_it = call_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
@@ -180,11 +181,11 @@ public class pool_data {
 				}
 				if((boolean) hash_data.get(pool_attr.call_canceled)){
 					call_output.add(">>>Canceled extra run:");
-					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir)));
+					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir), tools_data));
 				}
 				if (is_child_process_timeout(call_output)){
 					call_output.add(">>>Timeout extra run:");
-					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir)));
+					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir), tools_data));
 				}
 			} else {
 				hash_data.put(pool_attr.call_status, call_state.PROCESSIONG);
@@ -221,9 +222,11 @@ public class pool_data {
 	}	
 	
 	private ArrayList<String> get_cancel_extra_run_output(
-			String case_path){
+			String case_path,
+			HashMap<String,String> tools_data){
 		ArrayList<String> output_data = new ArrayList<String>();
-		String run_cmd = new String("python " + public_data.CASE_TIMEOUT_RUN);
+		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String run_cmd = new String(python_cmd + " " + public_data.CASE_TIMEOUT_RUN);
 		try {
 			output_data.addAll(system_cmd.run(run_cmd, case_path));
 		} catch (Exception e) {

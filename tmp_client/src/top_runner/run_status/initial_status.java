@@ -241,7 +241,7 @@ class initial_status extends abstract_status {
 		//task 1: kill process
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
-			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info), 1000*0, 1000*10);
+			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info, this.client.client_info), 1000*0, 1000*10);
 		}
 		//task 2: dev check only available on remote svn linked
 		if(client.switch_info.get_remote_corescript_linked()) {
