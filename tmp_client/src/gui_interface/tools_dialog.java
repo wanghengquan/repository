@@ -70,7 +70,7 @@ public class tools_dialog extends JDialog implements ActionListener {
 		tools_panel.add(script_title);
 		//step 1 :input python line
 		jl_python  = new JLabel("Python:");
-		jl_python.setToolTipText("Must item,Python path for Client to invoke when 'python' command encountered.");
+		jl_python.setToolTipText("Must item,Python path for Client to invoke when 'python' command encountered.Both Python2.x and 3.x supported");
 		jt_python = new JTextField(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
 		jb_python = new JButton("Select");
 		jb_python.addActionListener(this);
