@@ -156,7 +156,8 @@ public class result_waiter extends Thread {
 					save_path,
 					cmd_status,
 					"keep",
-					result_keep);
+					result_keep,
+					client_info.get_client_tools_data());
 			Boolean create_status = post_info.add_postrun_call(call_obj, queue_name, case_id, public_data.DEF_CLEANUP_TASK_TIMEOUT);
 			if (!create_status){
 				post_report_list.add("Post run task skipped, no post run system/disk cleanup will be run.");
@@ -284,7 +285,7 @@ public class result_waiter extends Thread {
 	private Boolean fresh_thread_pool_data(){
 		Boolean run_status = Boolean.valueOf(true);
 		//fresh pool call map data
-		pool_info.fresh_sys_call();
+		pool_info.fresh_sys_call(client_info.get_client_tools_data());
 		post_info.fresh_postrun_call();
 		//clean post run map data (sys call map will be clean later)
 		clean_postrun_map_data();

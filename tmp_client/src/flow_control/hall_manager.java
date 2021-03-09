@@ -222,8 +222,8 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
-		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
+		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		//HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		// report Captured queue list
 		ArrayList<String> captured_queue_list = new ArrayList<String>();
 		captured_queue_list.addAll(task_info.get_captured_admin_queues_treemap().keySet());

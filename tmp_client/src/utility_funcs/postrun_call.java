@@ -12,6 +12,7 @@ package utility_funcs;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.FileUtils;
@@ -32,6 +33,7 @@ public class postrun_call implements Callable<Object> {
 	private task_enum cmd_status;
 	private String local_clean; //auto, keep, remove. cleanup the local folder
 	private String result_keep; //auto, zipped, unzipped .how to copy case wi/wo zip
+	private HashMap<String, String> tools_data;
 	public ArrayList<String> run_msg = new ArrayList<String>();
 	private String line_separator = System.getProperty("line.separator");
 
@@ -45,7 +47,8 @@ public class postrun_call implements Callable<Object> {
 			String save_path,
 			task_enum cmd_status,
 			String local_clean,
-			String result_keep) {
+			String result_keep,
+			HashMap<String, String> tools_data) {
 		this.case_path = case_path;
 		this.report_path = report_path;
 		this.save_space = save_space;
@@ -56,6 +59,7 @@ public class postrun_call implements Callable<Object> {
 		this.cmd_status = cmd_status;
 		this.local_clean = local_clean;
 		this.result_keep = result_keep;
+		this.tools_data = tools_data;
 	}
 
 	public Object call() throws Exception {
@@ -301,7 +305,8 @@ public class postrun_call implements Callable<Object> {
 	}
 	
 	private Boolean run_process_cleanup(String clean_work_path) {
-		String cmd = "python " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		String pyton_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String cmd = pyton_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
 			excute_retruns = system_cmd.run(cmd);
