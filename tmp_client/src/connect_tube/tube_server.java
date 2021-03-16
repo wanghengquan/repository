@@ -388,7 +388,7 @@ public class tube_server extends Thread {
 		Iterator<String> client_hash_it = client_hash.keySet().iterator();
 		while (client_hash_it.hasNext()) {
 			String key_name = client_hash_it.next();
-			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("preference") || key_name.equals("CoreScript")) {
+			if (key_name.equals("Machine") || key_name.equals("System") || key_name.equals("preference") || key_name.equals("CoreScript")|| key_name.equals("tools")) {
 				continue;
 			}
 			Set<String> value_set = client_hash.get(key_name).keySet();
