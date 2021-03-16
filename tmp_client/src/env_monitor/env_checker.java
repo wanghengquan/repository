@@ -25,6 +25,7 @@ import data_center.switch_data;
 import top_runner.run_status.exit_enum;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
+import utility_funcs.version_info;
 
 
 public class env_checker extends TimerTask {
@@ -49,104 +50,17 @@ public class env_checker extends TimerTask {
 	public env_checker() {
 	}
 	
-	private String get_python_version() {
-		String python_path = new String("");
-		python_path = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
-		String cmd = python_path + " --version ";
-		// Python 2.7.2
-		ArrayList<String> excute_retruns = new ArrayList<String>();
-		String ver_str = new String("unknown");
-		try {
-			excute_retruns.addAll(system_cmd.run(cmd));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("Run command failed:" + cmd);
-			ENV_CHECKER_LOGGER.error(e.toString());
-			for(Object item: e.getStackTrace()){
-				ENV_CHECKER_LOGGER.error(item.toString());
-			}
-		}
-		Pattern version_patt = Pattern.compile("python\\s(\\d*\\.\\d*.\\d*)", Pattern.CASE_INSENSITIVE);
-		for (String line : excute_retruns){
-		    if(line == null || line == "")
-		        continue;
-			Matcher version_match = version_patt.matcher(line);
-			if (version_match.find()) {
-				ver_str = version_match.group(1);
-				break;
-			}
-		}
-		if (ver_str.equals("unknown")){
-			ENV_CHECKER_LOGGER.error("Got unknown Python version. command returns:");
-			for(String item: excute_retruns){
-				ENV_CHECKER_LOGGER.error(item);
-			}
-		}
-		return ver_str;
-	}
-	
-	private String get_java_version() {
-		String ver_str = System.getProperty("java.version");
-		return ver_str;
-	}
-
-	private String get_svn_version() {
-		String svn_path = new String("");
-		svn_path = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
-		String cmd = svn_path + " --version";
-		// svn, version 1.6.11 (r934486)
-		String ver_str = "unknown";
-		ArrayList<String> excute_retruns = new ArrayList<String>();
-		try {
-			excute_retruns.addAll(system_cmd.run(cmd));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("ENV svn run command failed:" + cmd);
-			ENV_CHECKER_LOGGER.error(e.toString());
-			for(Object item: e.getStackTrace()){
-				ENV_CHECKER_LOGGER.error(item.toString());
-			}		
-		}
-		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d+\\.\\d+)", Pattern.CASE_INSENSITIVE);
-		for (String line : excute_retruns){
-            if(line == null || line == "")
-                continue;
-			Matcher version_match = version_patt.matcher(line);
-			if (version_match.find()) {
-				ver_str = version_match.group(1);
-				break;
-			}
-		}
-		return ver_str;
-	}
-
-	@SuppressWarnings("unused")
-	private Boolean java_version_check() {
-		String cur_ver = get_java_version();
-		if (cur_ver.equals("unknown")) {
-			return false;
-		}
-		String[] ver_array = cur_ver.split("\\.");
-		String cur_ver_str = ver_array[0] + "." + ver_array[1];
-		if (version_suitable_check(public_data.BASE_JAVABASEVERSION, cur_ver_str, null)) {
-			return true;
-		} else {
-			ENV_CHECKER_LOGGER.error("Java version out of scope." + cur_ver_str);
-			return false;
-		}
-	}
-	
 	private Boolean python_version_check() {
-		String cur_ver = get_python_version();
+		String python_cmd = new String("");
+		python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
+		String cur_ver = version_info.get_python_version(python_cmd);
 		if (cur_ver.equals("unknown")) {
-			ENV_CHECKER_LOGGER.error("Get python version error: unknown version");
+			ENV_CHECKER_LOGGER.error("Get Python version error: unknown version");
 			return false;
 		}
 		String[] ver_array = cur_ver.split("\\.");
 		String cur_ver_str = ver_array[0] + "." + ver_array[1];
-		if (version_suitable_check(public_data.BASE_PYTHONBASEVERSION, cur_ver_str, public_data.BASE_PYTHONMAXVERSION)) {
+		if (version_info.version_suitable_check(public_data.BASE_PYTHONBASEVERSION, cur_ver_str, public_data.BASE_PYTHONMAXVERSION)) {
 			return true;
 		} else {
 			ENV_CHECKER_LOGGER.error("Python version out of scope:" + cur_ver_str);
@@ -166,7 +80,7 @@ public class env_checker extends TimerTask {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("Python env check error out");
+			ENV_CHECKER_LOGGER.error("Python environment check error out");
 		}
 		Pattern ok_patt = Pattern.compile("python\\s*ok", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
@@ -179,99 +93,6 @@ public class env_checker extends TimerTask {
 			}
 		}
 		return py_ok;
-	}		
-	
-	@SuppressWarnings("unused")
-	private Boolean svn_version_check() {
-		String cur_ver = get_svn_version();
-		if (cur_ver.equals("unknown")) {
-			return false;
-		}
-		String[] ver_array = cur_ver.split("\\.");
-		String cur_ver_str = ver_array[0] + "." + ver_array[1];
-		if (version_suitable_check(public_data.BASE_SVNBASEVERSION, cur_ver_str, null)) {
-			return true;
-		} else {
-			ENV_CHECKER_LOGGER.error("SVN version out of scope:" + cur_ver_str);
-			return false;
-		}
-	}
-	
-	private Boolean version_suitable_check(
-			String min_version,
-			String cur_version,
-			String max_version) {
-		//This function used to do version
-		//input: min version requirements, xx.xx
-		//		 cur version for check, xx.xx
-		//       max version requirements, xx.xx
-		//output: true or false
-		Boolean ver_status = Boolean.valueOf(false);
-		if (min_version == null || min_version == "") {
-			ENV_CHECKER_LOGGER.error("Min version error.");
-			return ver_status;
-		}
-		if (cur_version == null || cur_version == "") {
-			ENV_CHECKER_LOGGER.error("Current version error.");
-			return ver_status;
-		}
-		if (!min_version.contains(".")) {
-			ENV_CHECKER_LOGGER.error("Min version wrong format:" + min_version + ".");
-			return ver_status;
-		}		
-		if (!cur_version.contains(".")) {
-			ENV_CHECKER_LOGGER.error("Current version wrong format:" + cur_version + ".");
-			return ver_status;
-		}
-		if (max_version == null || max_version == "") {
-			ENV_CHECKER_LOGGER.info("Max version not given.");
-		} else {
-			if (!max_version.contains(".")) {
-				ENV_CHECKER_LOGGER.error("Max version wrong format:" + max_version + ".");
-				return ver_status;
-			}
-		}
-		//data parser
-		String[] min_array = min_version.split("\\.");
-		int min_main = Integer.valueOf(min_array[0]);
-		int min_sub = Integer.valueOf(min_array[1]);
-		String[] cur_array = cur_version.split("\\.");
-		int cur_main = Integer.valueOf(cur_array[0]);
-		int cur_sub = Integer.valueOf(cur_array[1]);
-		//cur version >= min version verification
-		if (min_main > cur_main) {
-			ver_status = false;
-		} else if (min_main < cur_main) {
-			ver_status = true;
-		} else {
-			if (min_sub > cur_sub) {
-				ver_status = false;
-			} else {
-				ver_status = true;
-			}
-		}
-		if (ver_status.equals(false)) {
-			return ver_status;
-		}
-		//cur version <= max
-		if (max_version == null || max_version == "") {
-			return ver_status;
-		}
-		String[] max_array = max_version.split("\\.");
-		int max_main = Integer.valueOf(max_array[0]);
-		int max_sub = Integer.valueOf(max_array[1]);
-		if (cur_main > max_main) {
-			ver_status = false;
-		} else if (cur_main < max_main) {
-			ver_status = true;
-		} else {
-			if (cur_sub > max_sub) {
-				ver_status = false;
-			} else {
-				ver_status = true;
-			}
-		}
-		return ver_status;		
 	}
 	
 	private Boolean work_path_check(String check_path) {

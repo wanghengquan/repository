@@ -28,7 +28,7 @@ import xml.parsers.expat
 from xml.dom import minidom
 try:
     # python2.4
-    from cStringIO import StringIO
+    from io import StringIO
 except:
     pass
 try:
@@ -259,7 +259,7 @@ class Xlsx2csv:
                 outfile.close()
 
     def _filehandle(self, filename):
-        for name in filter(lambda f: f.lower() == filename.lower(), self.ziphandle.namelist()):
+        for name in [f for f in self.ziphandle.namelist() if f.lower() == filename.lower()]:
             # python2.4 fix
             if not hasattr(self.ziphandle, "open"):
                 return StringIO(self.ziphandle.read(name))
@@ -514,7 +514,7 @@ class Sheet:
             mergeCells = doc.getElementsByTagName("mergeCell")
         for mergeCell in mergeCells:
             attrs = mergeCell._attrs
-            if 'ref' in attrs.keys():
+            if 'ref' in list(attrs.keys()):
                 rangeStr = attrs['ref'].value
                 rng = rangeStr.split(":")
                 if len(rng) > 1:
@@ -554,7 +554,7 @@ class Sheet:
         for hlink in hiperlinkNodes:
             attrs = hlink._attrs
             ref = rId = None
-            for k in attrs.keys():
+            for k in list(attrs.keys()):
                 if k == "ref":
                     ref = str(attrs[k].value)
                 if k.endswith(":id"):
@@ -599,7 +599,7 @@ class Sheet:
                     format_str = STANDARD_FORMATS[xfs_numfmt]
                 # get format type
                 if not format_str:
-                    print("unknown format %s at %d" %(format_str,xfs_numfmt))
+                    print(("unknown format %s at %d" %(format_str,xfs_numfmt)))
                     return
                 format_type = None
                 if format_str in FORMATS:
@@ -698,8 +698,8 @@ class Sheet:
                     if self.py3:
                         hyperlink = hyperlink.decode("utf-8")
                     d = "<a href='" + hyperlink + "'>" + d + "</a>"
-            if self.colNum + self.rowNum in self.mergeCells.keys():
-                if 'copyFrom' in self.mergeCells[self.colNum + self.rowNum].keys() and self.mergeCells[self.colNum + self.rowNum]['copyFrom'] == self.colNum + self.rowNum:
+            if self.colNum + self.rowNum in list(self.mergeCells.keys()):
+                if 'copyFrom' in list(self.mergeCells[self.colNum + self.rowNum].keys()) and self.mergeCells[self.colNum + self.rowNum]['copyFrom'] == self.colNum + self.rowNum:
                     self.mergeCells[self.colNum + self.rowNum]['value'] = d
                 else:
                     d = self.mergeCells[self.mergeCells[self.colNum + self.rowNum]['copyFrom']]['value']
@@ -707,9 +707,9 @@ class Sheet:
             self.columns[t - 1 + self.colIndex] = d
 
         if self.in_row and (name == 'row' or (has_namespace and name.endswith(':row'))):
-            if len(self.columns.keys()) > 0:
+            if len(list(self.columns.keys())) > 0:
                 d = [""] * (max(self.columns.keys()) + 1)
-                for k in self.columns.keys():
+                for k in list(self.columns.keys()):
                     val = self.columns[k]
                     if not self.py3:
                         val = val.encode("utf-8")
@@ -783,11 +783,11 @@ def convert_recursive(path, sheetid, outfile, kwargs):
             if len(outfilepath) == 0 and fullpath.lower().endswith(".xlsx"):
                 outfilepath = fullpath[:-4] + 'csv'
 
-            print("Converting %s to %s" %(fullpath, outfilepath))
+            print(("Converting %s to %s" %(fullpath, outfilepath)))
             try:
                 Xlsx2csv(fullpath, **kwargs).convert(outfilepath, sheetid)
             except zipfile.BadZipfile:
-                print("File %s is not a zip file" %fullpath)
+                print(("File %s is not a zip file" %fullpath))
 
 def main(arguments_list):
     try:
