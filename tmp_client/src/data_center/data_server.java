@@ -604,7 +604,9 @@ public class data_server extends Thread {
 		machine_runner.start();
 		while (true) {
 			if (machine_sync.machine_hash.containsKey("System") && config_sync.config_hash.containsKey("tmp_preference")) {
-				break;
+				if (machine_sync.machine_hash.get("System").containsKey("mem") && machine_sync.machine_hash.get("System").containsKey("cpu")) {
+					break;
+				}
 			}
 		}
  		// initial 2 : generate initial client data
