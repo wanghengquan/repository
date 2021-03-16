@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.29"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21229; //version for code use
-	public final static String BASE_BUILDDATE = "2021/03/09";
+	public final static String BASE_CURRENTVERSION = "2.12.30"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21230; //version for code use
+	public final static String BASE_BUILDDATE = "2021/03/16";
 	public final static String BASE_SUITEFILEVERSION = "1.19";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -145,8 +145,8 @@ public class public_data {
 	public final static String TOOLS_WHICH = SW_HOME_PATH + "/tools/which.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
-	//public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
-	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
+	public final static String TOOLS_UPLOAD2 = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
+	public final static String TOOLS_UPLOAD3 = SW_HOME_PATH + "/tools/upload3/excel2testrail.py";
 
 	// ========================
 	// external documents based on software bin path
@@ -193,6 +193,11 @@ public class public_data {
 	public final static String SVN_PWD = "welcome";
 	public final static String SVN_URL = "http://lsh-tmp";
 
+	// ========================
+	// link to TMP server Database default user shown here
+	public final static String TMP_DATABASE_USER = "public@latticesemi.com";
+	public final static String TMP_DATABASE_PWD = "lattice";
+	
 	// ========================
 	// link to FTP default user shown here
 	public final static String FTP_USER = "guest";
