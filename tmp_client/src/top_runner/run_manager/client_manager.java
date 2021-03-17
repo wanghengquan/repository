@@ -108,7 +108,7 @@ public class client_manager extends Thread  {
 	
 	private Boolean get_cpu_overload(){
 		Boolean status = Boolean.valueOf(false);
-		String cpu_used = machine_sync.get_cpu_usage();
+		String cpu_used = client_info.get_client_system_data().getOrDefault("cpu", "NA");
 		int cpu_used_int = 0;
 		try{
 			cpu_used_int = Integer.parseInt(cpu_used);
@@ -123,7 +123,7 @@ public class client_manager extends Thread  {
 	
 	private Boolean get_mem_overload(){
 		Boolean status = Boolean.valueOf(false);
-		String mem_used = machine_sync.get_mem_usage();
+		String mem_used = client_info.get_client_system_data().getOrDefault("mem", "NA");
 		int mem_used_int = 0;
 		try{
 			mem_used_int = Integer.parseInt(mem_used);

@@ -97,11 +97,11 @@ public class maintain_status extends abstract_status {
 				implements_env_issue_propagate();
 				break;				
 			case cpu:
-				client.STATUS_LOGGER.warn(">>>CPU:" + machine_sync.get_cpu_usage());
+				client.STATUS_LOGGER.warn(">>>CPU:" + client.client_info.get_client_system_data().getOrDefault("cpu", "NA"));
 				implements_client_cpu_action();
 				break;
 			case mem:
-				client.STATUS_LOGGER.warn(">>>MEM:" + machine_sync.get_mem_usage());
+				client.STATUS_LOGGER.warn(">>>MEM:" + client.client_info.get_client_system_data().getOrDefault("mem", "NA"));
 				implements_client_mem_action();
 				break;
 			case space:
