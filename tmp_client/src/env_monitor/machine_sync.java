@@ -86,7 +86,7 @@ public class machine_sync extends Thread {
 		return start_time;
 	}
 	
-	public String get_os_type() {
+	private String get_os_type() {
 		String os = System.getProperty("os.name").toLowerCase();
 		String os_type = new String();
 		if (os.contains("windows")) {
@@ -166,7 +166,7 @@ public class machine_sync extends Thread {
 		return disk_avail;
 	}
 	
-	public static String get_cpu_usage() {
+	private String get_cpu_usage() {
 		String cpu_usage = new String("NA");
 		CentralProcessor processor = hw_info.getProcessor();
         long[] prevTicks = processor.getSystemCpuLoadTicks();
@@ -209,7 +209,7 @@ public class machine_sync extends Thread {
 		}
 	}
 
-	public static String get_mem_usage() {
+	private String get_mem_usage() {
 		String mem_usage = new String("NA");
 		GlobalMemory memory = hw_info.getMemory();
 		long current_data = (memory.getTotal() - memory.getAvailable()) * 100 / memory.getTotal();
@@ -392,7 +392,6 @@ public class machine_sync extends Thread {
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		System.out.println(machine_sync.get_mem_usage());
 		machine_sync.test_print();
 		/*
 		client_update.start();
