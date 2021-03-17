@@ -120,8 +120,8 @@ public class task_report {
 			// remote send
 			rmq_tube rmq_runner = new rmq_tube();
 			String rmq_runtime_str = xml_parser.create_runtime_document_string(remote_data);
-			report_status = rmq_runner.exchange_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
-			export_data.debug_disk_client_out_runtime(rmq_runtime_str, client_info);
+			report_status = rmq_runner.basic_send(public_data.RMQ_RUNTIME_NAME, rmq_runtime_str);
+			export_data.debug_disk_client_out_runtime(rmq_runtime_str, client_info);	
 		}
 		if (local_data.size() > 0) {
 			// local send
