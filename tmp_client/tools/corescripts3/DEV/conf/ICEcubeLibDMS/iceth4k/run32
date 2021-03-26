@@ -1,0 +1,95 @@
+
+# ----------------------------------------------------------------------------
+# copy files from Simon Guo
+# ----------------------------------------------------------------------------
+#cp /users/sguo/proj/i16p/chip_ice16pstruct.v .
+#cp /users/sguo/proj/i16p/chipbev_ice16p.v .
+#cp /users/sguo/proj/i16p/ABIWTCZ4.v .
+#cp /users/sguo/proj/i16p/nvcm_top_id.v .
+#cp /users/sguo/proj/i16p/smc_and_jtag_id.v .
+#cp /users/sguo/proj/i16p/PDUW08SDGZ_G_NOR_sbt.v .
+#cp /users/sguo/proj/i16p/rf_16k_n40.v .
+#cp /users/sguo/proj/i16p/tcbn40lpbwp.v .
+#cp /users/sguo/proj/i16p/MACH16.v .
+#cp /users/sguo/proj/i16p/chipbev_ice16p_addition.v .
+#cp -R /users/sguo/proj/i16p/dvi_phy .
+#cp -R /users/sguo/proj/i16p/mipi_phy .
+#cp /users/sguo/proj/i16p/ts6n40lpa1024x16m2s_120c_tt1p1v25c.v .
+#cp -R /users/sguo/proj/i16p/X109 .
+#cp -R /users/sguo/proj/i16p/X1081 .
+#mkdir X1082
+#mkdir X1082/models
+#mkdir X1082/models/analog
+#cp -R /users/sguo/proj/i16p/X1082/models/analog/*.v X1082/models/analog
+#cp /users/sguo/proj/i16p/tcbn40lpbwphvt.v .
+#chmod 644 *.v */*.v */*/*/*.v
+
+# ----------------------------------------------------------------------------
+# rename the full chip verilog netlist to keep consistent naming scheme
+# like other device
+# ----------------------------------------------------------------------------
+#ln -s chip_ice16pstruct.v chipstruct_ice16m.v
+
+# ----------------------------------------------------------------------------
+# compilation in modelsim
+# only bug is in X1081/X1081T001.v (line 183)
+#   remove 'comma'
+# Note: Also include smc/nvcm related modules in the compile
+# ----------------------------------------------------------------------------
+rm -rf ../LIB_iceth4k_32
+echo 'library removed'
+vlib ../LIB_iceth4k_32
+vlog -32 -work ../LIB_iceth4k_32 -l log32 -modelsim \
+  chip_thunder_struct_fc.v \
+  chipbev_ice8p_4ice384.v \
+  chipbev_ice8p_addition_4ice384.v \
+  chipbev_ice4r.v \
+  UMC40LP_GPIO_sbt.v \
+  2prf_4kip_u40.v \
+  ice384extra.v \
+  smc_and_jtag_gate_20111216.v \
+  smc_and_jtag_id_u40_gate_cdonefix_20111216.v \
+  um40npkhdst.v \
+  nvcm_defines.v \
+  nvcm_model.v \
+  nvcm_top_gate_20111213.v \
+  smc_defines.v \
+  ABIWUBN2.v \
+  SB_HSOSC.v \
+  SB_LSOSC.v \
+  i2c_ip_gates.v \
+  spi_ip_gates.v 
+echo 'vlog complete'
+
+# chipbev_ice8p_4ice384.v \
+# chipbev_ice8p_addition_4ice384.v \
+# chipbev_ice1p_4ice384.v \
+# chipbev_ice1p_additon_4ice
+# chipbev_ice4r.v \
+# ----------------------------------------------------------------------------
+# run vsim to go into elab phase to catch any elaboration errors
+# ----------------------------------------------------------------------------
+  vmap work ../LIB_iceth4k_32
+  vsim -32 +nowarnTFMPC -modelsim chip_thunder
+#  vsim -32 +nowarnTFMPC chip_ice4phx0nvcm
+
+#
+# OR
+# vsim -32 -L ../LIB_iceth4k_32 -novopt +nowarnTFMPC chip_ice16p
+
+# ----------------------------------------------------------------------------
+# remember to generate dut.v also
+# this file is copied from ice8m/dut.v and modify the userio_[lrtb]bank
+# also need to make it match the full chip netlist
+# ----------------------------------------------------------------------------
+# cp ../ice8m/dut.v .
+
+# ----------------------------------------------------------------------------
+# there are a bunch of redundancy in the modules and error in bus matching
+# 1. modules in chipbev_ice16p.v clash with chip_ice16pstruct.v
+#    - look at log1 file to see all the 'Warning' for list of duplication
+# 2. ioin_mux_v[2|3] has inconsistency of bus to bit-blasted netlist
+# 3. smc_and_jtag_id has inconsistency in bus size (10:0) vs (9:0)
+#    - note that the 10th bit is float so we just remove the 10th bit connection
+# ----------------------------------------------------------------------------
+

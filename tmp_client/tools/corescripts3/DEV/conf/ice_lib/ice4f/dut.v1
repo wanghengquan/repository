@@ -1,0 +1,15 @@
+wire  tdo;
+
+tri  cdone, vpp;
+
+reg  VREFSSTL, creset_b, tck, tdi, tms, trstb;
+
+tri [0:47]  uio_bbank;
+tri [47:0]  uio_tbank;
+tri [0:39]  uio_rbank;
+tri [39:0]  uio_lbank;
+
+`include "io.v"
+
+chip_ice4f chip ( tdo, cdone, uio_bbank, uio_lbank, uio_rbank,
+     uio_tbank, vpp, VREFSSTL, creset_b, tck, tdi, tms, trstb );

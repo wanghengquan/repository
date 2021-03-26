@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.client_data;
 import data_center.public_data;
-import utility_funcs.version_info;
+import data_center.switch_data;
 
 
 public class upload_dialog extends JFrame{
@@ -38,6 +38,7 @@ public class upload_dialog extends JFrame{
 	 */
 	private static final long serialVersionUID = 1L;
 	private client_data client_info;
+	private switch_data switch_info;
 	private JLabel label_username = new JLabel("TMP Username:");
 	private JLabel label_password = new JLabel("TMP Password:");
 	private JLabel label_suitefile = new JLabel("Upload Suite File:");
@@ -55,10 +56,12 @@ public class upload_dialog extends JFrame{
 	String work_space = new String();
 	
 	public upload_dialog(
+			switch_data switch_info,
 			client_data client_info
 			){
 		//super(main_view, "Suite Upload", true);
 		super();
+		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.setTitle("Suite Upload");
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
@@ -230,7 +233,7 @@ public class upload_dialog extends JFrame{
 				python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);	
 			}
 			//step 2: Python version identify
-			String cur_ver = new String(version_info.get_python_version(python_cmd));
+			String cur_ver = new String(switch_info.get_system_python_version());
 			//step 3: Command generate
 			cmd_args.add(python_cmd);
 			if (cur_ver.startsWith("2.")) {
@@ -308,8 +311,9 @@ public class upload_dialog extends JFrame{
 	}
 	
 	public static void main(String[] args) {
+		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
-		upload_dialog upload = new upload_dialog(client_info);
+		upload_dialog upload = new upload_dialog(switch_info, client_info);
 		upload.setVisible(true);
 	}	
 }

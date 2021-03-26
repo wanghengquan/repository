@@ -26,10 +26,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import utility_funcs.deep_clone;
+import utility_funcs.version_info;
 
 public class tools_dialog extends JDialog implements ActionListener {
 	/**
@@ -42,6 +46,8 @@ public class tools_dialog extends JDialog implements ActionListener {
 	private JTextField jt_python, jt_perl, jt_ruby, jt_svn, jt_git;
 	private JButton jb_python, jb_perl, jb_ruby, jb_svn, jb_git;
 	private JButton discard, apply, close;
+	private String line_separator = System.getProperty("line.separator");
+	private static final Logger TOOLS_DIALOG_LOGGER = LogManager.getLogger(tools_dialog.class.getName());
 
 	public tools_dialog(
 			main_frame main_view,
@@ -122,7 +128,7 @@ public class tools_dialog extends JDialog implements ActionListener {
 		JLabel empty_line = new JLabel("");
 		tools_panel.add(empty_line);		
 		//step 8 : note line
-		JLabel note_line = new JLabel("*:Optional, If your case/script need to export/run with these tools.");
+		JLabel note_line = new JLabel("*:Optional, If your case/script need to export/run with this tool.");
 		tools_panel.add(note_line);		
 		//================================================
 		//constraint them
@@ -372,11 +378,41 @@ public class tools_dialog extends JDialog implements ActionListener {
 					File file_dobj = new File(new_path);
 					if(file_dobj.exists()){
 						tools_data.put(tool_name, new_path);
+						if (tool_name.equalsIgnoreCase("python")) {
+							//GUI report
+							String python_version = new String(version_info.get_python_version(new_path));
+							String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+							StringBuilder message = new StringBuilder("");
+							message.append("New Python:" + new_path);
+							message.append(line_separator);
+							message.append("Version:" + python_version);
+							message.append(line_separator);
+							message.append(line_separator);
+							String corescript_path = new String("");
+							if (python_version.startsWith("2")) {
+								corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR2;
+							} else if (python_version.startsWith("3")) {
+								if(switch_info.get_remote_corescript_linked()) {
+									corescript_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+								} else {
+									corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
+								}
+							} else {
+								corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
+							}
+							message.append("CoreScript linked:" + corescript_path);
+							String title = new String("New Python Confirm:");
+							JOptionPane.showMessageDialog(this, message.toString(), title, JOptionPane.OK_OPTION);
+							//Console report
+							TOOLS_DIALOG_LOGGER.warn("New Python:" + new_path);
+							TOOLS_DIALOG_LOGGER.warn("Version:" + python_version);
+							TOOLS_DIALOG_LOGGER.warn("CoreScript linked:" + corescript_path);
+						}
 					} else {
 						String message = new String("Path Not Exists:" + tool_name);
 						JOptionPane.showMessageDialog(this, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 						update_ok = false;
-						System.out.println("Path Not Exists:" + tool_name);
+						TOOLS_DIALOG_LOGGER.warn("Path Not Exists:" + tool_name);
 					}
 				}
 			}
