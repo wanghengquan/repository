@@ -409,7 +409,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}		
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.info("upload clicked");
-			upload_dialog upload_view = new upload_dialog(client_info);
+			upload_dialog upload_view = new upload_dialog(switch_info, client_info);
 			upload_view.setLocationRelativeTo(main_view);
 			upload_view.setVisible(true);
 		}

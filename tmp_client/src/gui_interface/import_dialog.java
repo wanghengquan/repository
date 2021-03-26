@@ -63,7 +63,7 @@ public class import_dialog extends JDialog implements ChangeListener{
 		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		this.setSize(800, 600);
+		this.setSize(800, 550);
 	}
 
 	private JTabbedPane construct_tab_pane(){

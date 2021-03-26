@@ -1,0 +1,42 @@
+[iCE40]
+LP1K = ICE40P01.dev, ice40LP1K.lib
+HX1K = ICE40P01.dev, ice40HX1K.lib
+LP384 = ICE40P03.dev, ice40LP384.lib
+LP4K = ICE40P04.dev, ice40LP8K.lib
+HX4K = ICE40P04.dev, ice40HX8K.lib
+LP640 = ICE40P05.dev, ice40LP1K.lib
+HX640 = ICE40P05.dev, ice40HX1K.lib
+LP8K = ICE40P08.dev, ice40LP8K.lib
+HX8K = ICE40P08.dev, ice40HX8K.lib
+MH8K = ICE40M08.dev, ice40M08.lib
+MX8K = ICE40M08.dev, ice40M08.lib
+MX16K = ICE40M16.dev, ice40MX16K.lib
+;;comments: iCE40LP640 with package "SWG16TR" will corresponding to:iCE40P01.dev and ice40LP1K.lib
+;;HX384 = ICE40P03.dev, ice40LP8K.lib
+
+[iCE65]
+L01 = ICE1.dev, ice65L01.lib
+L04 = ICE5.dev, ice65L04.lib
+L08 = ICE8.dev, ice65L08.lib
+P04 = ICE4P.dev, ice65P04.lib
+
+[iCE5LP]
+4K = ICE40T04.dev, ice40TH4K.lib
+2K = ICE40T04.dev, ice40TH4K.lib
+1K = ICE40T04.dev, ice40TH4K.lib
+1KBT = ICE40T01.dev,ice40BT1K.lib
+
+[iCE40LM]
+4K = ICE40R04.dev, ice40LM4K.lib
+2K = ICE40R04.dev, ice40LM4K.lib
+1K = ICE40R04.dev, ice40LM4K.lib
+;LP4KA = ICE40R04.dev,
+;HX4KA = ICE40R04.dev,
+
+[iCE40UL]
+1K = ICE40T01.dev, ice40BT1K.lib
+640 = ICE40T01.dev, ice40BT1K.lib
+
+[iCE40UP]
+5K = ICE40T05.dev, ice40UP5K.lib
+3K = ICE40T05.dev, ice40UP5K.lib

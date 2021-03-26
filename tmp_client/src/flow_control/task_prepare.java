@@ -993,6 +993,7 @@ public class task_prepare {
 	}
 
 	protected String[] get_launch_command(
+			String python_version,
 			Boolean corescript_link_status,
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
@@ -1051,11 +1052,17 @@ public class task_prepare {
 		}		
 		if (!abs_path_ok && !ref_path_ok && !par_path_ok){
 			String corescript_path = new String("");
-			if(corescript_link_status) {
-				corescript_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+			if (python_version.startsWith("2")) {
+				corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR2;
+			} else if (python_version.startsWith("3")) {
+				if(corescript_link_status) {
+					corescript_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+				} else {
+					corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
+				}
 			} else {
-				corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR;
-			}	
+				corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
+			}
 			launch_cmd = exe_match.replaceFirst(" " + corescript_path.replace(public_data.CORE_SCRIPT_NAME, "") + exe_path);
 		}
 		//step 3: update launch command design path(if have)
@@ -1115,6 +1122,7 @@ public class task_prepare {
 	}	
 	
 	protected HashMap<String, String> get_launch_environment(
+			String python_version,
 			Boolean corescript_link_status,
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data) {
@@ -1132,10 +1140,16 @@ public class task_prepare {
 		// put external core script path
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String core_path = new String(public_data.CORE_SCRIPT_NAME);
-		if (corescript_link_status) {
-			core_path = work_space + "/" + public_data.CORE_SCRIPT_NAME;
+		if (python_version.startsWith("2")) {
+			core_path = public_data.LOCAL_CORE_SCRIPT_DIR2;
+		} else if (python_version.startsWith("3")) {
+			if(corescript_link_status) {
+				core_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+			} else {
+				core_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
+			}
 		} else {
-			core_path = public_data.LOCAL_CORE_SCRIPT_DIR;
+			core_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
 		}
 		run_env.put("EXTERNAL_DEV_PATH", core_path);
 		// put environ for software requirements in sub process

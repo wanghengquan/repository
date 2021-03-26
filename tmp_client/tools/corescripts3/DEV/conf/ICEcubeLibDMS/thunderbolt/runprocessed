@@ -1,0 +1,49 @@
+#Full-Chip Netlist Compilation Script
+#Mani Subramanian
+#Last Updated 03/21/2014
+#rm -rf ../LIB_thunderbolt
+#echo 'library removed'
+vlib ../LIB_thunderbolt
+vlog -64 -work ../LIB_thunderbolt -l logprossed -modelsim +include+/lsc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/chip_1_45x1_45_processed.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/2prf_4kip_u40.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ABIWUBN2_Lattice.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/UMC40LP_GPIO_sbt.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/UMC40LP_GPIO_sbt_m.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/chipbev_ice1p_additon_4ice384.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/chipbev_ice1p_4ice384.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/chipbev_ice4r.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/um40npkhdst.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ice384extra.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/more_ice4r.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/nvcm_defines.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/nvcm_model.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/nvcm_top_gate_20111213.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/rgbdrive24max3.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/smc_and_jtag_id_u40_gate_cdonefix_20111216.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/smc_defines.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/spi_ip_gates.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/thunder_50nsdelay.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/SUMB_bscan_8mA_i2cr.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/bolt_ir_barcode.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ledd_ip_rtl/ledd_defines.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ledd_ip_rtl/ledd_ip.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ledd_ip_rtl/ledd_sci.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ledd_ip_rtl/ledd_ctrl.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/ledd_ip_rtl/ledd_pwmc.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/bolt_irtcv_ip_rtl/irtcv_defines.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/bolt_irtcv_ip_rtl/irtcv_ip.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/bolt_irtcv_ip_rtl/irtcv_sci.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/bolt_irtcv_ip_rtl/irtcv_ctrl.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/i2cfifo_rtl/i2cfifo_defines.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/i2cfifo_rtl/i2cfifo_ip.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/i2cfifo_rtl/i2cfifo_sci.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/i2cfifo_rtl/i2c_port.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/i2cfifo_rtl/fifo.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/i2cfifo_rtl/SYNCP_STD.v \
+  /ldc/projects/thunder40/$user/workarea/amber/tm4k/custom_design/verification/bolt/thunder_ams.v 
+echo 'vlog complete'
+
+  vmap work ../LIB_thunderbolt
+  vsim -64 +nowarnTFMPC -modelsim chip_1_45x1_45
+

@@ -1177,9 +1177,10 @@ public class task_waiter extends Thread {
 			// task 8 : launch info prepare
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
+			String python_version = switch_info.get_system_python_version();
 			Boolean corescript_link_status = switch_info.get_remote_corescript_linked();
-			String[] launch_cmd = prepare_obj.get_launch_command(corescript_link_status, client_info.get_client_tools_data(), task_data);
-			Map<String, String> launch_env = prepare_obj.get_launch_environment(corescript_link_status, task_data, client_info.get_client_data());
+			String[] launch_cmd = prepare_obj.get_launch_command(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data);
+			Map<String, String> launch_env = prepare_obj.get_launch_environment(python_version, corescript_link_status, task_data, client_info.get_client_data());
 			// task 9 : launch reporting
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){

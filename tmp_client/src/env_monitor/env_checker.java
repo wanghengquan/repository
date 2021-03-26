@@ -10,6 +10,7 @@
 package env_monitor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -104,7 +105,9 @@ public class env_checker extends TimerTask {
 		}
 	}
 	
-	public Boolean do_self_check(String work_path) {
+	private void run_environ_monitor() {
+		String work_space = new String("");
+		work_space = client_info.get_client_preference_data().getOrDefault("work_space", public_data.DEF_WORK_SPACE);	
 		Boolean check_result = Boolean.valueOf(false);
 		Boolean python_pass = Boolean.valueOf(false);
 		Boolean python_env = Boolean.valueOf(false);
@@ -118,7 +121,7 @@ public class env_checker extends TimerTask {
 			}
 			python_pass = python_version_check();
 			python_env = python_environ_check();	
-			writable_pass = work_path_check(work_path);
+			writable_pass = work_path_check(work_space);
 			if (python_pass && python_env && writable_pass) {
 				check_result = true;
 				break;
@@ -137,12 +140,79 @@ public class env_checker extends TimerTask {
 			ENV_CHECKER_LOGGER.error("Client Python Version:" + python_pass.toString());
 			ENV_CHECKER_LOGGER.error("Client Python Environ:" + python_env.toString());
 			ENV_CHECKER_LOGGER.error("Work Path Writable Check:" + writable_pass.toString());
-			ENV_CHECKER_LOGGER.error("Work Path:" + work_path);
+			ENV_CHECKER_LOGGER.error("Work Path:" + work_space);
 			ENV_CHECKER_LOGGER.error("");
+			switch_info.set_client_environ_issue(true);
+		} else {
+			switch_info.set_client_environ_issue(false);
 		}
-		return check_result;
 	}
 
+	private void remote_corescript_monitor() {
+		String svn_path = new String(public_data.DEF_SVN_PATH);
+		svn_path = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
+		if(svn_version_check(svn_path) && remote_corescript_available(svn_path)) {
+			switch_info.set_remote_corescript_linked(true);
+		} else {
+			switch_info.set_remote_corescript_linked(false);
+		}
+	}
+	
+	private Boolean svn_version_check(
+			String svn_path
+			) {
+		File svn_fobj = new File(svn_path);
+		if (!svn_fobj.exists()) {
+			ENV_CHECKER_LOGGER.info("SVN doesn't exists:" + svn_path);
+			return false;
+		}
+		String cur_ver = version_info.get_svn_version(svn_path);
+		if (cur_ver.equals("unknown")) {
+			ENV_CHECKER_LOGGER.warn("SVN version error: unknown version");
+			return false;
+		}
+		String[] ver_array = cur_ver.split("\\.");
+		String cur_ver_str = ver_array[0] + "." + ver_array[1];
+		if (version_info.version_suitable_check(public_data.BASE_SVNBASEVERSION, cur_ver_str, null)) {
+			return true;
+		} else {
+			ENV_CHECKER_LOGGER.warn("SVN version out of scope:" + cur_ver_str);
+			return false;
+		}
+	}
+	
+	private Boolean remote_corescript_available(
+			String svn_path){
+		Boolean status = Boolean.valueOf(false);
+		String core_addr = public_data.CORE_SCRIPT_REMOTE_URL;
+		String svn_user = public_data.SVN_USER;
+		String svn_pwd = public_data.SVN_PWD;
+		String usr_cmd = new String(" --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache");
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		ArrayList<String> info_return = new ArrayList<String>();
+        try {
+            info_return.addAll(system_cmd.run(svn_path + " info " + core_addr + " " + usr_cmd, work_space));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        Pattern patt = Pattern.compile(".+?:\\s+(\\d+)$");
+        for (String line: info_return){
+        	Matcher m = patt.matcher(line);
+        	if(m.find()){
+        		status = true;
+        		break;
+        	}
+        }
+        return status;
+	}
+	
+	private void python_version_monitor() {
+		String python_cmd = new String("");
+		python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
+		String cur_ver = version_info.get_python_version(python_cmd);
+		switch_info.set_system_python_version(cur_ver);
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -154,13 +224,12 @@ public class env_checker extends TimerTask {
 	}
 	
 	private void monitor_run() {
-		String work_space = new String("");
-		work_space = client_info.get_client_preference_data().getOrDefault("work_space", public_data.DEF_WORK_SPACE);
-		if (do_self_check(work_space)){
-			switch_info.set_client_environ_issue(false);
-		} else {
-			switch_info.set_client_environ_issue(true);
-		}
+		//run environ check
+		run_environ_monitor();
+		//remote core link status check
+		remote_corescript_monitor();
+		//Python version check
+		python_version_monitor();
 	}
 	
 	/*

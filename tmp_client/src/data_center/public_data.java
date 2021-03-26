@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.33"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21233; //version for code use
-	public final static String BASE_BUILDDATE = "2021/03/17";
+	public final static String BASE_CURRENTVERSION = "2.12.34"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21234; //version for code use
+	public final static String BASE_BUILDDATE = "2021/03/26";
 	public final static String BASE_SUITEFILEVERSION = "1.19";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -95,10 +95,11 @@ public class public_data {
 	// ========================
 	// Remote core script path
 	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_REMOTE_URL = "http://lsh-guitar/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME; //lsh-tmp
+	public final static String CORE_SCRIPT_REMOTE_URL = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME; //lsh-tmp, lsh-guitar
 	public final static String REMOTE_CORE_SCRIPT_DIR = "$work_path/" + CORE_SCRIPT_NAME;
-	public final static String LOCAL_CORE_SCRIPT_DIR = SW_HOME_PATH + "/tools/corescripts/" + CORE_SCRIPT_NAME;
-			
+	public final static String LOCAL_CORE_SCRIPT_DIR2 = SW_HOME_PATH + "/tools/corescripts2/" + CORE_SCRIPT_NAME;
+	public final static String LOCAL_CORE_SCRIPT_DIR3 = SW_HOME_PATH + "/tools/corescripts3/" + CORE_SCRIPT_NAME;
+	
 	// ========================
 	// workspace folder configuration, real path = work_space + following folder
 	// name
@@ -124,7 +125,7 @@ public class public_data {
 	public final static String CASE_USER_PATTERN = "^run\\..*";
 	public final static String CASE_STANDARD_PATTERN = "run_info.ini";
 	public final static String CASE_INFO_FILE = "bqs.info";
-	public final static String CASE_EXEC_FILE = "$work_path/DEV/bin/run_radiant.py";
+	public final static String CASE_EXEC_FILE = "DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";
 	public final static String CASE_DATA_FILE = "bqs.data";
 	
@@ -158,7 +159,7 @@ public class public_data {
 	// ========================
 	// link to RabbitMQ configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
-	public final static String RMQ_HOST = "lsh-guitar"; // "lsh-guitar", "lsh-tmp"
+	public final static String RMQ_HOST = "lsh-tmp"; // "lsh-guitar", "lsh-tmp"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "result";
@@ -192,7 +193,7 @@ public class public_data {
 	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
 	public final static String SVN_PWD = "welcome";
-	public final static String SVN_URL = "http://lsh-guitar";//lsh-tmp
+	public final static String SVN_URL = "http://lsh-tmp";//lsh-tmp, lsh-guitar
 
 	// ========================
 	// link to TMP server Database default user shown here
