@@ -210,8 +210,7 @@ public class task_waiter extends Thread {
 			// with software request queue
 			Boolean match_request = Boolean.valueOf(true);
 			HashMap<String, String> sw_request_data = request_data.get("Software");
-			Set<String> sw_request_set = sw_request_data.keySet();
-			Iterator<String> sw_request_it = sw_request_set.iterator();
+			Iterator<String> sw_request_it = sw_request_data.keySet().iterator();
 			while (sw_request_it.hasNext()) {
 				String sw_request_name = sw_request_it.next();
 				if (!available_software_insts.containsKey(sw_request_name)) {

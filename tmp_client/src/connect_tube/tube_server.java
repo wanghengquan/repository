@@ -80,8 +80,10 @@ public class tube_server extends Thread {
 	// protected function
 	// private function
 
-	private Boolean admin_queue_system_key_check(HashMap<String, HashMap<String, String>> queue_data,
-			Map<String, HashMap<String, String>> client_hash) {
+	private Boolean admin_queue_system_key_check(
+			HashMap<String, HashMap<String, String>> queue_data,
+			Map<String, HashMap<String, String>> client_hash
+			) {
 		Boolean system_match = Boolean.valueOf(true);
 		if (!queue_data.containsKey("System")) {
 			return system_match;
@@ -142,7 +144,8 @@ public class tube_server extends Thread {
 	private Boolean admin_queue_machine_key_check(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data,
-			Map<String, HashMap<String, String>> client_hash) {
+			Map<String, HashMap<String, String>> client_hash
+			) {
 		Boolean machine_match = Boolean.valueOf(true);
 		String client_current_private = client_hash.get("Machine").get("private");
 		//Scenario 1 local task (not remote)
@@ -218,8 +221,10 @@ public class tube_server extends Thread {
 		return machine_match;
 	}
 
-	private Boolean admin_queue_software_key_check(HashMap<String, HashMap<String, String>> queue_data,
-			Map<String, HashMap<String, String>> client_hash) {
+	private Boolean admin_queue_software_key_check(
+			HashMap<String, HashMap<String, String>> queue_data,
+			Map<String, HashMap<String, String>> client_hash
+			) {
 		Boolean software_match = Boolean.valueOf(true);
 		if (!queue_data.containsKey("Software")) {
 			return software_match;

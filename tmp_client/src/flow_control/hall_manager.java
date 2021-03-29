@@ -30,6 +30,7 @@ import gui_interface.view_server;
 import info_parser.cmd_parser;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
+import utility_funcs.deep_clone;
 import utility_funcs.des_encode;
 import utility_funcs.mail_action;
 import utility_funcs.time_info;
@@ -567,71 +568,98 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>===============================");
 	}
 	
-	private void update_processing_queue_system_requrement_map() {
-		HashMap<String, HashMap<String, String>> updated_request_map = new HashMap<String, HashMap<String, String>>();
+	private ArrayList<String> generate_executing_admin_queue_list(){
+		//processing_list > software_ready_list > thread_priority_list > executing_list 
+		ArrayList<String> executing_list = new ArrayList<String>();
+		ArrayList<String> software_ready_list = new ArrayList<String>();
+		HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		admin_queues_map.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));
+		//step 1 : generate software ready list (remove software isn't ready items)
+		HashMap<String, HashMap<String, String>> client_data = new HashMap<String, HashMap<String, String>>();
+		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
 		for(String queue_name: task_info.get_processing_admin_queue_list()) {
-			HashMap<String, String> request_map = new HashMap<String, String>();
-			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
-			admin_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
-			//max threads request
-			String max_threads = new String(public_data.TASK_DEF_MAX_THREADS);
-			if (!admin_data.containsKey("Preference")) {
-				max_threads = public_data.TASK_DEF_MAX_THREADS;
-			} else if (!admin_data.get("Preference").containsKey("max_threads")) {
-				max_threads = public_data.TASK_DEF_MAX_THREADS;
-			} else {
-				max_threads = admin_data.get("Preference").get("max_threads");
-				Pattern p = Pattern.compile("^\\d$");
-				Matcher m = p.matcher(max_threads);
-				if (!m.find()) {
-					max_threads = public_data.TASK_DEF_MAX_THREADS;
+			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			queue_data.putAll(admin_queues_map.get(queue_name));
+			if (!queue_data.containsKey("Software")) {
+				software_ready_list.add(queue_name);
+				continue;
+			}
+			Boolean sw_available = Boolean.valueOf(true);
+			for(String software: queue_data.get("Software").keySet()) {
+				if (client_data.containsKey(software)) {
+					Integer insts_value = Integer.valueOf(client_data.get(software).getOrDefault("max_insts", public_data.DEF_SW_MAX_INSTANCES));
+					if (insts_value < 1) {
+						sw_available = false;
+						break;
+					}
+				} else {
+					sw_available = false;
+					break;
 				}
 			}
-			request_map.put("max_threads", max_threads);
-			//host restart request
-			String host_restart = new String(public_data.TASK_DEF_HOST_RESTART);
-			if (!admin_data.containsKey("Preference")) {
-				host_restart = public_data.TASK_DEF_HOST_RESTART;
-			} else if (!admin_data.get("Preference").containsKey("host_restart")) {
-				host_restart = public_data.TASK_DEF_HOST_RESTART;
+			if (sw_available) {
+				software_ready_list.add(queue_name);
 			} else {
-				String request_value = new String(admin_data.get("Preference").get("host_restart").trim());
-				if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
-					HALL_MANAGER_LOGGER.warn(queue_name + ":has wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
-				} else {
-					host_restart = request_value;
-				}				
-			}
-			request_map.put("host_restart", host_restart);
-			updated_request_map.put(queue_name, request_map);
-		}
-		task_info.reset_processing_queue_system_requrement_map();
-		task_info.update_processing_queue_system_requrement_map(updated_request_map);
-	}
-	
-	private ArrayList<String> generate_executing_admin_queue_list(){
-		ArrayList<String> executing_list = new ArrayList<String>();
-		HashMap<String, HashMap<String, String>> requrement_map = new HashMap<String, HashMap<String, String>>();
-		requrement_map.putAll(task_info.get_processing_queue_system_requrement_map());
-		//get highest thread request queue
-		int record_data = 0;
-		for (String queue_name : requrement_map.keySet()) {
-			HashMap<String, String> queue_data = new HashMap<String, String>();
-			queue_data.putAll(requrement_map.get(queue_name));
-			int queue_value = get_srting_int(queue_data.get("max_threads"), "^(\\d+)$");
-			if (queue_value > record_data) {
-				record_data = queue_value;
+				HALL_MANAGER_LOGGER.debug(queue_name + ":Software not ready for run.");
 			}
 		}
-		//get executing queue list
-		for (String queue_name : requrement_map.keySet()) {
-			HashMap<String, String> queue_data = new HashMap<String, String>();
-			queue_data.putAll(requrement_map.get(queue_name));
-			if (queue_data.get("max_threads").equalsIgnoreCase(String.valueOf(record_data))) {
+		//step 2 : get highest thread list
+		Integer record_thread = Integer.valueOf(0);
+		for (String queue_name : software_ready_list) {
+			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+			admin_data.putAll(admin_queues_map.get(queue_name));
+			Integer current_thread = Integer.valueOf(get_admin_queue_max_threads(admin_data));
+			if (current_thread > record_thread) {
+				record_thread = current_thread;
+			}
+		}
+		for (String queue_name : software_ready_list) {
+			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+			admin_data.putAll(admin_queues_map.get(queue_name));
+			Integer current_thread = Integer.valueOf(get_admin_queue_max_threads(admin_data));
+			if (current_thread.equals(record_thread)) {
 				executing_list.add(queue_name);
 			}
 		}
 		return executing_list;
+	}
+	
+	private String get_admin_queue_max_threads(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		String max_threads = new String(public_data.TASK_DEF_MAX_THREADS);
+		if (!admin_data.containsKey("Preference")) {
+			max_threads = public_data.TASK_DEF_MAX_THREADS;
+		} else if (!admin_data.get("Preference").containsKey("max_threads")) {
+			max_threads = public_data.TASK_DEF_MAX_THREADS;
+		} else {
+			max_threads = admin_data.get("Preference").get("max_threads");
+			Pattern p = Pattern.compile("^\\d$");
+			Matcher m = p.matcher(max_threads);
+			if (!m.find()) {
+				max_threads = public_data.TASK_DEF_MAX_THREADS;
+			}
+		}
+		return max_threads;
+	}
+	
+	private String get_admin_queue_host_restart(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		String host_restart = new String(public_data.TASK_DEF_HOST_RESTART);
+		if (!admin_data.containsKey("Preference")) {
+			host_restart = public_data.TASK_DEF_HOST_RESTART;
+		} else if (!admin_data.get("Preference").containsKey("host_restart")) {
+			host_restart = public_data.TASK_DEF_HOST_RESTART;
+		} else {
+			String request_value = new String(admin_data.get("Preference").get("host_restart").trim());
+			if (!data_check.str_choice_check(request_value, new String [] {"false", "true"} )){
+				HALL_MANAGER_LOGGER.warn("Wrong Preference->host_restart, default value " + public_data.TASK_DEF_HOST_RESTART + " used.");
+			} else {
+				host_restart = request_value;
+			}				
+		}
+		return host_restart;
 	}
 	
 	private int get_srting_int(String str, String patt) {
@@ -656,43 +684,38 @@ public class hall_manager extends Thread {
 			reset_default_max_thread();
 			return;
 		}
-		HashMap<String, HashMap<String, String>> requrement_map = new HashMap<String, HashMap<String, String>>();
-		requrement_map.putAll(task_info.get_processing_queue_system_requrement_map());
-		//max threads setting.
-		int max_threads = 0;
-		for (String queue_name : executing_list) {
-			HashMap<String, String> request_data = new HashMap<String, String>();
-			request_data.putAll(requrement_map.get(queue_name));
-			int request_value = get_srting_int(request_data.get("max_threads"), "^(\\d+)$");
-			if (request_value > max_threads) {
-				max_threads = request_value;
+		HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		admin_queues_map.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));
+		//step 1: max threads setting.
+		Integer limit_threads = Integer.valueOf(0);
+		limit_threads = Integer.valueOf(get_admin_queue_max_threads(admin_queues_map.get(executing_list.get(0))));
+		if (pool_info.get_pool_current_size() != limit_threads) {
+			if (limit_threads > 0 && limit_threads <= pool_info.get_pool_maximum_size()) {
+				pool_info.set_pool_current_size(limit_threads);
+			} else {
+				reset_default_max_thread();
 			}
-		}
-		if (max_threads > 0 && max_threads <= pool_info.get_pool_maximum_size()) {
-			pool_info.set_pool_current_size(max_threads);
 		} else {
-			reset_default_max_thread();
+			HALL_MANAGER_LOGGER.debug("Required Thread Num already finished.");
 		}
-		//host restart if need.
+		//step 2: host restart if need.
 		Boolean host_restart = Boolean.valueOf(false);		
 		for (String queue_name : executing_list) {
-			HashMap<String, String> request_data = new HashMap<String, String>();
-			request_data.putAll(requrement_map.get(queue_name));
-			String request_value = request_data.get("host_restart");
+			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
+			admin_data.putAll(admin_queues_map.get(queue_name));
+			String request_value = new String(get_admin_queue_host_restart(admin_data));			
 			if (request_value.equals("false")) {
 				continue;
 			}
 			//admin queue with host restart needed
-			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
-			queue_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
 			String admin_time = new String("");
-			if (!queue_data.containsKey("ID")) {
+			if (!admin_data.containsKey("ID")) {
 				continue;
 			} 
-			if (!queue_data.get("ID").containsKey("epoch_time")) {
+			if (!admin_data.get("ID").containsKey("epoch_time")) {
 				continue;
 			}
-			admin_time = queue_data.get("ID").get("epoch_time");
+			admin_time = admin_data.get("ID").get("epoch_time");
 			if(is_restart_needed(admin_time)) {
 				host_restart = true;
 				break;
@@ -738,14 +761,12 @@ public class hall_manager extends Thread {
 	}
 	
 	private void job_environment_build() {
-		//task 1: update processing queue system requirement hash map
-		update_processing_queue_system_requrement_map();
-		//task 2: generate executing queue list
+		//task 1: generate executing queue list
 		ArrayList<String> executing_queue_list = new ArrayList<String>();
 		executing_queue_list.addAll(generate_executing_admin_queue_list());
-		//task 3: run environment update(thread pool, task waiter)
+		//task 2: run environment update(thread pool, task waiter)
 		update_run_environment(executing_queue_list);
-		//task 4: release executing queue list(for task waiters use)
+		//task 3: release executing queue list(for task waiters use)
 		task_info.set_executing_admin_queue_list(executing_queue_list);
 	}
 	

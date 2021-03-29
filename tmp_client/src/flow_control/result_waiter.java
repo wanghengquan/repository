@@ -179,7 +179,9 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			running_queue_in_pool.add(queue_name);
+			if (!running_queue_in_pool.contains(queue_name)) {
+				running_queue_in_pool.add(queue_name);
+			}
 		}
 		task_info.set_running_admin_queue_list(running_queue_in_pool);
 	}
