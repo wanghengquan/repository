@@ -63,7 +63,6 @@ public class task_data {
 	private ArrayList<String> warned_task_queue_list = new ArrayList<String>();
 	private ArrayList<String> executing_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> pending_admin_queue_list = new ArrayList<String>();
-	private HashMap<String, HashMap<String, String>> processing_queue_system_requrement_map = new HashMap<String, HashMap<String, String>>();
 	// ====updated by waiters====
 	// Queues updated by task waiter
 	private ArrayList<String> waiting_admin_queue_list = new ArrayList<String>();
@@ -1417,44 +1416,6 @@ public class task_data {
 		rw_lock.writeLock().lock();
 		try {
 			local_path_finished_task_map.put(task, task_data);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}	
-	
-	public HashMap<String, HashMap<String, String>> get_processing_queue_system_requrement_map() {
-		rw_lock.readLock().lock();
-		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
-		try {
-			temp.putAll(processing_queue_system_requrement_map);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return temp;
-	}	
-	
-	public void reset_processing_queue_system_requrement_map() {
-		rw_lock.writeLock().lock();
-		try {
-			processing_queue_system_requrement_map.clear();
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void update_processing_queue_system_requrement_map(HashMap<String, HashMap<String, String>> data_map) {
-		rw_lock.writeLock().lock();
-		try {
-			processing_queue_system_requrement_map.putAll(data_map);
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public void update_processing_queue_system_requrement_map(String queue_name, HashMap<String, String> data_map) {
-		rw_lock.writeLock().lock();
-		try {
-			processing_queue_system_requrement_map.put(queue_name, data_map);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

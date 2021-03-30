@@ -324,20 +324,20 @@ public class hall_manager extends Thread {
 			return;
 		}
 		//check thread limitation
-		HashMap<String, HashMap<String, String>> requrement_map = new HashMap<String, HashMap<String, String>>();
-		requrement_map.putAll(task_info.get_processing_queue_system_requrement_map());
+		HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		admin_queues_map.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));		
 		//max threads setting.
-		int task_threads = 0; //no limitation
+		Integer limit_threads = Integer.valueOf(0); //no limitation
 		for (String queue_name : executing_queue_list) {
-			HashMap<String, String> request_data = new HashMap<String, String>();
-			request_data.putAll(requrement_map.get(queue_name));
-			int request_value = get_srting_int(request_data.get("max_threads"), "^(\\d+)$");
-			if (request_value > task_threads) {
-				task_threads = request_value;
+			if (!admin_queues_map.containsKey(queue_name)) {
+				continue;
 			}
+			limit_threads = Integer.valueOf(get_admin_queue_max_threads(admin_queues_map.get(queue_name)));
+			//typically all queues(in executing_queue_list) have a same thread limitation
+			break;
 		}
-		if (task_threads > 0) {
-			HALL_MANAGER_LOGGER.warn("Task threads limitation found 'Thread auto adjustment feature' disabled.");
+		if (limit_threads > 0) {
+			HALL_MANAGER_LOGGER.info("Threads limitation found, 'Thread auto adjustment feature' disabled.");
 			return;
 		}
 		//system info record if not successfully record, skip this point
@@ -579,6 +579,10 @@ public class hall_manager extends Thread {
 		client_data.putAll(deep_clone.clone(client_info.get_client_data()));
 		for(String queue_name: task_info.get_processing_admin_queue_list()) {
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			if (!admin_queues_map.containsKey(queue_name)) {
+				//multi-threads issue: some thread may removed this queue
+				continue;
+			}
 			queue_data.putAll(admin_queues_map.get(queue_name));
 			if (!queue_data.containsKey("Software")) {
 				software_ready_list.add(queue_name);
@@ -662,6 +666,7 @@ public class hall_manager extends Thread {
 		return host_restart;
 	}
 	
+	@SuppressWarnings("unused")
 	private int get_srting_int(String str, String patt) {
 		int i = 0;
 		try {
@@ -688,7 +693,13 @@ public class hall_manager extends Thread {
 		admin_queues_map.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));
 		//step 1: max threads setting.
 		Integer limit_threads = Integer.valueOf(0);
-		limit_threads = Integer.valueOf(get_admin_queue_max_threads(admin_queues_map.get(executing_list.get(0))));
+		for (String queue_name: executing_list) {
+			if (!admin_queues_map.containsKey(queue_name)) {
+				continue;
+			}
+			limit_threads = Integer.valueOf(get_admin_queue_max_threads(admin_queues_map.get(queue_name)));
+			break;
+		}
 		if (pool_info.get_pool_current_size() != limit_threads) {
 			if (limit_threads > 0 && limit_threads <= pool_info.get_pool_maximum_size()) {
 				pool_info.set_pool_current_size(limit_threads);
@@ -701,6 +712,9 @@ public class hall_manager extends Thread {
 		//step 2: host restart if need.
 		Boolean host_restart = Boolean.valueOf(false);		
 		for (String queue_name : executing_list) {
+			if (!admin_queues_map.containsKey(queue_name)) {
+				continue;
+			}
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 			admin_data.putAll(admin_queues_map.get(queue_name));
 			String request_value = new String(get_admin_queue_host_restart(admin_data));			
@@ -724,7 +738,7 @@ public class hall_manager extends Thread {
 		if (host_restart) {
 	    	String os = System.getProperty("os.name").toLowerCase();
 			if (os.contains("windows")) {
-				HALL_MANAGER_LOGGER.warn("Host restart...");
+				HALL_MANAGER_LOGGER.warn("Host restart, task requirements...");
 				switch_info.set_client_stop_request(exit_enum.HRL);
 				switch_info.set_client_soft_stop_request(true);				
 			} else {
