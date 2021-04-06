@@ -972,6 +972,7 @@ class RunSimulationFlow:
                 fext = xTools.get_fext_lower(item)
                 item = xTools.win2unix(item, 0)
                 if not os.path.isfile(item):
+                    xTools.say_it("Warning. Not found file {}".format(item))
                     continue
                 if fext in (".v", ".vo", ".sv", ".vm"):
                     if p_for_pmi.search(item):
@@ -1035,7 +1036,7 @@ class RunSimulationFlow:
         self.create_lock_file_folder()
 
         def try_to_compile_local_lib():
-            _lock_file = os.path.join(self.lock_file_folder, "compile_{}_library.lock".format(family_name))
+            _lock_file = os.path.join(self.lock_file_folder, "compile_{}_library.lock".format(map_lib_name))
             filelock.safe_run_function(self.create_dev_lib, args=(map_lib_name, self.lock_file_folder),
                                        func_lock_file=_lock_file,
                                        timeout=3600)

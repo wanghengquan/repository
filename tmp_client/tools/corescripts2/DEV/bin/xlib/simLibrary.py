@@ -51,14 +51,21 @@ def get_radiant_lib_file(family_path):
     _vhdl = os.path.join(hdl_path, "..", "..", "synthesis", "vhdl", "{}.vhd".format(family))
     if os.path.isfile(_vhdl):
         t.append(os.path.abspath(_vhdl))
+    p_v_sv_f = re.compile(r"\.(sv|v|f)$", re.I)
+    p_package = re.compile("_package")
     for foo in my_dirs:
         f_files = glob.glob(os.path.join(hdl_path, foo, "*.f"))
         if not f_files:
-            f_files = glob.glob(os.path.join(hdl_path, foo, "*.v"))
+            f_files = glob.glob(os.path.join(hdl_path, foo, "*"))
         for bar in f_files:
             if 'convertDeviceString' in bar:
                 continue
-            t.append(bar)
+            if not p_v_sv_f.search(bar):
+                continue
+            if p_package.search(os.path.basename(bar)):
+                t.insert(0, bar)
+            else:
+                t.append(bar)
     return t
 
 
@@ -111,7 +118,7 @@ def get_lib_file(hdl_type, family_path, bb_file, is_ng_flow):
         for foo in os.listdir(src_path):
             fext = xTools.get_fext_lower(foo)
             abs_foo = os.path.join(src_path, foo)
-            if fext == ".v":
+            if fext in (".v", ".sv"):
                 list_v.append(abs_foo)
             elif fext == ".vhd":
                 list_vhd.append(abs_foo)
@@ -196,7 +203,7 @@ def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool="
     is_riviera_tplus = ("Riviera" in vendor_tool) and _is_ice or ("Active" in vendor_tool)
     for item in hdl_files:
         fext = xTools.get_fext_lower(item)
-        if fext == ".v":
+        if fext in (".v", ".sv"):
             cmd_exe = vlog_cmd
             if is_riviera_tplus:
                 item = " -v2k5 " + item
