@@ -460,7 +460,11 @@ class LatticeEnvironment:
                     xTools.say_it("Warning. Can not set %s" % item)
                     continue
                 env_key, env_value = env_val
-                os.environ[env_key.strip()] = env_value.strip()
+                env_value = env_value.strip()
+                split_mark = ";" if ";" in env_value else ":"
+                env_value_list = re.split(split_mark, env_value)
+                env_value = os.pathsep.join(env_value_list)
+                os.environ[env_key.strip()] = env_value
 
     def get_right_diamond(self, diamond_path):
         if not self.loose_match:
