@@ -16,12 +16,20 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
 import data_center.switch_data;
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.hardware.GlobalMemory;
+import oshi.hardware.HardwareAbstractionLayer;
+import oshi.software.os.OperatingSystem;
+import oshi.util.Util;
 import top_runner.run_status.exit_enum;
 import utility_funcs.system_cmd;
 import utility_funcs.linux_info;
@@ -29,7 +37,10 @@ import utility_funcs.linux_info;
 /*
  * This class used to get the basic information of the client.
  * return machine_hash:
- * 		System	:	os		=	type_arch
+ * 		System	:	os		=	family + version
+ *                  os_family = windows7
+ *                  os_version = 7
+ *                  os_bits =   64
  * 					os_type	=	windows/linux
  * 					os_arch	=	32b/64b
  * 					space	=	xxG
@@ -51,7 +62,12 @@ public class machine_sync extends Thread {
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	private static final Logger MACHINE_SYNC_LOGGER = LogManager.getLogger(machine_sync.class.getName());
 	private switch_data switch_info;
-
+	private static SystemInfo sys_info = new SystemInfo();
+	private static HardwareAbstractionLayer hw_info = sys_info.getHardware();
+	private static OperatingSystem os_info = sys_info.getOperatingSystem();
+	private static LinkedList<Double> cpu_list =new LinkedList<Double>();
+	private static LinkedList<Long> mem_list =new LinkedList<Long>();
+	
 	// public function update data every interval seconds
 	public machine_sync(int base_interval) {
 		this.base_interval = base_interval;
@@ -70,7 +86,7 @@ public class machine_sync extends Thread {
 		return start_time;
 	}
 	
-	public String get_os_type() {
+	private String get_os_type() {
 		String os = System.getProperty("os.name").toLowerCase();
 		String os_type = new String();
 		if (os.contains("windows")) {
@@ -84,20 +100,40 @@ public class machine_sync extends Thread {
 	}
 
 	private String get_os() {
-		String run_cmd = "python " + public_data.TOOLS_OS_NAME;
-		String os_name = new String();
-		try {
-			ArrayList<String> excute_retruns = system_cmd.run(run_cmd);
-			os_name = excute_retruns.get(1);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			MACHINE_SYNC_LOGGER.warn("Cannot resolve Operation System name");
-			os_name = "unknown";
-		}
+		String os_name = new String("unknown");
+		String os_family = new String(get_os_family());
+		String os_version = new String(get_os_version());
+		os_name = os_family + os_version;
 		return os_name;
 	}
-
+	
+	private String get_os_version() {
+		String os_version = new String("X.X");
+		Pattern ver_patt = Pattern.compile("\\d*(\\.\\d*)?", Pattern.CASE_INSENSITIVE);
+		Matcher ver_match = ver_patt.matcher(os_info.getVersionInfo().getVersion());
+		if (ver_match.find()){
+			os_version = ver_match.group().trim(); 
+		}
+		return os_version;
+	}	
+	
+	private String get_os_family() {
+		String os_family = new String("NA");
+		String ori_name = os_info.getFamily().toLowerCase();
+		if (ori_name.contains("windows")) {
+			os_family = "windows";
+		} else if (ori_name.contains("ubuntu")) {
+			os_family = "ubuntu";
+		} else if (ori_name.contains("centos")) {
+			os_family = "centos";
+		} else if (ori_name.contains("red")) {
+			os_family = "redhat";
+		} else {
+			os_family = "NA";
+		}
+		return os_family;
+	}
+	
 	public static String get_disk_left() {
 		File file = new File("..");
 		String disk_left = new String();
@@ -130,7 +166,27 @@ public class machine_sync extends Thread {
 		return disk_avail;
 	}
 	
-	public static String get_cpu_usage() {
+	private String get_cpu_usage() {
+		String cpu_usage = new String("NA");
+		CentralProcessor processor = hw_info.getProcessor();
+        long[] prevTicks = processor.getSystemCpuLoadTicks();
+        Util.sleep(1000);
+        double current_data = processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100;
+        cpu_list.addFirst(current_data);
+        if (cpu_list.size() > public_data.RUN_CPU_FILTER_LENGTH) {
+        	cpu_list.removeLast();
+        }
+        double sum = 0.0;
+        for(double tick_data: cpu_list) {
+        	sum = sum + tick_data;
+        }
+        double average_data = sum / cpu_list.size();
+        cpu_usage = String.valueOf(Math.round(average_data));
+        return cpu_usage;
+	}
+	
+	
+	public static String get_cpu_usage_ori() {
 		String systemType = System.getProperties().getProperty("os.name");
 		String cpu_usage = new String();
 		if (systemType.contains("Windows")) {
@@ -153,7 +209,24 @@ public class machine_sync extends Thread {
 		}
 	}
 
-	public static String get_mem_usage() {
+	private String get_mem_usage() {
+		String mem_usage = new String("NA");
+		GlobalMemory memory = hw_info.getMemory();
+		long current_data = (memory.getTotal() - memory.getAvailable()) * 100 / memory.getTotal();
+        mem_list.addFirst(current_data);
+        if (mem_list.size() > public_data.RUN_MEM_FILTER_LENGTH) {//60 seconds average
+        	mem_list.removeLast();
+        }
+        long sum = 0;
+        for(long tick_data: mem_list) {
+        	sum = sum + tick_data;
+        }
+        long average_data = sum / mem_list.size();
+        mem_usage = String.valueOf(average_data);
+        return mem_usage;
+	}
+	
+	public static String get_mem_usage_ori() {
 		String systemType = System.getProperties().getProperty("os.name");
 		String mem_usage = new String();
 		if (systemType.contains("Windows")) {
@@ -215,35 +288,18 @@ public class machine_sync extends Thread {
 		return host_ip;
 	}
 
-	/*
-	 * update machine_hash: System : os = type_arch type = windows/linux arch =
-	 * 32b/64b Machine : terminal= xxx ip = xxx
-	 */
 	private void update_static_data() {
 		HashMap<String, String> system_data = new HashMap<String, String>();
 		HashMap<String, String> machine_data = new HashMap<String, String>();
-		String type = get_os_type();
-		String arch = new String();
-		String os = get_os();
-		if (os.equalsIgnoreCase("unknown")) {
-			// type = "NA";
-			arch = "NA";
-		} else {
-			if(os.contains("_")){
-				arch = os.split("_")[1];
-			} else {
-				arch = "NA";
-			}
-		}
-		String terminal = get_host_name();
-		String ip = get_host_ip();
-		String start_time = get_start_time();
-		system_data.put("os", os);
-		system_data.put("os_type", type);
-		system_data.put("os_arch", arch);
-		machine_data.put("terminal", terminal);
-		machine_data.put("ip", ip);
-		machine_data.put("start_time", start_time);
+		system_data.put("os", get_os());
+		system_data.put("os_family", get_os_family());
+		system_data.put("os_version", get_os_version());
+		system_data.put("os_type", get_os_type());
+		system_data.put("os_arch", System.getProperty("os.arch").toLowerCase());
+		system_data.put("os_bits", String.valueOf(os_info.getBitness()));
+		machine_data.put("terminal",get_host_name());
+		machine_data.put("ip", get_host_ip());
+		machine_data.put("start_time", get_start_time());
 		machine_hash.put("System", system_data);
 		machine_hash.put("Machine", machine_data);
 	}
@@ -326,11 +382,18 @@ public class machine_sync extends Thread {
 		}
 	}
 
+	public static void test_print() {
+		System.out.println(os_info.getFamily());
+		System.out.println(os_info.getManufacturer());
+		System.out.println(os_info.getVersionInfo());
+	}
+	
 	/*
 	 * main entry for test
 	 */
 	public static void main(String[] args) {
-		machine_sync client_update = new machine_sync(1);
+		machine_sync.test_print();
+		/*
 		client_update.start();
 		System.out.println(client_update.get_start_time());
 		System.exit(exit_enum.NORMAL.get_index());
@@ -368,5 +431,6 @@ public class machine_sync extends Thread {
 			e.printStackTrace();
 		}
 		System.out.println("Main finished");
+		*/
 	}
 }

@@ -2,6 +2,7 @@
 /DEV/
 *.class
 *.pyc
+.svn
 
 # Log file
 *.log

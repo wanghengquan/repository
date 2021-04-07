@@ -210,8 +210,7 @@ public class task_waiter extends Thread {
 			// with software request queue
 			Boolean match_request = Boolean.valueOf(true);
 			HashMap<String, String> sw_request_data = request_data.get("Software");
-			Set<String> sw_request_set = sw_request_data.keySet();
-			Iterator<String> sw_request_it = sw_request_set.iterator();
+			Iterator<String> sw_request_it = sw_request_data.keySet().iterator();
 			while (sw_request_it.hasNext()) {
 				String sw_request_name = sw_request_it.next();
 				if (!available_software_insts.containsKey(sw_request_name)) {
@@ -1173,12 +1172,14 @@ public class task_waiter extends Thread {
 			}
 			// task 7 : get test case ready
 			task_prepare prepare_obj = new task_prepare();
-			Boolean task_ready = prepare_obj.get_task_case_ready(task_data);
+			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
 			// task 8 : launch info prepare
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
-			String[] launch_cmd = prepare_obj.get_launch_command(task_data);
-			Map<String, String> launch_env = prepare_obj.get_launch_environment(task_data, client_info.get_client_data());
+			String python_version = switch_info.get_system_python_version();
+			Boolean corescript_link_status = switch_info.get_remote_corescript_linked();
+			String[] launch_cmd = prepare_obj.get_launch_command(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data);
+			Map<String, String> launch_env = prepare_obj.get_launch_environment(python_version, corescript_link_status, task_data, client_info.get_client_data());
 			// task 9 : launch reporting
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){

@@ -156,7 +156,8 @@ public class result_waiter extends Thread {
 					save_path,
 					cmd_status,
 					"keep",
-					result_keep);
+					result_keep,
+					client_info.get_client_tools_data());
 			Boolean create_status = post_info.add_postrun_call(call_obj, queue_name, case_id, public_data.DEF_CLEANUP_TASK_TIMEOUT);
 			if (!create_status){
 				post_report_list.add("Post run task skipped, no post run system/disk cleanup will be run.");
@@ -178,7 +179,9 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			running_queue_in_pool.add(queue_name);
+			if (!running_queue_in_pool.contains(queue_name)) {
+				running_queue_in_pool.add(queue_name);
+			}
 		}
 		task_info.set_running_admin_queue_list(running_queue_in_pool);
 	}
@@ -285,7 +288,7 @@ public class result_waiter extends Thread {
 	private Boolean fresh_thread_pool_data(){
 		Boolean run_status = Boolean.valueOf(true);
 		//fresh pool call map data
-		pool_info.fresh_sys_call();
+		pool_info.fresh_sys_call(client_info.get_client_tools_data());
 		post_info.fresh_postrun_call();
 		//clean post run map data (sys call map will be clean later)
 		clean_postrun_map_data();
@@ -1036,7 +1039,7 @@ public class result_waiter extends Thread {
 		// ============== All static job start from here ==============
 		// this run cannot launch multiple threads
 		result_thread = Thread.currentThread();
-		String waiter_name = "RW_0";
+		String waiter_name = new String("RW");
 		while (!stop_request) {
 			if (wait_request) {
 				try {

@@ -201,7 +201,7 @@ public class Updater {
             gui.setInformation(this, curVersion.getAppElements(), curInfo);
             gui.startDialog();
         } else {
-        	System.out.println(">>>Info: Client self update skipped.");
+        	//System.out.println(">>>Info: Client self update skipped.");
         	update_skipped = true;
         }
     }

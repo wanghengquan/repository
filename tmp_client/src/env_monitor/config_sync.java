@@ -344,9 +344,13 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
 		tmp_machine_data.put("debug", write_data.get("Machine").get("debug"));
 		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
+		if (write_data.containsKey("tools")) {
+			write_data.put("tmp_tools", write_data.get("tools"));
+		}
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
+		write_data.remove("tools");
 		write_data.remove("CoreScript");
 		if (cmd_gui.equalsIgnoreCase("gui")){
 			write_data.put("tmp_preference", tmp_preference_data);

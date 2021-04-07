@@ -52,7 +52,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem play, pause, stop;
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout, retest_halted;
 	JMenuItem upload, key_gen;
-	JMenuItem client, software, preference;
+	JMenuItem client, software, tools, preference;
 	JMenuItem client_restart_now, client_restart_later, client_shutdown_now, client_shutdown_later, host_restart_now, host_restart_later, host_shutdown_now, host_shutdown_later;
 	JMenuItem usage, client_help, tmp_doc, tmp_example, welcome_page, contact, about;
 	private String line_separator = System.getProperty("line.separator");	
@@ -195,11 +195,14 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		JMenu setting = new JMenu("Setting");
 		client = new JMenuItem("Client...");
 		client.addActionListener(this);
+		tools = new JMenuItem("Tools...");
+		tools.addActionListener(this);
 		software = new JMenuItem("Software...");
 		software.addActionListener(this);
 		preference = new JMenuItem("Preference...");
 		preference.addActionListener(this);
 		setting.add(client);
+		setting.add(tools);
 		setting.add(software);
 		setting.add(preference);
 		return setting;
@@ -406,7 +409,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		}		
 		if (e.getSource().equals(upload)) {
 			MENU_BAR_LOGGER.info("upload clicked");
-			upload_dialog upload_view = new upload_dialog(client_info);
+			upload_dialog upload_view = new upload_dialog(switch_info, client_info);
 			upload_view.setLocationRelativeTo(main_view);
 			upload_view.setVisible(true);
 		}
@@ -425,6 +428,11 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			software_view.setLocationRelativeTo(main_view);
 			software_view.setVisible(true);
 		}
+		if (e.getSource().equals(tools)) {
+			tools_dialog tools_view = new tools_dialog(main_view, switch_info, client_info);
+			tools_view.setLocationRelativeTo(main_view);
+			tools_view.setVisible(true);
+		}		
 		if (e.getSource().equals(preference)) {
 			preference_dialog pref_view = new preference_dialog(main_view, switch_info, pool_info, client_info);
 			new Thread(pref_view).start();

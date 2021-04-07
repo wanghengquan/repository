@@ -1,0 +1,61 @@
+[general information]
+
+[scan_method]
+scan_numbers_1 = 0
+scan_strings_1 = 0
+scan_pattern_1 = 0
+
+scan_prj_info = 1
+scan_timing = 1
+scan_resource = 1
+scan_lse = 1
+scan_par = 1
+scan_cpu =1
+scan_memory = 1
+scan_errors = 1
+scan_milestone = 1
+scan_simulation = 1
+
+[scan_pattern_1]
+file = ./_scratch/*/synthesis.log
+start_pattern = Begin Area Report
+stop_pattern = Begin Clock Report
+pattern = SP16K => (\d+)
+keyword = SP16K
+
+[scan_strings_1]
+file = ./_scratch/*.rdf
+pattern_1 = \s+device="([^"]+)"\s+
+pattern_2 = performance_grade="([^"]+)"\s+
+keyword = device
+join = -
+
+[scan_numbers_1]
+file = ./_scratch/*/*/*.mrp
+pattern_1 = (Pin|Port|Net)\s+[^:]+:\s+(?P<loads>\d+)\s*loads,\s+.+?\((Net|Driver):\s+[^\)]+\)
+start_pattern = Number of clocks:\s+(\d+)
+stop_pattern = Number of
+operator = sum
+keyword = loads
+;min, sum
+
+
+[scan_prj_info]
+
+[scan_timing]
+
+[scan_resource]
+
+[scan_lse]
+
+[scan_par]
+
+[scan_cpu]
+
+[scan_memory]
+
+[scan_errors]
+
+[scan_milestone]
+
+[scan_simulation]

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
+import sys
+import shutil
 import re
 import json
 import csv
@@ -39,9 +41,9 @@ def get_drop_down_value(raw_case_data):
 class UploadSuites(object):
     def __init__(self):
         self.db = links.get_guest_db()
-        ## self.tr = links.get_tr_api()
         self.des_key = "description"
         self.cmd_key = "LaunchCommand"
+        self.default_user = ""
 
     def process(self):
         self.get_options()
@@ -73,6 +75,12 @@ class UploadSuites(object):
     def upload_from_xlsx_file(self):
         LOGGER.info("Start upload suites by {}".format(self.file_xlsx))
         self.target_path = os.path.abspath("{}_tmp".format(tools.get_filename(self.file_xlsx)))
+        if os.path.isdir(self.target_path):
+            try:
+                shutil.rmtree(self.target_path)
+            except OSError:
+                LOGGER.error("Failed to REMOVE {}".format(self.target_path))
+                sys.exit()
         self.tmp_ini_file = os.path.join(self.target_path, "local_tmp.ini")
         for func in (self.transfer_xlsx_to_csv,
                      self.parse_suite_sheet,
@@ -114,6 +122,7 @@ class UploadSuites(object):
             foo_0, foo_1, foo_2 = _
             if not start:
                 start = foo_0 == "[suite_info]"
+                self.default_user = foo_1
                 continue
             if foo_0 in ("[macro]", "END"):
                 break
@@ -180,6 +189,7 @@ class UploadSuites(object):
                         continue
                     simple_case[k] = v
                 else:
+                    self.set_default_author(simple_case)
                     self.raw_cases.append(simple_case)
 
     def write_section_cases(self):
@@ -202,6 +212,12 @@ class UploadSuites(object):
             case_lines.append(";;;;;;;;;; ")
         tools.write_file(self.tmp_ini_file, case_lines, append=True)
         self.file_ini = self.tmp_ini_file
+
+    def set_default_author(self, case_data):
+        if self.default_user:
+            now_author = case_data.get("Author")
+            if not now_author:
+                case_data["Author"] = self.default_user
 
     def get_final_cases(self):
         self.final_cases = list()
@@ -283,7 +299,7 @@ class UploadSuites(object):
                 self.final_cases.append(new_case)
             if never_matched:
                 if not self.macro_only:
-                    self.final_cases.append(case.copy())
+                    self.final_cases.append(case)
 
     @staticmethod
     def equal_string_list_to_dict(equal_string_list):

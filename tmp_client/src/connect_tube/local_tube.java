@@ -1635,9 +1635,13 @@ public class local_tube {
 		List<String> key_paths = new ArrayList<String>();
 		key_paths.addAll(file_action.get_key_path_list(suite_path, key_pattern));
 		for (String key_path:key_paths){
-			key_path = key_path.replaceAll(suite_path, "");
-			key_path = key_path.replaceAll("^/", "");
-			design_list.add(key_path);
+			if (key_path.equalsIgnoreCase(suite_path)) {
+				design_list.add(".");
+			} else {
+				key_path = key_path.replaceAll(suite_path, "");
+				key_path = key_path.replaceAll("^/", "");
+				design_list.add(key_path);
+			}
 		}
 		return design_list;
 	}

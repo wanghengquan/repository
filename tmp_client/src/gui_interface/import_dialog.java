@@ -63,7 +63,7 @@ public class import_dialog extends JDialog implements ChangeListener{
 		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
-		this.setSize(800, 600);
+		this.setSize(800, 550);
 	}
 
 	private JTabbedPane construct_tab_pane(){
@@ -343,7 +343,7 @@ class file_pane extends JPanel implements ActionListener{
 			import_file.setDialogTitle("Select Test Suite File");
 			import_file.setMultiSelectionEnabled(true);
 			ArrayList<String> select_files = new ArrayList<String>();
-			int return_value = import_file.showOpenDialog(null);
+			int return_value = import_file.showOpenDialog(this);
 			if (return_value == JFileChooser.APPROVE_OPTION) {
 				for (File suite_file: import_file.getSelectedFiles()){
 					select_files.add(suite_file.getAbsolutePath().replaceAll("\\\\", "/"));
@@ -356,7 +356,7 @@ class file_pane extends JPanel implements ActionListener{
 			import_file.setDialogTitle("Select Unit Suite File");
 			import_file.setMultiSelectionEnabled(true);
 			ArrayList<String> select_files = new ArrayList<String>();
-			int return_value = import_file.showOpenDialog(null);
+			int return_value = import_file.showOpenDialog(this);
 			if (return_value == JFileChooser.APPROVE_OPTION) {
 				for (File suite_file: import_file.getSelectedFiles()){
 					select_files.add(suite_file.getAbsolutePath().replaceAll("\\\\", "/"));

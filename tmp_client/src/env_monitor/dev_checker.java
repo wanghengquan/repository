@@ -6,6 +6,7 @@ import data_center.switch_data;
 import top_runner.run_status.exit_enum;
 import utility_funcs.system_cmd;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -17,6 +18,7 @@ public class dev_checker extends TimerTask {
     private client_data client_info;
     private String core_addr;
     private String core_UUID = new String("NA");
+    //private String svn_cmd = public_data.DEF_SVN_PATH;
     private String svn_user = public_data.SVN_USER;
     private String svn_pwd = public_data.SVN_PWD;
 
@@ -25,8 +27,8 @@ public class dev_checker extends TimerTask {
     		client_data client_info) {
         this.switch_info = switch_info;
         this.client_info = client_info;
-        this.core_addr = public_data.CORE_SCRIPT_ADDR;
-        this.core_UUID = get_remote_corescript_version();
+        this.core_addr = public_data.CORE_SCRIPT_REMOTE_URL;
+        this.core_UUID = get_local_corescript_version(client_info.get_client_preference_data().get("work_space"));
     }
 
 	public void run() {
@@ -49,8 +51,16 @@ public class dev_checker extends TimerTask {
     private void update_remote_corescript_info(){
     	String remote_version = new String("NA");
     	String remote_time = new String("NA");
+    	if (!switch_info.get_remote_corescript_linked()) {
+            client_info.update_client_corescript_data("remote_version", remote_version);
+            client_info.update_client_corescript_data("remote_time", remote_time);
+            client_info.update_client_corescript_data("connection", "0");
+    		return;
+    	}
+    	String svn_cmd = new String(public_data.DEF_SVN_PATH);
+    	svn_cmd = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
         try {
-            String svn_info = "svn info " + core_addr +  " --username="
+            String svn_info = svn_cmd + " info " + core_addr +  " --username="
                                 + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
             ArrayList<String> info_return = system_cmd.run(svn_info);
             remote_version = get_version_num(info_return);
@@ -102,6 +112,14 @@ public class dev_checker extends TimerTask {
     } 
 
     private void generate_update_request(){
+    	if (!switch_info.get_system_python_version().startsWith("3")) {
+    		client_info.update_client_corescript_data("status", "NA");
+    		return;
+    	}
+    	if (!switch_info.get_remote_corescript_linked()) {
+    		client_info.update_client_corescript_data("status", "NA");
+    		return;
+    	}
     	//if requested already return
     	if (switch_info.get_core_script_update_request()){
     		return;
@@ -125,9 +143,11 @@ public class dev_checker extends TimerTask {
     }
 
     private String get_remote_corescript_version(){
+    	String svn_cmd = new String(public_data.DEF_SVN_PATH);
+    	svn_cmd = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
     	String remote_version = new String("NA");
         try {
-            String svn_info = "svn info " + core_addr +  " --username="
+            String svn_info = svn_cmd + " info " + core_addr +  " --username="
                                 + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
             ArrayList<String> info_return = system_cmd.run(svn_info);
             remote_version = get_version_num(info_return);
@@ -138,6 +158,25 @@ public class dev_checker extends TimerTask {
         }
         return remote_version;
     }	
+    
+    private String get_local_corescript_version(String work_space){
+    	String svn_cmd = new String(public_data.DEF_SVN_PATH);
+    	svn_cmd = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
+    	String local_version = new String("NA");
+		File svn_fobj = new File(svn_cmd);
+		if (!svn_fobj.exists()) {
+			return local_version;
+		}
+        try {
+            String svn_info = svn_cmd + " info " + public_data.CORE_SCRIPT_NAME +  " --username="
+                                + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
+            ArrayList<String> info_return = system_cmd.run(svn_info, work_space);
+            local_version = get_version_num(info_return);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return local_version;
+    }  
     
     public static void main(String[] argvs){
 		Timer my_timer = new Timer();

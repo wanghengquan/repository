@@ -49,7 +49,7 @@ def split_list_with_window(a_list, window=5):
 
 def comma_split(raw_string, sep_mark=","):
     raw_string = raw_string.strip("{} ".format(sep_mark))
-    _ = shlex.shlex(raw_string, posix=False)
+    _ = shlex.shlex(raw_string, posix=True)
     _.whitespace = sep_mark
     _.whitespace_split = True
     _ = list(_)

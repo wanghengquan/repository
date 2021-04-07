@@ -78,6 +78,9 @@ public class software_dialog extends JDialog implements ChangeListener{
 			if (section_name.equalsIgnoreCase("corescript")){
 				continue;
 			}
+			if (section_name.equalsIgnoreCase("tools")){
+				continue;
+			}
 			//Icon icon_image = (Icon) Toolkit.getDefaultToolkit().getImage(public_data.ICON_TAB_ICO);
 			ImageIcon icon_image = new ImageIcon(public_data.ICON_SOFTWARE_TAB_PNG);
 			String shown_tab_name = new String();

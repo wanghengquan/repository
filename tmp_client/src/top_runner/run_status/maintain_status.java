@@ -97,11 +97,11 @@ public class maintain_status extends abstract_status {
 				implements_env_issue_propagate();
 				break;				
 			case cpu:
-				client.STATUS_LOGGER.warn(">>>CPU:" + machine_sync.get_cpu_usage());
+				client.STATUS_LOGGER.warn(">>>CPU:" + client.client_info.get_client_system_data().getOrDefault("cpu", "NA"));
 				implements_client_cpu_action();
 				break;
 			case mem:
-				client.STATUS_LOGGER.warn(">>>MEM:" + machine_sync.get_mem_usage());
+				client.STATUS_LOGGER.warn(">>>MEM:" + client.client_info.get_client_system_data().getOrDefault("mem", "NA"));
 				implements_client_mem_action();
 				break;
 			case space:
@@ -146,12 +146,17 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private Boolean implements_core_script_update(){
+		//confirm remote corescript linked
+		if (!client.switch_info.get_remote_corescript_linked()) {
+			client.STATUS_LOGGER.info("CoreScript update...SKIPPED");
+			return false;
+		}
 		//confirm no test case running
 		int counter = 0;
 		while(true){
 			counter++;
 			if(counter > 10){
-				client.STATUS_LOGGER.warn(">>>Info: Core script update failed...");
+				client.STATUS_LOGGER.warn("CoreScript update...FAILED");
 				return false;
 			}
 			if (client.pool_info.get_pool_used_threads() > 0){
@@ -169,10 +174,10 @@ public class maintain_status extends abstract_status {
 		core_update my_core = new core_update(client.client_info);
 		Boolean update_status = my_core.update();
 		if (update_status){
-			client.STATUS_LOGGER.info("Core script updated...PASS");
+			client.STATUS_LOGGER.info("CoreScript update...PASS");
 			return update_status;
 		}
-		client.STATUS_LOGGER.info("Core script updated...FAILED");
+		client.STATUS_LOGGER.info("CoreScript update...FAILED");
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.putAll(client.client_info.get_client_machine_data());
 		HashMap<String, String> preference_data = new HashMap<String, String>();
@@ -183,7 +188,7 @@ public class maintain_status extends abstract_status {
 			if(preference_data.get("cmd_gui").equals("gui")){
 				client.view_info.set_corescript_update_apply(true);
 			} else {
-				client.STATUS_LOGGER.warn("Manually Core Script update needed...");
+				client.STATUS_LOGGER.warn("Manually CoreScript update needed...");
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {

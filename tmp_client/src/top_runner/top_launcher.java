@@ -25,14 +25,13 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
-import env_monitor.env_checker;
 import env_monitor.machine_sync;
 import flow_control.post_data;
 import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
 import top_runner.run_manager.client_manager;
-import top_runner.run_status.exit_enum;
+
 
 public class top_launcher {
 	// public property
@@ -64,13 +63,11 @@ public class top_launcher {
         return bin_path;
     }
 
-	private static void initial_log_config() {
+	private static void initial_log_config(String bin_path) {
 		ConfigurationSource source;
-		String bin_path = get_bin_path();
-		System.out.println(">>>Info: SW bin path:" + bin_path);
 		File bin_dobj = new File(bin_path);
 		String conf_path = bin_dobj.getParentFile().toString().replaceAll("\\\\", "/") + "/conf/log4j2.xml";
-		System.out.println(">>>Info: SW log config path:" + conf_path);
+		//System.out.println(">>>Info: SW log config path:" + conf_path);
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e1) {
@@ -82,57 +79,16 @@ public class top_launcher {
 			source = new ConfigurationSource(new FileInputStream(file), file);
 			Configurator.initialize(null, source);
 			TOP_LAUNCHER_LOGGER = LogManager.getLogger(top_launcher.class.getName());
+			TOP_LAUNCHER_LOGGER.debug("");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	private static Boolean run_self_check(String work_path) {
-		env_checker my_check = new env_checker();
-		return my_check.do_self_check(work_path);
-	}
-
-	private static void default_tools_report() {
-		env_checker my_check = new env_checker();
-		my_check.report_default_tools();
-	}
-	
-	private static void run_client_insts_check(
-			switch_data switch_info, 
-			String run_mode, 
-			String unattended_mode) {
-		int start_insts = switch_info.get_system_client_insts();
-		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");
-		/*
-		if (run_mode.equals("cmd")) {
-			if ((start_insts > 0) && (!unattended_mode.equals("1"))) {
-				//both yes and no need to add 1 insts.
-				//yes: add one more insts
-				//no: add one since exit will decrease by default
-				//switch_info.increase_system_client_insts();		
-				@SuppressWarnings("resource")
-				Scanner user_input = new Scanner(System.in);
-				int input_count = 0;
-				while (true) {
-					System.out.println(">>>Info: Do you want to launch a new one? y/n");
-					String user_choice = user_input.nextLine();
-					if (user_choice.equals("y")) {
-						break;
-					}
-					if (user_choice.equals("n")) {
-						System.exit(exit_enum.USER.get_index());
-					}
-					input_count++;
-					if (input_count > 9) {
-						System.exit(exit_enum.USER.get_index());
-					}
-				}
-				//user_input.close(); for future use	
-			}
-			switch_info.increase_system_client_insts();
-		}
-		*/
+		//TOP_LAUNCHER_LOGGER.debug("Debug output testing...");
+		//TOP_LAUNCHER_LOGGER.info("Info output testing...");
+		//TOP_LAUNCHER_LOGGER.warn("Warn output testing...");
+		//TOP_LAUNCHER_LOGGER.error("Error output testing...");
+		//TOP_LAUNCHER_LOGGER.fatal("Fatal output testing...");
 	}
 
 	/*
@@ -143,33 +99,24 @@ public class top_launcher {
 		System.out.println(">>>Info: Build Date:" + public_data.BASE_BUILDDATE);
 		System.out.println(">>>Info: Contact us:" + public_data.BASE_DEVELOPER_MAIL);
 		System.out.println("");
-		String current_dir = new String(System.getProperty("user.dir").replaceAll("\\\\", "/"));
-		System.out.println(">>>Info: Launch dir:" + current_dir);
-		System.setProperty("log_path", current_dir);
-		initial_log_config();
-		//TOP_LAUNCHER_LOGGER.debug("Debug output testing...");
-		//TOP_LAUNCHER_LOGGER.info("Info output testing...");
-		//TOP_LAUNCHER_LOGGER.warn("Warn output testing...");
-		//TOP_LAUNCHER_LOGGER.error("Error output testing...");
-		//TOP_LAUNCHER_LOGGER.fatal("Fatal output testing...");
+		String work_path = new String(System.getProperty("user.dir").replaceAll("\\\\", "/"));
+		String bin_path = get_bin_path();
+		System.out.println(">>>Info: Bin Path:" + bin_path);
+		System.out.println(">>>Info: Launch DIR:" + work_path);
+		System.out.println(">>>Info: RuntimeLog:" + work_path + "/logs/console.log");
+		System.setProperty("log_path", work_path);
+		// initial 0 : Get log ready
+		initial_log_config(bin_path);
 		// initial 1 : Get data ready
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
 		task_data task_info = new task_data();
 		view_data view_info = new view_data();
 		pool_data pool_info = new pool_data();
-		cmd_parser cmd_run = new cmd_parser(args);
 		post_data post_info = new post_data();
+		cmd_parser cmd_run = new cmd_parser(args);
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
-		// initial 2 : run self check and report
-		if (!run_self_check(current_dir)) {
-			TOP_LAUNCHER_LOGGER.error("Self check failed.");
-			System.exit(exit_enum.RUNENV.get_index());
-		}
-		default_tools_report();
-		// initial 3 : run client instances check
-		run_client_insts_check(switch_info, cmd_info.get("cmd_gui"), cmd_info.getOrDefault("unattended", ""));
-		// initial 4 : client manager launch
+		// initial 2 : client manager launch
 		client_manager manager = new client_manager(
 				switch_info, 
 				client_info, 
@@ -181,5 +128,7 @@ public class top_launcher {
 		manager.start();
 		System.out.println(">>>Info: Run Machine:" + machine_sync.get_host_name());
 		System.out.println(">>>Info: Run Account:" + System.getProperty("user.name"));
+		int start_insts = switch_info.get_system_client_insts();
+		System.out.println(">>>Info: " + String.valueOf(start_insts) + " TMP Client(s) launched with your account already.");
 	}
 }

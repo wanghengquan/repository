@@ -73,19 +73,19 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		JPanel bar_panel = new JPanel(status_layout);
 		//link to part
 		JLabel jl_link = new JLabel("Link To:");
-		jt_link = new JTextField();
+		jt_link = new JTextField("NA");
 		jt_link.setEditable(false);
 		bar_panel.add(jl_link);
 		bar_panel.add(jt_link);
 		//work state
 		JLabel jl_state = new JLabel("State:");
-		jt_state = new JTextField();
+		jt_state = new JTextField("NA");
 		jt_state.setEditable(false);
 		bar_panel.add(jl_state);
 		bar_panel.add(jt_state);		
 		//working threads part
 		JLabel jl_thread = new JLabel("Thread(s):");
-		jt_thread = new JTextField();
+		jt_thread = new JTextField("NA");
 		jt_thread.setEditable(false);
 		bar_panel.add(jl_thread);
 		bar_panel.add(jt_thread);
@@ -96,11 +96,11 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		JLabel jl_system = new JLabel("System Info: ");
 		JLabel jl_cpu = new JLabel(" CPU:");
 		jl_cpu.setHorizontalAlignment(SwingConstants.RIGHT);
-		jt_cpu = new JTextField();
+		jt_cpu = new JTextField("NA");
 		jt_cpu.setEditable(false);
 		JLabel jl_mem = new JLabel(" MEM:");
 		jl_mem.setHorizontalAlignment(SwingConstants.RIGHT);
-		jt_mem = new JTextField();
+		jt_mem = new JTextField("NA");
 		jt_mem.setEditable(false);
 		bar_panel.add(jl_system);
 		bar_panel.add(jl_cpu);
@@ -260,19 +260,16 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 	}
 	
 	private void update_system_data(){
-		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
-		client_hash.putAll(client_info.get_client_data());
-		String cpu_info = new String();
-		String mem_info = new String();
-		if(client_hash.containsKey("System")){
-			cpu_info = client_hash.get("System").get("cpu");
-		} else {
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(client_info.get_client_system_data());
+		String cpu_info = new String("NA");
+		String mem_info = new String("NA");
+		if(system_data.isEmpty()) {
 			cpu_info = "NA";
-		}
-		if(client_hash.containsKey("System")){
-			mem_info = client_hash.get("System").get("mem");
-		} else {
 			mem_info = "NA";
+		} else {
+			cpu_info = system_data.getOrDefault("cpu", "NA");
+			mem_info = system_data.getOrDefault("mem", "NA");
 		}
 		jt_cpu.setText(cpu_info);
 		jt_mem.setText(mem_info);

@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.client_data;
 import data_center.public_data;
+import data_center.switch_data;
 
 
 public class upload_dialog extends JFrame{
@@ -36,14 +37,14 @@ public class upload_dialog extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	@SuppressWarnings("unused")
 	private client_data client_info;
+	private switch_data switch_info;
 	private JLabel label_username = new JLabel("TMP Username:");
 	private JLabel label_password = new JLabel("TMP Password:");
 	private JLabel label_suitefile = new JLabel("Upload Suite File:");
 	//private JLabel label_output = new JLabel("Upload console Outputs:");
-	private JTextField field_username = new JTextField("public@latticesemi.com", 20);
-	private JPasswordField field_password = new JPasswordField("lattice", 20);
+	private JTextField field_username = new JTextField(public_data.TMP_DATABASE_USER, 20);
+	private JPasswordField field_password = new JPasswordField(public_data.TMP_DATABASE_PWD, 20);
 	private JTextField field_file = new JTextField("", 20);
 	private JButton open_button = new JButton("Select");
 	private JButton cancel_button = new JButton("Cancel");
@@ -54,9 +55,13 @@ public class upload_dialog extends JFrame{
 	private Process run_processer;
 	String work_space = new String();
 	
-	public upload_dialog(client_data client_info){
+	public upload_dialog(
+			switch_data switch_info,
+			client_data client_info
+			){
 		//super(main_view, "Suite Upload", true);
 		super();
+		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.setTitle("Suite Upload");
 		Image icon_image = Toolkit.getDefaultToolkit().getImage(public_data.ICON_FRAME_PNG);
@@ -221,9 +226,24 @@ public class upload_dialog extends JFrame{
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
+			//step 1: Python command identify
 			ArrayList<String> cmd_args = new ArrayList<String>();
-			cmd_args.add("python");
-			cmd_args.add(public_data.TOOLS_UPLOAD);
+			String python_cmd = new String(public_data.DEF_PYTHON_PATH);
+			if(client_info.get_client_data().containsKey("tools")){
+				python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);	
+			}
+			//step 2: Python version identify
+			String cur_ver = new String(switch_info.get_system_python_version());
+			//step 3: Command generate
+			cmd_args.add(python_cmd);
+			if (cur_ver.startsWith("2.")) {
+				cmd_args.add(public_data.TOOLS_UPLOAD2);
+			} else if (cur_ver.startsWith("3.")) {
+				cmd_args.add(public_data.TOOLS_UPLOAD3);
+			} else {
+				UPLOAD_DIALOG_LOGGER.warn("Error:Got unknown Python version:" + cur_ver + ", Upload stopped.");
+				return;
+			}
 			cmd_args.add("-f");
 			cmd_args.add(file);
 			cmd_args.add("-u");
@@ -291,8 +311,9 @@ public class upload_dialog extends JFrame{
 	}
 	
 	public static void main(String[] args) {
+		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
-		upload_dialog upload = new upload_dialog(client_info);
+		upload_dialog upload = new upload_dialog(switch_info, client_info);
 		upload.setVisible(true);
 	}	
 }

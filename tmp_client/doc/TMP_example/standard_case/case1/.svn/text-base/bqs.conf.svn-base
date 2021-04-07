@@ -1,9 +1,0 @@
-[configuration information]
-area = script_test
-type = general_flow
-
-[method]
-check_flow = 1
-
-[check_flow]
-file=./_scratch/impl1/test_impl1.par

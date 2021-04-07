@@ -10,7 +10,7 @@ beta_key = 'ng1_0b'
 trunk_key = 'ng1_0'
 
 if 'win' in sys.platform:
-    print 'This script do not support windows, only Linux platform supported'
+    print ('This script do not support windows, only Linux platform supported')
     scan_dir = r'Z:/release/rel'
     extra_dir = r'eit/pc/install'
 else:
@@ -29,58 +29,58 @@ for item in os.listdir(scan_dir):
 def build_check_pass(build):
     build_path = os.path.join(scan_dir, build, extra_dir)
     if not os.path.exists(build_path):
-        print build + ':not find build path:' + build_path
+        print (build + ':not find build path:' + build_path)
         return False
     if 'win' in sys.platform:
         pnmain_path = os.path.join(build_path, 'bin/nt64/pnmain.exe')
     else:
         pnmain_path = os.path.join(build_path, 'bin/lin64/pnmain')
     if not os.path.exists(pnmain_path):
-        print build + ':not find pnmain'
+        print (build + ':not find pnmain')
         return False
     if 'win' in sys.platform:
         map_path = os.path.join(build_path, 'ispfpga/bin/nt64/map.exe')
     else:
         map_path = os.path.join(build_path, 'ispfpga/bin/lin64/map')
     if not os.path.exists(map_path):
-        print build + ':not find map file'
+        print (build + ':not find map file')
         return False
     return True
 
 beta_build = []
 for beta in beta_folder_list:
     if (not build_check_pass(beta)):
-        print "Not beta build:" + beta
-	continue
+        print ("Not beta build:" + beta)
+    continue
     beta_build.append(beta)
-print beta_build
+print (beta_build)
     
 trunk_build = []
 for trunk in trunk_folder_list:
     if (not build_check_pass(trunk)):
-        print "Not trunk build:" + trunk
-	continue
+        print ("Not trunk build:" + trunk)
+    continue
     trunk_build.append(trunk)
-print trunk_build
+print (trunk_build)
 
 #get top5 beta build
 beta_build_num_list = []
 for build in beta_build:
     if '.' not in build:
-        print build + ': skipped'
+        print (build + ': skipped')
         continue
     id  = build.split('.')[1]
     beta_build_num_list.append(id)
 beta_build_num_list.sort()
 beta_build_num_list.reverse()
-print 'beta total:' + ','.join(beta_build_num_list)
+print ('beta total:' + ','.join(beta_build_num_list))
 counter = 0
 beta_final_list = []
 for index in beta_build_num_list[1:]:
     if (counter < 5):
         beta_final_list.append(index)
     counter += 1;
-print 'beta final:' + ','.join(beta_final_list)
+print ('beta final:' + ','.join(beta_final_list))
 
 
 
@@ -88,24 +88,24 @@ print 'beta final:' + ','.join(beta_final_list)
 trunk_build_num_list = []
 for build in trunk_build:
     if '.' not in build:
-        print build + ': skipped'
+        print (build + ': skipped')
         continue
     id  = build.split('.')[1]
     trunk_build_num_list.append(id)
 trunk_build_num_list.sort()
 trunk_build_num_list.reverse()
-print 'trunk total:' + ','.join(trunk_build_num_list)
+print ('trunk total:' + ','.join(trunk_build_num_list))
 counter = 0
 trunk_final_list = []
 for index in trunk_build_num_list[1:]:
     if (counter < 5):
         trunk_final_list.append(index)
     counter += 1;
-print 'trunk final:' + ','.join(trunk_final_list)
+print ('trunk final:' + ','.join(trunk_final_list))
 
 ###############print final output#####################
 for build in beta_final_list:
-    print 'build:ng1_0b.%s = %s/ng1_0b.%s/%s' % (build, scan_dir, build, extra_dir)
+    print ('build:ng1_0b.%s = %s/ng1_0b.%s/%s' % (build, scan_dir, build, extra_dir))
 
 for build in trunk_final_list:
-    print 'build:ng1_0.%s = %s/ng1_0.%s/%s' % (build, scan_dir, build, extra_dir)
+    print ('build:ng1_0.%s = %s/ng1_0.%s/%s' % (build, scan_dir, build, extra_dir))

@@ -1,0 +1,9 @@
+[general information]
+
+[scan_method]
+scan_simulation = 1
+scan_prj_info = 1
+
+[scan_simulation]
+
+[scan_prj_info]

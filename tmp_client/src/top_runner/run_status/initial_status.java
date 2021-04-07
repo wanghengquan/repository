@@ -18,7 +18,6 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import cmd_interface.console_server;
 import data_center.public_data;
-import env_monitor.core_update;
 import env_monitor.kill_winpop;
 import self_update.app_update;
 import env_monitor.dev_checker;
@@ -52,27 +51,25 @@ class initial_status extends abstract_status {
 	public void to_work() {
 		client.STATUS_LOGGER.debug(">>>####################");
 		client.STATUS_LOGGER.info("Initializing...");
-		// task 1: launch link console
-		launch_link_console();
-		// task 2: launch GUI if in GUI mode
-		launch_main_gui();
-		// task 3: get and wait client data ready 
-		get_client_data_ready();
+		// task 1: launch client
+		launch_client();
+		// task 2: get and wait client data ready 
+		get_client_data_ready();		
+		// task 3: get daemon process ready
+		get_daemon_process_ready();
 		// task 4: client self update
 		get_client_self_update();
-		// task 5 : core script update 
-		get_core_script_update();		
-		// task 6: get daemon process ready
-		get_daemon_process_ready();
-		// task 7: auto restart warning message print
+		// task 5 : core script select 
+		release_corescript_msg();
+		// task 6: auto restart warning message print
 		release_auto_restart_msg();		
-		// task 8: launch link services
+		// task 7: launch link services
 		launch_link_services();
-		// task 9: client run mode recognize
+		// task 8: client run mode recognize
 		local_console_run_recognize();
-		// task 10: get tube server ready
+		// task 9: get tube server ready
 		get_tube_server_ready();		
-		// task 11: get hall manager ready
+		// task 10: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
 		if (client.client_info.get_client_machine_data().get("debug").equals("1")){
@@ -108,12 +105,15 @@ class initial_status extends abstract_status {
 		client.STATUS_LOGGER.info("Socket servers power up.");
 	}
 	
-	private void launch_link_console(){
+	private void launch_client() {
 		if (client.cmd_info.get("interactive").equals("1")){
 			mute_log4j_outputs();
 			console_server my_console = new console_server(client.switch_info);
 			my_console.start();
-		}		
+		}
+		if (client.cmd_info.get("cmd_gui").equals("gui")){
+			client.view_runner.start();
+		} //don't wait until GUI ready
 	}
 	
 	private void mute_log4j_outputs(){
@@ -125,12 +125,6 @@ class initial_status extends abstract_status {
 		Configurator.setLevel("flow_control.task_waiter", Level.OFF);
 		Configurator.setLevel("flow_control.hall_manager", Level.OFF);
 		Configurator.setLevel("connect_tube.tube_server", Level.OFF);
-	}
-		
-	private void launch_main_gui(){
-		if(client.cmd_info.get("cmd_gui").equals("gui")){
-			client.view_runner.start();
-		} //don't wait until GUI ready
 	}
 	
 	//data prepare
@@ -146,11 +140,27 @@ class initial_status extends abstract_status {
 	}
 	
 	//core script update
-	private void get_core_script_update(){
-		core_update my_core = new core_update(client.client_info);
-		my_core.update();
-		client.STATUS_LOGGER.info("Core Script updated.");
-	}	
+	private void release_corescript_msg(){
+		//Three corescript available:remote(locate in subversion), local_python3(integrated in Client), local_python2(integrated in Client)
+		String python_version = new String(client.switch_info.get_system_python_version());
+		if(python_version.startsWith("2")) {
+			client.STATUS_LOGGER.info("Python " + python_version + " used.");
+			client.STATUS_LOGGER.info("Local CoreScript linked:" + public_data.LOCAL_CORE_SCRIPT_DIR2);
+			client.STATUS_LOGGER.info("No update support.");
+		} else if (python_version.startsWith("3")) {
+			client.STATUS_LOGGER.info("Python " + python_version + " used.");
+			if(client.switch_info.get_remote_corescript_linked()) {
+				client.STATUS_LOGGER.info("CoreScript sync up with:" + public_data.CORE_SCRIPT_REMOTE_URL);
+			} else {
+				client.STATUS_LOGGER.info("Local CoreScript linked:" + public_data.LOCAL_CORE_SCRIPT_DIR3);
+				client.STATUS_LOGGER.info("No update support.");
+			}
+		} else {
+			client.STATUS_LOGGER.info("Unknown Python:" + python_version);
+			client.STATUS_LOGGER.info("Please set it in Config file or Menu -> Setting -> Tools");
+		}
+	}
+	
 	//self update
 	private void get_client_self_update(){ 
 		//wait until main GUI start and then start update self
@@ -168,9 +178,9 @@ class initial_status extends abstract_status {
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
 		if (update_obj.update_skipped) {
-			client.STATUS_LOGGER.info("TMP Client self-update skipped...");
+			client.STATUS_LOGGER.info("Client self-update skipped.");
 		} else {
-			client.STATUS_LOGGER.info("TMP Client self-update launched...");
+			client.STATUS_LOGGER.info("Client self-update launched.");
 			//no data for dump at the initial state
 			//export_data.export_disk_processed_queue_report(client.task_info, client.client_info);
 			//export_data.export_disk_finished_queue_data(client.task_info, client.client_info);
@@ -188,21 +198,21 @@ class initial_status extends abstract_status {
 				e.printStackTrace();
 			}
 		}
-		client.STATUS_LOGGER.info("TMP Client updated.");
+		client.STATUS_LOGGER.debug("TMP Client updated.");
 	}
 	
 	//get daemon process ready
 	private void get_daemon_process_ready(){
 		Timer misc_timer = new Timer("misc_timer");
+		//task 1: environ check
+		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*0, 1000*10);
+		//task 2: dev check only vaild on remote svn linked
+		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*3, 1000*10);
 		//task 1: kill process
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
-			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info), 1000*0, 1000*10);
+			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info, this.client.client_info), 1000*6, 1000*10);
 		}
-		//task 2: dev check
-		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*2, 1000*10);
-		//task 3: environ check
-		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*4, 1000*10);
 	}
 	
 	//get tube server start and wait it ready

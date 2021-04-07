@@ -1,0 +1,39 @@
+-a SBT%(DeviceFamily)s
+-d %(DeviceFamily)s%(Device)s
+-t %(DevicePackage)s
+# -s 2
+-frequency %(frequency)s
+-top %(DesignCell)s
+-optimization_goal %(goal)s
+### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### LSE generic options ###
+### LSE version: 2_2b78_20130329_LIN ###
+-frequency 200
+-optimization_goal Area
+%(sdc_file)s
+-bram_utilization 100
+-ramstyle Auto
+-romstyle auto
+-use_carry_chain 1
+-carry_chain_length 0
+-resource_sharing 1
+-propagate_constants 1
+-remove_duplicate_regs 1
+#-mux_style Auto
+-max_fanout 10000
+-fsm_encoding_style Auto
+-twr_paths 3
+-use_io_insertion 1
+-ifd
+-resolve_mixed_drivers 0
+-use_io_reg auto
+
+%(mixed_drivers)s
+
+%(source_files)s
+
+-ngd %(implmnt_path)s/%(ProjectName)s.ngd
+-output_edif %(implmnt_path)s/%(ProjectName)s.edf
+
+
+

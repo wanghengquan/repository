@@ -26,26 +26,28 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.11.02"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21102; //version for code use
-	public final static String BASE_BUILDDATE = "2021/01/05";
-	public final static String BASE_SUITEFILEVERSION = "1.17";
+	public final static String BASE_CURRENTVERSION = "2.11.03"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21103; //version for code use
+	public final static String BASE_BUILDDATE = "2021/04/07";
+	public final static String BASE_SUITEFILEVERSION = "1.19";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
 	public final static String BASE_PYTHONBASEVERSION = "2.7";
-	public final static String BASE_PYTHONMAXVERSION = "3.0";
+	public final static String BASE_PYTHONMAXVERSION = "4.0";
 	public final static String BASE_SVNBASEVERSION = "1.4";
 
 	// ========================
-	// Soft ware bin path
+	// Software bin path
 	public final static String SW_HOME_PATH = get_home_path();
 
 	// ========================
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
 	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
-	public final static String RUN_LIMITATION_SPACE = "5";//client suspend when disk space less than this value
+	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
+	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
+	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
 	
 	// ========================
 	// log setting
@@ -93,7 +95,10 @@ public class public_data {
 	// ========================
 	// Remote core script path
 	public final static String CORE_SCRIPT_NAME = "DEV";
-	public final static String CORE_SCRIPT_ADDR = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME;
+	public final static String CORE_SCRIPT_REMOTE_URL = "http://lsh-tmp/platform/trunk/tmp_scripts/" + CORE_SCRIPT_NAME; //lsh-tmp, lsh-guitar
+	public final static String REMOTE_CORE_SCRIPT_DIR = "$work_path/" + CORE_SCRIPT_NAME;
+	public final static String LOCAL_CORE_SCRIPT_DIR2 = SW_HOME_PATH + "/tools/corescripts2/" + CORE_SCRIPT_NAME;
+	public final static String LOCAL_CORE_SCRIPT_DIR3 = SW_HOME_PATH + "/tools/corescripts3/" + CORE_SCRIPT_NAME;
 	
 	// ========================
 	// workspace folder configuration, real path = work_space + following folder
@@ -120,7 +125,7 @@ public class public_data {
 	public final static String CASE_USER_PATTERN = "^run\\..*";
 	public final static String CASE_STANDARD_PATTERN = "run_info.ini";
 	public final static String CASE_INFO_FILE = "bqs.info";
-	public final static String CASE_EXEC_FILE = "$work_path/DEV/bin/run_radiant.py";
+	public final static String CASE_EXEC_FILE = "DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";
 	public final static String CASE_DATA_FILE = "bqs.data";
 	
@@ -141,8 +146,8 @@ public class public_data {
 	public final static String TOOLS_WHICH = SW_HOME_PATH + "/tools/which.exe";
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
-	//public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload/excel2testrail.py";
-	public final static String TOOLS_UPLOAD = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
+	public final static String TOOLS_UPLOAD2 = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
+	public final static String TOOLS_UPLOAD3 = SW_HOME_PATH + "/tools/upload3/excel2testrail.py";
 
 	// ========================
 	// external documents based on software bin path
@@ -154,15 +159,16 @@ public class public_data {
 	// ========================
 	// link to RabbitMQ configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
-	public final static String RMQ_HOST = "lsh-tmp"; // "linux-D50553", "lsh-tmp"
+	public final static String RMQ_HOST = "lsh-tmp"; // "lsh-guitar", "lsh-tmp"
 	public final static String RMQ_USER = "root";
 	public final static String RMQ_PWD = "root";
 	public final static String RMQ_RESULT_NAME = "result";
 	public final static String RMQ_CLIENT_NAME = "monitor"; // client data
+	public final static String RMQ_RUNTIME_NAME = "console_log";
 	public final static String RMQ_TASK_QUEUE = "task_queue";
 	public final static String RMQ_ADMIN_QUEUE = "admin_queue";
 	public final static String RMQ_STOP_QUEUE = "stop_queue";
-	public final static String RMQ_RUNTIME_NAME = "logs";
+
 
 	// ========================
 	// link to Other Clients configuration data shown here
@@ -187,8 +193,13 @@ public class public_data {
 	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
 	public final static String SVN_PWD = "welcome";
-	public final static String SVN_URL = "http://lsh-tmp";
+	public final static String SVN_URL = "http://lsh-tmp";//lsh-tmp, lsh-guitar
 
+	// ========================
+	// link to TMP server Database default user shown here
+	public final static String TMP_DATABASE_USER = "public@latticesemi.com";
+	public final static String TMP_DATABASE_PWD = "lattice";
+	
 	// ========================
 	// link to FTP default user shown here
 	public final static String FTP_USER = "guest";
@@ -238,6 +249,12 @@ public class public_data {
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	public final static int DEF_SCAN_CMD_TAKE_LINE = 10;
 	public final static int DEF_GUI_BUILD_SHOW_LINE = 50;
+	// Tools
+	public final static String DEF_PYTHON_PATH = "python";
+	public final static String DEF_PERL_PATH = "perl";
+	public final static String DEF_RUBY_PATH = "ruby";
+	public final static String DEF_SVN_PATH = "svn";
+	public final static String DEF_GIT_PATH = "git";	
 	// Machine
 	public final static String DEF_GROUP_NAME = "tmp_client";
 	public final static String DEF_MACHINE_PRIVATE = "1"; // 1 private, 0 public
@@ -299,7 +316,7 @@ public class public_data {
 		} else {
 			return "Bitstream Charter";
 		}
-	}	
+	}
 	
 	/*
 	 * main entry for test
@@ -343,5 +360,9 @@ public class public_data {
 		String queue_name = new String("555@t1r1_run_55555"); 
 		queue_name = queue_name.split("@.+?_")[1];
 		System.out.println(queue_name);
+		System.out.println("====");
+		System.out.println(System.getProperty("os.name"));
+		System.out.println(System.getProperty("os.arch"));
+		System.out.println(System.getProperty("os.version"));
 	}
 }

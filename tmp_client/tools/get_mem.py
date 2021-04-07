@@ -9,4 +9,4 @@ if not ON_WIN:
     sys.exit('0')
 mem_tuple= psutil.virtual_memory()
 mem_usage = mem_tuple[2]
-print int(mem_usage)
+print (int(mem_usage))

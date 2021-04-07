@@ -1,9 +1,0 @@
-#Timing Constraints
-create_clock -name {c_clk12M} -period 83.3333333333333 [get_ports clk12M]
-create_generated_clock -name {c_clk24M} -source [get_ports clk12M] -multiply_by 2 -duty_cycle 50 [get_nets U1/clk24M]
-set_output_delay -clock [get_clocks c_clk24M] -max 20 [get_ports RED]
-set_output_delay -clock [get_clocks c_clk24M] -max 20 [get_ports BLU]
-set_output_delay -clock [get_clocks c_clk24M] -max 20 [get_ports GRN]
-set_output_delay -clock [get_clocks c_clk24M] -min 1 [get_ports RED]
-set_output_delay -clock [get_clocks c_clk24M] -min 1 [get_ports BLU]
-set_output_delay -clock [get_clocks c_clk24M] -min 1 [get_ports GRN]
