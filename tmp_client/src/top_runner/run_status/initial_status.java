@@ -10,13 +10,11 @@
 package top_runner.run_status;
 
 import java.util.HashMap;
-import java.util.Timer;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import cmd_interface.console_server;
 import data_center.public_data;
 import env_monitor.kill_winpop;
 import self_update.app_update;
@@ -33,12 +31,12 @@ class initial_status extends abstract_status {
 		//step 1. soft stop requested and still have task running
 		if(client.switch_info.get_client_soft_stop_request()) {
 			if (client.pool_info.get_pool_used_threads() > 0){
-				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+				client.STATUS_LOGGER.warn("Client stop requested, but still got tasks to run...");
 				return;
 			}
 			int post_call_size = client.post_info.get_postrun_call_size();
 			if (post_call_size > 0){
-				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be sync..." + post_call_size);
+				client.STATUS_LOGGER.warn("Client stop requested, but still got tasks to sync..." + post_call_size);
 				return;
 			}
 		}
@@ -52,7 +50,7 @@ class initial_status extends abstract_status {
 		client.STATUS_LOGGER.debug(">>>####################");
 		client.STATUS_LOGGER.info("Initializing...");
 		// task 1: launch client
-		launch_client();
+		launch_user_interface();
 		// task 2: get and wait client data ready 
 		get_client_data_ready();		
 		// task 3: get daemon process ready
@@ -105,11 +103,10 @@ class initial_status extends abstract_status {
 		client.STATUS_LOGGER.info("Socket servers power up.");
 	}
 	
-	private void launch_client() {
+	private void launch_user_interface() {
 		if (client.cmd_info.get("interactive").equals("1")){
 			mute_log4j_outputs();
-			console_server my_console = new console_server(client.switch_info);
-			my_console.start();
+			client.console_runner.start();
 		}
 		if (client.cmd_info.get("cmd_gui").equals("gui")){
 			client.view_runner.start();
@@ -141,7 +138,10 @@ class initial_status extends abstract_status {
 	
 	//core script update
 	private void release_corescript_msg(){
-		//Three corescript available:remote(locate in subversion), local_python3(integrated in Client), local_python2(integrated in Client)
+		//Three corescript available:
+		//1. remote(locate in subversion)
+		//2. local_python3(integrated in Client)
+		//3. local_python2(integrated in Client)
 		String python_version = new String(client.switch_info.get_system_python_version());
 		if(python_version.startsWith("2")) {
 			client.STATUS_LOGGER.info("Python " + python_version + " used.");
@@ -203,15 +203,14 @@ class initial_status extends abstract_status {
 	
 	//get daemon process ready
 	private void get_daemon_process_ready(){
-		Timer misc_timer = new Timer("misc_timer");
 		//task 1: environ check
-		misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*0, 1000*10);
+		client.misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*0, 1000*10);
 		//task 2: dev check only vaild on remote svn linked
-		misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*3, 1000*10);
+		client.misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*3, 1000*10);
 		//task 1: kill process
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows")) {
-			misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info, this.client.client_info), 1000*6, 1000*10);
+			client.misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info, this.client.client_info), 1000*6, 1000*10);
 		}
 	}
 	

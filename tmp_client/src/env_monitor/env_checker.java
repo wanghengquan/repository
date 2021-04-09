@@ -224,12 +224,12 @@ public class env_checker extends TimerTask {
 	}
 	
 	private void monitor_run() {
+		//Python version check
+		python_version_monitor();
 		//run environ check
 		run_environ_monitor();
 		//remote core link status check
 		remote_corescript_monitor();
-		//Python version check
-		python_version_monitor();
 	}
 	
 	/*

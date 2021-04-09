@@ -36,7 +36,7 @@ public class switch_data {
 	private int system_client_insts = sys_pref.getInt("", 0);
 	private Boolean system_svn_exists = Boolean.valueOf(false);
 	private Boolean remote_corescript_linked = Boolean.valueOf(false);
-	private String system_python_version = new String("unknown");
+	private String system_python_version = new String("NA");
 	// client update
 	private int send_admin_request = 1; // for client start up
 	private int dump_config_request = 0;
