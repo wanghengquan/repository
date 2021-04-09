@@ -16,6 +16,7 @@ import com.panayotis.jupidator.data.TextUtils;
 
 import data_center.public_data;
 import flow_control.export_data;
+import oshi.util.Util;
 import utility_funcs.file_action;
 import utility_funcs.mail_action;
 import utility_funcs.system_cmd;
@@ -47,16 +48,16 @@ class stop_status extends abstract_status {
 	
 	public void do_state_things(){
 		//client.STATUS_LOGGER.info("Run stop state things");
-		stop_link_servers();
+		//step 1: stop remain servers
+		stop_user_interface();
+		stop_link_services();
+		stop_daemon_process();
+		//step 2: data keep
 		export_data.export_disk_processed_queue_report(client.task_info, client.client_info);
 		export_data.export_disk_finished_queue_data(client.task_info, client.client_info);
 		export_data.export_disk_memory_queue_data(client.task_info, client.client_info);
-		try {
-			Thread.sleep(public_data.PERF_THREAD_BASE_INTERVAL * 100);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		//wait a moment
+		Util.sleep(1000);
 		send_exception_report();
 		restart_shutdown_run();
 		stop_with_exit_state();		
@@ -219,7 +220,20 @@ class stop_status extends abstract_status {
         return default_return;
     }
 	
-	private void stop_link_servers(){
+    private void stop_daemon_process() {
+    	client.misc_timer.cancel();
+    }
+    
+    private void stop_user_interface() {
+		if (client.cmd_info.get("interactive").equals("1")){
+			client.console_runner.soft_stop();
+		}
+		if (client.cmd_info.get("cmd_gui").equals("gui")){
+			client.view_runner.soft_stop();
+		} 
+    }
+    
+	private void stop_link_services(){
 		client.cmd_server.soft_stop();
 		client.task_server.soft_stop();
 	}

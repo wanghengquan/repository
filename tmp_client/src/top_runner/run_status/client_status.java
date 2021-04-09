@@ -10,10 +10,12 @@
 package top_runner.run_status;
 
 import java.util.HashMap;
+import java.util.Timer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cmd_interface.console_server;
 import connect_link.link_server;
 import connect_tube.task_data;
 import connect_tube.tube_server;
@@ -49,6 +51,8 @@ public class client_status {
 	protected hall_manager hall_runner;
 	protected link_server task_server;
 	protected link_server cmd_server;
+	protected console_server console_runner;
+	protected Timer misc_timer;
 	protected final Logger STATUS_LOGGER = LogManager.getLogger(client_status.class.getName());
     private abstract_status current_status = INITIAL; 
     
@@ -69,7 +73,9 @@ public class client_status {
 			data_server data_runner,
 			hall_manager hall_runner,
 			link_server task_server,
-			link_server cmd_server){
+			link_server cmd_server,
+			console_server console_runner,
+			Timer misc_timer){
 		this.switch_info = switch_info;
 		this.client_info = client_info;
 		this.task_info = task_info;
@@ -83,6 +89,8 @@ public class client_status {
 		this.hall_runner = hall_runner;
 		this.task_server = task_server;
 		this.cmd_server = cmd_server;
+		this.console_runner = console_runner;
+		this.misc_timer = misc_timer;
 	}	
 	
 	public void set_current_status(abstract_status new_status) {  

@@ -21,12 +21,12 @@ public class work_status extends abstract_status {
 		//step 1. soft stop requested and still have task running
 		if(client.switch_info.get_client_soft_stop_request()) {
 			if (client.pool_info.get_pool_used_threads() > 0){
-				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be run...");
+				client.STATUS_LOGGER.warn("Client stop requested, but still got tasks to run...");
 				return;
 			}
 			int post_call_size = client.post_info.get_postrun_call_size();
 			if (post_call_size > 0){
-				client.STATUS_LOGGER.warn("Client stop requested, but still have tasks to be sync..." + post_call_size);
+				client.STATUS_LOGGER.warn("Client stop requested, but still got tasks to sync..." + post_call_size);
 				return;
 			}
 		}
