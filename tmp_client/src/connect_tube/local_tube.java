@@ -1572,9 +1572,21 @@ public class local_tube {
 		String exe_file = imported_data.get("exe");
 		String arg_file = imported_data.get("arg");
 		File exe_frh = new File(exe_file);
-		if (!exe_frh.exists() && !exe_file.contains("$work_path") && !exe_file.contains("$tool_path")){
+		//if (!exe_frh.exists() && !exe_file.contains("$work_path") && !exe_file.contains("$tool_path")){
+		//	exe_file = "$case_path/" + exe_file;
+		//}
+		if (exe_file.contains("$work_path")) {
+			LOCAL_TUBE_LOGGER.debug("$work_path will be replaced with runtime work space.");
+		} else if (exe_file.contains("$tool_path")) {
+			LOCAL_TUBE_LOGGER.debug("$tool_path will be replaced with runtime tool path.");
+		} else if (exe_file.startsWith(public_data.CORE_SCRIPT_NAME)) {
+			LOCAL_TUBE_LOGGER.debug("Corescript identified, will be updated to absolute path later.");
+		} else if (exe_frh.exists()) {
+			LOCAL_TUBE_LOGGER.debug("User absolute path for execute file found.");
+		} else {
+			LOCAL_TUBE_LOGGER.warn("Unknown execute file found, assuming it located in Case Path...");
 			exe_file = "$case_path/" + exe_file;
-		}
+		}		
 		if (arg_file.length() > 0){
 			exe_file = exe_file + " " + arg_file;
 		}
