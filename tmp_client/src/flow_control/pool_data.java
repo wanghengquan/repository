@@ -128,6 +128,7 @@ public class pool_data {
 			String case_id, 
 			String launch_path,
 			String case_path,
+			String case_url,
 			int time_out) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
@@ -137,6 +138,7 @@ public class pool_data {
 		sys_call_data.put(pool_attr.call_case, case_id);
 		sys_call_data.put(pool_attr.call_laudir, launch_path);
 		sys_call_data.put(pool_attr.call_casedir, case_path);
+		sys_call_data.put(pool_attr.call_caseurl, case_url);
 		long start_time = System.currentTimeMillis() / 1000;
 		sys_call_data.put(pool_attr.call_gentime, start_time);
 		sys_call_data.put(pool_attr.call_reqtime, time_out);

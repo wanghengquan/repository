@@ -383,9 +383,9 @@ public class tools_dialog extends JDialog implements ActionListener {
 							String python_version = new String(version_info.get_python_version(new_path));
 							String work_space = new String(client_info.get_client_preference_data().get("work_space"));
 							StringBuilder message = new StringBuilder("");
-							message.append("New Python:" + new_path);
+							message.append("New Python: " + new_path);
 							message.append(line_separator);
-							message.append("Version:" + python_version);
+							message.append("Version: " + python_version);
 							message.append(line_separator);
 							message.append(line_separator);
 							String corescript_path = new String("");
@@ -400,13 +400,13 @@ public class tools_dialog extends JDialog implements ActionListener {
 							} else {
 								corescript_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
 							}
-							message.append("CoreScript linked:" + corescript_path);
+							message.append("CoreScript linked: " + corescript_path);
 							String title = new String("New Python Confirm:");
-							JOptionPane.showMessageDialog(this, message.toString(), title, JOptionPane.OK_OPTION);
+							JOptionPane.showMessageDialog(this, message.toString(), title, JOptionPane.INFORMATION_MESSAGE);
 							//Console report
-							TOOLS_DIALOG_LOGGER.warn("New Python:" + new_path);
-							TOOLS_DIALOG_LOGGER.warn("Version:" + python_version);
-							TOOLS_DIALOG_LOGGER.warn("CoreScript linked:" + corescript_path);
+							TOOLS_DIALOG_LOGGER.warn("New Python: " + new_path);
+							TOOLS_DIALOG_LOGGER.warn("Version: " + python_version);
+							TOOLS_DIALOG_LOGGER.warn("CoreScript linked: " + corescript_path);
 						}
 					} else {
 						String message = new String("Path Not Exists:" + tool_name);

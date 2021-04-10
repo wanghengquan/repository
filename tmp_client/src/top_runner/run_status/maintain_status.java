@@ -443,6 +443,7 @@ public class maintain_status extends abstract_status {
 		//update work space
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.putAll(deep_clone.clone(client.client_info.get_client_preference_data()));
+        String ori_work_space = new String(preference_data.get("work_space"));
         String new_work_space = new String(preference_data.get("work_space_temp"));
         //1. export new core script
 		core_update my_core = new core_update(client.client_info);
@@ -456,7 +457,25 @@ public class maintain_status extends abstract_status {
 			client.STATUS_LOGGER.warn("Work Space update failed, Keep original one.");
 			return work_space_updated;
 		}
-		//2. update client preference data
+		//2. Remove data and scripts in previous work space
+		File core_dir = new File(ori_work_space + "/" + public_data.CORE_SCRIPT_NAME);
+		File logs_dir = new File(ori_work_space + "/" + public_data.WORKSPACE_LOG_DIR);
+		File rslt_dir = new File(ori_work_space + "/" + public_data.WORKSPACE_RESULT_DIR);
+		Thread cleanup_thread = new Thread(){
+			public void run() {
+				if (core_dir.exists()){
+					FileUtils.deleteQuietly(core_dir);
+				}
+				if (logs_dir.exists()){
+					FileUtils.deleteQuietly(logs_dir);
+				}
+				if (rslt_dir.exists()){
+					FileUtils.deleteQuietly(rslt_dir);
+				}
+			}
+		};
+		cleanup_thread.start();	
+		//3. update client preference data
 		preference_data.put("work_space", new_work_space);
 		client.client_info.set_client_preference_data(preference_data);
 		client.switch_info.set_work_space_update_request(false);
