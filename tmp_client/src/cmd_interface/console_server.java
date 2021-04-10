@@ -39,6 +39,7 @@ import flow_control.pool_data;
 import flow_control.post_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
+import oshi.util.Util;
 import top_runner.run_status.exit_enum;
 
 public class console_server extends Thread {
@@ -533,7 +534,11 @@ public class console_server extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1: process the input
 			String user_inputs = new String("");
-			user_inputs = lineReader.readLine(public_data.TERMINAL_DEF_PROMPT);
+			try {
+			    user_inputs = lineReader.readLine(public_data.TERMINAL_DEF_PROMPT);
+			}   catch (Exception e) {
+				CONSOLE_SERVER_LOGGER.debug(public_data.TERMINAL_DEF_PROMPT + e.toString());
+			}
 			if (user_inputs ==null || user_inputs.equals("")){
 				continue;
 			}
@@ -543,15 +548,15 @@ public class console_server extends Thread {
 			if (input_ok){
 				answer_user_inputs(user_inputs);
 			} else {
-				System.out.println("Wrong input command:" + user_inputs);
-				help_command_answer();
+				StringBuilder prompt_string = new StringBuilder();
+				prompt_string.append(public_data.TERMINAL_DEF_PROMPT);
+				prompt_string.append("Wrong input command:");
+				prompt_string.append(user_inputs);
+				prompt_string.append(". ");
+				prompt_string.append("Type 'help' for details.");
+				System.out.println(prompt_string.toString());
 			}
-			try {
-				Thread.sleep(base_interval * 1 * 100);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Util.sleep(base_interval * 1 * 100);
 		}
 	}
 	

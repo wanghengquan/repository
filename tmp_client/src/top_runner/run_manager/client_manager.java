@@ -10,10 +10,12 @@
 package top_runner.run_manager;
 
 import java.util.HashMap;
+import java.util.Timer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cmd_interface.console_server;
 import connect_link.link_server;
 import connect_tube.task_data;
 import connect_tube.tube_server;
@@ -269,6 +271,8 @@ public class client_manager extends Thread  {
 		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
 		link_server task_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_TASK_PORT);
 		link_server cmd_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
+		console_server console_runner = new console_server(switch_info);
+		Timer misc_timer = new Timer("misc_timer");
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
 				switch_info, 
@@ -283,7 +287,9 @@ public class client_manager extends Thread  {
 				data_runner,
 				hall_runner,
 				task_server,
-				cmd_server);
+				cmd_server,
+				console_runner,
+				misc_timer);
 		client_sts.set_current_status(client_sts.INITIAL);
 		// initial 3 : go to work status
 		client_sts.to_work_status();
