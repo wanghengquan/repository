@@ -15,14 +15,15 @@ public enum pool_attr {
 	call_case(2, "call_case_id"),
 	call_laudir(3, "call_launch_directory"),
     call_casedir(4, "call_case_directory"),
-	call_gentime(5, "call_generate_time"),
-	call_lautime(6, "call_launch_time"),
-    call_reqtime(7, "request_runtime"),
-    call_status(8, "call_status"),
-	call_canceled(9, "call_canceled_YoN"),
-	call_timeout(10, "call_timeout_YoN"),
-	call_terminate(11, "call_terminate_YoN"),
-    call_output(12, "call_output");
+    call_caseurl(5, "call_case_url"),
+	call_gentime(6, "call_generate_time"),
+	call_lautime(7, "call_launch_time"),
+    call_reqtime(8, "request_runtime"),
+    call_status(9, "call_status"),
+	call_canceled(10, "call_canceled_YoN"),
+	call_timeout(11, "call_timeout_YoN"),
+	call_terminate(12, "call_terminate_YoN"),
+    call_output(13, "call_output");
 	private int index;
 	private String description;
 	

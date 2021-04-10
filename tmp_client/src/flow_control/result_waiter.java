@@ -491,6 +491,8 @@ public class result_waiter extends Thread {
 			runlog.append(line_separator);
 			runlog.append("####################" + line_separator);
 			runlog.append("Run with TMP client:" + public_data.BASE_CURRENTVERSION + line_separator);
+			String case_url = (String) one_call_data.get(pool_attr.call_caseurl);
+			runlog.append("Source Location(Case URL) ==> " + case_url.replaceAll("\\\\", "/") + line_separator);
 			//step 1: generate runtime location
 			String host_name = client_info.get_client_machine_data().get("terminal");
 			String run_path = (String) one_call_data.get(pool_attr.call_laudir);

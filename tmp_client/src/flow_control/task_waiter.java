@@ -1174,6 +1174,7 @@ public class task_waiter extends Thread {
 			task_prepare prepare_obj = new task_prepare();
 			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
 			// task 8 : launch info prepare
+			String design_url = task_data.get("Paths").get("design_url").trim();
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
 			String python_version = switch_info.get_system_python_version();
@@ -1192,7 +1193,7 @@ public class task_waiter extends Thread {
 			// task 10 : launch
 			int case_time_out = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
-			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, case_time_out);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, case_time_out);
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
 		}
 	}
