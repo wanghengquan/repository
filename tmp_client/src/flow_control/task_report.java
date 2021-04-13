@@ -168,14 +168,6 @@ public class task_report {
 				}
 				pool_info.update_history_send_data(case_index, history_case_data);
 			}
-			// clean up history data
-			Iterator<String> history_index_it = history_send_data.keySet().iterator();
-			while (history_index_it.hasNext()){
-				String history_index = history_index_it.next();
-				if (!ori_send_data.keySet().contains(history_index)){
-					pool_info.remove_history_send_data(history_index);
-				}
-			}
 			return remote_send_data;
 		}
 	}

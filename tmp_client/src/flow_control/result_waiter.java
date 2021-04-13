@@ -291,6 +291,24 @@ public class result_waiter extends Thread {
 		post_info.fresh_postrun_call();
 		//clean post run map data (sys call map will be clean later)
 		clean_postrun_map_data();
+		//clean history send data
+		clean_history_send_data();
+		return run_status;
+	}
+	
+	private Boolean clean_history_send_data(){
+		Boolean run_status = Boolean.valueOf(true);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>>();
+		history_send_data.putAll(deep_clone.clone(pool_info.get_history_send_data()));
+		Iterator<String> history_index_it = history_send_data.keySet().iterator();
+		while (history_index_it.hasNext()){
+			String history_index = history_index_it.next();
+			if (!call_data.containsKey(history_index)){
+				pool_info.remove_history_send_data(history_index);
+			}
+		}
 		return run_status;
 	}
 	

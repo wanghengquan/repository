@@ -169,8 +169,7 @@ public class pool_data {
 				hash_data.put(pool_attr.call_canceled, call_back.cancel(true));
 			}			
 			// run report action
-			Boolean call_done = call_back.isDone();
-			if (call_done) {
+			if (call_back.isDone()) {
 				hash_data.put(pool_attr.call_status, call_state.DONE);
 				ArrayList<String> call_output = (ArrayList<String>) hash_data.get(pool_attr.call_output);
 				try {
