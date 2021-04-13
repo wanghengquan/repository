@@ -178,7 +178,8 @@ public class rmq_tube {
 			try {
 				channel.close();
 			} catch (TimeoutException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				RMQ_TUBE_LOGGER.warn("close channel TimeoutException");
 			}
 		if (connection.isOpen())
 			connection.close();
