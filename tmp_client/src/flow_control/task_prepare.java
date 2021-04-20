@@ -1144,7 +1144,7 @@ public class task_prepare {
 			core_path = public_data.LOCAL_CORE_SCRIPT_DIR2;
 		} else if (python_version.startsWith("3")) {
 			if(corescript_link_status) {
-				core_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+				core_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", work_space);
 			} else {
 				core_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
 			}
