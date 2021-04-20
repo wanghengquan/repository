@@ -71,7 +71,8 @@ class ChangeDir:
 
 class AppConfig(configparser.ConfigParser):
     def __init__(self):
-        super(AppConfig, self).__init__()
+        # interpolation=None treat % as % in config file
+        super(AppConfig, self).__init__(interpolation=None)
 
     def optionxform(self, optionstr):
         """
@@ -88,7 +89,7 @@ def get_conf_file_options(conf_files, key_lower=True):
     # use <xx> <yy> ... to specify a list string for an option.
     conf_options = dict()
     if key_lower:
-        conf_parser = configparser.ConfigParser()
+        conf_parser = configparser.ConfigParser(interpolation=None)
     else:
         conf_parser = AppConfig()
     try:
