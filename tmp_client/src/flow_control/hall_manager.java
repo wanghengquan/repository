@@ -223,7 +223,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		//HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		// report Captured queue list
 		ArrayList<String> captured_queue_list = new ArrayList<String>();
@@ -547,7 +547,7 @@ public class hall_manager extends Thread {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
 		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){

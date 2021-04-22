@@ -248,6 +248,7 @@ public class data_server extends Thread {
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
 		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
 		preference_data.put("case_mode", public_data.DEF_CLIENT_CASE_MODE);
+		preference_data.put("interface_mode", public_data.DEF_INTERFACE_MODE);
 		preference_data.put("stable_version", public_data.DEF_STABLE_VERSION);
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);

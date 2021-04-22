@@ -67,12 +67,15 @@ public class cmd_parser {
 		// 3. collect option results
 		// 3.1 cmd or gui model
 		if (commandline_obj.hasOption('c')) {
-			cmd_hash.put("cmd_gui", "cmd");
-		} else if (commandline_obj.hasOption('g')) {
-			cmd_hash.put("cmd_gui", "gui");
-		} else {
-			cmd_hash.put("cmd_gui", "gui");
+			cmd_hash.put("interface_mode", "cmd");
 		}
+		if (commandline_obj.hasOption('g')) {
+			cmd_hash.put("interface_mode", "gui");
+		} 
+		if (commandline_obj.hasOption('I'))  {
+			cmd_hash.put("interface_mode", "int");
+			cmd_hash.put("link_mode", "remote");
+		}		
 		// 3.2 remote or local model
 		if (commandline_obj.hasOption('l')) {
 			cmd_hash.put("link_mode", "local");
@@ -194,16 +197,8 @@ public class cmd_parser {
 		// 3.22 result keep value
 		if (commandline_obj.hasOption('R')) {
 			cmd_hash.put("result_keep", commandline_obj.getOptionValue('R'));
-		}	
-		// 3.23 interactive or not
-		if (commandline_obj.hasOption('I')) {
-			cmd_hash.put("interactive", "1");
-			cmd_hash.put("cmd_gui", "cmd");
-			cmd_hash.put("link_mode", "remote");
-		} else {
-			cmd_hash.put("interactive", "0");
 		}
-		// 3.24 Script path
+		// 3.23 Script path
 		if (commandline_obj.hasOption("python")) {
 			String python = new String(commandline_obj.getOptionValue("python"));
 			cmd_hash.put("python", file_action.get_absolute_paths(python));
@@ -224,11 +219,11 @@ public class cmd_parser {
 			String git = new String(commandline_obj.getOptionValue("git"));
 			cmd_hash.put("git", file_action.get_absolute_paths(git));
 		}
-		// 3.25 help definition
+		// 3.24 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
-		// 3.26 run sanity check
+		// 3.25 run sanity check
 		if (!run_input_data_check(cmd_hash)){
 			get_help(options_obj);
 		}
@@ -299,8 +294,7 @@ public class cmd_parser {
 		Options options_obj = new Options();
 		options_obj.addOption(Option.builder("c").longOpt("cmd").desc("Client will run in Command mode").build());
 		options_obj.addOption(Option.builder("g").longOpt("gui").desc("Client will run in GUI mode, default mode.").build());
-		options_obj.addOption(
-				Option.builder("I").longOpt("console").desc("Client will run in interactive console mode").build());
+		options_obj.addOption(Option.builder("I").longOpt("int").desc("Client will run in Interactive mode").build());
 		options_obj.addOption(Option.builder("l").longOpt("local").desc("Client will run in LOCAL mode").build());
 		options_obj.addOption(Option.builder("r").longOpt("remote").desc("Client will run in REMOTE mode").build());
 		options_obj.addOption(

@@ -65,11 +65,13 @@ public class DeployerParameters implements Serializable {
     }
 
     public List<XElement> getElements() {
-        /* Do all this, because windows demands a 3 second delay before starting updating */
+        /* Do all this, because windows demands a 6 second delay before starting updating */
         ArrayList<XElement> oselements = new ArrayList<XElement>();
         if (OperatingSystem.isWindows)
             oselements.add(new XEWait(3000));
+        oselements.add(new XEWait(3000));
         oselements.addAll(elements);
+        oselements.add(new XEWait(100));
         return oselements;
     }
 

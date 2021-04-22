@@ -90,6 +90,12 @@ public class config_sync extends Thread {
 				String option_key = option_it.next();
 				String option_value = ini_data.get(section_name).get(option_key);
 				switch (option_key.toLowerCase()) {
+				case "interface_mode":
+					if (!data_check.str_choice_check(option_value, new String [] {"gui", "cmd", "int"} )){
+						option_value = public_data.DEF_INTERFACE_MODE;
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid interface_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
+					}
+					break;				
 				case "max_insts":
 					if (!data_check.num_scope_check(option_value, 0, 30)){
 						option_value = public_data.DEF_SW_MAX_INSTANCES;
@@ -225,7 +231,7 @@ public class config_sync extends Thread {
 						option_value = public_data.DEF_MAX_THREAD_MODE;
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid thread_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
-					break;
+					break;				
 				case "debug":
 					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
 						option_value = public_data.DEF_CLIENT_DEBUG_MODE;
@@ -312,11 +318,12 @@ public class config_sync extends Thread {
 			dump_status = false;
 			return dump_status;
 		}
-		String cmd_gui = write_data.get("preference").get("cmd_gui");
+		String interface_mode = write_data.get("preference").get("interface_mode");
 		HashMap<String, String> tmp_preference_data = new HashMap<String, String>();
 		HashMap<String, String> cfg_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
-		HashMap<String, String> cfg_machine_data = new HashMap<String, String>();		
+		HashMap<String, String> cfg_machine_data = new HashMap<String, String>();
+		tmp_preference_data.put("interface_mode", write_data.get("preference").get("interface_mode"));
 		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
 		tmp_preference_data.put("ignore_request", write_data.get("preference").get("ignore_request"));
 		tmp_preference_data.put("thread_mode", write_data.get("preference").get("thread_mode"));
@@ -337,7 +344,8 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
 		cfg_preference_data.put("work_space", write_data.get("preference").get("work_space"));
-		cfg_preference_data.put("save_space", write_data.get("preference").get("save_space"));		
+		cfg_preference_data.put("save_space", write_data.get("preference").get("save_space"));
+		cfg_preference_data.put("interface_mode", write_data.get("preference").get("interface_mode"));
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
@@ -352,7 +360,7 @@ public class config_sync extends Thread {
 		write_data.remove("System");
 		write_data.remove("tools");
 		write_data.remove("CoreScript");
-		if (cmd_gui.equalsIgnoreCase("gui")){
+		if (interface_mode.equalsIgnoreCase("gui")){
 			write_data.put("tmp_preference", tmp_preference_data);
 			write_data.put("tmp_machine", tmp_machine_data);
 		} else {
