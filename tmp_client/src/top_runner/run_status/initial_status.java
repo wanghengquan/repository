@@ -49,10 +49,10 @@ class initial_status extends abstract_status {
 	public void to_work() {
 		client.STATUS_LOGGER.debug(">>>####################");
 		client.STATUS_LOGGER.info("Initializing...");
-		// task 1: launch client
-		launch_user_interface();
-		// task 2: get and wait client data ready 
-		get_client_data_ready();		
+		// task 1: get and wait client data ready 
+		get_client_data_ready();
+		// task 2: launch client
+		launch_user_interface();		
 		// task 3: get daemon process ready
 		get_daemon_process_ready();
 		// task 4: client self update
@@ -102,8 +102,20 @@ class initial_status extends abstract_status {
 		client.task_server.start();
 		client.STATUS_LOGGER.info("Socket servers power up.");
 	}
-	
+
 	private void launch_user_interface() {
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		if (interface_mode.equals("int")){
+			mute_log4j_outputs();
+			client.console_runner.start();
+		}
+		if (interface_mode.equals("gui")){
+			client.view_runner.start();
+		} //don't wait until GUI ready
+	}	
+	
+	@SuppressWarnings("unused")
+	private void launch_user_interface_bak() {
 		if (client.cmd_info.get("interactive").equals("1")){
 			mute_log4j_outputs();
 			client.console_runner.start();
@@ -164,7 +176,8 @@ class initial_status extends abstract_status {
 	//self update
 	private void get_client_self_update(){ 
 		//wait until main GUI start and then start update self
-		while(client.cmd_info.get("cmd_gui").equals("gui")){
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		while(interface_mode.equals("gui")){
 			if (client.switch_info.get_main_gui_power_up()){
 				break;
 			}
@@ -238,11 +251,9 @@ class initial_status extends abstract_status {
 	private void local_console_run_recognize(){
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.putAll(client.client_info.get_client_preference_data());
-		String link_mode = new String("");
-		String cmd_gui = new String("");
-		link_mode = preference_data.getOrDefault("link_mode", public_data.DEF_CLIENT_LINK_MODE);
-		cmd_gui = preference_data.getOrDefault("cmd_gui", "");
-		if(link_mode.equalsIgnoreCase("local") && cmd_gui.equalsIgnoreCase("cmd")){
+		String link_mode = new String(preference_data.getOrDefault("link_mode", public_data.DEF_CLIENT_LINK_MODE));
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		if(link_mode.equalsIgnoreCase("local") && interface_mode.equalsIgnoreCase("cmd")){
 			client.switch_info.set_local_console_mode(true);
 		} else {
 			client.switch_info.set_local_console_mode(false);

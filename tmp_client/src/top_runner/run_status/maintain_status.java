@@ -185,7 +185,7 @@ public class maintain_status extends abstract_status {
 		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
 		if(run_mode.equals("0")){ 
 			//attended mode local showing
-			if(preference_data.get("cmd_gui").equals("gui")){
+			if(preference_data.get("interface_mode").equals("gui")){
 				client.view_info.set_corescript_update_apply(true);
 			} else {
 				client.STATUS_LOGGER.warn("Manually CoreScript update needed...");
@@ -303,7 +303,7 @@ public class maintain_status extends abstract_status {
 		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
 		if(run_mode.equals("0")){ 
 			//attended mode local showing
-			if(preference_data.get("cmd_gui").equals("gui")){
+			if(preference_data.get("interface_mode").equals("gui")){
 				client.view_info.set_environ_issue_apply(true);
 			} else {
 				client.STATUS_LOGGER.info("Manually Environment check needed...");
@@ -398,7 +398,7 @@ public class maintain_status extends abstract_status {
 		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
 		if(run_mode.equals("0")){ 
 			//attended mode, message dialog apply
-			if(preference_data.get("cmd_gui").equals("gui")){
+			if(preference_data.get("interface_mode").equals("gui")){
 				client.view_info.set_space_cleanup_apply(true);
 			} else {
 				client.STATUS_LOGGER.info("Manually Work Space cleanup needed...");

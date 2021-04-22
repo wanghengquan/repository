@@ -438,11 +438,12 @@ public class view_server extends Thread {
 		machine_data.putAll(client_info.get_client_machine_data());
 		preference_data.putAll(client_info.get_client_preference_data());
 		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		String interface_mode = new String(client_info.get_client_preference_data().get("interface_mode"));
 		if (run_mode.equals("1")){
 			//in unattended mode, no one take care this client
 			return;
 		}
-		if (preference_data.get("cmd_gui").equals("cmd")){
+		if (!interface_mode.equals("gui")){
 			//in console mode no gui interface
 			return;
 		}

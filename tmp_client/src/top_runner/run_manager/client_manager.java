@@ -293,9 +293,6 @@ public class client_manager extends Thread  {
 		client_sts.set_current_status(client_sts.INITIAL);
 		// initial 3 : go to work status
 		client_sts.to_work_status();
-		//if (cmd_info.get("interactive").equals("1")){
-		//	return;
-		//}
 		// start loop:
 		while (!stop_request) {
 			if (wait_request) {
