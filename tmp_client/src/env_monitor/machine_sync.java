@@ -318,7 +318,7 @@ public class machine_sync extends Thread {
 		system_data.put("mem", mem);
 		machine_hash.put("System", system_data);
 	}
-
+	
 	public void run() {
 		try {
 			monitor_run();
