@@ -134,6 +134,48 @@ public class file_action {
 		}
 	}
 
+	public static int append_file_with_title(
+			String file, 
+			String title,
+			String conent) {
+		/*
+		 * If the file size larger than 2M, a new file will be created true: 0
+		 * will be return false: 1 will be return
+		 */
+		Boolean new_file = Boolean.valueOf(false);
+		BufferedWriter out = null;
+		File file_hand = new File(file);
+		if (file_hand.exists() && file_hand.isFile()) {
+			if (file_hand.length() < 2 * 1000000) {
+				new_file = false;
+			} else {
+				String temp_file = file + System.currentTimeMillis() / 1000;
+				copy_file(file, temp_file);
+				del_file(file);
+				new_file = true;
+			}
+		} else {
+			new_file = true;
+		}
+		try {
+			File file_parent = file_hand.getParentFile();
+			if (file_parent.isDirectory() && file_parent.exists())
+				;
+			else
+				file_parent.mkdirs();
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+			if (new_file) {
+				out.write(title + System.getProperty("line.separator"));
+			}
+			out.write(conent);
+			out.close();
+			return 0;
+		} catch (Exception e) {
+			FILE_ACTION_LOGGER.warn("Append Error:" + file);
+			return 1;
+		}
+	}
+	
 	public static String read_file(String filename) {
 		File file = new File(filename);
 		Scanner input;
