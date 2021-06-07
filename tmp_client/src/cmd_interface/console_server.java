@@ -261,6 +261,9 @@ public class console_server extends Thread {
 		case HELP:
 			info_help_command_output();
 			break;
+		case ENV:
+			info_other_command_output(info_cmd.ENV.toString());
+			break;			
 		case SYSTEM:
 			info_other_command_output(info_cmd.SYSTEM.toString());
 			break;

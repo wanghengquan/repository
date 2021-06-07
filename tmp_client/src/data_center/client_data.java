@@ -68,7 +68,7 @@ public class client_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	
 	public HashMap<String, String> get_client_system_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, String> temp = new HashMap<String, String>();
