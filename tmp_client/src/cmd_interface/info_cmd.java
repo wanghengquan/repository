@@ -13,13 +13,14 @@ import java.util.ArrayList;
 
 public enum info_cmd {
 	HELP(0, "Show all commands."),
-	SYSTEM(1, "Show linked host System related info."),
-	MACHINE(2, "Show linked host Machine related info."),
-	PREFER(3, "Show linked host Preference related info."),
-	SOFTWARE(4, "INFO SOFTWARE <sw_name>, Show linked host sw_name related info."),
-	CORESCRIPT(5, "Show linked host Corescript related info."),
-	STATUS(6, "Show linked host status info."),
-	BUILD(7, "Show linked host build info.");
+	ENV(1, "Show linked host Environment related info."),
+	SYSTEM(2, "Show linked host System related info."),
+	MACHINE(3, "Show linked host Machine related info."),
+	PREFER(4, "Show linked host Preference related info."),
+	SOFTWARE(5, "INFO SOFTWARE <sw_name>, Show linked host sw_name related info."),
+	CORESCRIPT(6, "Show linked host Corescript related info."),
+	STATUS(7, "Show linked host status info."),
+	BUILD(8, "Show linked host build info.");
 	private int index;
 	private String description;
 	

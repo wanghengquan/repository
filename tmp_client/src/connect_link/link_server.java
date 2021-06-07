@@ -215,6 +215,9 @@ public class link_server extends Thread {
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
 		switch(info_cmd.valueOf(req_section)){
+		case ENV:
+			detail_data.putAll(System.getenv());
+			break;		
 		case SYSTEM:
 			detail_data.putAll(client_info.get_client_system_data());
 			break;
