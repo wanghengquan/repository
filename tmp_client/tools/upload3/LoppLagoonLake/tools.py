@@ -47,15 +47,24 @@ def split_list_with_window(a_list, window=5):
     return [a_list[x:x+window] for x in range(0, len(a_list), window)]
 
 
-def comma_split(raw_string, sep_mark=","):
+def comma_split(raw_string, sep_mark=",", keep_original=False):
+    sep_mark = sep_mark.strip()
+    _temp_mark = "-COM-MA-"
+    raw_string = re.sub(r"\\{}".format(sep_mark), _temp_mark, raw_string)
     raw_string = raw_string.strip("{} ".format(sep_mark))
     _ = shlex.shlex(raw_string, posix=False)
     _.whitespace = sep_mark
     _.whitespace_split = True
-    _.quotes = '"'
     _ = list(_)
-    _ = [x.strip() for x in _]
-    return _
+    final_list = list()
+    for foo in _:
+        foo = foo.strip()
+        if keep_original:
+            foo = re.sub(_temp_mark, r"\{}".format(sep_mark), foo)
+        else:
+            foo = re.sub(_temp_mark, sep_mark, foo)
+        final_list.append(foo)
+    return final_list
 
 
 class ChangeDir:
@@ -72,8 +81,7 @@ class ChangeDir:
 
 class AppConfig(configparser.ConfigParser):
     def __init__(self):
-        # interpolation=None treat % as % in config file
-        super(AppConfig, self).__init__(interpolation=None)
+        super(AppConfig, self).__init__()
 
     def optionxform(self, optionstr):
         """
@@ -90,7 +98,7 @@ def get_conf_file_options(conf_files, key_lower=True):
     # use <xx> <yy> ... to specify a list string for an option.
     conf_options = dict()
     if key_lower:
-        conf_parser = configparser.ConfigParser(interpolation=None)
+        conf_parser = configparser.ConfigParser()
     else:
         conf_parser = AppConfig()
     try:
