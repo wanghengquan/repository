@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 from .config import Environment
 from .__default__ import Default, ConfigIssue
@@ -7,19 +10,15 @@ import time
 import logging
 from .history_funcs import get_message
 import sys
-import json
-import urllib.request, urllib.error, urllib.parse
-import base64
 import glob
-import random
+from jira import JIRA
 import shutil
 from .pattern import FILE_PATTERNS
-from jira import JIRA
 
 
 def get_valid_crs(cr_note):
     valid_crs = list()
-    p_cr = re.compile("((SOF|DNG)-\d+)", re.I)
+    p_cr = re.compile(r"((SOF|DNG)-\d+)", re.I)
     m_all = p_cr.findall(cr_note)
     options = dict(server="http://jira",
                    basic_auth=Default.AUTHS[0])
@@ -87,15 +86,27 @@ def get_designs(args):
     return designs
 
 
+_KEYCRE = re.compile(r"%\(([^)]+)\)s")
+_KEY_TEMP = "LATTE-LATTICE-LSCC-LSH"
 def replace_tag(conf_file, args):
-    if args.tag:
-        with open(conf_file, 'r') as f:
-            lines = f.readlines()
-
-        with open(conf_file, 'w') as f:
-            for line in lines:
-                f.write(line.replace('*tag*', args.tag))
-
+    lines = list()
+    with open(conf_file, "rb") as in_ob:
+        for line in in_ob:
+            lines.append(line.decode())
+    with open(conf_file, 'w') as f:
+        for line in lines:
+            if args.tag:
+                line = line.replace('*tag*', args.tag)
+            if "%" in line:
+                if "%%" in line:
+                    continue
+                elif not _KEYCRE.search(line):   # same as Python2.7
+                    line = re.sub("%", "%%", line)
+            line = re.sub(r'\\r\\n', _KEY_TEMP, line)
+            line = re.sub("\\r", "", line)
+            line = re.sub(_KEY_TEMP, '\r\n', line)
+            if line:
+                f.write(line)
 
 def get_category(args):
     preset_options = args.preset_options
@@ -551,7 +562,11 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     """
     string = string.replace(' ', '').strip()
     with open(filename, 'r') as f:
-        lines = f.readlines()
+        try:
+            lines = f.readlines()
+        except:
+            log("Error. UnicodeDecodeError occurred in {}".format(filename))
+            return
         if index is not None:
             if grep:
                 if re.search(string, lines[index].replace(' ', '').strip()):
@@ -659,7 +674,7 @@ def string2re(raw_string, re_flag=None):
     if not raw_string:
         return None, None
     shorten_string = re.sub(r"\s+", "", raw_string)
-    raw_string = re.sub(r"\s+", r"\s+", raw_string)
+    raw_string = re.sub(r"\s+", r"\\s+", raw_string)
     raw_string = re.sub(r'"', r'\"', raw_string)
     if re_flag:
         flag_str = ', {}'.format(re_flag)

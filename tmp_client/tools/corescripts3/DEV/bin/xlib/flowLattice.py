@@ -3,6 +3,7 @@ import re
 import sys
 import glob
 import configparser
+from lib2to3.main import main as main2to3
 
 from . import xConvert
 from . import xTools
@@ -19,19 +20,35 @@ from . import qas
 __author__ = 'syan'
 
 
+def dos2unix(src_file, dst_file):
+    with open(src_file, 'rb') as infile:
+        content = infile.read()
+
+    with open(dst_file, 'wb') as output:
+        for line in content.splitlines():
+            output.write(line + b'\r\n')
+
+
 def run_pre_post_process(base_path, pp_scripts):
     """
     add function for getting the real scripts if it has command arguments
     """
-
     pp_scripts_list = re.split("\s+", pp_scripts)
     real_pp = xTools.get_abs_path(pp_scripts_list[0], base_path)
     if xTools.not_exists(real_pp, "pre/post process scripts"):
         return 1
+    xTools.print_out_license_log(phase="before inner scripts")
     start_from_dir, pp = os.path.split(real_pp)
     _recov = xTools.ChangeDir(start_from_dir)
     fext = xTools.get_fext_lower(real_pp)
     if fext == ".py":
+        # try:
+        #     unix_file = real_pp + ".unix"
+        #     dos2unix(real_pp, real_pp + ".unix")
+        #     xTools.wrap_cp_file(unix_file, real_pp, force=True)
+        #     main2to3("lib2to3.fixes", args=["-w", "--no-diffs", real_pp])
+        # except:
+        #     xTools.say_it("Failed to update scripts from 2 to 3 {}".format(real_pp))
         cmd_line = "%s %s " % (sys.executable, pp)
     elif fext == ".pl":
         cmd_line = "perl %s " % pp
@@ -41,10 +58,9 @@ def run_pre_post_process(base_path, pp_scripts):
     if len(pp_scripts_list) > 1:
         cmd_line += " ".join(pp_scripts_list[1:])
     xTools.say_it("Launching %s" % cmd_line)
-    #sts, text = xTools.get_status_output(cmd_line)
-    #xTools.say_it(text)
     sts = os.system(cmd_line)
     _recov.comeback()
+    xTools.print_out_license_log(phase="after inner scripts")
     return sts
 
 
@@ -66,6 +82,7 @@ class FlowLattice(XOptions):
 
     def process(self):
         head_lines = xTools.head_announce()
+        xTools.print_out_license_log(phase="starting")
 
         if self.run_option_parser():
             return 1
@@ -175,6 +192,7 @@ class FlowLattice(XOptions):
             self.scan_report()
         self.run_final_closing_flow()
         _recov.comeback()
+        xTools.print_out_license_log(phase="ending")
         return final_sts
 
     @staticmethod
@@ -418,6 +436,8 @@ class FlowLattice(XOptions):
                 value = "<%s>" % joint_string.join(value)
             elif isinstance(value, bool):
                 value = "1"
+            if not isinstance(value, str):  # on Unix, configparser option value MUST be string
+                value = str(value)
             return value
         config=configparser.ConfigParser()
         section_qa = "qa"

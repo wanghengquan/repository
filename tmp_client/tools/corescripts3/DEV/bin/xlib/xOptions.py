@@ -10,6 +10,7 @@ from . import xTools
 
 __author__ = 'syan'
 
+
 class XOptions:
     def __init__(self, private_options):
         self.scripts_options = private_options
@@ -175,12 +176,14 @@ class XOptions:
         ex_group.add_argument("--sim-questasim", dest="run_questasim", action="store_true", help="run simulation with Questasim")
         ex_group.add_argument("--sim-riviera",   dest="run_riviera", action="store_true", help="run simulation with Riviera")
         ex_group.add_argument("--sim-activehdl", dest="run_activehdl", action="store_true", help="run simulation with ActiveHDL")
+        ex_group.add_argument("--sim-vcs", dest="run_vcs", action="store_true", help="run simulation with VCS")
+        ex_group.add_argument("--sim-xrun", dest="run_xrun", action="store_true", help="run simulation with XRUN")
 
         sim_group.add_argument("--sim-rtl",     action="store_true", help="run rtl simulation")
         sim_group.add_argument("--sim-syn-vhd", action="store_true", help="run post synthesis simulation(VHDL)")
         sim_group.add_argument("--sim-syn-vlg", action="store_true", help="run post synthesis simulation(Verilog)")
         sim_group.add_argument("--sim-postsyn-vm", action="store_true",
-                             help="run post synthesis simulation with vm file( Radiant )")
+                               help="run post synthesis simulation with vm file( Radiant )")
         sim_group.add_argument("--sim-no-lst", action="store_true", help="do not dump lst file in simulation flow")
         if self.is_ng_flow:
             sim_group.add_argument("--dms", action="store_true", help="run Radiant DMS flow")

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# source files
+%(source_files)s
+
+#testbench files
+%(tb_files)s
+
+xrun -batch -top worklib.%(sim_top)s -reflib %(dev_lib)s -reflib %(pmi_lib)s -input ucli.tcl
