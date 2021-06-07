@@ -35,6 +35,7 @@ SQUISH_EXTERNAL_ENV_KEY = "EXTERNAL_SQUISH_PATH"
 
 
 RUN_SQUISH = '''#!/bin/sh
+%(given_dos_lines)s
 %(set_path)s
 %(run_server)s
 %(sleep)s
@@ -44,6 +45,26 @@ RUN_SQUISH = '''#!/bin/sh
 %(squishrunner)s --testcase %(testcase)s --lang %(language)s --wrapper %(wrapper)s --objectmap %(objectmap)s --cwd %(cwd)s --reportgen stdout,console.log
 %(squishserver)s --stop
 '''
+
+GIVEN_DOS_LINES = r"""@echo off
+
+set currPath=%~dp0
+set parentPath=
+
+:begin
+FOR /F "tokens=1,* delims=\" %%i IN ("%currPath%")  DO (set front=%%i)
+FOR /F "tokens=1,* delims=\" %%i IN ("%currPath%")  DO (set currPath=%%j)
+if not "%parentPath%" == "" goto gotJpdaOpts
+
+:gotJpdaOpts
+if "%parentPath%%front%\"=="%~dp0" goto end
+set realParentPath=%parentPath%%front%
+set parentPath=%parentPath%%front%\
+goto begin
+
+:end
+@echo on 
+"""
 
 
 def get_real_value(my_string, env_key):
@@ -156,6 +177,15 @@ class RunSquishCase:
                 if xTools.wrap_cp_file(src_foo, dst_foo):
                     return 1
 
+    def update_path(self, raw_path, design_path):
+        if not raw_path:
+            return raw_path
+        unix_path = xTools.win2unix(raw_path)
+        unix_design_path = xTools.win2unix(design_path)
+        replace_name = "%CASE_PATH%" if self.on_win else "${CASE_PATH}"
+        unix_path = re.sub(unix_design_path, replace_name, unix_path)
+        return unix_path
+
     def run_batch_file(self):
         testrun_path = os.path.join(self.design, "_scratch_cmd")
         if xTools.wrap_md(testrun_path, "TestRun Path"):
@@ -179,6 +209,8 @@ class RunSquishCase:
                         "cwd" : os.getcwd(),
                         # ------------
                         }
+        for k in ("testcase", "reportgen", "objectmap", "cwd"):
+            batch_kwargs[k] = self.update_path(batch_kwargs.get(k), self.design)
         if not self.aut:
             if self.on_win:
                 name_of_aut = "pnmain"
@@ -216,6 +248,7 @@ class RunSquishCase:
         batch_kwargs["name_of_aut"] = name_of_aut
 
         batch_file = "run_squish.bat"
+        batch_kwargs["given_dos_lines"] = GIVEN_DOS_LINES if self.on_win else ""
         xTools.write_file("run_squish.bat", RUN_SQUISH % batch_kwargs)
         if self.on_win:
             sts, txt = xTools.get_status_output(batch_file)

@@ -1,0 +1,21 @@
+#!/bin/sh
+export INSTALLED_PATH=$1
+echo "Installed Path is:" $INSTALLED_PATH
+
+PMI_READY="vlogan -sverilog -f ${INSTALLED_PATH}/ip/pmi/pmi.f +incdir+${INSTALLED_PATH}/ip/pmi"
+echo $PMI_READY
+$PMI_READY
+
+_VERILOG_READY="${INSTALLED_PATH}/cae_library/simulation/verilog"
+_DEV=${_VERILOG_READY}/%(dev_name)s
+_UAP=${_VERILOG_READY}/uaplatform
+VERILOG_READY="-y ${_DEV} -y ${_UAP} +libext+.v +incdir+${_DEV}+${_UAP}"
+
+# source files
+%(source_files)s
+
+#testbench files
+%(tb_files)s
+
+vcs %(sim_top)s
+./simv -l sim.log +vcs+lic+wait -ucli -i ucli.cmd

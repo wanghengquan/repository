@@ -84,28 +84,19 @@ def add_dbg_for_vlog(raw_line):
 
 def get_new_real_path(do_file, line):
     do_dir = os.path.dirname(do_file)
-    p_incdir = re.compile(r"(.*\+incdir\+)(\S+)")
-    m_incdir = p_incdir.search(line)
-    if m_incdir:
-        inc_dir_list = re.split(r"\+", m_incdir.group(2))
-        inc_dir_list = [xTools.get_relative_path(foo.strip('"'), do_dir) for foo in inc_dir_list]
-        return "{}{} \\".format(m_incdir.group(1), "+".join(inc_dir_list))
-    else:
-        file_list = re.split("\s+", line)
-        new_file_list = list()
-        for item in file_list:
-            if not item:
-                new_file_list.append(item)
-                continue
-            fname, fext = os.path.splitext(item)
-            if fext.lower() in (".v", ".sv", ".vhd"):
-                if re.search(r"\+", item):
-                    pass
-                else:
-                    item = xTools.get_relative_path(item, do_dir)
-            new_file_list.append(item)
-        line = " ".join(new_file_list)
-        return line
+    new_line = list()
+    for foo in line.split():
+        _x = list()
+        for bar in foo.split("+"):
+            if not bar:
+                _x.append("")
+            elif bar == "\\":
+                _x.append(bar)
+            else:
+                new_bar = xTools.get_relative_path(bar, do_dir)
+                _x.append(new_bar if os.path.exists(new_bar) else bar)
+        new_line.append("+".join(_x))
+    return " ".join(new_line)
 
 
 class RunSimulationFlow:
@@ -124,6 +115,7 @@ class RunSimulationFlow:
         self.p_src_end = re.compile("<source_end>")
         self.p_tb_start = re.compile("<tb_start>")
         self.p_tb_end = re.compile("<tb_end>")
+        self.p_vlog_vcom = re.compile("^(vlog|vcom)", re.I)
         self.use_vhd = 0
 
     def run_udb2_flow(self):
@@ -160,8 +152,9 @@ class RunSimulationFlow:
 
     def process(self):
         sim_vendor_bin = os.getenv("SIM_VENDOR_BIN")
-        if xTools.not_exists(sim_vendor_bin, "Simulation tool bin path"):
-            return 1
+        if sim_vendor_bin not in ("VCS", "XRUN"):
+            if xTools.not_exists(sim_vendor_bin, "Simulation tool bin path"):
+                return 1
         self.sim_vendor_bin = xTools.win2unix(sim_vendor_bin)
         if self.flatten_options():
             return 1
@@ -328,6 +321,8 @@ class RunSimulationFlow:
         self.do_qsim = sim_section.get("do_qsim")
         self.do_ahdl = sim_section.get("do_asim")
         self.do_riviera = sim_section.get("do_rsim")
+        self.do_vcs = sim_section.get("do_vcs")
+        self.do_xrun = sim_section.get("do_xrun")
         self.use_dbg_in_riviera = xTools.get_true(sim_section, "use_dbg_in_riviera")
 
         _conf = self.flow_options.get("conf")
@@ -342,11 +337,17 @@ class RunSimulationFlow:
             self.do_riviera = os.path.join(_conf, "sim", "rsim_do.template")
         if not self.do_ahdl:
             self.do_ahdl = os.path.join(_conf, "sim", "ahdl_do.template")
+        if not self.do_vcs:
+            self.do_vcs = os.path.join(_conf, "sim", "vcs_do.template")
+        if not self.do_xrun:
+            self.do_xrun = os.path.join(_conf, "sim", "xrun_do.template")
 
         self.run_modelsim = xTools.get_true(self.flow_options, "run_modelsim")
         self.run_questasim = xTools.get_true(self.flow_options, "run_questasim")
         self.run_riviera = xTools.get_true(self.flow_options, "run_riviera")
         self.run_activehdl = xTools.get_true(self.flow_options, "run_activehdl")
+        self.run_vcs = xTools.get_true(self.flow_options, "run_vcs")
+        self.run_xrun = xTools.get_true(self.flow_options, "run_xrun")
 
         if self.run_modelsim:
             self.do_template = self.do_msim
@@ -357,6 +358,12 @@ class RunSimulationFlow:
         elif self.run_riviera:
             self.do_template = self.do_riviera
             self.sim_vendor_name = "Riviera"
+        elif self.run_vcs:
+            self.do_template = self.do_vcs
+            self.sim_vendor_name = "vcs"
+        elif self.run_xrun:
+            self.do_template = self.do_xrun
+            self.sim_vendor_name = "xrun"
         else:
             self.do_template = self.do_ahdl
             self.sim_vendor_name = "Active"
@@ -415,16 +422,18 @@ class RunSimulationFlow:
         if not map_lib_name:
             map_lib_name = family_name.lower()
             xTools.say_it("Message: Use map lib name: %s" % map_lib_name)
-
-        if self.dev_lib:
-            map_lib_name = self.dev_lib
-            map_lib_name = re.sub("ovi_", "", map_lib_name)
-        else:
-            if self.build_this_dev_lib(_conf, map_lib_name, family_name):
+        if not self.run_vcs:  # compile library when running
+            if self.dev_lib:  # cross simulation test!
+                map_lib_name = self.dev_lib
+                map_lib_name = re.sub("ovi_", "", map_lib_name)
+            else:
+                if self.build_this_dev_lib(_conf, map_lib_name, family_name):
+                    return 1
+            self.dev_lib = os.path.abspath(self.dev_lib)
+            if xTools.not_exists(self.dev_lib, "General Simulation Lib path"):
                 return 1
-        self.dev_lib = os.path.abspath(self.dev_lib)
-        if xTools.not_exists(self.dev_lib, "General Simulation Lib path"):
-            return 1
+        else:
+            self.pmi_lib = ""
 
         self.do_args = dict()
         self.do_args["sim_top"] = self.sim_top
@@ -672,6 +681,113 @@ class RunSimulationFlow:
                 raw_line = re.sub(r"vsim\s+", "vsim -dbg ", raw_line)
         return raw_line
 
+    def try_to_update_file_if_scuba(self, ovi_tag, raw_line):
+        raw_line = raw_line.strip()
+        if self.p_vlog_vcom.search(raw_line):
+            return ovi_tag, raw_line
+        raw_line_list = raw_line.split()
+        new_line_list = list()
+        for foo in raw_line_list:
+            if os.path.exists(foo):
+                modified, real_hdl_file = get_real_hdl_file(foo, self.run_scuba)
+                cur_fext = xTools.get_fext_lower(real_hdl_file)
+                if modified:
+                    if new_line_list[0].lower() in ("vcom", "vlog"):
+                        new_line_list[0] = "vcom" if cur_fext == ".vhd" else "vlog"
+                    new_line_list.append(real_hdl_file)
+                else:
+                    new_line_list.append(foo)
+                if not ovi_tag:
+                    if cur_fext in (".vho", ".vhd", ".vhdl"):
+                        ovi_tag = 1
+            else:
+                new_line_list.append(foo)
+        return ovi_tag, " ".join(new_line_list)
+
+    @staticmethod
+    def group_by_file_extension(raw_files):
+        group_list = list()
+        group_name, _ = "", list()
+        for i, foo in enumerate(raw_files):
+            fext = os.path.splitext(foo)[1]
+            if group_name:
+                if fext == group_name:
+                    _.append(foo)
+                else:
+                    group_name = fext
+                    group_list.append(_[:])
+                    _ = [foo]
+            else:
+                group_name = fext
+                _.append(foo)
+        if _:
+            group_list.append(_[:])
+        return group_list
+
+    def get_vcs_lines(self, hdl_files):
+        lines = list()
+        group_hdl_files = self.group_by_file_extension(hdl_files)
+        for foo in group_hdl_files:
+            fext = os.path.splitext(foo[0])[1]
+            all_files = " ".join(foo)
+            if fext.lower() in (".vho", ".vhd", ".vhdl", ".vhm"):
+                lines.append("vhdlan %s" % all_files)
+            else:
+                lines.append("vlogan -sverilog %s $VERILOG_READY" % all_files)
+        return "\n".join(lines)
+
+    def get_xrun_lines(self, hdl_files):
+        lines = list()
+        for foo in hdl_files:
+            fext = xTools.get_fext_lower(foo)
+            if fext in (".vho", ".vhd", ".vhdl", ".vhm"):
+                lines.append("xrun -v200x -compile {}".format(foo))
+            elif fext == ".v":
+                lines.append("xrun -compile {}".format(foo))
+            elif fext == ".vo":
+                lines.append("xrun -compile {} -vlog_ext +.vo ".format(foo))
+        return "\n".join(lines)
+
+    def run_simulation_flow_with_vcs(self, sim_path, source_files, user_options):
+        with open("ucli.cmd", "w", newline="\n") as ob:
+            print("run %(sim_time)s" % self.do_args, file=ob)
+            print("quit", file=ob)
+        if not user_options:  # RTL simulation
+            source_files = [xTools.get_relative_path(item, self.dst_design) for item in source_files]
+        self.do_args["source_files"] = self.get_vcs_lines(source_files)
+        self.do_args["tb_files"] = self.get_vcs_lines(self.final_tb_files)
+        x = "do_{}".format(sim_path)
+        y = "run_{}".format(sim_path)
+        sh_file = "{}.sh".format(x)
+        with open(sh_file, "w", newline="\n") as wob:
+            with open(self.do_vcs) as rob:
+                for line in rob:
+                    line = line.rstrip()
+                    print(line % self.do_args, file=wob)
+        xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
+
+    def run_simulation_flow_with_xrun(self, sim_path, source_files, user_options):
+        with open("ucli.tcl", "w", newline="\n") as ob:
+            print("run %(sim_time)s" % self.do_args, file=ob)
+            print("exit 0", file=ob)
+        if not user_options:  # RTL simulation
+            source_files = [xTools.get_relative_path(item, self.dst_design) for item in source_files]
+        self.do_args["source_files"] = self.get_xrun_lines(source_files)
+        self.do_args["tb_files"] = self.get_xrun_lines(self.final_tb_files)
+        self.do_args["dev_lib"] = os.path.join(os.path.dirname(self.dev_lib), re.sub("^ovi_", "", os.path.basename(self.dev_lib)))
+        self.do_args["pmi_lib"] = self.pmi_lib
+        x = "do_{}".format(sim_path)
+        y = "run_{}".format(sim_path)
+        sh_file = "{}.sh".format(x)
+        with open(sh_file, "w", newline="\n") as wob:
+            with open(self.do_xrun) as rob:
+                for line in rob:
+                    line = line.rstrip()
+                    if "sim_syn" in sim_path:
+                        line += " -timescale '1ns/1ps'"
+                    print(line % self.do_args, file=wob)
+        xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
+
     def _run_simulation(self, sim_path, source_files, user_options):
         if self.is_ng_flow:
             pass  # DO NOT INCLUDE PMI File
@@ -684,6 +800,14 @@ class RunSimulationFlow:
         if self.copy_tb_files(""):
             _recov.comeback()
             return 1
+        if self.run_vcs:
+            self.run_simulation_flow_with_vcs(sim_path, source_files, user_options)
+            _recov.comeback()
+            return
+        if self.run_xrun:
+            self.run_simulation_flow_with_xrun(sim_path, source_files, user_options)
+            _recov.comeback()
+            return
         use_source_do_file = 0
         if not user_options:  # rtl simulation
             if self.others_path:
@@ -719,27 +843,7 @@ class RunSimulationFlow:
                 elif start_source or start_tb:
                     new_line = get_new_real_path(self.do_template, line)
                     if start_source:
-                        line_list = re.split("\s+", line.strip())
-                        if line_list[0] in ("vlog", "vcom"):
-                            hdl_file = line_list[-1]
-                            real_hdl_file = xTools.get_relative_path(hdl_file, os.getcwd())
-                            if not os.path.isfile(real_hdl_file):
-                                real_hdl_file = xTools.get_relative_path(hdl_file, os.path.dirname(self.do_template))
-                            if not os.path.isfile(real_hdl_file):
-                                pass
-                            else:
-                                modified, real_hdl_file = get_real_hdl_file(real_hdl_file, self.run_scuba)
-                                cur_fext = xTools.get_fext_lower(real_hdl_file)
-                                if modified:
-                                    if cur_fext == ".vhd":
-                                        line_list = ["vcom", ""]
-                                    else:
-                                        line_list = ["vlog", ""]
-                                line_list[-1] = real_hdl_file
-                                if not need_remove_ovi:
-                                    if xTools.get_fext_lower(real_hdl_file) in (".vho", ".vhd", ".vhdl"):
-                                        need_remove_ovi = 1
-                                new_line = " ".join(line_list)
+                        need_remove_ovi, new_line = self.try_to_update_file_if_scuba(need_remove_ovi, new_line)
                     do_lines.append(new_line)
         else:
             start_source = start_tb = 0
@@ -825,6 +929,12 @@ class RunSimulationFlow:
         xTools.write_file(do_file, new_do_lines)
         utils.update_simulation_do_file(self.sim_vendor_name, do_file, self.lst_precision, self.sim_no_lst)
 
+        # sometimes the simulation libraries are not complete for temporary device, so try to find an exist one
+        unique_one = self.get_lib_path_if_only_has_one(self.dev_lib)
+        if unique_one:
+            self.dev_lib = unique_one
+            need_remove_ovi = 0
+
         args = "%s %s %s cmd %s %s" % (do_file, self.dev_lib, self.pri_lib, self.diamond, self.src_lib)
         rerun_sim_cmd = None
         if self.run_modelsim:
@@ -888,6 +998,23 @@ class RunSimulationFlow:
 
         _recov.comeback()
         return sts
+
+    @staticmethod
+    def get_lib_path_if_only_has_one(now_dev_lib):
+        """
+        sometimes the simulation libraries are not complete for temporary device, so try to find an unique exist one
+        """
+        _root, _path = os.path.split(now_dev_lib)
+        _clean_path = re.sub("ovi_", "", _path)
+        one = os.path.join(_root, _clean_path)
+        two = os.path.join(_root, f"ovi_{_clean_path}")
+        one_is, two_is = os.path.isdir(one), os.path.isdir(two)
+        if one_is and two_is:
+            return
+        if one_is:
+            return one
+        if two_is:
+            return two
 
     def copy_tb_files(self, sim_path):
         """
@@ -977,6 +1104,7 @@ class RunSimulationFlow:
                 fext = xTools.get_fext_lower(item)
                 item = xTools.win2unix(item, 0)
                 if not os.path.isfile(item):
+                    xTools.say_it("Warning. Not found file {}".format(item))
                     continue
                 if fext in (".v", ".vo", ".sv", ".vm"):
                     if p_for_pmi.search(item):
@@ -1013,7 +1141,18 @@ class RunSimulationFlow:
         if x:
             x_sim_vendor_name = "{}_{}".format(x[0], x[1])
         else:
-            x_sim_vendor_name = self.sim_vendor_name
+            if self.run_xrun:
+                sts, text = xTools.get_status_output("xrun -helpargs")
+                p = re.compile("xrun:\s+([^:]+):.+Cadence")  # xrun: 20.09-s004: (c) Copyright 1995-2020 Cadence Design Systems, Inc.
+                for line in text:
+                    m = p.search(line)
+                    if m:
+                        x_sim_vendor_name = "xrun_{}".format(m.group(1))
+                        break
+                else:
+                    x_sim_vendor_name = "xrun"
+            else:
+                x_sim_vendor_name = self.sim_vendor_name
         #
         real_path = os.path.join(self.flow_options.get("conf"), x_sim_vendor_name, ver_name)
         self.lock_file_folder = xTools.win2unix(real_path)
@@ -1024,6 +1163,8 @@ class RunSimulationFlow:
         self.ori_library_precompiled = self.flow_options.get("library_precompiled")
         if self.ori_library_precompiled:
             self.ori_library_precompiled = self.ori_library_precompiled.lower()
+        if self.run_xrun:
+            self.ori_library_precompiled = "no"
 
         _name = "ovi_{}".format(map_lib_name)
         if self.original_library_path:
@@ -1040,7 +1181,7 @@ class RunSimulationFlow:
         self.create_lock_file_folder()
 
         def try_to_compile_local_lib():
-            _lock_file = os.path.join(self.lock_file_folder, "compile_{}_library.lock".format(family_name))
+            _lock_file = os.path.join(self.lock_file_folder, "compile_{}_library.lock".format(map_lib_name))
             filelock.safe_run_function(self.create_dev_lib, args=(map_lib_name, self.lock_file_folder),
                                        func_lock_file=_lock_file,
                                        timeout=3600)

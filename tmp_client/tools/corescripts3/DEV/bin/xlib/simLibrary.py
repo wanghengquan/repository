@@ -51,14 +51,21 @@ def get_radiant_lib_file(family_path):
     _vhdl = os.path.join(hdl_path, "..", "..", "synthesis", "vhdl", "{}.vhd".format(family))
     if os.path.isfile(_vhdl):
         t.append(os.path.abspath(_vhdl))
+    p_v_sv_f = re.compile(r"\.(sv|v|f)$", re.I)
+    p_package = re.compile("_package")
     for foo in my_dirs:
         f_files = glob.glob(os.path.join(hdl_path, foo, "*.f"))
         if not f_files:
-            f_files = glob.glob(os.path.join(hdl_path, foo, "*.v"))
+            f_files = glob.glob(os.path.join(hdl_path, foo, "*"))
         for bar in f_files:
             if 'convertDeviceString' in bar:
                 continue
-            t.append(bar)
+            if not p_v_sv_f.search(bar):
+                continue
+            if p_package.search(os.path.basename(bar)):
+                t.insert(0, bar)
+            else:
+                t.append(bar)
     return t
 
 
@@ -111,7 +118,7 @@ def get_lib_file(hdl_type, family_path, bb_file, is_ng_flow):
         for foo in os.listdir(src_path):
             fext = xTools.get_fext_lower(foo)
             abs_foo = os.path.join(src_path, foo)
-            if fext == ".v":
+            if fext in (".v", ".sv"):
                 list_v.append(abs_foo)
             elif fext == ".vhd":
                 list_vhd.append(abs_foo)
@@ -196,7 +203,7 @@ def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool="
     is_riviera_tplus = ("Riviera" in vendor_tool) and _is_ice or ("Active" in vendor_tool)
     for item in hdl_files:
         fext = xTools.get_fext_lower(item)
-        if fext == ".v":
+        if fext in (".v", ".sv"):
             cmd_exe = vlog_cmd
             if is_riviera_tplus:
                 item = " -v2k5 " + item
@@ -210,7 +217,7 @@ def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool="
             item = " -v2k " + item
         elif fext == ".f":
             cmd_exe = vlog_cmd
-            if re.search("(lifcl|jd5d00|lfcpnx)", work_name.lower()) and "QuestaSim" in vendor_tool:
+            if re.search("(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f)", work_name.lower()) and "QuestaSim" in vendor_tool:
                 cmd_exe += " -sv -mfcu "
             elif "Modelsim" in vendor_tool and os.getenv("YOSE_RADIANT") == "1" and not _is_ice:
                 cmd_exe += " -sv -mfcu "
@@ -270,10 +277,36 @@ def compile_library(*args):
             except OSError:
                 pass
             return
+    on_win, os_name = xTools.get_os_name()
+    if sim_vendor == "xrun":
+        compile_bat_file = "Compile_%s.bat" % sim_name
+        bat_lines = list()
+        vhdl_files = lib_file_dict.get("vhdl")
+        verilog_files = lib_file_dict.get("verilog")
+        x = list()
+        if vhdl_files:
+            x = vhdl_files[:]
+        elif verilog_files:
+            x = verilog_files[:]
+        if not x:
+            print("Error. No files found for compiling simulation library for {}".format(sim_name))
+            return
+        for foo in x:
+            if xTools.get_fext_lower(foo) == ".f":  # compile .f ONLY
+                _header = "xrun" if "pmi" in sim_name else "xrun -sv"
+                names = [_header, sim_name, foo, os.path.dirname(foo)]
+                bat_lines.append("{} -compile -makelib ./{} -f {} -incdir {} -parallel -endlib".format(*names))
+        if bat_lines:
+            xTools.write_file(compile_bat_file, bat_lines)
+            if not on_win:
+                compile_bat_file = "sh %s" % compile_bat_file
+            sts = xTools.run_command(compile_bat_file, "%s.log" % sim_name, "%s.time" % sim_name)
+            return sts
+        return
 
     compile_bat_file = "Compile_%s.bat" % sim_name
     bat_lines = list()
-    on_win, os_name = xTools.get_os_name()
+
     if on_win:
         x = "rem set FOUNDRY="
     else:

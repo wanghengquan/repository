@@ -675,6 +675,9 @@ def get_simrel_path(simrel_dirname, device):
                     continue
                 else:
                     t = open(check_file, "w")
+                    print(os.getcwd(), file=t)
+                    print(xTools.get_machine_name(), file=t)
+                    print(time.ctime(), file=t)
                     t.close()
                     return simrel_root, foo, simrel_family
 

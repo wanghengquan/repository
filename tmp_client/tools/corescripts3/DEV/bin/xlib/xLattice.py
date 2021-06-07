@@ -454,13 +454,17 @@ class LatticeEnvironment:
                 os.environ[env_key] = value
         if self.set_env:
             for item in self.set_env:
-                xTools.say_it("Set User Environment: {}".format(item))
                 env_val = re.split("=", item)
                 if len(env_val) != 2:
                     xTools.say_it("Warning. Can not set %s" % item)
                     continue
                 env_key, env_value = env_val
-                os.environ[env_key.strip()] = env_value.strip()
+                env_value = env_value.strip()
+                split_mark = ";" if ";" in env_value else ":"
+                env_value_list = re.split(split_mark, env_value)
+                env_value = os.pathsep.join(env_value_list)
+                xTools.say_it("Set User Environment: {}: {}".format(env_key, env_value))
+                os.environ[env_key.strip()] = env_value
 
     def get_right_diamond(self, diamond_path):
         if not self.loose_match:
@@ -576,11 +580,14 @@ class LatticeEnvironment:
         self.run_questasim = xTools.get_true(self.flow_options, "run_questasim")
         self.run_riviera = xTools.get_true(self.flow_options, "run_riviera")
         self.run_activehdl = xTools.get_true(self.flow_options, "run_activehdl")
-        if not (self.run_modelsim or self.run_questasim or self.run_riviera or self.run_activehdl):
+        self.run_vcs = xTools.get_true(self.flow_options, "run_vcs")
+        self.run_xrun = xTools.get_true(self.flow_options, "run_xrun")
+        if not (self.run_modelsim or self.run_questasim or self.run_riviera or
+                self.run_activehdl or self.run_vcs or self.run_xrun):
             # try to read EXTERNAL_SIMULATION_TOOL value
             est = self.flow_options.get("simulation_tool")
             if est:
-                if est not in ("modelsim", "riviera", "questasim", "activehdl"):
+                if est not in ("modelsim", "riviera", "questasim", "activehdl", "vcs", "xrun"):
                     xTools.say_it("Error. Unknown simulation tools name: {}".format(est))
                     return 1
                 self.flow_options["run_{}".format(est)] = True
@@ -589,6 +596,8 @@ class LatticeEnvironment:
                 self.run_questasim = xTools.get_true(self.flow_options, "run_questasim")
                 self.run_riviera = xTools.get_true(self.flow_options, "run_riviera")
                 self.run_activehdl = xTools.get_true(self.flow_options, "run_activehdl")
+                self.run_vcs = xTools.get_true(self.flow_options, "run_vcs")
+                self.run_xrun = xTools.get_true(self.flow_options, "run_xrun")
         if self.run_riviera:
             closest_simulation_library = self.sim_vendor_name = self.riviera_path
             tool_name = "Riviera"
@@ -602,6 +611,13 @@ class LatticeEnvironment:
             if not self.sim_vendor_name:
                 # comes from Radiant/Diamond install path
                 self.sim_vendor_name = closest_simulation_library
+        elif self.run_vcs:
+            tool_name = "VCS"
+            self.sim_vendor_name = ""
+            closest_simulation_library = ""
+        elif self.run_xrun:
+            tool_name = "XRUN"
+            self.sim_vendor_name, closest_simulation_library = "", ""
         else:  # modelsim
             if not self.run_modelsim:
                 xTools.say_it("Use Modelsim as the default simulation tool ")
@@ -617,12 +633,14 @@ class LatticeEnvironment:
                 closest_simulation_library = os.path.join(self.diamond_be, "modeltech", oem_path)
             if not self.sim_vendor_name:
                 self.sim_vendor_name = closest_simulation_library
-
-        if xTools.not_exists(self.sim_vendor_name, "Simulation Tool Path: {}".format(tool_name)):
-            return 1
+        if self.sim_vendor_name:
+            if xTools.not_exists(self.sim_vendor_name, "Simulation Tool Path: {}".format(tool_name)):
+                return 1
+            os.environ["PATH"] = os.pathsep.join([self.sim_vendor_name, os.getenv("PATH", "")])
+        else:
+            self.sim_vendor_name = tool_name
         os.environ["SIM_VENDOR_BIN"] = self.sim_vendor_name
         os.environ["CLOSEST_SIM_LIB"] = closest_simulation_library
-        os.environ["PATH"] = os.pathsep.join([self.sim_vendor_name, os.getenv("PATH", "")])
 
     def explore_simulation_type(self):
         self.run_simrel = self.flow_options.get("run_simrel")
