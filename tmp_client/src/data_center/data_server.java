@@ -62,6 +62,7 @@ import utility_funcs.time_info;
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
  * 					group	=	xxx
+ *                  account =   xxx
  * 					private	=	0/1
  * 					unattended = 0/1
  * 					stable_version = 0/1
@@ -179,6 +180,7 @@ public class data_server extends Thread {
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
+		machine_data.put("account", System.getProperty("user.name"));
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
 		machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data

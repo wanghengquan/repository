@@ -150,7 +150,7 @@ public class tube_server extends Thread {
 		String client_current_private = client_hash.get("Machine").get("private");
 		//Scenario 1 local task (not remote)
 		if (queue_name.contains("0@")){
-			//this is a local task queue no private need to check
+			//this is a local task queue, don't need to check
 			return machine_match;
 		}		
 		//Scenario 2 without machine requirement data
@@ -162,7 +162,7 @@ public class tube_server extends Thread {
 			}
 			return machine_match;
 		}
-		//Scenario 3 with machine requirement data without 'terminal'
+		//Scenario 3 with machine requirement data, without 'terminal'
 		HashMap<String, String> machine_require_data = queue_data.get("Machine");
 		if (client_current_private.equals("1") && !machine_require_data.containsKey("terminal")) {
 			machine_match = false;
@@ -194,26 +194,21 @@ public class tube_server extends Thread {
 			} else{
 				client_value_list.add(client_value);
 			}
-			Boolean item_match = Boolean.valueOf(false);
-
-            for (String terminal_model: request_value_list){
-                if(terminal_model.contains("!")){
-                    item_match = true;
-                    break;
-                }
-            }
-
-			for (String individual: client_value_list){
-				if (request_value_list.contains(individual)){
-					item_match = true;
+			Boolean individual_check = Boolean.valueOf(false);
+			if (request_value.contains("!")) {//negative match enable
+				individual_check = true;
+			}
+			for (String individual_value: client_value_list){
+				if (request_value_list.contains(individual_value)){
+					individual_check = true;
 					break;
 				}
-                if (request_value_list.contains("!" + individual)){
-                    item_match = false;
+                if (request_value_list.contains("!" + individual_value)){
+                	individual_check = false;
                     break;
                 }
 			}
-			if (!item_match){
+			if (!individual_check){
 				machine_match = false;
 				break;
 			}

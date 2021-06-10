@@ -203,6 +203,9 @@ public class env_checker extends TimerTask {
         		break;
         	}
         }
+        if (!status) {
+        	ENV_CHECKER_LOGGER.warn("Remote Corescript not available.");
+        }
         return status;
 	}
 	
