@@ -190,6 +190,12 @@ class initial_status extends abstract_status {
 		}		
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		if (update_obj.update_skipped) {
 			client.STATUS_LOGGER.info("Client self-update skipped.");
 		} else {
