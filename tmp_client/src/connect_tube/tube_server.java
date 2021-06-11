@@ -375,6 +375,7 @@ public class tube_server extends Thread {
 		complex_data.put("host_ip", host_ip);
 		complex_data.put("os", os);
 		complex_data.put("group_name", group_name);
+		complex_data.put("account", System.getProperty("user.name"));
 		complex_data.put("memory_used", memory_used);
 		complex_data.put("disk_left", disk_left);
 		complex_data.put("cpu_used", cpu_used);
