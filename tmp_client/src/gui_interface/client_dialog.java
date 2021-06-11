@@ -59,7 +59,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		container.add(table_head, BorderLayout.NORTH);
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(450, 250);
+		this.setSize(450, 300);
 	}
 
 	public void reset_table_data() {
@@ -113,7 +113,7 @@ public class client_dialog extends JDialog implements ActionListener {
 		JPanel action_panel = new JPanel(new GridLayout(2,1,5,5));
 		//comments
 		JPanel comment = new JPanel(new GridLayout(1, 1, 5, 5));
-		comment.add(new JLabel("*Account value is read-only."));
+		comment.add(new JLabel("*:Account value is read-only."));
 		//action
 		JPanel action = new JPanel(new GridLayout(1, 4, 5, 5));
 		discard = new JButton("Discard");
