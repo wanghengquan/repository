@@ -11,8 +11,8 @@ __date__ = '15:05 2018/12/13'
 
 def get_guest_db():
     guest_db = torndb.Connection(host="lsh-tmp", database="testrail",
-                                 user=cipher.decrypt("O=R=E=Q=F=Q=N=R"),
-                                 password=cipher.decrypt("A=Q=K=Q=O=R=N=R=B=Q=E=Q=D=Q"))
+                                 user=cipher.decrypt("C=Q=O=Q=P=Q=L=R=J=Q=N=Q"),
+                                 password=cipher.decrypt("E=Q=O=Q=G=Q=F=Q=H=Q"))
     return guest_db
 
 
