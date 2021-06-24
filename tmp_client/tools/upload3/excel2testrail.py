@@ -245,7 +245,7 @@ class UploadSuites(object):
                             continue
                         this_value = foo[2]
                         this_value = this_value.strip("= ")
-                        now_value_list = tools.comma_split(now_value, sep_mark=";", keep_original=True)
+                        now_value_list = tools.comma_split(now_value, sep_mark=";")
                         if this_value in now_value_list:
                             _matched = 1
                         matched_list.append(_matched)
@@ -266,8 +266,8 @@ class UploadSuites(object):
                     if foo[1] == "Section":
                         new_case[foo[1]] = foo[2]
                         continue
-                    macro_settings = tools.comma_split(foo[2].strip(), sep_mark=";", keep_original=True)  # ["aa=1", "bb=2]
-                    original_settings = tools.comma_split(new_case.get(foo[1], ""), sep_mark=";", keep_original=True)
+                    macro_settings = tools.comma_split(foo[2].strip(), sep_mark=";")   # ["aa=1", "bb=2]
+                    original_settings = tools.comma_split(new_case.get(foo[1], ""), sep_mark=";")
                     if not original_settings:
                         new_case[foo[1]] = foo[2]
                     else:
@@ -445,9 +445,10 @@ def get_case_dict(csv_file):
     start_tag1 = "Order"
     start_tag2 = "Title"
     tmp_lines = list()
-    with open(csv_file) as ob:
+    with open(csv_file, "rb") as ob:
         start = 0
         for line in ob:
+            line = line.decode()
             if not start:
                 line_list = tools.comma_split(line, sep_mark=",")
                 if start_tag1 in line_list and start_tag2 in line_list:
