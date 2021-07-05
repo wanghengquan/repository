@@ -59,7 +59,7 @@ public class top_launcher {
             bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
         }
         File file = new File(bin_path);
-        bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
+        bin_path = file.getAbsolutePath().replaceAll("\\.$", "").replaceAll("\\\\", "/");
         return bin_path;
     }
 
