@@ -84,7 +84,7 @@ public class file_action {
 			FILE_ACTION_LOGGER.warn("Write file exception:" + file_path);
 			return 1;
 		}
-	}	
+	}
 	
 	public static void copy_file(String src_file, String dest_file) {
 		File src = new File(src_file);
@@ -93,7 +93,9 @@ public class file_action {
 			FileUtils.copyFile(src, dest);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			FILE_ACTION_LOGGER.warn("Copy file exception");
+			FILE_ACTION_LOGGER.warn("Copy file exception:");
+			FILE_ACTION_LOGGER.warn("Source:" + src_file);
+			FILE_ACTION_LOGGER.warn("destination:" + dest_file);
 		}
 	}
 
