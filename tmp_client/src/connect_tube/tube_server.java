@@ -752,7 +752,7 @@ public class tube_server extends Thread {
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
 		task_data task_info = new task_data();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {

@@ -23,12 +23,12 @@ public enum exit_enum {
 	GUI(10, "Software GUI exit."),
 	CRN(11, "Client restart now exit."),
 	CRL(12, "Client restart later exit."),
-	CSN(13, "Client shotdown now exit."),
-	CSL(14, "Client shotdown later exit."),
+	CSN(13, "Client shutdown now exit."),
+	CSL(14, "Client shutdown later exit."),
 	HRN(15, "Host machine restart now exit."),
 	HRL(16, "Host machine restart later exit."),
-	HSN(17, "Host machine shotdown now exit."),
-	HSL(18, "Host machine shotdown later exit."),
+	HSN(17, "Host machine shutdown now exit."),
+	HSL(18, "Host machine shutdown later exit."),
 	OTHERS(19, "Others/Unknown.");
 	private int index;
 	private String description;
