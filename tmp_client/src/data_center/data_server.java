@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import env_monitor.config_sync;
 import env_monitor.machine_sync;
-import flow_control.pool_data;
 import info_parser.cmd_parser;
 import info_parser.ini_parser;
 import top_runner.run_status.exit_enum;
@@ -97,7 +96,6 @@ public class data_server extends Thread {
 	private HashMap<String, String> cmd_info;
 	private client_data client_info;
 	private switch_data switch_info;
-	private pool_data pool_info;
 	private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
@@ -110,12 +108,10 @@ public class data_server extends Thread {
 	public data_server(
 			HashMap<String, String> cmd_info, 
 			switch_data switch_info,  
-			client_data client_info,
-			pool_data pool_info) {
+			client_data client_info) {
 		this.cmd_info = cmd_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
-		this.pool_info = pool_info;
 		this.config_runner = new config_sync(switch_info, client_info);
 		this.machine_runner = new machine_sync(switch_info);
 	}
@@ -281,17 +277,17 @@ public class data_server extends Thread {
 		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
-	private void initial_thread_pool_setting(){
-		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
-		int max_threads = Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
-		pool_info.initialize_thread_pool(pool_size);
-		if (max_threads > pool_size){
-			DATA_SERVER_LOGGER.warn("max_threads > pool_size, will use pool_size:" + pool_size +" as maximum threads num");
-			pool_info.set_pool_current_size(pool_size);
-		} else {
-			pool_info.set_pool_current_size(max_threads);
-		}
-	}
+	/*
+	 * private void initial_thread_pool_setting(){ int pool_size =
+	 * Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+	 * int max_threads =
+	 * Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
+	 * pool_info.initialize_thread_pool(pool_size); if (max_threads > pool_size){
+	 * DATA_SERVER_LOGGER.warn("max_threads > pool_size, will use pool_size:" +
+	 * pool_size +" as maximum threads num");
+	 * pool_info.set_pool_current_size(pool_size); } else {
+	 * pool_info.set_pool_current_size(max_threads); } }
+	 */
 	
 	private void dynamic_merge_system_data(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
@@ -650,7 +646,7 @@ public class data_server extends Thread {
  		// initial 2 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 3 : update default current size into Pool Data
-		initial_thread_pool_setting();
+		// initial_thread_pool_setting();  1213 //should this item go to hall manager
 		// initial 4 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start
@@ -736,8 +732,7 @@ public class data_server extends Thread {
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
-		pool_data pool_info = new pool_data(10);
-		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server server_runner = new data_server(cmd_info, switch_info, client_info);
 		server_runner.start();
 		try {
 			Thread.sleep(10 * 1000);

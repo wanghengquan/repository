@@ -823,6 +823,18 @@ public class hall_manager extends Thread {
 		start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
 	}
 	
+	private void initial_thread_pool_setting(){
+		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+		int max_threads = Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
+		pool_info.initialize_thread_pool(pool_size);
+		if (max_threads > pool_size){
+			HALL_MANAGER_LOGGER.warn("max_threads > pool_size, will use pool_size:" + pool_size +" as maximum threads num");
+			pool_info.set_pool_current_size(pool_size);
+		} else {
+			pool_info.set_pool_current_size(max_threads);
+		}
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -836,6 +848,8 @@ public class hall_manager extends Thread {
 	private void monitor_run() {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
+		// initial 0 : update default current size into Pool Data
+		initial_thread_pool_setting();
 		// initial 1 : start task waiters
 		task_waiters = get_task_waiter_ready();
 		// initial 2 : start result waiter
@@ -912,7 +926,7 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info, post_info);
 		view_runner.start();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {

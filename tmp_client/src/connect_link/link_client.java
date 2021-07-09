@@ -247,8 +247,8 @@ public class link_client {
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);	
 		post_data post_info = new post_data();
-		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
-		server_runner.start();
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
+		data_runner.start();
 		try {
 			Thread.sleep(10 * 1000);
 		} catch (InterruptedException e) {
@@ -289,6 +289,6 @@ public class link_client {
 		System.out.println(task_string);
 		System.out.println(action_string);
 		my_server.soft_stop();
-		server_runner.soft_stop();
+		data_runner.soft_stop();
 	}
 }
