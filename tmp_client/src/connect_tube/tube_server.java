@@ -347,6 +347,7 @@ public class tube_server extends Thread {
 		int max_thread = pool_info.get_pool_current_size();
 		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
+		simple_data.put("account", System.getProperty("user.name"));
 		simple_data.put("status", system_status);
 		simple_data.put("used_thread", rpt_thread);
 		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
@@ -375,7 +376,6 @@ public class tube_server extends Thread {
 		complex_data.put("host_ip", host_ip);
 		complex_data.put("os", os);
 		complex_data.put("group_name", group_name);
-		complex_data.put("account", System.getProperty("user.name"));
 		complex_data.put("memory_used", memory_used);
 		complex_data.put("disk_left", disk_left);
 		complex_data.put("cpu_used", cpu_used);
