@@ -2017,9 +2017,13 @@ public class local_tube {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
 		String current_terminal = "SHITL0012";
-		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", null, current_terminal);
-		//System.out.println(task_info.get_received_task_queues_map().toString());
-		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		HashMap<String, String> imported_data = new HashMap<String, String>();
+		imported_data.put("env", "a=b");
+		imported_data.put("sort", "");
+		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", null, current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\update\\03_server_ip\\silicon_01_softip_server_ip.xlsx", imported_data, current_terminal);
+		System.out.println(task_info.get_received_task_queues_map().toString());
+		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		
 		xml_parser xml_parser2 = new xml_parser();
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
