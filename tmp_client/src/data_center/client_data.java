@@ -48,6 +48,19 @@ public class client_data {
 
 	}
 
+	public HashMap<String, String> get_client_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("client_hash", client_hash.toString());
+			result.put("max_soft_insts", max_soft_insts.toString());
+			result.put("use_soft_insts", use_soft_insts.toString());
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
 	public HashMap<String, HashMap<String, String>> get_client_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();

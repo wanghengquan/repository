@@ -54,7 +54,7 @@ public class switch_data {
 	private Boolean link_server_power_up = Boolean.valueOf(false);
 	private Boolean console_server_power_up = Boolean.valueOf(false);
 	private Boolean hall_server_power_up = Boolean.valueOf(false);
-	private Boolean local_console_mode = Boolean.valueOf(false);
+	private Boolean local_console_mode = Boolean.valueOf(false);	
 	// suite file updating
 	// private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
@@ -77,11 +77,93 @@ public class switch_data {
 	private String space_warning_announced_date = new String("");
 	private String environ_warning_announced_date = new String("");
 	private String corescript_warning_announced_date = new String("");
+	//Thread active records
+	private String client_manager_active_time = new String("NA");
+	private String view_server_active_time = new String("NA");
+	private String tube_server_active_time = new String("NA");
+	private String data_server_active_time = new String("NA");
+	private String hall_manager_active_time = new String("NA");
+	private String link_server_active_time = new String("NA");
+	private String console_server_active_time = new String("NA");
+	private String config_runner_active_time = new String("NA");
+	private String machine_runner_active_time = new String("NA");
+	private String task_runner_active_time = new String("NA");
+	private String result_runner_active_time = new String("NA");
 	// public function
 	public switch_data() {
 
 	}
 
+	public HashMap<String, String> get_switch_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("system_client_insts", String.valueOf(system_client_insts));
+			result.put("system_svn_exists", String.valueOf(system_svn_exists));
+			result.put("remote_corescript_linked", String.valueOf(remote_corescript_linked));
+			result.put("system_python_version", system_python_version);
+			result.put("send_admin_request", String.valueOf(send_admin_request));
+			result.put("dump_config_request", String.valueOf(dump_config_request));
+			result.put("check_core_request", String.valueOf(check_core_request));
+			result.put("house_keep_request", String.valueOf(house_keep_request));
+			result.put("client_stop_request", client_stop_request.toString());
+			result.put("client_soft_stop_request", String.valueOf(client_soft_stop_request));
+			result.put("client_stop_exception", client_stop_exception.toString());
+			result.put("start_progress_power_up", String.valueOf(start_progress_power_up));
+			result.put("main_gui_power_up", String.valueOf(main_gui_power_up));
+			result.put("data_server_power_up", String.valueOf(data_server_power_up));
+			result.put("tube_server_power_up", String.valueOf(tube_server_power_up));
+			result.put("link_server_power_up", String.valueOf(link_server_power_up));
+			result.put("console_server_power_up", String.valueOf(console_server_power_up));
+			result.put("hall_server_power_up", String.valueOf(hall_server_power_up));
+			result.put("local_console_mode", String.valueOf(local_console_mode));
+			result.put("client_console_updating", String.valueOf(client_console_updating));
+			result.put("client_maintain_list", client_maintain_list.toString());
+			result.put("client_run_state", client_run_state.get_description());
+			result.put("client_environ_issue", String.valueOf(client_environ_issue));
+			result.put("core_script_update_request", String.valueOf(core_script_update_request));
+			result.put("work_space_update_request", String.valueOf(work_space_update_request));
+			result.put("space_warning_announced_date", space_warning_announced_date);
+			result.put("environ_warning_announced_date", environ_warning_announced_date);
+			result.put("corescript_warning_announced_date", corescript_warning_announced_date);
+			result.put("client_manager_active_time", client_manager_active_time);
+			result.put("view_server_active_time", view_server_active_time);
+			result.put("tube_server_active_time", tube_server_active_time);
+			result.put("data_server_active_time", data_server_active_time);
+			result.put("hall_manager_active_time", hall_manager_active_time);
+			result.put("link_server_active_time", link_server_active_time);
+			result.put("console_server_active_time", console_server_active_time);
+			result.put("config_runner_active_time", config_runner_active_time);
+			result.put("machine_runner_active_time", machine_runner_active_time);
+			result.put("task_runner_active_time", task_runner_active_time);
+			result.put("result_runner_active_time", result_runner_active_time);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
+	public HashMap<String, String> get_client_threads_active_time() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("client_manager_active_time", client_manager_active_time);
+			result.put("view_server_active_time", view_server_active_time);
+			result.put("tube_server_active_time", tube_server_active_time);
+			result.put("data_server_active_time", data_server_active_time);
+			result.put("hall_manager_active_time", hall_manager_active_time);
+			result.put("link_server_active_time", link_server_active_time);
+			result.put("console_server_active_time", console_server_active_time);
+			result.put("config_runner_active_time", config_runner_active_time);
+			result.put("machine_runner_active_time", machine_runner_active_time);
+			result.put("task_runner_active_time", task_runner_active_time);
+			result.put("result_runner_active_time", result_runner_active_time);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}	
+	
 	public int get_system_client_insts() {
 		rw_lock.writeLock().lock();
 		String terminal = new String(machine_sync.get_host_name());
@@ -125,7 +207,7 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
@@ -799,5 +881,224 @@ public class switch_data {
 	 */
 	// protected function
 	// private function
-
+	
+	public void set_client_manager_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.client_manager_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_client_manager_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.client_manager_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}	
+	
+	public void set_view_server_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.view_server_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_view_server_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.view_server_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_tube_server_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.tube_server_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_tube_server_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.tube_server_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_data_server_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.data_server_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_data_server_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.data_server_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_hall_manager_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.hall_manager_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_hall_manager_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.hall_manager_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_link_server_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.link_server_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_link_server_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.link_server_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_console_server_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.console_server_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_console_server_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.console_server_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_config_runner_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.config_runner_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_config_runner_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.config_runner_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_machine_runner_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.machine_runner_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_machine_runner_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.machine_runner_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_task_runner_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.task_runner_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_task_runner_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.task_runner_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
+	
+	public void set_result_runner_active_time(String new_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.result_runner_active_time = new_time;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public String get_result_runner_active_time() {
+		String time = new String("");
+		rw_lock.readLock().lock();
+		try {
+			time = this.result_runner_active_time;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return time;
+	}
 }

@@ -1112,6 +1112,8 @@ public class result_waiter extends Thread {
 			run_post_process(case_report_data);
 			// task 8 : release occupied resource
 			release_resource_usage();
+			// task final: status update
+			switch_info.set_result_runner_active_time(time_info.get_date_time());
 		}
 	}
 

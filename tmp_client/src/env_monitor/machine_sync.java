@@ -32,6 +32,7 @@ import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 import top_runner.run_status.exit_enum;
 import utility_funcs.system_cmd;
+import utility_funcs.time_info;
 import utility_funcs.linux_info;
 
 /*
@@ -351,6 +352,8 @@ public class machine_sync extends Thread {
 			// ============== All dynamic job start from here ==============
 			// task 1 : update machine data
 			update_dynamic_data();
+			// task final: status update
+			switch_info.set_machine_runner_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

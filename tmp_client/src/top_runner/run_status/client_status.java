@@ -49,8 +49,7 @@ public class client_status {
 	protected tube_server tube_runner;
 	protected data_server data_runner;
 	protected hall_manager hall_runner;
-	protected link_server task_server;
-	protected link_server cmd_server;
+	protected link_server link_runner;
 	protected console_server console_runner;
 	protected Timer misc_timer;
 	protected final Logger STATUS_LOGGER = LogManager.getLogger(client_status.class.getName());
@@ -61,19 +60,18 @@ public class client_status {
     }
     
 	public client_status(
+			HashMap<String, String> cmd_info,
 			switch_data switch_info, 
 			client_data client_info,
 			task_data task_info,
 			view_data view_info,
 			pool_data pool_info,
-			HashMap<String, String> cmd_info,
 			post_data post_info,
 			view_server view_runner,
 			tube_server tube_runner,
 			data_server data_runner,
 			hall_manager hall_runner,
-			link_server task_server,
-			link_server cmd_server,
+			link_server link_runner,
 			console_server console_runner,
 			Timer misc_timer){
 		this.switch_info = switch_info;
@@ -87,8 +85,7 @@ public class client_status {
 		this.tube_runner = tube_runner;
 		this.data_runner = data_runner;
 		this.hall_runner = hall_runner;
-		this.task_server = task_server;
-		this.cmd_server = cmd_server;
+		this.link_runner = link_runner;
 		this.console_runner = console_runner;
 		this.misc_timer = misc_timer;
 	}	

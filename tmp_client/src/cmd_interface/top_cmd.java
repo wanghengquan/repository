@@ -14,16 +14,20 @@ import java.util.ArrayList;
 public enum top_cmd {
 	H(0, "Show all commands."),
 	HELP(1, "Show all commands."),
-	I(2, "Show linked host client data."),
-	INFO(3, "Show linked host client data."),
-	T(4, "Show linked host task data."),
-	TASK(5, "Show linked host task data."),
-	A(6, "Show linked host available actions."),
-	ACTION(7, "Show linked host available actions."),
-	L(8, "Link to a remote machine, default is localhost."),
-	LINK(9, "Link to a remote machine, default is localhost."),
-	E(10, "Exit Client Inteactive Mode."),
-	EXIT(11, "Exit Client Inteactive Mode.");
+	I(2, "Show linked host client info."),
+	INFO(3, "Show linked host client info."),
+	T(4, "Show linked Client task info."),
+	TASK(5, "Show linked Client task info."),
+	A(6, "Show linked Client available actions."),
+	ACTION(7, "Show linked Client available actions."),
+	D(8, "Show linked Client database info."),
+	DATABASE(9, "Show linked Client database info."),
+	TH(10, "Show linked Client threads status."),
+	THREAD(11, "Show linked Client threads status."),
+	L(12, "Link to remote machine, default is localhost."),
+	LINK(13, "Link to remote machine, default is localhost."),
+	E(14, "Exit Client Inteactive Mode."),
+	EXIT(15, "Exit Client Inteactive Mode.");
 	private int index;
 	private String description;
 	

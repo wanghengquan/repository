@@ -61,12 +61,12 @@ public class client_manager extends Thread  {
 	// private function	
 	
 	public client_manager(
+			HashMap<String, String> cmd_info,
 			switch_data switch_info, 
 			client_data client_info,
 			task_data task_info,
 			view_data view_info,
 			pool_data pool_info,
-			HashMap<String, String> cmd_info,
 			post_data post_info){
 		this.switch_info = switch_info;
 		this.client_info = client_info;
@@ -269,25 +269,23 @@ public class client_manager extends Thread  {
 		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
 		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
 		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
-		link_server task_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_TASK_PORT);
-		link_server cmd_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server link_runner = new link_server(switch_info, client_info, view_info, task_info, pool_info, post_info);
 		console_server console_runner = new console_server(switch_info);
 		Timer misc_timer = new Timer("misc_timer");
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
+				cmd_info,
 				switch_info, 
 				client_info, 
 				task_info, 
 				view_info, 
 				pool_info, 
-				cmd_info,
 				post_info,
 				view_runner,
 				tube_runner,
 				data_runner,
 				hall_runner,
-				task_server,
-				cmd_server,
+				link_runner,
 				console_runner,
 				misc_timer);
 		client_sts.set_current_status(client_sts.INITIAL);
@@ -324,6 +322,8 @@ public class client_manager extends Thread  {
 			} 
 			// task 4 :
 			client_sts.do_state_things();
+			// task final : status update
+			switch_info.set_client_manager_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
