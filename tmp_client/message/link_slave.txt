@@ -29,7 +29,7 @@
 </slave_task>
 
 <?xml version="1.0" encoding="UTF-8" ?>
-<slave_data ip="192.168.122.58" machine="D27639">
+<channel_cmd ip="192.168.122.58" machine="D27639">
 	<task>
 		<sub name='request' value='FINISHED'></sub>
 	</task>
@@ -41,8 +41,22 @@
 	<action>
 		<sub name='request' value='shutdown/restart'></sub>
 	</action>
-</slave_data>
+</channel_cmd>
 
 
+<?xml version="1.0" encoding="UTF-8" ?>
+<channel_job ip="192.168.122.58" machine="D27639">
+	<task>
+		<sub name='request' value='FINISHED'></sub>
+	</task>
+	
+	<info>
+		<sub name='request' value='SYSTEM'></sub>
+	</info>
+	
+	<action>
+		<sub name='request' value='shutdown/restart'></sub>
+	</action>
+</channel_job>
 
 

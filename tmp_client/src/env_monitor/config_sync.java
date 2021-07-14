@@ -24,6 +24,7 @@ import info_parser.ini_parser;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
+import utility_funcs.time_info;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
@@ -481,6 +482,8 @@ public class config_sync extends Thread {
 				ini_parser ini_dump = new ini_parser(get_write_config_file());
 				dump_client_data(ini_dump, verified_ini_data);
 			}
+			// task final: status update
+			switch_info.set_config_runner_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

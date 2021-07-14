@@ -36,6 +36,8 @@ public class task_data {
 	// private TreeMap<String, HashMap<String, HashMap<String, String>>>
 	// local_admin_queue_receive_treemap = new TreeMap<String, HashMap<String,
 	// HashMap<String, String>>>(new queue_compare());
+	private static final Logger TASK_DATA_LOGGER = LogManager.getLogger(task_data.class.getName());
+	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();	
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> received_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
 			new queue_compare());
 	private TreeMap<String, HashMap<String, HashMap<String, String>>> processed_admin_queues_treemap = new TreeMap<String, HashMap<String, HashMap<String, String>>>(
@@ -49,8 +51,6 @@ public class task_data {
 	private Map<String, HashMap<String, String>> local_file_finished_task_map = new HashMap<String, HashMap<String, String>>();
 	private Map<String, HashMap<String, String>> local_path_imported_task_map = new HashMap<String, HashMap<String, String>>();
 	private Map<String, HashMap<String, String>> local_path_finished_task_map = new HashMap<String, HashMap<String, String>>();	
-	private static final Logger TASK_DATA_LOGGER = LogManager.getLogger(task_data.class.getName());
-	private ReadWriteLock rw_lock = new ReentrantReadWriteLock();
 	// public function
 	// protected function
 	// private function
@@ -85,6 +85,41 @@ public class task_data {
 
 	}
 
+	public HashMap<String, String> get_task_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("received_admin_queues_treemap", received_admin_queues_treemap.toString());
+			result.put("processed_admin_queues_treemap", processed_admin_queues_treemap.toString());
+			result.put("captured_admin_queues_treemap", captured_admin_queues_treemap.toString());
+			result.put("received_task_queues_map", received_task_queues_map.toString());
+			result.put("processed_task_queues_map", processed_task_queues_map.toString());
+			result.put("received_stop_queues_map", received_stop_queues_map.toString());
+			result.put("local_file_imported_task_map", local_file_imported_task_map.toString());
+			result.put("local_file_finished_task_map", local_file_finished_task_map.toString());
+			result.put("local_path_imported_task_map", local_path_imported_task_map.toString());
+			result.put("local_path_finished_task_map", local_path_finished_task_map.toString());
+			result.put("rejected_admin_reason_treemap", rejected_admin_reason_treemap.toString());
+			result.put("processing_admin_queue_list", processing_admin_queue_list.toString());
+			result.put("paused_admin_queue_list", paused_admin_queue_list.toString());
+			result.put("stopped_admin_queue_list", stopped_admin_queue_list.toString());
+			result.put("warned_task_queue_list", warned_task_queue_list.toString());
+			result.put("executing_admin_queue_list", executing_admin_queue_list.toString());
+			result.put("pending_admin_queue_list", pending_admin_queue_list.toString());
+			result.put("waiting_admin_queue_list", waiting_admin_queue_list.toString());
+			result.put("emptied_admin_queue_list", emptied_admin_queue_list.toString());
+			result.put("watching_admin_queue_list", watching_admin_queue_list.toString());
+			result.put("running_admin_queue_list", running_admin_queue_list.toString());
+			result.put("finished_admin_queue_list", finished_admin_queue_list.toString());
+			result.put("reported_admin_queue_list", reported_admin_queue_list.toString());
+			result.put("client_run_case_summary_data_map", client_run_case_summary_data_map.toString());
+			result.put("finished_queue_dump_delay_counter", finished_queue_dump_delay_counter.toString());
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
 	// =============================================function
 	// start=================================
 	public TreeMap<String, HashMap<String, HashMap<String, String>>> get_received_admin_queues_treemap() {

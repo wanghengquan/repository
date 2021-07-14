@@ -52,6 +52,16 @@ public class pool_data {
 		//initialize the thread pool later (when config info ready)
 	}
 
+	public synchronized HashMap<String, String> get_pool_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		result.put("call_map", call_map.toString());
+		result.put("pool_reserved_threads", String.valueOf(pool_reserved_threads));
+		result.put("pool_current_size", String.valueOf(pool_current_size));
+		result.put("pool_maximum_size", String.valueOf(pool_maximum_size));
+		result.put("history_send_data", history_send_data.toString());
+		return result;
+	}
+	
 	public synchronized void initialize_thread_pool(int pool_size){
 		this.run_pool = Executors.newFixedThreadPool(pool_size);
 		this.pool_maximum_size = pool_size;

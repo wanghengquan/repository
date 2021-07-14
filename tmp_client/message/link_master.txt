@@ -29,8 +29,8 @@
 </master_task>
   
 <?xml version="1.0" encoding="UTF-8" ?>
-<master_data ip="192.168.122.58" machine="D27639">
+<channel_cmd ip="192.168.122.58" machine="D27639">
 	<results>
 		<sub name='default' value='NA'></sub>
 	</results>	
-</master_data>
+</channel_cmd>

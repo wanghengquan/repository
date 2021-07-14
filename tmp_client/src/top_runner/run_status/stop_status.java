@@ -235,8 +235,7 @@ class stop_status extends abstract_status {
     }
     
 	private void stop_link_services(){
-		client.cmd_server.soft_stop();
-		client.task_server.soft_stop();
+		client.link_runner.soft_stop();
 	}
 
 }

@@ -1195,6 +1195,8 @@ public class task_waiter extends Thread {
 			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, case_time_out);
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
+			// task final: status update
+			switch_info.set_task_runner_active_time(time_info.get_date_time());
 		}
 	}
 

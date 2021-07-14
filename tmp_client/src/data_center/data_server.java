@@ -685,6 +685,8 @@ public class data_server extends Thread {
 			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
 			DATA_SERVER_LOGGER.debug(client_info.get_used_soft_insts());
 			DATA_SERVER_LOGGER.debug(client_info.get_client_data());
+			// task final: status update
+			switch_info.set_data_server_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

@@ -98,9 +98,8 @@ class initial_status extends abstract_status {
 	//=============================================================
 	//methods for locals
 	private void launch_link_services(){
-		client.cmd_server.start();
-		client.task_server.start();
-		client.STATUS_LOGGER.info("Socket servers power up.");
+		client.link_runner.start();
+		client.STATUS_LOGGER.info("Socket server power up.");
 	}
 
 	private void launch_user_interface() {

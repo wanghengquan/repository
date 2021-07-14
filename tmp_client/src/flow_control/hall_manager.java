@@ -57,8 +57,8 @@ public class hall_manager extends Thread {
 	private ArrayList<Integer> client_history_cpu_list = new ArrayList<Integer>();
 	private ArrayList<Integer> client_history_mem_list = new ArrayList<Integer>();
 	// sub threads need to be launched
-	HashMap<String, task_waiter> task_waiters;
-	result_waiter waiter_result;
+	HashMap<String, task_waiter> task_runners;
+	result_waiter result_runner;
 	// public function
 	// protected function
 	// private function
@@ -799,28 +799,28 @@ public class hall_manager extends Thread {
 	}
 	
 	private void stop_sub_threads() {
-		waiter_result.soft_stop();
-		Iterator<String> waiters_it = task_waiters.keySet().iterator();
+		result_runner.soft_stop();
+		Iterator<String> waiters_it = task_runners.keySet().iterator();
 		while (waiters_it.hasNext()) {
 			String waiter_name = waiters_it.next();
-			task_waiter waiter = task_waiters.get(waiter_name);
+			task_waiter waiter = task_runners.get(waiter_name);
 			waiter.soft_stop();
 		}
 	}
 
 	private void wait_sub_threads(){
-		waiter_result.wait_request();
-		Iterator<String> waiters_it = task_waiters.keySet().iterator();
+		result_runner.wait_request();
+		Iterator<String> waiters_it = task_runners.keySet().iterator();
 		while (waiters_it.hasNext()) {
 			String waiter_name = waiters_it.next();
-			task_waiter waiter = task_waiters.get(waiter_name);
+			task_waiter waiter = task_runners.get(waiter_name);
 			waiter.wait_request();
 		}		
 	}
 	
 	private void wake_sub_threads(){
-		waiter_result.wake_request();
-		start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
+		result_runner.wake_request();
+		start_right_task_waiter(task_runners, pool_info.get_pool_current_size());
 	}
 	
 	private void initial_thread_pool_setting(){
@@ -851,9 +851,9 @@ public class hall_manager extends Thread {
 		// initial 0 : update default current size into Pool Data
 		initial_thread_pool_setting();
 		// initial 1 : start task waiters
-		task_waiters = get_task_waiter_ready();
+		task_runners = get_task_waiter_ready();
 		// initial 2 : start result waiter
-		waiter_result = get_result_waiter_ready();
+		result_runner = get_result_waiter_ready();
 		// initial 3 : Announce hall server ready
 		switch_info.set_hall_server_power_up();
 		HALL_MANAGER_LOGGER.info("Work Space:" + client_info.get_client_preference_data().get("work_space"));
@@ -877,6 +877,8 @@ public class hall_manager extends Thread {
 			job_implementation_monitor();
 			//task 3: run environment update(thread pool, task waiter)
 			job_report_generation();
+			//task final: status update
+			switch_info.set_hall_manager_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

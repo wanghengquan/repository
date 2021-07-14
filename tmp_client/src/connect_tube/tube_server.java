@@ -711,6 +711,8 @@ public class tube_server extends Thread {
 			update_captured_queue_detail_lists();
 			// task 7: send client info to Remote server
 			send_client_current_info();
+			// task final: status update
+			switch_info.set_tube_server_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
