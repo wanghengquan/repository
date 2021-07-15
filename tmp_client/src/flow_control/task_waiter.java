@@ -23,6 +23,7 @@ import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
@@ -51,8 +52,13 @@ public class task_waiter extends Thread {
 	// protected function
 	// private function
 
-	public task_waiter(int waiter_index, switch_data switch_info, client_data client_info, pool_data pool_info,
-			task_data task_info) {
+	public task_waiter(
+			int waiter_index, 
+			switch_data switch_info, 
+			client_data client_info, 
+			pool_data pool_info,
+			task_data task_info
+			) {
 		this.waiter_index = waiter_index;
 		this.pool_info = pool_info;
 		this.task_info = task_info;
@@ -1071,6 +1077,7 @@ public class task_waiter extends Thread {
 			} else {
 				this.waiter_status = "work";
 				TASK_WAITER_LOGGER.debug(waiter_name + ":Running...");
+				switch_info.update_threads_active_map(thread_enum.task_runner, time_info.get_date_time());
 			}
 			// take a rest
 			try {
@@ -1195,8 +1202,6 @@ public class task_waiter extends Thread {
 			system_call sys_call = new system_call(launch_cmd, launch_env, launch_path, case_time_out);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, case_time_out);
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
-			// task final: status update
-			switch_info.set_task_runner_active_time(time_info.get_date_time());
 		}
 	}
 

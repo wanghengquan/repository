@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import info_parser.ini_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
@@ -473,7 +474,7 @@ public class config_sync extends Thread {
 				}
 			} else {
 				CONFIG_SYNC_LOGGER.debug("config sync Thread running...");
-				// CONFIG_SYNC_LOGGER.debug(config_hash.toString());
+				switch_info.update_threads_active_map(thread_enum.config_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : dump configuration updating
@@ -482,8 +483,6 @@ public class config_sync extends Thread {
 				ini_parser ini_dump = new ini_parser(get_write_config_file());
 				dump_client_data(ini_dump, verified_ini_data);
 			}
-			// task final: status update
-			switch_info.set_config_runner_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

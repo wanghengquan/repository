@@ -31,6 +31,7 @@ import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
 import top_runner.run_manager.client_manager;
+import top_runner.run_manager.thread_enum;
 
 
 public class top_launcher {
@@ -126,6 +127,7 @@ public class top_launcher {
 				pool_info,
 				post_info);
 		top_runner.start();
+		switch_info.update_threads_object_map(thread_enum.top_runner, top_runner);
 		System.out.println(">>>Info: Run Machine:" + machine_sync.get_host_name());
 		System.out.println(">>>Info: Run Account:" + System.getProperty("user.name"));
 		int start_insts = switch_info.get_system_client_insts();

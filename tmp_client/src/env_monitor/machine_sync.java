@@ -30,6 +30,7 @@ import oshi.hardware.GlobalMemory;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
@@ -348,12 +349,11 @@ public class machine_sync extends Thread {
 			} else {
 				MACHINE_SYNC_LOGGER.debug("machine_sync Thread running...");
 				MACHINE_SYNC_LOGGER.debug(machine_sync.machine_hash.toString());
+				switch_info.update_threads_active_map(thread_enum.machine_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : update machine data
 			update_dynamic_data();
-			// task final: status update
-			switch_info.set_machine_runner_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

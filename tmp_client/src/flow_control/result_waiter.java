@@ -23,6 +23,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import gui_interface.view_data;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.postrun_call;
@@ -1071,6 +1072,7 @@ public class result_waiter extends Thread {
 				}
 			} else {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ":Thread running...");
+				switch_info.update_threads_active_map(thread_enum.result_runner, time_info.get_date_time());
 			}
 			// take a rest
 			try {
@@ -1112,8 +1114,6 @@ public class result_waiter extends Thread {
 			run_post_process(case_report_data);
 			// task 8 : release occupied resource
 			release_resource_usage();
-			// task final: status update
-			switch_info.set_result_runner_active_time(time_info.get_date_time());
 		}
 	}
 

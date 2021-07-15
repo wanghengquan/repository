@@ -47,7 +47,10 @@ public class software_dialog extends JDialog implements ChangeListener{
 	private switch_data switch_info;
 	private JTabbedPane tabbed_pane;
 
-	public software_dialog(main_frame main_view, switch_data switch_info, client_data client_info){
+	public software_dialog(
+			main_frame main_view, 
+			switch_data switch_info, 
+			client_data client_info){
 		super(main_view, "Software Setting", true);
 		this.client_info = client_info;
 		this.switch_info = switch_info;

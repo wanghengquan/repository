@@ -14,9 +14,9 @@ import java.util.ArrayList;
 public enum thread_cmd {
 	HELP(0, "Show all commands."),
 	STATUS(1, "Show linked client background thread status."),
-	PLAY(2, "Run specified thread, Thread name should be followed"),
-	PAUSE(3, "Pause specified thread, Thread name should be followed"),
-	STOP(4, "Stop specified thread, Thread name should be followed");
+	PLAY(2, "Run specified thread, <thread_name> should be followed."),
+	PAUSE(3, "Pause specified thread, <thread_name> should be followed."),
+	STOP(4, "Stop specified thread, <thread_name> should be followed.");
 	private int index;
 	private String description;
 	

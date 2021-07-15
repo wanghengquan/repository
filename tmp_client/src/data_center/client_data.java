@@ -48,7 +48,7 @@ public class client_data {
 
 	}
 
-	public HashMap<String, String> get_client_database_info() {
+	public HashMap<String, String> get_database_info() {
 		HashMap<String, String> result = new HashMap<String, String>();
 		rw_lock.readLock().lock();
 		try {

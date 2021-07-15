@@ -41,6 +41,7 @@ import gui_interface.view_data;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
 import oshi.util.Util;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.time_info;
 
@@ -579,6 +580,20 @@ public class console_server extends Thread {
 	
 	private Boolean thread_command_answer(String [] cmd_list){
 		Boolean task_ok = Boolean.valueOf(false);
+		if(cmd_list.length > 2){
+			String request_thread = cmd_list[2];
+			Boolean thread_ok = Boolean.valueOf(false);
+			for(thread_enum available_thread:thread_enum.values()) {
+				if(request_thread.equalsIgnoreCase(available_thread.toString())) {
+					thread_ok = true;
+					break;
+				}
+			}
+			if (!thread_ok) {
+				thread_help_command_output();
+				return task_ok;
+			}
+		}
 		switch(thread_cmd.valueOf(cmd_list[1].toUpperCase())){
 		case HELP:
 			thread_help_command_output();
@@ -587,25 +602,13 @@ public class console_server extends Thread {
 			thread_command_output(thread_cmd.STATUS.toString());
 			break;			
 		case PLAY:
-			if(cmd_list.length > 2){
-				thread_command_output(thread_cmd.PLAY.toString() + "." + cmd_list[2]);
-			} else {
-				thread_help_command_output();
-			}
+			thread_command_output(thread_cmd.PLAY.toString() + "." + cmd_list[2]);
 			break;
 		case PAUSE:
-			if(cmd_list.length > 2){
-				thread_command_output(thread_cmd.PAUSE.toString() + "." + cmd_list[2]);
-			} else {
-				thread_help_command_output();
-			}
+			thread_command_output(thread_cmd.PAUSE.toString() + "." + cmd_list[2]);
 			break;
 		case STOP:
-			if(cmd_list.length > 2){
-				thread_command_output(thread_cmd.STOP.toString() + "." + cmd_list[2]);
-			} else {
-				thread_help_command_output();
-			}
+			thread_command_output(thread_cmd.STOP.toString() + "." + cmd_list[2]);
 			break;	
 		default:
 			thread_help_command_output();
@@ -618,6 +621,10 @@ public class console_server extends Thread {
 		System.out.println("THREAD commands:");
 		for (thread_cmd cmd: thread_cmd.values()){
 			System.out.format("  %8s  --  %s" + line_separator, cmd.toString(), cmd.get_description());
+		}
+		System.out.println("Available threads:");
+		for(thread_enum thread : thread_enum.values()) {
+			System.out.format("  %8s" + line_separator, thread.toString());
 		}
 		System.out.println("You may type: 'THREAD <command>' Get the detail background thread info");		
 	}
@@ -679,6 +686,7 @@ public class console_server extends Thread {
 				}
 			} else {
 				CONSOLE_SERVER_LOGGER.debug("Console Server running...");
+				switch_info.update_threads_active_map(thread_enum.console_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: process the input
@@ -705,8 +713,7 @@ public class console_server extends Thread {
 				prompt_string.append("Type 'help' for details.");
 				System.out.println(prompt_string.toString());
 			}
-			// task final: status update
-			switch_info.set_console_server_active_time(time_info.get_date_time());
+			// take a rest
 			Util.sleep(base_interval * 1 * 100);
 		}
 	}

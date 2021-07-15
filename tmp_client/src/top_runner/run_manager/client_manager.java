@@ -272,6 +272,12 @@ public class client_manager extends Thread  {
 		link_server link_runner = new link_server(switch_info, client_info, view_info, task_info, pool_info, post_info);
 		console_server console_runner = new console_server(switch_info);
 		Timer misc_timer = new Timer("misc_timer");
+		switch_info.update_threads_object_map(thread_enum.view_runner, view_runner);
+		switch_info.update_threads_object_map(thread_enum.tube_runner, tube_runner);
+		switch_info.update_threads_object_map(thread_enum.data_runner, data_runner);
+		switch_info.update_threads_object_map(thread_enum.hall_runner, hall_runner);
+		switch_info.update_threads_object_map(thread_enum.link_runner, link_runner);
+		switch_info.update_threads_object_map(thread_enum.console_runner, console_runner);
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
 				cmd_info,
@@ -304,6 +310,7 @@ public class client_manager extends Thread  {
 				}
 			} else {
 				CLIENT_MANAGER_LOGGER.debug("Client Thread running...");
+				switch_info.update_threads_active_map(thread_enum.top_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 0 : current misc info update
@@ -322,8 +329,6 @@ public class client_manager extends Thread  {
 			} 
 			// task 4 :
 			client_sts.do_state_things();
-			// task final : status update
-			switch_info.set_client_manager_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {
