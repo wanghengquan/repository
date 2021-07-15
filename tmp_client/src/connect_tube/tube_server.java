@@ -33,6 +33,7 @@ import flow_control.pool_data;
 import flow_control.queue_enum;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
@@ -695,6 +696,7 @@ public class tube_server extends Thread {
 				}
 			} else {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
+				switch_info.update_threads_active_map(thread_enum.tube_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: open/close remote tubes
@@ -711,8 +713,6 @@ public class tube_server extends Thread {
 			update_captured_queue_detail_lists();
 			// task 7: send client info to Remote server
 			send_client_current_info();
-			// task final: status update
-			switch_info.set_tube_server_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 1 * 1000);
 			} catch (InterruptedException e) {

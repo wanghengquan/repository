@@ -85,7 +85,7 @@ public class task_data {
 
 	}
 
-	public HashMap<String, String> get_task_database_info() {
+	public HashMap<String, String> get_database_info() {
 		HashMap<String, String> result = new HashMap<String, String>();
 		rw_lock.readLock().lock();
 		try {

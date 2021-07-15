@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import env_monitor.machine_sync;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import top_runner.run_status.maintain_enum;
 import top_runner.run_status.state_enum;
@@ -78,23 +79,15 @@ public class switch_data {
 	private String environ_warning_announced_date = new String("");
 	private String corescript_warning_announced_date = new String("");
 	//Thread active records
-	private String client_manager_active_time = new String("NA");
-	private String view_server_active_time = new String("NA");
-	private String tube_server_active_time = new String("NA");
-	private String data_server_active_time = new String("NA");
-	private String hall_manager_active_time = new String("NA");
-	private String link_server_active_time = new String("NA");
-	private String console_server_active_time = new String("NA");
-	private String config_runner_active_time = new String("NA");
-	private String machine_runner_active_time = new String("NA");
-	private String task_runner_active_time = new String("NA");
-	private String result_runner_active_time = new String("NA");
+	private HashMap<thread_enum, String> threads_active_map = new HashMap<thread_enum, String>();
+	//thread object map
+	private HashMap<thread_enum, Object> threads_object_map = new HashMap<thread_enum, Object>();
 	// public function
 	public switch_data() {
 
 	}
 
-	public HashMap<String, String> get_switch_database_info() {
+	public HashMap<String, String> get_database_info() {
 		HashMap<String, String> result = new HashMap<String, String>();
 		rw_lock.readLock().lock();
 		try {
@@ -126,38 +119,7 @@ public class switch_data {
 			result.put("space_warning_announced_date", space_warning_announced_date);
 			result.put("environ_warning_announced_date", environ_warning_announced_date);
 			result.put("corescript_warning_announced_date", corescript_warning_announced_date);
-			result.put("client_manager_active_time", client_manager_active_time);
-			result.put("view_server_active_time", view_server_active_time);
-			result.put("tube_server_active_time", tube_server_active_time);
-			result.put("data_server_active_time", data_server_active_time);
-			result.put("hall_manager_active_time", hall_manager_active_time);
-			result.put("link_server_active_time", link_server_active_time);
-			result.put("console_server_active_time", console_server_active_time);
-			result.put("config_runner_active_time", config_runner_active_time);
-			result.put("machine_runner_active_time", machine_runner_active_time);
-			result.put("task_runner_active_time", task_runner_active_time);
-			result.put("result_runner_active_time", result_runner_active_time);
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return result;
-	}
-	
-	public HashMap<String, String> get_client_threads_active_time() {
-		HashMap<String, String> result = new HashMap<String, String>();
-		rw_lock.readLock().lock();
-		try {
-			result.put("client_manager_active_time", client_manager_active_time);
-			result.put("view_server_active_time", view_server_active_time);
-			result.put("tube_server_active_time", tube_server_active_time);
-			result.put("data_server_active_time", data_server_active_time);
-			result.put("hall_manager_active_time", hall_manager_active_time);
-			result.put("link_server_active_time", link_server_active_time);
-			result.put("console_server_active_time", console_server_active_time);
-			result.put("config_runner_active_time", config_runner_active_time);
-			result.put("machine_runner_active_time", machine_runner_active_time);
-			result.put("task_runner_active_time", task_runner_active_time);
-			result.put("result_runner_active_time", result_runner_active_time);
+			result.put("threads_active_map", threads_active_map.toString());
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -882,223 +844,103 @@ public class switch_data {
 	// protected function
 	// private function
 	
-	public void set_client_manager_active_time(String new_time) {
+	public void set_threads_active_map(HashMap<thread_enum, String> new_hashmap) {
 		rw_lock.writeLock().lock();
 		try {
-			this.client_manager_active_time = new_time;
+			this.threads_active_map.clear();
+			this.threads_active_map.putAll(new_hashmap);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public String get_client_manager_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.client_manager_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}	
-	
-	public void set_view_server_active_time(String new_time) {
+	public void update_threads_active_map(thread_enum thread_name, String active_time) {
 		rw_lock.writeLock().lock();
 		try {
-			this.view_server_active_time = new_time;
+			this.threads_active_map.put(thread_name, active_time);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public String get_view_server_active_time() {
-		String time = new String("");
+	public HashMap<thread_enum, String> get_threads_active_map() {
+		HashMap<thread_enum, String> hashmap = new HashMap<thread_enum, String>();
 		rw_lock.readLock().lock();
 		try {
-			time = this.view_server_active_time;
+			hashmap.putAll(this.threads_active_map);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
-		return time;
+		return hashmap;
 	}
 	
-	public void set_tube_server_active_time(String new_time) {
+	public HashMap<String, String> get_threads_active_map_string() {
+		HashMap<String, String> hashmap_string = new HashMap<String, String>();
+		HashMap<thread_enum, String> hashmap = new HashMap<thread_enum, String>();
+		rw_lock.readLock().lock();
+		try {
+			hashmap.putAll(this.threads_active_map);
+			Iterator<thread_enum> map_itr = hashmap.keySet().iterator();
+			while(map_itr.hasNext()) {
+				thread_enum thread_name = map_itr.next();
+				String active_time = hashmap.get(thread_name);
+				hashmap_string.put(thread_name.toString(), active_time);
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return hashmap_string;
+	}
+	
+	public String get_threads_active_map(thread_enum thread_name) {
+		String active_time = new String();
+		rw_lock.readLock().lock();
+		try {
+			active_time = threads_active_map.get(thread_name);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return active_time;
+	}
+	
+	public void set_threads_object_map(HashMap<thread_enum, Object> new_hashmap) {
 		rw_lock.writeLock().lock();
 		try {
-			this.tube_server_active_time = new_time;
+			this.threads_object_map.clear();
+			this.threads_object_map.putAll(new_hashmap);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public String get_tube_server_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.tube_server_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}
-	
-	public void set_data_server_active_time(String new_time) {
+	public void update_threads_object_map(thread_enum thread_name, Object thread_object) {
 		rw_lock.writeLock().lock();
 		try {
-			this.data_server_active_time = new_time;
+			this.threads_object_map.put(thread_name, thread_object);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public String get_data_server_active_time() {
-		String time = new String("");
+	public HashMap<thread_enum, Object> get_threads_object_map() {
+		HashMap<thread_enum, Object> hashmap = new HashMap<thread_enum, Object>();
 		rw_lock.readLock().lock();
 		try {
-			time = this.data_server_active_time;
+			hashmap.putAll(this.threads_object_map);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
-		return time;
+		return hashmap;
 	}
 	
-	public void set_hall_manager_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.hall_manager_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_hall_manager_active_time() {
-		String time = new String("");
+	public Object get_threads_object_map(thread_enum thread_name) {
+		Object thread_object = new Object();
 		rw_lock.readLock().lock();
 		try {
-			time = this.hall_manager_active_time;
+			thread_object = threads_object_map.get(thread_name);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
-		return time;
-	}
-	
-	public void set_link_server_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.link_server_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_link_server_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.link_server_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}
-	
-	public void set_console_server_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.console_server_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_console_server_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.console_server_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}
-	
-	public void set_config_runner_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.config_runner_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_config_runner_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.config_runner_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}
-	
-	public void set_machine_runner_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.machine_runner_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_machine_runner_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.machine_runner_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}
-	
-	public void set_task_runner_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.task_runner_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_task_runner_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.task_runner_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
-	}
-	
-	public void set_result_runner_active_time(String new_time) {
-		rw_lock.writeLock().lock();
-		try {
-			this.result_runner_active_time = new_time;
-		} finally {
-			rw_lock.writeLock().unlock();
-		}
-	}
-	
-	public String get_result_runner_active_time() {
-		String time = new String("");
-		rw_lock.readLock().lock();
-		try {
-			time = this.result_runner_active_time;
-		} finally {
-			rw_lock.readLock().unlock();
-		}
-		return time;
+		return thread_object;
 	}
 }

@@ -28,6 +28,7 @@ import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
@@ -869,6 +870,7 @@ public class hall_manager extends Thread {
 				}
 			} else {
 				HALL_MANAGER_LOGGER.debug("hall manager Thread running...");
+				switch_info.update_threads_active_map(thread_enum.hall_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			//task 1: build system environment according admin queues
@@ -877,8 +879,6 @@ public class hall_manager extends Thread {
 			job_implementation_monitor();
 			//task 3: run environment update(thread pool, task waiter)
 			job_report_generation();
-			//task final: status update
-			switch_info.set_hall_manager_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

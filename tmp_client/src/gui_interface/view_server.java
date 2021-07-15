@@ -36,6 +36,7 @@ import flow_control.pool_data;
 import flow_control.post_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.time_info;
@@ -858,6 +859,7 @@ public class view_server extends Thread {
 				}
 			} else {
 				VIEW_SERVER_LOGGER.debug("Thread running...");
+				switch_info.update_threads_active_map(thread_enum.view_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : run "retest" cases
@@ -874,8 +876,6 @@ public class view_server extends Thread {
 			implements_captured_queue_data_update();
 			// task 7 : update working_queue_data
 			implements_working_queue_data_update();	
-			// task final : status update
-			switch_info.set_view_server_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(public_data.PERF_GUI_BASE_INTERVAL * 1 * 1000);
 			} catch (InterruptedException e) {

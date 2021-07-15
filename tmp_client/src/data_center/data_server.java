@@ -24,6 +24,7 @@ import env_monitor.config_sync;
 import env_monitor.machine_sync;
 import info_parser.cmd_parser;
 import info_parser.ini_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import top_runner.run_status.state_enum;
 import utility_funcs.data_check;
@@ -662,6 +663,7 @@ public class data_server extends Thread {
 				}
 			} else {
 				DATA_SERVER_LOGGER.info("data_server Thread running...");
+				switch_info.update_threads_active_map(thread_enum.data_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: update client build data
@@ -685,8 +687,6 @@ public class data_server extends Thread {
 			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
 			DATA_SERVER_LOGGER.debug(client_info.get_used_soft_insts());
 			DATA_SERVER_LOGGER.debug(client_info.get_client_data());
-			// task final: status update
-			switch_info.set_data_server_active_time(time_info.get_date_time());
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

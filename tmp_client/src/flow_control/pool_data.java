@@ -52,7 +52,7 @@ public class pool_data {
 		//initialize the thread pool later (when config info ready)
 	}
 
-	public synchronized HashMap<String, String> get_pool_database_info() {
+	public synchronized HashMap<String, String> get_database_info() {
 		HashMap<String, String> result = new HashMap<String, String>();
 		result.put("call_map", call_map.toString());
 		result.put("pool_reserved_threads", String.valueOf(pool_reserved_threads));
