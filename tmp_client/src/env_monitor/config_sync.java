@@ -344,6 +344,7 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("space_reserve", write_data.get("preference").get("space_reserve"));
 		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
+		tmp_preference_data.put("debug_mode", write_data.get("preference").get("debug_mode"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
 		cfg_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		cfg_preference_data.put("save_space", write_data.get("preference").get("save_space"));
@@ -352,7 +353,6 @@ public class config_sync extends Thread {
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
-		tmp_machine_data.put("debug", write_data.get("Machine").get("debug"));
 		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
 		if (write_data.containsKey("tools")) {
 			write_data.put("tmp_tools", write_data.get("tools"));

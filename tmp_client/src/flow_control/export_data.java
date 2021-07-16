@@ -120,7 +120,7 @@ public class export_data {
 			String message,
 			client_data client_info){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
@@ -135,7 +135,7 @@ public class export_data {
 			String message,
 			client_data client_info){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
@@ -150,7 +150,7 @@ public class export_data {
 			String message,
 			client_data client_info){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
@@ -164,7 +164,7 @@ public class export_data {
 			String message,
 			client_data client_info){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
@@ -178,7 +178,7 @@ public class export_data {
 			String message,
 			client_data client_info){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
@@ -192,7 +192,7 @@ public class export_data {
 			String message,
 			client_data client_info){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
