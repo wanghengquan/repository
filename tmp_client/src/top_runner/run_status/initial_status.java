@@ -70,7 +70,7 @@ class initial_status extends abstract_status {
 		// task 10: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
-		if (client.client_info.get_client_machine_data().get("debug").equals("1")){
+		if (client.client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			client.STATUS_LOGGER.debug("Client run in Debug Mode.");
 		}
 		client.STATUS_LOGGER.info("Working...");

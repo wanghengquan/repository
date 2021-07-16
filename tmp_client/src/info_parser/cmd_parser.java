@@ -177,7 +177,7 @@ public class cmd_parser {
 		}
 		// 3.18 debug mode
 		if (commandline_obj.hasOption('D')) {
-			cmd_hash.put("debug", "1");
+			cmd_hash.put("debug_mode", "1");
 		}
 		// 3.19 case mode
 		if (commandline_obj.hasOption('H')) {

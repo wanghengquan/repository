@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import cmd_interface.console_server;
 import connect_link.link_server;
 import connect_tube.tube_server;
+import data_center.client_data;
 import data_center.data_server;
 import data_center.switch_data;
 import flow_control.hall_manager;
@@ -40,6 +41,7 @@ public class thread_dialog extends JDialog implements ActionListener, Runnable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private switch_data switch_info;
+	private client_data client_info;
 	private JTextField jt_cm_status, jt_cm_update;
 	private JTextField jt_vs_status, jt_vs_update;
 	private JTextField jt_cs_status, jt_cs_update;
@@ -58,14 +60,14 @@ public class thread_dialog extends JDialog implements ActionListener, Runnable{
 
 	public thread_dialog(
 			main_frame main_view, 
-			switch_data switch_info
+			switch_data switch_info,
+			client_data client_info
 			){
 		super(main_view, "Thread View", true);
 		this.switch_info = switch_info;
+		this.client_info = client_info;
 		Container container = this.getContentPane();
 		container.add(construct_thread_panel());
-		//this.setLocation(800, 500);
-		//this.setLocationRelativeTo(main_view);
 		this.setSize(800, 400);
 	}
 	
@@ -243,7 +245,7 @@ public class thread_dialog extends JDialog implements ActionListener, Runnable{
 		thread_panel.add(jt_ts_update);
 		thread_panel.add(jp_ts_action);
 		//empty line
-		JLabel jl_empty_line = new JLabel("");
+		JLabel jl_empty_line = new JLabel("*:Action buttons only available in 'Debug Mode'. ");
 		thread_panel.add(jl_empty_line);
 		//bottom
 		JLabel jl_empty_lable = new JLabel("");
@@ -251,6 +253,8 @@ public class thread_dialog extends JDialog implements ActionListener, Runnable{
 		close.addActionListener(this);
 		thread_panel.add(jl_empty_lable);
 		thread_panel.add(close);
+		//update action button
+		action_button_update();
 		//==============layout it
 		GridBagConstraints layout_cons = new GridBagConstraints();
 		layout_cons.fill = GridBagConstraints.BOTH;
@@ -405,6 +409,32 @@ public class thread_dialog extends JDialog implements ActionListener, Runnable{
 		layout_cons.weighty= 0;
 		thread_layout.setConstraints(close, layout_cons);		
 		return thread_panel;
+	}
+	
+	private void action_button_update(){
+		if (client_info.get_client_preference_data().get("debug_mode").equals("0")) {
+			cm_play.setEnabled(false);
+			cm_pause.setEnabled(false);
+			cm_stop.setEnabled(false);
+			vs_play.setEnabled(false);
+			vs_pause.setEnabled(false);
+			vs_stop.setEnabled(false);
+			cs_play.setEnabled(false);
+			cs_pause.setEnabled(false);
+			cs_stop.setEnabled(false);
+			ds_play.setEnabled(false);
+			ds_pause.setEnabled(false);
+			ds_stop.setEnabled(false);
+			ls_play.setEnabled(false);
+			ls_pause.setEnabled(false);
+			ls_stop.setEnabled(false);
+			hm_play.setEnabled(false);
+			hm_pause.setEnabled(false);
+			hm_stop.setEnabled(false);
+			ts_play.setEnabled(false);
+			ts_pause.setEnabled(false);
+			ts_stop.setEnabled(false);
+		}
 	}
 	
 	private void thread_data_update() {
@@ -600,7 +630,8 @@ public class thread_dialog extends JDialog implements ActionListener, Runnable{
 	
 	public static void main(String[] args) {
 		switch_data switch_info = new switch_data();
-		thread_dialog thread_view = new thread_dialog(null, switch_info);
+		client_data client_info = new client_data();
+		thread_dialog thread_view = new thread_dialog(null, switch_info, client_info);
 		thread_view.setVisible(true);
 	}
 }

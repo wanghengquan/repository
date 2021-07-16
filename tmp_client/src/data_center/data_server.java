@@ -179,16 +179,13 @@ public class data_server extends Thread {
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
 		machine_data.put("account", System.getProperty("user.name"));
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
-		machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
+		//machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		if (config_hash.containsKey("tmp_machine")) {
 			machine_data.putAll(config_hash.get("tmp_machine")); // configuration
 		}
 		if(cmd_hash.containsKey("unattended")){				// add command line data
 			machine_data.put("unattended", cmd_hash.get("unattended"));
-		}
-		if(cmd_hash.containsKey("debug")){
-			machine_data.put("debug", cmd_hash.get("debug"));
 		}
 		client_data.put("Machine", machine_data);
 		// 4. merge tools data
@@ -264,13 +261,17 @@ public class data_server extends Thread {
 		preference_data.put("space_reserve", public_data.RUN_LIMITATION_SPACE);
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
-		//the following two are for history name support
+		preference_data.put("debug_mode", public_data.DEF_CLIENT_DEBUG_MODE);
+		//the following three are for history name support
 		if(config_hash.get("tmp_preference").containsKey("work_path")){
 			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path").replaceAll("\\\\", "/"));
 		}
 		if(config_hash.get("tmp_preference").containsKey("save_path")){
 			preference_data.put("save_space", config_hash.get("tmp_preference").get("save_path").replaceAll("\\\\", "/"));
-		}		
+		}
+		if(config_hash.get("tmp_machine").containsKey("debug")){
+			preference_data.put("debug_mode", config_hash.get("tmp_machine").get("debug"));
+		}
 		preference_data.putAll(config_hash.get("tmp_preference"));
 		preference_data.putAll(cmd_hash);
 		client_data.put("preference", preference_data);
@@ -590,7 +591,7 @@ public class data_server extends Thread {
 	
 	private Boolean debug_dump_client_data(){
 		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_machine_data().get("debug").equals("1")){
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			return dump_status;
 		}
 		String work_space = client_info.get_client_preference_data().get("work_space");
