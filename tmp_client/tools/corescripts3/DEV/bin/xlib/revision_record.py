@@ -1,4 +1,7 @@
-REVISION = ("3332", "Mon May 24 15:23:57 2021", "record license when using linux19v")
+REVISION = ("3373", "Mon Jun 21 08:52:23 2021", "remove license settings each time")
+# REVISION = ("3367", "Wed Jun 16 11:18:36 2021", "run post/map timing flow by default")
+# REVISION = ("3366", "Wed Jun 16 11:16:03 2021", "run post/map timing flow by default")
+# REVISION = ("3332", "Mon May 24 15:23:57 2021", "record license when using linux19v")
 # REVISION = ("3330", "Thu May 20 10:33:01 2021", "support vcs and xrun simulation")
 # REVISION = ("3323", "Fri May 14 10:48:47 2021", "support VCS simulation flow")
 # REVISION = ("3307", "Thu Apr 29 10:04:21 2021", "can launch run-squish.bat in different location")

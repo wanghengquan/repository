@@ -226,6 +226,10 @@ class CheckValue(Method):
             real_judge_string = judge_string.format(**self.env.value_dict)
         except KeyError:
             raise ConfigIssue("not specified all value for {}".format(judge_string))
+        if 'None' in real_judge_string:
+            self.log_error("None in string: {}".format(real_judge_string))
+            self.ret = Default.FAIL
+            return
         try:
             judge_result = eval(real_judge_string)
             self.log_info('Judging: {}, the Result is: {}'.format(real_judge_string, judge_result))
@@ -972,8 +976,8 @@ class CheckBinary(Method):
         partial = True if 'partial' in section and section['partial'] == '1' else False
         compare_file = glob.glob(compare_file)[0]
         golden_file = glob.glob(golden_file)[0]
-        compare_bin = ''
-        golden_bin = ''
+        compare_bin = b''
+        golden_bin = b''
 
         with open(compare_file, 'rb') as f:
             bit = f.read(1024)

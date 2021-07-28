@@ -3,7 +3,6 @@ import re
 import sys
 import glob
 import configparser
-from lib2to3.main import main as main2to3
 
 from . import xConvert
 from . import xTools
@@ -20,69 +19,13 @@ from . import qas
 __author__ = 'syan'
 
 
-def dos2unix(src_file, dst_file):
-    with open(src_file, 'rb') as infile:
-        content = infile.read()
-
-    with open(dst_file, 'wb') as output:
-        for line in content.splitlines():
-            output.write(line + b'\r\n')
-
-
-def run_pre_post_process(base_path, pp_scripts):
-    """
-    add function for getting the real scripts if it has command arguments
-    """
-    pp_scripts_list = re.split("\s+", pp_scripts)
-    real_pp = xTools.get_abs_path(pp_scripts_list[0], base_path)
-    if xTools.not_exists(real_pp, "pre/post process scripts"):
-        return 1
-    xTools.print_out_license_log(phase="before inner scripts")
-    start_from_dir, pp = os.path.split(real_pp)
-    _recov = xTools.ChangeDir(start_from_dir)
-    fext = xTools.get_fext_lower(real_pp)
-    if fext == ".py":
-        # try:
-        #     unix_file = real_pp + ".unix"
-        #     dos2unix(real_pp, real_pp + ".unix")
-        #     xTools.wrap_cp_file(unix_file, real_pp, force=True)
-        #     main2to3("lib2to3.fixes", args=["-w", "--no-diffs", real_pp])
-        # except:
-        #     xTools.say_it("Failed to update scripts from 2 to 3 {}".format(real_pp))
-        cmd_line = "%s %s " % (sys.executable, pp)
-    elif fext == ".pl":
-        cmd_line = "perl %s " % pp
-    else:
-        xTools.say_it("Unknown pre/post process scripts: %s" % pp)
-        return 1
-    if len(pp_scripts_list) > 1:
-        cmd_line += " ".join(pp_scripts_list[1:])
-    xTools.say_it("Launching %s" % cmd_line)
-    sts = os.system(cmd_line)
-    _recov.comeback()
-    xTools.print_out_license_log(phase="after inner scripts")
-    return sts
-
-
 class FlowLattice(XOptions):
     def __init__(self, private_options):
         XOptions.__init__(self, private_options)
         self.sbx_file = ""
 
-    def run_ipgen_for_radiant(self):
-        for a, b, c in os.walk(self.src_design):
-            for item in c:
-                if item.endswith(".sbx"):
-                    self.sbx_file = os.path.join(a, item)
-                elif item.endswith(".cfg"):
-                    _cfg = os.path.join(a, item)
-                    my_ipgen = xRadiantIPgen.UpdateRadiantIP(_cfg, self.sbx_file, os.path.dirname(os.getenv("FOUNDRY")))
-                    if my_ipgen.process():
-                        return 1
-
     def process(self):
         head_lines = xTools.head_announce()
-        xTools.print_out_license_log(phase="starting")
 
         if self.run_option_parser():
             return 1
@@ -97,6 +40,7 @@ class FlowLattice(XOptions):
         xTools.add_cmd_line_history(log_file)
         xTools.append_file(log_file, head_lines + play_lines)
         os.environ["BQS_L_O_G"] = log_file
+        xTools.remove_license_setting(phase="LATTICE_LICENSE:")
         _recov = xTools.ChangeDir(self.dst_design)
         sts = 0
 
@@ -131,50 +75,46 @@ class FlowLattice(XOptions):
         # dump check and scan_report Python file
         self.run_check_flow(dump_only=1)
 
-        gen_ip_sts = None
-        if self.is_ng_flow and self.run_ipgen:
-            gen_ip_sts = self.run_ipgen_for_radiant()
         cmd_file = None
         cmd_ret = None
-        if not gen_ip_sts:
-            # run normal flow
-            if self.pre_process:
-                run_pre_post_process(self.src_design, self.pre_process)
-            if self.scan_rpt or self.scan_pap_rpt:
-                self.scan_report(dump_only=1)
-            try:
-                if not sts:
-                    if self.dms_standalone:
-                        sts = self.run_dms_standalone_flow()
-                    elif self.run_ice:
-                        sts = self.run_ice_flow()
+        # run normal flow
+        if self.pre_process:
+            xLattice.run_pre_post_process(self.src_design, self.pre_process)
+        if self.scan_rpt or self.scan_pap_rpt:
+            self.scan_report(dump_only=1)
+        try:
+            if not sts:
+                if self.dms_standalone:
+                    sts = self.run_dms_standalone_flow()
+                elif self.run_ice:
+                    sts = self.run_ice_flow()
+                else:
+                    self.synthesis_only = xTools.get_true(self.scripts_options, "synthesis_only")
+                    if self.env_setter.will_run_simulation():
+                        sts = self.run_simulation_flow()
                     else:
-                        self.synthesis_only = xTools.get_true(self.scripts_options, "synthesis_only")
-                        if self.env_setter.will_run_simulation():
-                            sts = self.run_simulation_flow()
+                        cmd_file = self.scripts_options.get("cmd_file")
+                        if cmd_file:
+                            sts = self.run_cmd_file_only(cmd_file)
+                            cmd_ret = sts
                         else:
-                            cmd_file = self.scripts_options.get("cmd_file")
-                            if cmd_file:
-                                sts = self.run_cmd_file_only(cmd_file)
-                                cmd_ret = sts
+                            if self.is_ng_flow:
+                                _ldf_file = self.scripts_options.get("rdf_file")
                             else:
-                                if self.is_ng_flow:
-                                    _ldf_file = self.scripts_options.get("rdf_file")
-                                else:
-                                    _ldf_file = self.scripts_options.get("ldf_file")
-                                if _ldf_file:
-                                    sts = self.run_tcl_flow()
-                                elif "cmd_flow" in self.scripts_options:
-                                    sts = self.run_cmd_flow()
-                                else:
-                                    sts = self.run_tcl_flow()
-                xTools.stop_announce(play_time)
-            except Exception as e:
-                xTools.say_tb_msg()
-                xTools.say_it("Error. %s" % e)
+                                _ldf_file = self.scripts_options.get("ldf_file")
+                            if _ldf_file:
+                                sts = self.run_tcl_flow()
+                            elif "cmd_flow" in self.scripts_options:
+                                sts = self.run_cmd_flow()
+                            else:
+                                sts = self.run_tcl_flow()
+            xTools.stop_announce(play_time)
+        except Exception as e:
+            xTools.say_tb_msg()
+            xTools.say_it("Error. %s" % e)
 
         if self.post_process:
-            run_pre_post_process(self.src_design, self.post_process)
+            xLattice.run_pre_post_process(self.src_design, self.post_process)
 
         if self.run_ice:
             final_sts = sts
@@ -192,7 +132,6 @@ class FlowLattice(XOptions):
             self.scan_report()
         self.run_final_closing_flow()
         _recov.comeback()
-        xTools.print_out_license_log(phase="ending")
         return final_sts
 
     @staticmethod
@@ -293,8 +232,6 @@ class FlowLattice(XOptions):
             xTools.say_it(" Launching %s" % cmd_line)
             sts, text = xTools.get_status_output(cmd_line)
             xTools.say_raw(text)
-
-
         #new scan flow
         if self.is_ng_flow:
             software = 'radiant'
@@ -303,7 +240,8 @@ class FlowLattice(XOptions):
         scan_py = os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'scanReport',
                                    "scan_report.py")
         args = "--top-dir=%s --design=%s --tag=%s --software %s --rpt-dir %s" % (job_dir, design, tag, software, self.top_dir)
-
+        if self.scripts_options.get("seed_sweep"):
+            args += " --seed seed"
         if xTools.not_exists(scan_py, "Scan scripts"):
             return 1
         scan_py = os.path.abspath(scan_py)
@@ -319,12 +257,8 @@ class FlowLattice(XOptions):
         sts, text = xTools.get_status_output(cmd_line)
         xTools.say_raw(text)
 
-
     def run_check_flow(self, dump_only=0):
-        # // run check flow always!
         report_path = self.scripts_options.get("cwd")
-        #if(os.path.abspath(report_path) == os.path.abspath(self.job_dir)):# update by Yzhao1
-        #    report_path = os.path.join(self.job_dir,self.design)
         if not self.check_rpt:
             report = "check_flow.csv"
         else:
@@ -521,6 +455,11 @@ class FlowLattice(XOptions):
                 return 1
             if self.scuba_only:
                 return 1
+        gen_ip_sts = None
+        if self.is_ng_flow and self.run_ipgen:
+            gen_ip_sts = self.run_ipgen_for_radiant()
+        if gen_ip_sts:
+            return 1
         if self.info_file_name:
             t = os.path.join(self.src_design, self.info_file_name)
             if xTools.not_exists(t, "user specified info file"):
@@ -749,6 +688,17 @@ class FlowLattice(XOptions):
                 new_cmd_list.append(item)
             new_postsyn_command = " ".join(new_cmd_list)
             xTools.run_command(new_postsyn_command, "new_postsyn.log", "new_postsyn.time")
+
+    def run_ipgen_for_radiant(self):
+        for a, b, c in os.walk(self.src_design):
+            for item in c:
+                if item.endswith(".sbx"):
+                    self.sbx_file = os.path.join(a, item)
+                elif item.endswith(".cfg"):
+                    _cfg = os.path.join(a, item)
+                    my_ipgen = xRadiantIPgen.UpdateRadiantIP(_cfg, self.sbx_file, os.path.dirname(os.getenv("FOUNDRY")))
+                    if my_ipgen.process():
+                        return 1
 
     def rerun_sbx_tcl(self):
         self.p_sbx = re.compile("-path\s+\{([^\}]+)\}")

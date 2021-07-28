@@ -587,8 +587,12 @@ class GetCasesData(object):
             v = raw_dict.get(k)
             if v:
                 _config.append("[{}]".format(k))
+                v = re.sub(r"\\;", "HH_my_semicolon_HH", v)
                 v_list = tools.comma_split(v, sep_mark=";")
-                _config.extend(v_list)
+                y_list = list()
+                for foo in v_list:
+                    y_list.append(re.sub("HH_my_semicolon_HH", ";", foo))
+                _config.extend(y_list)
         self.config = "\n".join(_config)
 
 

@@ -11,7 +11,6 @@ import configparser
 from . import revision_record
 import datetime
 
-
 __version__ = '2436 2019-3-22'
 __author__ = 'syan'
 
@@ -363,13 +362,13 @@ def rm_with_error(a_path):
     if os.path.isfile(a_path):
         try:
             os.remove(a_path)
-        except Exception as e:
-            pass
+        except Exception as ee:
+            e = ee
     elif os.path.isdir(a_path):
         try:
             shutil.rmtree(a_path)
-        except Exception as e:
-            pass
+        except Exception as ee:
+            e = ee
     if e:
         say_it(e)
         return 1
@@ -887,26 +886,24 @@ def run_safety(func, lock_file, *args, **kwargs):
     return sts
 
 
-def print_out_license_log(phase="", show_string="linux19v"):
-    _value = ""
-    if sys.platform.startswith("win32"):
+def remove_license_setting(phase="removing LICENSE_FILE"):
+    if sys.platform.startswith("win"):
         import winreg
         try:
-            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\FLEXlm License Manager')
-            _value, _type = winreg.QueryValueEx(key, 'LATTICE_LICENSE_FILE')
-        except FileNotFoundError:
-            pass
+            _key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\FLEXlm License Manager')
+            _value, _type = winreg.QueryValueEx(_key, 'LATTICE_LICENSE_FILE')
+            reg_cmd = 'reg delete "hkcu\software\FLEXlm License Manager" /f /v LATTICE_LICENSE_FILE'
+            sts, text = get_status_output(reg_cmd)
+            if sts:
+                text.insert(0, phase)
+                say_it(text)
+        except:
+            sts = 1   # no LATTICE_LICENSE_FILE in register
     else:
-        license_file = os.path.join(os.path.expanduser('~'), ".flexlmrc")
-        try:
-            with open(license_file) as ob:
-                for line in ob:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    _value += (line + " ")
-        except IOError:
-            pass
-    if (not show_string) or show_string in _value.lower():
-        phase_note = "{} ".format(phase) if phase else ""
-        say_it("* {}LICENSE: {}".format(phase_note, _value))
+        _flex_file = os.path.join(os.path.expanduser('~'), ".flexlmrc")
+        if not os.path.isfile(_flex_file):
+            sts = 1
+        else:
+            sts = rm_with_error(_flex_file)
+    if not sts:
+        say_it("{} removed successfully.".format(phase))

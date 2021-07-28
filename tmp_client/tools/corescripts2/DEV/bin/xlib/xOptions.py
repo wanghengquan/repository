@@ -283,6 +283,9 @@ class XOptions:
         if not self.is_ng_flow:
             backend_group.add_argument("--run-map-vlg", action="store_true", help="generate Map Verilog Simulation File")
             backend_group.add_argument("--run-map-vhd", action="store_true", help="generate Map VHDL Simulation File")
+        else:
+            backend_group.add_argument("--run-synthesis-trce", dest="run_synthesis_trace", action="store_true",
+                                       help="run synthesis trace flow for radiant")
         backend_group.add_argument("--run-par", action="store_true", help="run PAR flow")
         backend_group.add_argument("--run-par-trce", dest="run_par_trace", action="store_true", help="run Place & Route Trace flow")
         backend_group.add_argument("--run-par-iota", dest="run_par_ta", action="store_true", help="run I/O Timing Analysis flow")
