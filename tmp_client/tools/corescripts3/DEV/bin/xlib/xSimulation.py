@@ -160,7 +160,15 @@ class RunSimulationFlow:
             return 1
         user_options = self.get_user_options()
         sts = 0
-        task_list = xLattice.get_task_list(self.flow_options, user_options)
+        dnio = False if self.is_ng_flow else True
+        if self.is_ng_flow:
+            if user_options:
+                user_options["run_synthesis"] = 1
+            if user_options.get("run_map_vhd") or user_options.get("run_map_vlg"):
+                user_options["run_map_trace"] = 1
+            if user_options.get("run_export_vhd") or user_options.get("run_export_vlg"):
+                user_options["run_par_trace"] = 1
+        task_list = xLattice.get_task_list(self.flow_options, user_options, donot_infer_options=dnio)
         if task_list:
             sts = xLattice.run_ldf_file("run_pb.tcl", self.final_ldf_file, task_list, list(), self.is_ng_flow)
             if sts:
@@ -587,7 +595,8 @@ class RunSimulationFlow:
         if self.synthesis == "lse":
             search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),
                             "%s_%s.vm" % (self.project_name, self.impl_name),
-                            "%s_prim.v" % self.project_name)
+                            "%s_prim.v" % self.project_name,
+                            "*_prim.v")
         else:
             search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),
                             "%s_%s.vm" % (self.project_name, self.impl_name))
@@ -724,7 +733,7 @@ class RunSimulationFlow:
             group_list.append(_[:])
         return group_list
 
-    def get_vcs_lines(self, hdl_files):
+    def get_vcs_lines(self, hdl_files, is_source_file=False):
         lines = list()
         group_hdl_files = self.group_by_file_extension(hdl_files)
         for foo in group_hdl_files:
@@ -733,7 +742,13 @@ class RunSimulationFlow:
             if fext.lower() in (".vho", ".vhd", ".vhdl", ".vhm"):
                 lines.append("vhdlan %s" % all_files)
             else:
-                lines.append("vlogan -sverilog %s $VERILOG_READY" % all_files)
+                if self.is_thunder_plus:
+                    if is_source_file:
+                        lines.append("vlogan -v2005 -timescale=1ns/1ps %s $VERILOG_READY" % all_files)
+                    else:
+                        lines.append("vlogan -v2005 %s $VERILOG_READY" % all_files)
+                else:
+                    lines.append("vlogan -sverilog %s $VERILOG_READY" % all_files)
         return "\n".join(lines)
 
     def get_xrun_lines(self, hdl_files):
@@ -754,7 +769,12 @@ class RunSimulationFlow:
             print("quit", file=ob)
         if not user_options:  # RTL simulation
             source_files = [xTools.get_relative_path(item, self.dst_design) for item in source_files]
-        self.do_args["source_files"] = self.get_vcs_lines(source_files)
+        if self.is_ng_flow and "ice" in self.do_args.get("dev_name", "").lower():
+            self.is_thunder_plus = True
+        else:
+            self.is_thunder_plus = False
+
+        self.do_args["source_files"] = self.get_vcs_lines(source_files, is_source_file=True)
         self.do_args["tb_files"] = self.get_vcs_lines(self.final_tb_files)
         x = "do_{}".format(sim_path)
         y = "run_{}".format(sim_path)
@@ -763,7 +783,13 @@ class RunSimulationFlow:
             with open(self.do_vcs) as rob:
                 for line in rob:
                     line = line.rstrip()
-                    print(line % self.do_args, file=wob)
+                    if self.is_thunder_plus:
+                        new_line = re.sub(r"-y \$\{_UAP\}", " ", line)
+                        new_line = re.sub(r"\+\$\{_UAP\}", "", new_line)
+                        new_line = re.sub(r"-sverilog", "-v2005 ", new_line)
+                    else:
+                        new_line = line
+                    print(new_line % self.do_args, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
 
     def run_simulation_flow_with_xrun(self, sim_path, source_files, user_options):
@@ -783,7 +809,8 @@ class RunSimulationFlow:
             with open(self.do_xrun) as rob:
                 for line in rob:
                     line = line.rstrip()
-                    if "sim_syn" in sim_path:
+                    real_line = line % self.do_args
+                    if re.search(r"xrun\s+-(compile|batch)", real_line):
                         line += " -timescale '1ns/1ps'"
                     print(line % self.do_args, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
@@ -970,7 +997,8 @@ class RunSimulationFlow:
         def _func():
             if rerun_sim_cmd:
                 xTools.append_file(time_file, ["REM For debugging only", "REM %s" % rerun_sim_cmd], append=True)
-            return xTools.run_command(sim_cmd, log_file, time_file)
+            more_cmd = "TRIAL_AND_ERROR_" if os.getenv("trial_and_error") else ""
+            return xTools.run_command(more_cmd + sim_cmd, log_file, time_file)
 
         yose_timeout = os.getenv("YOSE_TIMEOUT")
         if yose_timeout:

@@ -217,7 +217,7 @@ def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool="
             item = " -v2k " + item
         elif fext == ".f":
             cmd_exe = vlog_cmd
-            if re.search("(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f)", work_name.lower()) and "QuestaSim" in vendor_tool:
+            if re.search("(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f|ap6a)", work_name.lower()) and "QuestaSim" in vendor_tool:
                 cmd_exe += " -sv -mfcu "
             elif "Modelsim" in vendor_tool and os.getenv("YOSE_RADIANT") == "1" and not _is_ice:
                 cmd_exe += " -sv -mfcu "

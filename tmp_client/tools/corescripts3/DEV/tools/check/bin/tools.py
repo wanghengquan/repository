@@ -90,16 +90,16 @@ _KEYCRE = re.compile(r"%\(([^)]+)\)s")
 _KEY_TEMP = "LATTE-LATTICE-LSCC-LSH"
 def replace_tag(conf_file, args):
     lines = list()
-    with open(conf_file, "rb") as in_ob:
+    with open(conf_file, "r") as in_ob:
         for line in in_ob:
-            lines.append(line.decode())
+            lines.append(line)
     with open(conf_file, 'w') as f:
         for line in lines:
             if args.tag:
                 line = line.replace('*tag*', args.tag)
             if "%" in line:
                 if "%%" in line:
-                    continue
+                    pass
                 elif not _KEYCRE.search(line):   # same as Python2.7
                     line = re.sub("%", "%%", line)
             line = re.sub(r'\\r\\n', _KEY_TEMP, line)
@@ -561,31 +561,46 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     :return: line number if str found else None
     """
     string = string.replace(' ', '').strip()
-    with open(filename, 'r') as f:
-        try:
-            lines = f.readlines()
-        except:
-            log("Error. UnicodeDecodeError occurred in {}".format(filename))
-            return
-        if index is not None:
-            if grep:
-                if re.search(string, lines[index].replace(' ', '').strip()):
-                    return index
-                else:
-                    return None
+    lines = try_to_get_lines_from_file(filename)
+    if index is not None:
+        if grep:
+            if re.search(string, lines[index].replace(' ', '').strip()):
+                return index
             else:
-                if string in lines[index].replace(' ', '').strip():
-                    return index
-                else:
-                    return None
-        for num, line in enumerate(lines[start+1:], 0):
-            if grep:
-                if re.search(string, line.replace(' ', '').strip()):
-                    return num
+                return None
+        else:
+            if string in lines[index].replace(' ', '').strip():
+                return index
             else:
-                if string in line.replace(' ', '').strip():
-                    return num
+                return None
+    for num, line in enumerate(lines[start+1:], 0):
+        if grep:
+            if re.search(string, line.replace(' ', '').strip()):
+                return num
+        else:
+            if string in line.replace(' ', '').strip():
+                return num
     return None
+
+
+def try_to_get_lines_from_file(a_file):
+    lines = list()
+    try:
+        with open(a_file, 'r') as f:
+            old_lines = f.readlines()
+            for foo in old_lines:
+                lines.append(foo)
+    except UnicodeDecodeError:
+        with open(a_file, 'rb') as f:
+            old_lines = f.readlines()
+            for foo in old_lines:
+                try:
+                    x = re.sub(b"\W", b"", foo)
+                    x = str(x, encoding="utf-8")
+                    lines.append(x)
+                except UnicodeDecodeError:
+                    pass
+    return lines
 
 
 def get_index_list_from_file_by_string(string, filename, index=None, start=-1, grep=False):
@@ -598,29 +613,28 @@ def get_index_list_from_file_by_string(string, filename, index=None, start=-1, g
     :return: index list
     """
     string = string.replace(' ', '').strip()
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        if index is not None:
-            if grep:
-                if re.search(string, lines[index].replace(' ', '').strip()):
-                    return [index]
-                else:
-                    return None
+    lines = try_to_get_lines_from_file(filename)
+    if index is not None:
+        if grep:
+            if re.search(string, lines[index].replace(' ', '').strip()):
+                return [index]
             else:
-                if string in lines[index].replace(' ', '').strip():
-                    return [index]
-                else:
-                    return None
-        index_list = list()
-        for num, line in enumerate(lines[start+1:], 0):
-            if grep:
-                if re.search(string, line.replace(' ', '').strip()):
-                    index_list.append(num)
+                return None
+        else:
+            if string in lines[index].replace(' ', '').strip():
+                return [index]
             else:
-                if string in line.replace(' ', '').strip():
-                    index_list.append(num)
-        if index_list:
-            return index_list
+                return None
+    index_list = list()
+    for num, line in enumerate(lines[start+1:], 0):
+        if grep:
+            if re.search(string, line.replace(' ', '').strip()):
+                index_list.append(num)
+        else:
+            if string in line.replace(' ', '').strip():
+                index_list.append(num)
+    if index_list:
+        return index_list
     return None
 
 
@@ -766,9 +780,9 @@ class GetStringFromFile(object):
                         counter += 1
                         if counter >= search_window:
                             m_start = None
-                            self.this_string = self._get_it(line)
-                            if self.this_string:
-                                return
+                        self.this_string = self._get_it(line)
+                        if self.this_string:
+                            return
 
     def _get_it(self, line):
         for p in self.pattern_list:

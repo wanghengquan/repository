@@ -62,6 +62,8 @@ class ParserIP(object):
             dirs = ["lifcl", "common", "RadiantIPLocal"]
         elif "jd5f" in _device.lower() or "jd5f" in _arch.lower():
             dirs = ["je5d00", "common", "RadiantIPLocal", "lifcl"]
+        elif "ap6a" in _device.lower() or "ap6a" in _arch.lower():
+            dirs = ["avant", "common", "RadiantIPLocal"]
         else:
             dirs = ["lifcl", "common", "RadiantIPLocal", "je5d00", "iCE40UP"]
         not_found_ip_dir = 1
