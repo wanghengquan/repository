@@ -80,7 +80,7 @@ class HandleExceptionProcess:
             print ('')
             print ('/*' * 20)
             print ("DEBUG: Monitoring Processes: ")
-            for key, value in self.process_dict.items():
+            for key, value in list(self.process_dict.items()):
                 print (key, "==>", value)
             print ('/*' * 20)
             print ('')
@@ -130,7 +130,7 @@ class HandleExceptionProcess:
         return process_dict
 
     def process_on_dict(self, kill_work_path):
-        for key, value in self.process_dict.items():
+        for key, value in list(self.process_dict.items()):
             process_work_path = value[1]
             if not (self.match_kill_path(kill_work_path,process_work_path)):
                 continue

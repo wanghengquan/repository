@@ -326,6 +326,7 @@ public class postrun_call implements Callable<Object> {
 		if (finish_clean) {
 			return true;
 		} else {
+			run_msg.add("Kill process got issue, Process could be still running...");
 			return false;
 		}
 	}	
