@@ -110,7 +110,8 @@ class HandleExceptionProcess:
     def create_lin_process_dict(self):
         process_dict = dict()
         user_name = get_current_user()
-        ps_cmd = 'ps -eo user,pid,command | grep "%s "' % user_name
+        # ps_cmd = 'ps -eo user,pid,command | grep "%s "' % user_name
+        ps_cmd = 'ps -o ruser=user01234567890123456789 -e -o pid,command | grep "%s "' % user_name
         sts, text = get_status_output(ps_cmd)
         if sts:
             print ("ERROR: Failed to run %s" % ps_cmd)
