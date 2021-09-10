@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
 import utility_funcs.des_decode;
+import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 
 public class task_prepare {
@@ -372,7 +373,11 @@ public class task_prepare {
 					CASE_PREPARE_LOGGER.warn("Previously file remove Fail:" + case_path);
 					return false;
 				}
-			}			
+			}
+			//delete ori log file
+			file_action.del_file_match_extension(case_parent_path.getAbsolutePath(), ".txt");
+			file_action.del_file_match_extension(case_parent_path.getAbsolutePath(), ".log");
+			file_action.del_file_match_extension(case_parent_path.getAbsolutePath(), ".csv");	
 		}
 		return true;
 	}	
