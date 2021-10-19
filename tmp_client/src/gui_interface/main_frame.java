@@ -249,7 +249,8 @@ public class main_frame extends JFrame {
 			trayicon.displayMessage(title, company, MessageType.INFO);
 		} catch (AWTException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
+			MAIN_FRAME_LOGGER.warn("SystemTray Launch Failed.");
 		}
 	}
 
