@@ -99,7 +99,7 @@ public class config_sync extends Thread {
 					}
 					break;				
 				case "max_insts":
-					if (!data_check.num_scope_check(option_value, 0, 30)){
+					if (!data_check.num_scope_check(option_value, 0, 100)){
 						option_value = public_data.DEF_SW_MAX_INSTANCES;
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid max_insts setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
