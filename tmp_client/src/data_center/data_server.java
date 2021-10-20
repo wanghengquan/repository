@@ -29,7 +29,6 @@ import top_runner.run_status.exit_enum;
 import top_runner.run_status.state_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
-import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
@@ -97,7 +96,7 @@ public class data_server extends Thread {
 	private HashMap<String, String> cmd_info;
 	private client_data client_info;
 	private switch_data switch_info;
-	private String line_separator = System.getProperty("line.separator");
+	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
 	config_sync config_runner;
@@ -589,39 +588,6 @@ public class data_server extends Thread {
 		System.setProperty("log_path", client_info.get_client_preference_data().get("work_space"));
 	}
 	
-	private Boolean debug_dump_client_data(){
-		Boolean dump_status = Boolean.valueOf(true);
-		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
-			return dump_status;
-		}
-		String work_space = client_info.get_client_preference_data().get("work_space");
-		String log_folder = public_data.WORKSPACE_LOG_DIR;
-		String dump_file = work_space + "/" + log_folder + "/debug/local/client_data.txt";
-		//generate title
-		StringBuilder title_sb = new StringBuilder();
-		title_sb.append("Time" + ",");
-		title_sb.append("CPU" + ",");
-		title_sb.append("MEM" + ",");
-		title_sb.append("Space" + ",");
-		title_sb.append("CoreScript");
-		String title = title_sb.toString();
-		//generate message line
-		HashMap<String, String> system_data = new HashMap<String, String>();
-		system_data.putAll(deep_clone.clone(client_info.get_client_system_data()));
-		HashMap<String, String> corescript_data = new HashMap<String, String>();
-		corescript_data.putAll(deep_clone.clone(client_info.get_client_corescript_data()));
-		StringBuilder msg_sb = new StringBuilder();
-		msg_sb.append(time_info.get_date_time() + ",");
-		msg_sb.append(system_data.getOrDefault("cpu", "NA") + ",");
-		msg_sb.append(system_data.getOrDefault("mem", "NA") + ",");
-		msg_sb.append(system_data.getOrDefault("space", "NA") + ",");
-		msg_sb.append(corescript_data.getOrDefault("version", "NA") + line_separator);
-		String message = msg_sb.toString();
-		//dump
-		file_action.append_file_with_title(dump_file, title, message);
-		return dump_status;
-	}
-	
 	public void run() {
 		try {
 			monitor_run();
@@ -682,8 +648,6 @@ public class data_server extends Thread {
 			update_max_sw_insts_limitation();
 			// task 6: update system property data
 			update_system_property_data();
-			// task 7: dump client local data
-			debug_dump_client_data();
 			// HashMap<String, Integer> soft_ware =
 			DATA_SERVER_LOGGER.debug(client_info.get_max_soft_insts());
 			DATA_SERVER_LOGGER.debug(client_info.get_used_soft_insts());

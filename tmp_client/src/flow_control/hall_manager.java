@@ -33,6 +33,7 @@ import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import utility_funcs.des_encode;
+import utility_funcs.file_action;
 import utility_funcs.mail_action;
 import utility_funcs.time_info;
 import data_center.public_data;
@@ -310,6 +311,42 @@ public class hall_manager extends Thread {
 		} else {
 			switch_info.set_client_stop_request(exit_enum.NORMAL);
 		}
+	}
+	
+	private Boolean implement_local_debug_data_dump(){
+		Boolean dump_status = Boolean.valueOf(true);
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
+			return dump_status;
+		}
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/local/client_data.txt";
+		//generate title
+		StringBuilder title_sb = new StringBuilder();
+		title_sb.append("Time" + ",");
+		title_sb.append("Threads" + ",");		
+		title_sb.append("CPU" + ",");
+		title_sb.append("MEM" + ",");
+		title_sb.append("Space" + ",");
+		title_sb.append("CoreScript");
+		String title = title_sb.toString();
+		//generate message line
+		int use_thread = pool_info.get_sys_call_copy().size();
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(deep_clone.clone(client_info.get_client_system_data()));
+		HashMap<String, String> corescript_data = new HashMap<String, String>();
+		corescript_data.putAll(deep_clone.clone(client_info.get_client_corescript_data()));
+		StringBuilder msg_sb = new StringBuilder();
+		msg_sb.append(time_info.get_date_time() + ",");
+		msg_sb.append(String.valueOf(use_thread) + ",");
+		msg_sb.append(system_data.getOrDefault("cpu", "NA") + ",");
+		msg_sb.append(system_data.getOrDefault("mem", "NA") + ",");
+		msg_sb.append(system_data.getOrDefault("space", "NA") + ",");
+		msg_sb.append(corescript_data.getOrDefault("version", "NA") + line_separator);
+		String message = msg_sb.toString();
+		//dump
+		file_action.append_file_with_title(dump_file, title, message);
+		return dump_status;
 	}
 	
 	private void implement_thread_auto_adjustment(){
@@ -797,6 +834,8 @@ public class hall_manager extends Thread {
 		implement_general_console_report();
 		// task 2 : exit apply for local command line mode
 		implement_local_cmd_mode_exit();
+		// task 3 : local client and system info dump
+		implement_local_debug_data_dump();
 	}
 	
 	private void stop_sub_threads() {
