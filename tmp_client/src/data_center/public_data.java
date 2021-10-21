@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.78"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21278; //version for code use
-	public final static String BASE_BUILDDATE = "2021/10/20";
+	public final static String BASE_CURRENTVERSION = "2.12.79"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21279; //version for code use
+	public final static String BASE_BUILDDATE = "2021/10/21";
 	public final static String BASE_SUITEFILEVERSION = "1.21";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -229,7 +229,7 @@ public class public_data {
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
-	public final static int PERF_MAX_LIN_WAITER	= 6;
+	public final static int PERF_MAX_LIN_WAITER	= 12;
 	public final static int PERF_MAX_TASK_WAITER = get_maximum_waiters();
 
 	// ========================

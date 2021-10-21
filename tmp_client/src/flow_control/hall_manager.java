@@ -396,7 +396,7 @@ public class hall_manager extends Thread {
 			cleanup_auto_adjust_record();
 			return;
 		}
-		if(cpu_avgs > public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs > public_data.PERF_AUTO_MAXIMUM_MEM){
+		if(cpu_avgs > public_data.PERF_AUTO_MAXIMUM_CPU || mem_avgs > public_data.PERF_AUTO_MAXIMUM_MEM){
 			if (used_thread <= max_thread){
 				decrease_max_thread();
 			}
@@ -404,7 +404,7 @@ public class hall_manager extends Thread {
 		if (cpu_avgs < public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs < public_data.PERF_AUTO_MAXIMUM_MEM){
 			if (used_thread >= max_thread){
 				increase_max_thread();
-			}			
+			}
 		}
 		cleanup_auto_adjust_record();	
 	}
