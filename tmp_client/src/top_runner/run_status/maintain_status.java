@@ -395,8 +395,8 @@ public class maintain_status extends abstract_status {
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		machine_data.putAll(client.client_info.get_client_machine_data());
 		preference_data.putAll(client.client_info.get_client_preference_data());
-		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
-		if(run_mode.equals("0")){ 
+		String unattended_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		if(unattended_mode.equals("0")){ 
 			//attended mode, message dialog apply
 			if(preference_data.get("interface_mode").equals("gui")){
 				client.view_info.set_space_cleanup_apply(true);
@@ -486,26 +486,12 @@ public class maintain_status extends abstract_status {
 	
 	private void run_space_clean_up(){
 		int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;	
-		int maximum_remove_round = 10;
-		int remove_round = 0;
-		while(true){
-			del_finished_results();
-			try {
-				Thread.sleep(base_interval * 1 *1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			//client will keep in maintain state before this function finished
-			//comment out following lines
-			//state_enum client_state = client.switch_info.get_client_run_state();
-			//if (!client_state.equals(state_enum.maintain)){
-			//	break;
-			//}
-			if (remove_round > maximum_remove_round){
-				break;
-			}
-			remove_round++;
+		delete_finished_results();
+		try {
+			Thread.sleep(base_interval * 6 *1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		if (get_overload_removed()){
 			return;
@@ -560,25 +546,26 @@ public class maintain_status extends abstract_status {
 		}	
 		if (space_available_int > space_reserve_int){
 			status = true;
+		} else {
+			client.STATUS_LOGGER.info("Still got space issue after space cleanup.");
+			client.STATUS_LOGGER.info("Space available:" + space_available);
+			client.STATUS_LOGGER.info("Space reserve:" + space_reserve);
+			status = false;
 		}
 		return status;
 	}	
 	
-	private void del_finished_results() {
+	private void delete_finished_results() {
 		// get delete list
 		List<String> finished_list = new ArrayList<String>();
 		finished_list.addAll(client.task_info.get_finished_admin_queue_list());
 		String earliest_date = get_earliest_task_date(finished_list);
-		if (earliest_date.equals(time_info.get_date_year())){
-			client.STATUS_LOGGER.info("Manually Disk cleanup needed...");
-			try {
-				Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
+		if (earliest_date.equals(time_info.get_year_date())){
+			client.STATUS_LOGGER.info("No more out of date tasks found. Manually Disk cleanup needed...");
 			return;
 		}
+		int max_delete_num = 5;
+		int cur_delete_num = 0;
 		for (String queue_name : finished_list) {
 			// public info for implementation
 			if (!queue_name.contains(earliest_date)){
@@ -588,13 +575,12 @@ public class maintain_status extends abstract_status {
 			if (client.task_info.get_running_admin_queue_list().contains(queue_name)){
 				continue;
 			}
-			client.STATUS_LOGGER.warn("Begin to remove data for Task:" + queue_name);
-			String work_path = new String();
-			if (client.client_info.get_client_data().containsKey("preference")) {
-				work_path = client.client_info.get_client_preference_data().get("work_space");
-			} else {
-				work_path = public_data.DEF_WORK_SPACE;
+			if (cur_delete_num > max_delete_num) {
+				client.STATUS_LOGGER.info("Catch Max delete number, break task data delete for this cycle.");
+				break;
 			}
+			client.STATUS_LOGGER.warn("Begin to remove task data for:" + queue_name);
+			String work_space = client.client_info.get_client_preference_data().get("work_space");
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 			admin_data.putAll(deep_clone.clone(client.task_info.get_queue_data_from_received_admin_queues_treemap(queue_name)));
 			admin_data.putAll(deep_clone.clone(client.task_info.get_queue_data_from_processed_admin_queues_treemap(queue_name)));
@@ -602,7 +588,8 @@ public class maintain_status extends abstract_status {
 				admin_data.putAll(import_data.import_disk_finished_admin_data(queue_name, client.client_info));				
 			}
 			if (admin_data.isEmpty()){
-				client.STATUS_LOGGER.warn("No data can be removed for Task:" + queue_name);
+				client.task_info.remove_finished_admin_queue_list(queue_name);
+				client.STATUS_LOGGER.warn("No data can be found for Task:" + queue_name + ". Remove action skipped.");
 				continue;
 			}
 			// delete data in memory(Remote server may send a done queue which also need to be delete)
@@ -614,8 +601,8 @@ public class maintain_status extends abstract_status {
 			client.task_info.remove_finished_admin_queue_list(queue_name);
 			// delete log in disk
 			String log_folder = public_data.WORKSPACE_LOG_DIR;
-			File admin_path = new File(work_path + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
-			File task_path = new File(work_path + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
+			File admin_path = new File(work_space + "/" + log_folder + "/finished/admin/" + queue_name + ".xml");
+			File task_path = new File(work_space + "/" + log_folder + "/finished/task/" + queue_name + ".xml");
 			if (admin_path.exists() && admin_path.isFile()) {
 				admin_path.delete();
 				client.STATUS_LOGGER.warn("Admin file removed:" + admin_path);
@@ -628,22 +615,27 @@ public class maintain_status extends abstract_status {
 			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
 			String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 			String run_dir_name = "run" + admin_data.get("ID").get("run");
-			String[] path_array = new String[] { work_path, tmp_result_dir, prj_dir_name, run_dir_name };
+			String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name };
 			String file_seprator = System.getProperty("file.separator");
 			String result_url = String.join(file_seprator, path_array);	
 			File result_url_fobj = new File(result_url);
-			if (result_url_fobj.exists()){
-				if(FileUtils.deleteQuietly(result_url_fobj)){
-					client.STATUS_LOGGER.warn("Result path cleanup Pass:" + result_url);
-				} else {
-					client.STATUS_LOGGER.warn("Result path cleanup Fail:" + result_url);
-				}
+			if (result_url_fobj.exists() && result_url_fobj.canWrite()){			
+				Thread del_thread = new Thread() {
+					public void run() {
+						FileUtils.deleteQuietly(result_url_fobj);
+						client.STATUS_LOGGER.warn("Disk results for:" + queue_name + " cleaned.");
+					}
+				};
+				del_thread.start();
+			} else {
+				client.STATUS_LOGGER.warn("Result path doesn't exists or deletable:" + result_url);
 			}
+			cur_delete_num++;
 		}
 	}
 	
 	private String get_earliest_task_date(List<String> queue_list){
-		String earlist_date = time_info.get_date_year();
+		String earlist_date = time_info.get_year_date();
 		for (String queue_name: queue_list){
 			String queue_date = get_date_srting(queue_name, "_(\\d+)_\\d+$");
 			if (queue_date.compareTo(earlist_date) < 0){
