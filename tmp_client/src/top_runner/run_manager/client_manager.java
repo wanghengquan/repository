@@ -188,6 +188,7 @@ public class client_manager extends Thread  {
 		if (get_work_space_updated()){
 			switch_info.update_client_maintain_list(maintain_enum.workspace);
 		}
+		CLIENT_MANAGER_LOGGER.debug("Maintain list:" + switch_info.get_client_maintain_list().toString());
 	}
 	
 	private Boolean start_work_mode(client_status client_sts){
