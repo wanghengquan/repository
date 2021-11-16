@@ -18,6 +18,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import data_center.public_data;
 import env_monitor.kill_winpop;
 import self_update.app_update;
+import env_monitor.core_update;
 import env_monitor.dev_checker;
 import env_monitor.env_checker;
 
@@ -57,7 +58,7 @@ class initial_status extends abstract_status {
 		get_daemon_process_ready();
 		// task 4: client self update
 		get_client_self_update();
-		// task 5 : core script select 
+		// task 5 : core script select & update if need
 		release_corescript_msg();
 		// task 6: auto restart warning message print
 		release_auto_restart_msg();		
@@ -150,7 +151,7 @@ class initial_status extends abstract_status {
 	//core script update
 	private void release_corescript_msg(){
 		//Three corescript available:
-		//1. remote(locate in subversion)
+		//1. workspace(sync with subversion)
 		//2. local_python3(integrated in Client)
 		//3. local_python2(integrated in Client)
 		String python_version = new String(client.switch_info.get_system_python_version());
@@ -162,6 +163,14 @@ class initial_status extends abstract_status {
 			client.STATUS_LOGGER.info("Python " + python_version + " used.");
 			if(client.switch_info.get_remote_corescript_linked()) {
 				client.STATUS_LOGGER.info("CoreScript sync up with:" + public_data.CORE_SCRIPT_REMOTE_URL);
+				//start initial update
+				core_update core_obj = new core_update(client.client_info);
+				Boolean update_status = core_obj.update();
+				if (update_status){
+					client.STATUS_LOGGER.info("CoreScript version:" + client.client_info.get_client_corescript_data().getOrDefault("version", "NA"));	
+				} else {
+					client.STATUS_LOGGER.info("CoreScript initial update failed, Manual check please.");
+				}
 			} else {
 				client.STATUS_LOGGER.info("Local CoreScript linked:" + public_data.LOCAL_CORE_SCRIPT_DIR3);
 				client.STATUS_LOGGER.info("No update support.");
