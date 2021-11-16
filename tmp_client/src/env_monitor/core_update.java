@@ -191,9 +191,9 @@ public class core_update {
     
 	public static void main(String[] argvs) {
 		core_update updater = new core_update();
-		String work_space = new String("D:/tmp_work_space");
+		String work_space = new String("D:/tmp_work");
 		try {
-			updater.update_core_script(work_space);
+			updater.update_core_script_info(work_space);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
