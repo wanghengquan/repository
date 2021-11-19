@@ -226,24 +226,41 @@ public class tube_server extends Thread {
 			return software_match;
 		}
 		// check software match
-		HashMap<String, String> software_require_data = queue_data.get("Software");
-		Set<String> software_require_set = software_require_data.keySet();
-		Iterator<String> software_require_it = software_require_set.iterator();
+		HashMap<String, String> software_require_data = new HashMap<String, String>();
+		software_require_data.putAll(queue_data.get("Software"));
+		Iterator<String> software_require_it = software_require_data.keySet().iterator();
 		while (software_require_it.hasNext()) {
-			String sw_name = software_require_it.next();
-			String sw_build = software_require_data.get(sw_name);
-			if (!client_hash.containsKey(sw_name)) {
+			String request_key = software_require_it.next();
+			String request_value = software_require_data.get(request_key);
+			ArrayList<String> request_value_list = new ArrayList<String>();		
+			if (request_value.contains(",")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
+			} else if (request_value.contains(";")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*;\\s*")));
+			} else{
+				request_value_list.add(request_value);
+			}
+			// Key check			
+			if (!client_hash.containsKey(request_key)) {
 				software_match = false;
 				break;
 			}
-			if (!client_hash.get(sw_name).containsKey(sw_build)) {
+			// Value check
+			Boolean item_match = Boolean.valueOf(true);
+			for (String individual: request_value_list){
+				if (!client_hash.get(request_key).keySet().contains(individual.replaceAll("@.*$", ""))){
+					item_match = false;
+					break;
+				}
+			}
+			if (!item_match){
 				software_match = false;
 				break;
 			}
 		}
 		return software_match;
 	}
-
+	
 	public ArrayList<String> admin_queue_mismatch_list_check(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data,

@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import flow_control.task_enum;
 import top_runner.top_launcher;
 
 public class public_data {
@@ -26,10 +27,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.81"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21281; //version for code use
-	public final static String BASE_BUILDDATE = "2021/11/16";
-	public final static String BASE_SUITEFILEVERSION = "1.21";
+	public final static String BASE_CURRENTVERSION = "2.12.82"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21282; //version for code use
+	public final static String BASE_BUILDDATE = "2021/11/18";
+	public final static String BASE_SUITEFILEVERSION = "1.22";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -207,6 +208,7 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
+	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
 	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
@@ -364,5 +366,13 @@ public class public_data {
 		System.out.println(System.getProperty("os.name"));
 		System.out.println(System.getProperty("os.arch"));
 		System.out.println(System.getProperty("os.version"));
+		String build_name = new String("3.1@cmd_1");
+		build_name = build_name.replaceAll("@.*$", "");
+		System.out.println(build_name);
+		task_enum task_status = task_enum.UNKNOWN;
+		task_enum current_status = task_enum.PASSED;
+		if (current_status.compareTo(task_status) > 0) {
+			System.out.println("Run here");
+		}
 	}
 }

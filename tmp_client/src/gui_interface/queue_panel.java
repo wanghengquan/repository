@@ -249,7 +249,7 @@ public class queue_panel extends JSplitPane implements Runnable {
 						return;
 					}
 					String select_queue = (String) capture_table.getValueAt(capture_table.getSelectedRow(), 0);
-					QUEUE_PANEL_LOGGER.info("Double click and show queue:" + select_queue);
+					QUEUE_PANEL_LOGGER.info("Double click and request queue:" + select_queue);
 					view_info.set_request_watching_queue(select_queue);
 					view_info.set_request_watching_area(watch_enum.ALL);
 				} else {

@@ -10,18 +10,18 @@
 package flow_control;
 
 public enum task_enum {
-	WAITING(0, "Waiting"),
-	PROCESSING(1, "Processing"),
-	PASSED(2, "Passed"),
-	FAILED(3, "Failed"),
-	TBD(4, "TBD"),
-	TIMEOUT(5, "Timeout"),
-	HALTED(6, "Halted"),
-	CASEISSUE(7, "Case_Issue"),
-	SWISSUE(8, "SW_Issue"),
-	BLOCKED(9,"Blocked"),
-	OTHERS(10, "Others"),
-	UNKNOWN(11, "Unknown");
+	UNKNOWN(0, "Unknown"),
+	WAITING(1, "Waiting"),
+	PROCESSING(2, "Processing"),
+	PASSED(3, "Passed"),
+	FAILED(4, "Failed"),
+	TBD(5, "TBD"),
+	TIMEOUT(6, "Timeout"),
+	HALTED(7, "Halted"),
+	CASEISSUE(8, "Case_Issue"),
+	SWISSUE(9, "SW_Issue"),
+	BLOCKED(10,"Blocked"),
+	OTHERS(11, "Others");
 	private int index;
 	private String description;
 	
