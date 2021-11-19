@@ -839,20 +839,41 @@ public class local_tube {
 		while (local_it.hasNext()) {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
-			if (local_key.equals("cmd") && !local_value.equals("")) {
+			if (local_key.equalsIgnoreCase("cmd_all")) {
+				Iterator<String> globle_it = globle_data.keySet().iterator();
+				while (globle_it.hasNext()) {
+					String globle_key = globle_it.next();
+					String globle_value = globle_data.get(globle_key);
+					if(!globle_key.startsWith("cmd")) {
+						continue;
+					}
+					if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
+						globle_data.put(globle_key, local_value);
+					} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
+						continue;
+					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
+						globle_data.put(globle_key, local_value);
+					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
+						continue;
+					} else {
+						String overall_cmd = globle_value + " " + local_value;
+						globle_data.put(globle_key, overall_cmd);
+					}
+				}
+			} else if ((local_key.equals("cmd") || local_key.startsWith("cmd_")) && !local_value.equals("")) {
 				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
-					globle_data.put("cmd", local_value);
+					globle_data.put(local_key, local_value);
 				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
 					continue;
 				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
-					globle_data.put("cmd", local_value);
+					globle_data.put(local_key, local_value);
 				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
 					continue;
 				} else {
-					String local_cmd = local_data.get("cmd");
-					String globle_cmd = globle_data.getOrDefault("cmd", "");
+					String local_cmd = local_data.get(local_key);
+					String globle_cmd = globle_data.getOrDefault(local_key, "");
 					String overall_cmd = globle_cmd + " " + local_cmd;
-					globle_data.put("cmd", overall_cmd);
+					globle_data.put(local_key, overall_cmd);
 				}
 			} else {
 				// non command key 1)global have value, local must have value
@@ -2021,7 +2042,7 @@ public class local_tube {
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
 		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", null, current_terminal);
-		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\update\\03_server_ip\\silicon_01_softip_server_ip.xlsx", imported_data, current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\analysis_00_ta_engine.xlsx", imported_data, current_terminal);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

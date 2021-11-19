@@ -701,14 +701,14 @@ public class view_server extends Thread {
 			if (!task_import_status){
 				VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 				view_info.set_watching_queue_data(get_blank_data());
-				view_info.set_request_watching_queue("");
+				//view_info.set_request_watching_queue("");
 				return show_update; // no data show
 			}
 		}
 		if (!task_info.get_processed_task_queues_map().containsKey(request_queue)) {
 			VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
-			view_info.set_request_watching_queue("");
+			//view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
@@ -716,7 +716,7 @@ public class view_server extends Thread {
 		if (queue_data.size() < 1) {
 			VIEW_SERVER_LOGGER.warn("Empty Queue found:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
-			view_info.set_request_watching_queue("");
+			//view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		Iterator<String> case_it = queue_data.keySet().iterator();

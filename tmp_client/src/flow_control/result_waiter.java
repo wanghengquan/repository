@@ -367,7 +367,8 @@ public class result_waiter extends Thread {
 			String case_id = (String) one_call_data.get(pool_attr.call_case);
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
-			release_status = client_info.release_used_soft_insts(case_data.get("Software"));
+			Boolean parallel_cmd = Boolean.valueOf(case_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL));
+			release_status = client_info.release_used_soft_insts(case_data.get("Software"), parallel_cmd);
 		}
 		return release_status;
 	}
@@ -780,7 +781,7 @@ public class result_waiter extends Thread {
 	}
 
 	private task_enum get_cmd_status(ArrayList<String> cmd_output) {
-		task_enum task_status = task_enum.OTHERS;
+		task_enum task_status = task_enum.UNKNOWN;
 		String status = new String("NA");
 		if(cmd_output == null || cmd_output.isEmpty()) {
 			return task_status;
@@ -792,35 +793,37 @@ public class result_waiter extends Thread {
 				continue;
 			}
 			Matcher m = p.matcher(line);
-			if (m.find()) {
-				status = m.group(1);
+			if (!m.find()) {
+				continue;
 			}
-		}
-		switch (status) {
-		case "Passed":
-			task_status = task_enum.PASSED;
-			break;
-		case "Failed":
-			task_status = task_enum.FAILED;
-			break;
-		case "TBD":
-			task_status = task_enum.TBD;
-			break;
-		case "Timeout":
-			task_status = task_enum.TIMEOUT;
-			break;
-		case "Case_Issue":
-			task_status = task_enum.CASEISSUE;
-			break;
-		case "SW_Issue":
-			task_status = task_enum.SWISSUE;
-			break;		
-		//web page no blocked status yet
-		//case "Blocked":
-		//	task_status = task_enum.FAILED; 
-		//	break;
-		default:
-			task_status = task_enum.OTHERS;
+			task_enum current_status = task_enum.UNKNOWN;
+			status = m.group(1);
+			//break; to find the last one
+			switch (status) {
+			case "Passed":
+				current_status = task_enum.PASSED;
+				break;
+			case "Failed":
+				current_status = task_enum.FAILED;
+				break;
+			case "TBD":
+				current_status = task_enum.TBD;
+				break;
+			case "Timeout":
+				current_status = task_enum.TIMEOUT;
+				break;
+			case "Case_Issue":
+				current_status = task_enum.CASEISSUE;
+				break;
+			case "SW_Issue":
+				current_status = task_enum.SWISSUE;
+				break;
+			default:
+				current_status = task_enum.OTHERS;
+			}
+			if (current_status.compareTo(task_status) > 0) {
+				task_status = current_status;
+			}
 		}
 		return task_status;
 	}

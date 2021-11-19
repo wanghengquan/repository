@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -182,7 +183,7 @@ public class system_cmd {
 
 	// run3 command with environment for a specific case
 	public static ArrayList<String> run(
-			String[] cmds, 
+			List<String> cmds, 
 			Map<String, String> envs, 
 			String directory, 
 			int timeout) throws IOException, InterruptedException {
@@ -191,7 +192,7 @@ public class system_cmd {
 		 */
 		ArrayList<String> string_list = new ArrayList<String>();
 		string_list.add("Environments :" + envs.toString());
-		string_list.add("LaunchCommand:" + String.join(" ", cmds));
+		string_list.add("LaunchCommand:" + cmds.toString());
 		string_list.add("LaunchDir:" + directory);
 		ProcessBuilder pb = new ProcessBuilder(cmds);
 		pb.redirectErrorStream(true);
