@@ -60,7 +60,7 @@ public class task_prepare {
 	protected Boolean get_task_path_ready(
 			HashMap<String, HashMap<String, String>> task_data
 			){
-		task_prepare_info.add(">>>Prepare task path:");
+		task_prepare_info.add(">Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
 		File task_path_dobj = new File(task_path);
@@ -99,7 +99,7 @@ public class task_prepare {
 	protected Boolean get_case_path_ready(
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data){
-		task_prepare_info.add(line_separator + ">>>Prepare case path:");
+		task_prepare_info.add(line_separator + ">Prepare case path:");
 		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		//String case_name = task_data.get("Paths").get("case_name").trim();
@@ -165,7 +165,7 @@ public class task_prepare {
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
 			){
-		task_prepare_info.add(line_separator + ">>>Prepare script path:");
+		task_prepare_info.add(line_separator + ">Prepare script path:");
 		String script_url = task_data.get("Paths").get("script_url").trim();
 		String script_path = task_data.get("Paths").get("script_path").trim();
 		String script_base = task_data.get("Paths").get("script_base").trim();
@@ -210,7 +210,7 @@ public class task_prepare {
 		zip_enum szip_type = get_zip_type(script_url, "szip_type", task_data.get("CaseInfo"));
 		//step 4: remove existing script
 		if (case_mode.equals("hold_case") || keep_path.equals("true")) {
-			task_prepare_info.add("Warn : hold_case/keep_path mode, skip existing script remove");
+			task_prepare_info.add("Warning : hold_case/keep_path mode, skip existing script remove");
 		} else {
 			Boolean remove_ok = remove_exist_path(script_path, script_base);
 			if (!remove_ok) {
@@ -412,13 +412,13 @@ public class task_prepare {
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		//step 1:check source
-		task_prepare_info.add(">>>Unzip Task case with CMD(s):");		
+		task_prepare_info.add(">Unzip Task case with CMD(s):");		
 		if(dzip_type.equals(zip_enum.NO)) {
-			task_prepare_info.add(">>>Source found, no extract needed.");
+			task_prepare_info.add(">Source found, no extract needed.");
 			return true;
 		}
 		if(dzip_type.equals(zip_enum.UNKNOWN)) {
-			task_prepare_info.add(">>>Source considered, no extract needed.");
+			task_prepare_info.add(">Source considered, no extract needed.");
 			return true;
 		}
 		//step 2:get unzip command
@@ -467,7 +467,7 @@ public class task_prepare {
 		}
 		//step 3:command lines check
 		if (cmd_array.isEmpty()) {
-			task_prepare_info.add("Warn : No unzip command found for given source:" + base_name);
+			task_prepare_info.add("Warning : No unzip command found for given source:" + base_name);
 			return false;
 		}
 		task_prepare_info.addAll(cmd_array);
@@ -676,7 +676,7 @@ public class task_prepare {
 		default:
 			break;
 		} 
-		task_prepare_info.add(">>>Export Task case with CMD(s):");
+		task_prepare_info.add(">Export Task case with CMD(s):");
 		task_prepare_info.addAll(cmd_array);		
 		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
 		return export_ok;
@@ -978,7 +978,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(case_parent_path);
 		return exe_cmd.toString();
-	}	
+	}
 	
 	private Boolean run_common_cmds(
 			ArrayList<String> export_cmd_list,
@@ -999,26 +999,34 @@ public class task_prepare {
 		return true;
 	}
 	
-	protected TreeMap<String, HashMap<String, List<String>>> get_launch_jobs(
+	protected TreeMap<String, HashMap<cmd_attr, List<String>>> get_launch_commands(
 			String python_version,
 			Boolean corescript_link_status,
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data
 			) {
-		task_prepare_info.add(line_separator + ">>>Prepare Launch Jobs(LJ):");
-		TreeMap<String, HashMap<String, List<String>>> launch_jobs = new TreeMap<String, HashMap<String, List<String>>>(new cmdid_compare());
+		task_prepare_info.add(line_separator + ">Prepare Launch CMDs(LCs):");
+		TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>(new cmdid_compare());
 		Iterator<String> option_it  = task_data.get("LaunchCommand").keySet().iterator();
 		while (option_it.hasNext()) {
 			String option_name = option_it.next();
 			if(!option_name.startsWith("cmd_") && !option_name.equalsIgnoreCase("cmd")) {
 				continue;
 			}
-			HashMap<String, List<String>> job_data = new HashMap<String, List<String>>();
+			//job command line prepare
+			HashMap<cmd_attr, List<String>> cmd_data = new HashMap<cmd_attr, List<String>>();
 			String cmd_string  = new String(task_data.get("LaunchCommand").get(option_name));
-			job_data.put("cmd", Arrays.asList(get_launch_command(cmd_string, python_version, corescript_link_status, client_tools, task_data)));
+			cmd_data.put(cmd_attr.command, Arrays.asList(get_launch_cmd(cmd_string, python_version, corescript_link_status, client_tools, task_data)));
+			//job environment prepare
 			HashMap<String, String> cmd_env = new HashMap<String, String>();
-			cmd_env.putAll(get_launch_environment(option_name, python_version, corescript_link_status, task_data, client_data));
+			cmd_env.putAll(get_launch_env(option_name, python_version, corescript_link_status, task_data, client_data));
+			if(cmd_env.getOrDefault("FORCE_" + option_name.toUpperCase(), "NA").equals("0")) {
+				task_prepare_info.add("Warning:ENV command force off, skip command:" + option_name);
+				task_prepare_info.add("FORCE_" + option_name + ":0");
+				task_prepare_info.add("");
+				continue;
+			}
 			List<String> env_array = new ArrayList<String>();
 			Iterator<String> env_it = cmd_env.keySet().iterator();
 			while(env_it.hasNext()) {
@@ -1026,21 +1034,38 @@ public class task_prepare {
 				String env_value = cmd_env.get(env_key);
 				env_array.add(env_key + "=" + env_value);
 			}
-			job_data.put("env", env_array);
-			launch_jobs.put(option_name, job_data);
+			cmd_data.put(cmd_attr.environ, env_array);
+			//job run control prepare
+			List<String> ctl_array = new ArrayList<String>();
+			String ctl_string = new String(task_data.get("LaunchCommand").getOrDefault("exe_ctrl", "").trim());
+			for(String ctl_item: ctl_string.split(",")) {
+				if(ctl_item.contains("?" + option_name)) {
+					ctl_array.add(ctl_item.replaceAll("\\?" + option_name, ""));
+				}
+			}
+			cmd_data.put(cmd_attr.exectrl, ctl_array);
+			launch_cmds.put(option_name, cmd_data);
 		}
-		Iterator<String> job_it = launch_jobs.keySet().iterator();
-		while (job_it.hasNext()) {
-			String cmd_index = job_it.next();
-			task_prepare_info.add("LJ" + ":" + cmd_index);
-			task_prepare_info.add("env:" + launch_jobs.get(cmd_index).get("env"));
-			task_prepare_info.add("cmd:" + launch_jobs.get(cmd_index).get("cmd"));
+		//Sanity check for multiple commands mode
+		if (launch_cmds.size() > 1 && launch_cmds.containsKey("cmd")) {
+			task_prepare_info.add("Warning:Multiple command lines found, skip 'cmd' run.");
+			task_prepare_info.add("");
+			launch_cmds.remove("cmd");
+		}
+		//Show details
+		Iterator<String> cmd_it = launch_cmds.keySet().iterator();
+		while (cmd_it.hasNext()) {
+			String cmd_index = cmd_it.next();
+			task_prepare_info.add(">LC" + ":" + cmd_index);
+			task_prepare_info.add("exectrl:" + launch_cmds.get(cmd_index).get(cmd_attr.exectrl).toString());
+			task_prepare_info.add("environ:" + launch_cmds.get(cmd_index).get(cmd_attr.environ).toString());
+			task_prepare_info.add("command:" + launch_cmds.get(cmd_index).get(cmd_attr.command).toString());
 			task_prepare_info.add("");
 		}
-		return launch_jobs;
+		return launch_cmds;
 	}
 
-	protected String[] get_launch_command(
+	protected String[] get_launch_cmd(
 			String cmd_string,
 			String python_version,
 			Boolean corescript_link_status,
@@ -1077,7 +1102,9 @@ public class task_prepare {
 		if (exe_match.find()){
 			exe_path = exe_match.group().trim();
 		} else {
-			task_prepare_info.add(">>>Unkown launch file found. Supported exe file type:pl,py,rb,jar,class,bat,exe,sh,csh,bash");
+			task_prepare_info.add("No executable program found for command:" + launch_cmd);
+			task_prepare_info.add("Supported exe file type:pl,py,rb,jar,class,bat,exe,sh,csh,bash");
+			task_prepare_info.add("");
 			return launch_cmd.split(" ", 2);
 		}
 		Boolean abs_path_ok = Boolean.valueOf(false);
@@ -1179,7 +1206,7 @@ public class task_prepare {
 		return int_id;
 	}
 	
-	protected HashMap<String, String> get_launch_environment(
+	protected HashMap<String, String> get_launch_env(
 			String cmd_index,
 			String python_version,
 			Boolean corescript_link_status,

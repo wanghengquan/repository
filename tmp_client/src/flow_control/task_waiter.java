@@ -655,6 +655,7 @@ public class task_waiter extends Thread {
 		// LaunchCommand NA
 		HashMap<String, String> command_hash = new HashMap<String, String>();
 		command_hash.put("parallel", public_data.TASK_DEF_CMD_PARALLEL);
+		command_hash.put("decision", public_data.TASK_DEF_CMD_DECISION);
 		if (case_data.containsKey("LaunchCommand")) {
 			command_hash.putAll(case_data.get("LaunchCommand"));
 		}
@@ -1114,15 +1115,15 @@ public class task_waiter extends Thread {
 				continue; // in case this queue deleted by other threads
 			}
 			// task 4 : resource booking (thread, software) =>Resource booking finished, release if not launched
-			Boolean parallel_cmd = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL));
-			Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), parallel_cmd);
+			Boolean cmds_parallel = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL).trim());
+			Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 			if (!software_booking) {
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, waiting..." + queue_name);
 				continue;
 			}
 			Boolean thread_booking = pool_info.booking_reserved_threads(1);
 			if (!thread_booking) {
-				client_info.release_used_soft_insts(admin_data.get("Software"), parallel_cmd);
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 				continue;
 			}			
 			// task 5 : get task data =>key variable 3: task_data OK now
@@ -1147,7 +1148,7 @@ public class task_waiter extends Thread {
 				task_info.decrease_processing_admin_queue_list(queue_name);				
 				task_info.increase_emptied_admin_queue_list(queue_name);
 				// release booking info
-				client_info.release_used_soft_insts(admin_data.get("Software"), parallel_cmd);
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 				pool_info.release_reserved_threads(1);				
 				continue;
 			}
@@ -1155,7 +1156,7 @@ public class task_waiter extends Thread {
 			String case_id = new String(task_data.get("ID").get("id"));
 			if (case_id == "" || case_id == null){
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Task id find, skip launching:" + task_data.toString());
-				client_info.release_used_soft_insts(admin_data.get("Software"), parallel_cmd);
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 				pool_info.release_reserved_threads(1);
 				continue;				
 			}
@@ -1173,7 +1174,7 @@ public class task_waiter extends Thread {
 				} else {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
 				}
-				client_info.release_used_soft_insts(admin_data.get("Software"), parallel_cmd);
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 				pool_info.release_reserved_threads(1);
 				continue;// register false, someone register this case already.
 			}
@@ -1185,21 +1186,22 @@ public class task_waiter extends Thread {
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
 			String python_version = switch_info.get_system_python_version();
+			String cmds_decision = task_data.get("LaunchCommand").getOrDefault("decision", public_data.TASK_DEF_CMD_DECISION).trim(); 
 			Boolean corescript_link_status = switch_info.get_remote_corescript_linked();
 			int case_timeout = get_time_out(task_data.get("CaseInfo").get("timeout"));
-			TreeMap<String, HashMap<String, List<String>>> launch_jobs = new TreeMap<String, HashMap<String, List<String>>>();
-			launch_jobs.putAll(prepare_obj.get_launch_jobs(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
+			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
+			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
 			// task 10 : launch reporting
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){
-				client_info.release_used_soft_insts(admin_data.get("Software"), parallel_cmd);
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 				pool_info.release_reserved_threads(1);
 				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
 				TASK_WAITER_LOGGER.info("Task launch failed:" + queue_name + "," + case_id);
 				continue;			
 			} 
 			// task 11 : launch
-			system_call sys_call = new system_call(launch_jobs, parallel_cmd, launch_path, case_timeout);
+			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, client_info.get_client_tools_data());
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, case_timeout);
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
 		}
