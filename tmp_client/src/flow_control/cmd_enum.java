@@ -9,23 +9,19 @@
  */
 package flow_control;
 
-public enum task_enum {
+public enum cmd_enum {
 	UNKNOWN(0, "Unknown"),
-	WAITING(1, "Waiting"),
-	PROCESSING(2, "Processing"),
-	PASSED(3, "Passed"),
-	FAILED(4, "Failed"),
-	TBD(5, "TBD"),
-	TIMEOUT(6, "Timeout"),
-	SWISSUE(7, "SW_Issue"),
-	CASEISSUE(8, "Case_Issue"),
-	BLOCKED(9,"Blocked"),
-	HALTED(10, "Halted"),
-	OTHERS(11, "Others");
+	PASSED(1, "Passed"),
+	FAILED(2, "Failed"),
+	TBD(3, "TBD"),
+	TIMEOUT(4, "Timeout"),
+	SWISSUE(5, "SW_Issue"),
+	CASEISSUE(6, "Case_Issue"),
+	BLOCKED(7,"Blocked");
 	private int index;
 	private String description;
 	
-	private task_enum(int index, String description){
+	private cmd_enum(int index, String description){
 		this.index = index;
 		this.description = description;
 	}

@@ -482,7 +482,8 @@ public class result_waiter extends Thread {
 
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data(
-			HashMap<String, HashMap<String, Object>> case_report_map) {
+			HashMap<String, HashMap<String, Object>> case_report_map
+			) {
 		HashMap<String, HashMap<String, String>> runtime_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
@@ -703,8 +704,8 @@ public class result_waiter extends Thread {
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
-			task_enum cmd_status = task_enum.OTHERS;
-			String cmd_reason = new String("NA");
+			task_enum task_status = task_enum.OTHERS;
+			String task_reason = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
 			String defects = new String("");
@@ -713,13 +714,13 @@ public class result_waiter extends Thread {
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
-					cmd_status = task_enum.TIMEOUT;
+					task_status = task_enum.TIMEOUT;
 				} else if(call_terminate) {
-					cmd_status = task_enum.HALTED;
+					task_status = task_enum.HALTED;
 				} else {
-					cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+					task_status = get_task_status((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				}
-				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+				task_reason = get_task_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				milestone = get_milestone_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
@@ -727,7 +728,7 @@ public class result_waiter extends Thread {
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));				
 			}  else {
-				cmd_status = task_enum.PROCESSING;
+				task_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
             hash_data.put("scan_result", scan_result);
@@ -735,8 +736,8 @@ public class result_waiter extends Thread {
 			hash_data.put("defects_history", defects_history);
 			hash_data.put("milestone", milestone);
 			hash_data.put("key_check", key_check);
-			hash_data.put("status", cmd_status);
-			hash_data.put("reason", cmd_reason);
+			hash_data.put("status", task_status);
+			hash_data.put("reason", task_reason);
 			hash_data.put("location", (String) one_call_data.get(pool_attr.call_laudir));
 			long start_time = (long) one_call_data.get(pool_attr.call_gentime);
 			long current_time = System.currentTimeMillis() / 1000;
@@ -780,15 +781,15 @@ public class result_waiter extends Thread {
 		return report_data;
 	}
 
-	private task_enum get_cmd_status(ArrayList<String> cmd_output) {
+	private task_enum get_task_status(ArrayList<String> call_output) {
 		task_enum task_status = task_enum.UNKNOWN;
 		String status = new String("NA");
-		if(cmd_output == null || cmd_output.isEmpty()) {
+		if(call_output == null || call_output.isEmpty()) {
 			return task_status;
 		}
 		// <status>Passed</status>
 		Pattern p = Pattern.compile("status>(.+?)</");
-		for (String line : cmd_output) {
+		for (String line : call_output) {
 			if (!line.contains("<status>")) {
 				continue;
 			}
@@ -828,15 +829,15 @@ public class result_waiter extends Thread {
 		return task_status;
 	}
 
-	private String get_cmd_reason(ArrayList<String> cmd_output) {
+	private String get_task_reason(ArrayList<String> call_output) {
 		String reason = new String("NA");
-		if(cmd_output == null || cmd_output.isEmpty()){
+		if(call_output == null || call_output.isEmpty()){
 			return reason;
 		}
 		// get failed check points :  <section result>
 		Pattern section_patt = Pattern.compile("<\\s*?section\\s*?result\\s*?>\\s*?(.+?)\\s*?:\\s*?failed", Pattern.CASE_INSENSITIVE);
 		ArrayList<String> failed_array = new ArrayList<String>();
-		for (String line : cmd_output) {
+		for (String line : call_output) {
 			Matcher section_match = section_patt.matcher(line);
 			if (section_match.find()){
 				failed_array.add(section_match.group(1));
@@ -847,7 +848,7 @@ public class result_waiter extends Thread {
 		}
 		// get failed error messages
 		Pattern reason_patt = Pattern.compile("reason>(.+?)</");		
-		for (String line : cmd_output) {
+		for (String line : call_output) {
 			if (!line.contains("<reason>")) {
 				continue;
 			}

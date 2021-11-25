@@ -457,7 +457,7 @@ public class client_data {
 	// release usage for every software
 	public Boolean release_used_soft_insts(
 			HashMap<String, String> release_data,
-			Boolean cmd_parallel
+			Boolean cmds_parallel
 			) {
 		rw_lock.writeLock().lock();
 		Boolean release_result = Boolean.valueOf(true);
@@ -478,7 +478,7 @@ public class client_data {
 					} else{
 						sw_build_list.add(sw_builds);
 					}
-					if (cmd_parallel) {
+					if (cmds_parallel) {
 						sw_insts = sw_insts - sw_build_list.size();
 					} else {
 						sw_insts = sw_insts - 1;
@@ -528,7 +528,7 @@ public class client_data {
 
 	public Boolean booking_used_soft_insts(
 			HashMap<String, String> booking_data,
-			Boolean cmd_parallel
+			Boolean cmds_parallel
 			) {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = Boolean.valueOf(true);
@@ -553,7 +553,7 @@ public class client_data {
 						sw_insts = future_soft_insts.get(sw_name);
 					}
 					Integer sw_max_insts = max_soft_insts.get(sw_name);
-					if (cmd_parallel) {
+					if (cmds_parallel) {
 						sw_insts = sw_insts + sw_build_list.size();
 					} else {
 						sw_insts = sw_insts + 1;

@@ -68,8 +68,8 @@ public class system_cmd {
 		string_list.add("Exit Code:" +exit_value);
 		Thread.sleep(1);
 		read_out.stopGobbling();
-		SYSTEM_CMD_LOGGER.debug("Exit Code:" + exit_value);
 		SYSTEM_CMD_LOGGER.debug("Exit String:" + string_list);
+		SYSTEM_CMD_LOGGER.debug("Exit Code:" + exit_value);
 		process.destroy();
 		return string_list;
 	}
@@ -214,27 +214,27 @@ public class system_cmd {
 		if (exit_status) {
 			int exit_value = p.exitValue();
 			if (exit_value == 0) {
-				string_list.add("<status>Passed</status>");
+				string_list.add("<result>Passed</result>");
 			} else if (exit_value == 1) {
-				string_list.add("<status>Failed</status>");	
+				string_list.add("<result>Failed</result>");	
 			} else if (exit_value == 2) {
-				string_list.add("<status>TBD</status>");					
+				string_list.add("<result>TBD</result>");					
 			} else if (exit_value == 200) {
-				string_list.add("<status>Passed</status>");				
+				string_list.add("<result>Passed</result>");				
 			} else if (exit_value == 201) {
-				string_list.add("<status>Failed</status>");
+				string_list.add("<result>Failed</result>");
 			} else if (exit_value == 202) {
-				string_list.add("<status>TBD</status>");
+				string_list.add("<result>TBD</result>");
 			} else if (exit_value == 203) {
-				string_list.add("<status>Case_Issue</status>");
+				string_list.add("<result>Case_Issue</result>");
 			} else if (exit_value == 204) {
-				string_list.add("<status>SW_Issue</status>");
+				string_list.add("<result>SW_Issue</result>");
 			} else {
-				string_list.add("<status>Blocked</status>");
+				string_list.add("<result>Blocked</result>");
 			}
 		} else {
 			SYSTEM_CMD_LOGGER.warn("Timeout task: " + cmds);
-			string_list.add("<status>Timeout</status>");
+			string_list.add("<result>Timeout</result>");
 			string_list.add("<reason>Timeout</reason>");
 			p.destroyForcibly();
 		}
