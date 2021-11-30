@@ -289,6 +289,131 @@ public class task_waiter extends Thread {
 		return i;
 	}
 
+	private Boolean system_cpu_meet_admin_request(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		Boolean status = Boolean.valueOf(true);
+		//request data
+		int request = 10;
+		if (admin_data.get("Software").containsKey("squish")) {
+			request = public_data.PERF_SQUISH_MAXIMUM_CPU;
+		}
+		if (admin_data.get("System").containsKey("max_cpu")) {
+			try {
+				request = Integer.valueOf(admin_data.get("System").get("max_cpu")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
+		}
+		//current data
+		int current = 99;
+		if (client_info.get_client_system_data().containsKey("cpu")) {
+			try {
+				current = Integer.valueOf(client_info.get_client_system_data().get("cpu")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}	
+		}
+		if (request < current) {
+			status = false;
+		}
+		return status;
+	}
+	
+	private Boolean system_mem_meet_admin_request(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		Boolean status = Boolean.valueOf(true);
+		//request data
+		int request = 10;
+		if (admin_data.get("Software").containsKey("squish")) {
+			request = public_data.PERF_SQUISH_MAXIMUM_MEM;
+		}
+		if (admin_data.get("System").containsKey("max_mem")) {
+			try {
+				request = Integer.valueOf(admin_data.get("System").get("max_mem")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
+		}
+		//current data
+		int current = 99;
+		if (client_info.get_client_system_data().containsKey("mem")) {
+			try {
+				current = Integer.valueOf(client_info.get_client_system_data().get("mem")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}	
+		}
+		if (request < current) {
+			status = false;
+		}
+		return status;
+	}
+	
+	private Boolean system_space_meet_admin_request(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		Boolean status = Boolean.valueOf(true);
+		//request data
+		int request = 0;
+		if (admin_data.get("System").containsKey("min_space")) {
+			try {
+				request = Integer.valueOf(admin_data.get("System").get("min_space")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
+		}
+		//current data
+		int current = 5;
+		if (client_info.get_client_system_data().containsKey("space")) {
+			try {
+				current = Integer.valueOf(client_info.get_client_system_data().get("space")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}	
+		}
+		if (request > current) {
+			status = false;
+		}
+		return status;
+	}
+	
+	private Boolean system_resource_booking(
+			String queue_name,
+			Boolean cmds_parallel,
+			HashMap<String, HashMap<String, String>> admin_data
+			){
+		Boolean book_status = Boolean.valueOf(true);
+		//system ready? CPU, MEM, Space
+		if (!system_cpu_meet_admin_request(admin_data)) {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":System CPU not available, skipping:" + queue_name);
+			return false;
+		}
+		if (!system_mem_meet_admin_request(admin_data)) {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":System MEM not available, skipping:" + queue_name);
+			return false;
+		}
+		if (!system_space_meet_admin_request(admin_data)) {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":System Space not available, skipping:" + queue_name);
+			return false;
+		}
+		//software booking
+		Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+		if (!software_booking) {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
+			return false;
+		}
+		//thread booking
+		Boolean thread_booking = pool_info.booking_reserved_threads(1);
+		if (!thread_booking) {
+			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":No Thread available, skipping:" + queue_name);
+			return false;
+		}
+		return book_status;
+	}
+	
 	private HashMap<String, HashMap<String, String>> get_final_task_data(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data,
@@ -598,7 +723,7 @@ public class task_waiter extends Thread {
 			if (!data_check.str_choice_check(system_data.get("os_type"), new String [] {"windows", "linux"} )){
 				system_data.remove("os_type");
 			}
-		}		
+		}
 		//Machine check
 		//Preference check
 		HashMap<String, String> preference_data = checked_data.get("Preference");
@@ -1111,21 +1236,15 @@ public class task_waiter extends Thread {
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
 			admin_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
 			if (admin_data.isEmpty()) {
-				TASK_WAITER_LOGGER.warn(waiter_name + ":empty admin queue find," + queue_name);
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Empty admin queue find," + queue_name);
 				continue; // in case this queue deleted by other threads
 			}
-			// task 4 : resource booking (thread, software) =>Resource booking finished, release if not launched
 			Boolean cmds_parallel = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL).trim());
-			Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-			if (!software_booking) {
-				TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, waiting..." + queue_name);
+			// task 4 : resource booking (thread, software) =>Resource booking finished, release if not launched
+			if (!system_resource_booking(queue_name, cmds_parallel, admin_data)) {
+				TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation, Skipping:" + queue_name);
 				continue;
 			}
-			Boolean thread_booking = pool_info.booking_reserved_threads(1);
-			if (!thread_booking) {
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				continue;
-			}			
 			// task 5 : get task data =>key variable 3: task_data OK now
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 			task_data.putAll(get_final_task_data(queue_name, admin_data, client_info.get_client_preference_data()));
