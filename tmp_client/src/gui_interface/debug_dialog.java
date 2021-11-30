@@ -77,7 +77,7 @@ public class debug_dialog extends JDialog implements ActionListener {
 		letter_area.append("2. Debug log file:" + line_separator);
 		letter_area.append("    More log file generated in '<work_space>/logs/debug' including:client input and output message,  system usage data." + line_separator);
 		letter_area.append(line_separator);
-		letter_area.append("3. Enhanced GUI feature:" + line_separator);
+		letter_area.append("3. Enhanced GUI features:" + line_separator);
 		letter_area.append("    'Tools -> Debug -> Threads': Action buttons will be enabled for thread control." + line_separator);
 		letter_area.append("    'Tools -> Debug -> Database': database data can be update." + line_separator);
 		letter_area.append(line_separator);
@@ -95,7 +95,7 @@ public class debug_dialog extends JDialog implements ActionListener {
 		JPanel jb_apply_panel = new JPanel(new BorderLayout());
 		// checkbox panel
 		JPanel check_panel = new JPanel(new BorderLayout());
-		jc_debug = new JCheckBox("Check to enable Client 'Debug' mode.");
+		jc_debug = new JCheckBox("Check and Apply to enable Client 'Debug' mode.");
 		if (preference_data.getOrDefault("debug_mode", public_data.DEF_CLIENT_DEBUG_MODE).equals("1")){
 			jc_debug.setSelected(true);
 		} else {
