@@ -294,7 +294,7 @@ public class task_waiter extends Thread {
 			) {
 		Boolean status = Boolean.valueOf(true);
 		//request data
-		int request = 10;
+		int request = 99;
 		if (admin_data.get("Software").containsKey("squish")) {
 			request = public_data.PERF_SQUISH_MAXIMUM_CPU;
 		}
@@ -306,7 +306,7 @@ public class task_waiter extends Thread {
 			}
 		}
 		//current data
-		int current = 99;
+		int current = 0;
 		if (client_info.get_client_system_data().containsKey("cpu")) {
 			try {
 				current = Integer.valueOf(client_info.get_client_system_data().get("cpu")).intValue();
@@ -325,7 +325,7 @@ public class task_waiter extends Thread {
 			) {
 		Boolean status = Boolean.valueOf(true);
 		//request data
-		int request = 10;
+		int request = 99;
 		if (admin_data.get("Software").containsKey("squish")) {
 			request = public_data.PERF_SQUISH_MAXIMUM_MEM;
 		}
@@ -337,7 +337,7 @@ public class task_waiter extends Thread {
 			}
 		}
 		//current data
-		int current = 99;
+		int current = 0;
 		if (client_info.get_client_system_data().containsKey("mem")) {
 			try {
 				current = Integer.valueOf(client_info.get_client_system_data().get("mem")).intValue();
@@ -365,7 +365,7 @@ public class task_waiter extends Thread {
 			}
 		}
 		//current data
-		int current = 5;
+		int current = 10;
 		if (client_info.get_client_system_data().containsKey("space")) {
 			try {
 				current = Integer.valueOf(client_info.get_client_system_data().get("space")).intValue();
