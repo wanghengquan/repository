@@ -307,6 +307,14 @@ public class tube_server extends Thread {
 		while (queue_it.hasNext()) {
 			String queue_name = queue_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			HashMap<String, String> environ_map = new HashMap<String, String>();
+			queue_data.put("Environment", environ_map);
+			HashMap<String, String> software_map = new HashMap<String, String>();
+			queue_data.put("Software", software_map);
+			HashMap<String, String> system_map = new HashMap<String, String>();
+			queue_data.put("System", system_map);
+			HashMap<String, String> machine_map = new HashMap<String, String>();
+			queue_data.put("Machine", machine_map);
 			queue_data.putAll(total_admin_queue.get(queue_name));
 			// check mismatch list
 			ArrayList<String> mismatch_item = new ArrayList<String>();
