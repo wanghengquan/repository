@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.87"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21287; //version for code use
-	public final static String BASE_BUILDDATE = "2021/12/02";
+	public final static String BASE_CURRENTVERSION = "2.12.88"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21288; //version for code use
+	public final static String BASE_BUILDDATE = "2021/12/03";
 	public final static String BASE_SUITEFILEVERSION = "1.23";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -229,8 +229,12 @@ public class public_data {
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
 	public final static int PERF_AUTO_MAXIMUM_CPU = 80;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
-	public final static int PERF_SQUISH_MAXIMUM_CPU = 30;
-	public final static int PERF_SQUISH_MAXIMUM_MEM = 50;
+	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
+	public final static int PERF_SQUISH_WIN_MAX_MEM = 50;
+	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
+	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
+	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
+	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
 	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
@@ -294,6 +298,24 @@ public class public_data {
 		File bin_dobj = new File(bin_path);
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 		return install_path.replaceAll("\\\\", "/");
+	}
+	
+	private static int get_squish_max_cpu(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_SQUISH_WIN_MAX_CPU;
+		} else {
+			return public_data.PERF_SQUISH_LIN_MAX_CPU;
+		}
+	}
+	
+	private static int get_squish_max_mem(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_SQUISH_WIN_MAX_MEM;
+		} else {
+			return public_data.PERF_SQUISH_LIN_MAX_MEM;
+		}
 	}
 	
 	private static int get_maximum_threads(){
