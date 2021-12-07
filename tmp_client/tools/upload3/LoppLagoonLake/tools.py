@@ -47,7 +47,10 @@ def split_list_with_window(a_list, window=5):
     return [a_list[x:x+window] for x in range(0, len(a_list), window)]
 
 
-def comma_split(raw_string, sep_mark=","):
+def comma_split(raw_string, sep_mark=";"):
+    sep_mark = sep_mark.strip()
+    _temp_mark = "-COM-MA-"
+    raw_string = re.sub(r"\\{}".format(sep_mark), _temp_mark, raw_string)
     raw_string = raw_string.strip("{} ".format(sep_mark))
     _ = shlex.shlex(raw_string, posix=False)
     _.whitespace = sep_mark
@@ -55,6 +58,7 @@ def comma_split(raw_string, sep_mark=","):
     _.quotes = '"'
     _ = list(_)
     _ = [x.strip() for x in _]
+    _ = [re.sub(_temp_mark, sep_mark, foo) for foo in _]
     return _
 
 

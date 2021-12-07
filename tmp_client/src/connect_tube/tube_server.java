@@ -307,6 +307,10 @@ public class tube_server extends Thread {
 		while (queue_it.hasNext()) {
 			String queue_name = queue_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			HashMap<String, String> caseinfo_map = new HashMap<String, String>();
+			queue_data.put("CaseInfo", caseinfo_map);
+			HashMap<String, String> launchcmd_map = new HashMap<String, String>();
+			queue_data.put("LaunchCommand", launchcmd_map);
 			HashMap<String, String> environ_map = new HashMap<String, String>();
 			queue_data.put("Environment", environ_map);
 			HashMap<String, String> software_map = new HashMap<String, String>();
