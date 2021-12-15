@@ -835,10 +835,12 @@ public class local_tube {
 	public static HashMap<String, String> comm_admin_task_merge(
 			HashMap<String, String> globle_data,
 			HashMap<String, String> local_data) {
+		Pattern cmd_patt = Pattern.compile("(cmd|cmd_\\d+)$");
 		Iterator<String> local_it = local_data.keySet().iterator();
 		while (local_it.hasNext()) {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
+			Matcher cmd_match = cmd_patt.matcher(local_key);
 			if (local_key.equalsIgnoreCase("cmd_all")) {
 				Iterator<String> globle_it = globle_data.keySet().iterator();
 				while (globle_it.hasNext()) {
@@ -857,10 +859,10 @@ public class local_tube {
 						continue;
 					} else {
 						String overall_cmd = globle_value + " " + local_value;
-						globle_data.put(globle_key, overall_cmd);
+						globle_data.put(globle_key, overall_cmd.trim());
 					}
 				}
-			} else if ((local_key.equals("cmd") || local_key.startsWith("cmd_")) && !local_value.equals("")) {
+			} else if (cmd_match.find() && !local_value.equals("")) {
 				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
 					globle_data.put(local_key, local_value);
 				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
@@ -873,7 +875,7 @@ public class local_tube {
 					String local_cmd = local_data.get(local_key);
 					String globle_cmd = globle_data.getOrDefault(local_key, "");
 					String overall_cmd = globle_cmd + " " + local_cmd;
-					globle_data.put(local_key, overall_cmd);
+					globle_data.put(local_key, overall_cmd.trim());
 				}
 			} else {
 				// non command key 1)global have value, local must have value
@@ -2037,12 +2039,16 @@ public class local_tube {
 	public static void main(String[] argv) {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
-		String current_terminal = "SHITL0012";
+		String current_terminal = "LSHITD0097";
 		HashMap<String, String> imported_data = new HashMap<String, String>();
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
+		imported_data.put("key", "run_info.ini");
 		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", null, current_terminal);
 		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\analysis_00_ta_engine.xlsx", imported_data, current_terminal);
+		//System.out.println(task_info.get_received_task_queues_map().toString());
+		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/tttt", "D:/tmp_work", imported_data);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

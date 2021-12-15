@@ -26,9 +26,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.89"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21289; //version for code use
-	public final static String BASE_BUILDDATE = "2021/12/07";
+	public final static String BASE_CURRENTVERSION = "2.12.90"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21290; //version for code use
+	public final static String BASE_BUILDDATE = "2021/12/15";
 	public final static String BASE_SUITEFILEVERSION = "1.23";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -394,9 +394,5 @@ public class public_data {
 		String build_name = new String("3.1?cmd_1");
 		build_name = build_name.replaceAll("\\?" + "cmd_1", "");
 		System.out.println(build_name);
-		String expression = new String("a and b or c and d"); 
-		System.out.println(expression);
-		System.out.println(expression.split("\\s+"));
-		
 	}
 }
