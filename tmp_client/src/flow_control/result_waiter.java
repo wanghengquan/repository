@@ -483,7 +483,11 @@ public class result_waiter extends Thread {
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data(
 			HashMap<String, HashMap<String, Object>> case_report_map
-			) {
+			){
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(client_info.get_client_system_data());
+		String host_name = client_info.get_client_machine_data().get("terminal");
+		String account = client_info.get_client_machine_data().getOrDefault("account", "NA");
 		HashMap<String, HashMap<String, String>> runtime_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
@@ -509,18 +513,25 @@ public class result_waiter extends Thread {
 			StringBuilder runlog = new StringBuilder();
 			//step 0: generate runlog title
 			runlog.append(line_separator);
-			runlog.append(line_separator);
 			runlog.append("####################" + line_separator);
-			runlog.append("Run with TMP client:" + public_data.BASE_CURRENTVERSION + line_separator);
+			runlog.append("TMP Client:" + public_data.BASE_CURRENTVERSION + line_separator);
+			runlog.append("Run Time:" + time_info.get_date_time() + line_separator);
+			runlog.append("Host Info:");
+			runlog.append(host_name + "(" + account + "), ");
+			runlog.append("OS:" + system_data.getOrDefault("os", "NA") + ", ");
+			runlog.append("CPU:" + system_data.getOrDefault("cpu", "NA") + ", ");
+			runlog.append("MEM:" + system_data.getOrDefault("mem", "NA"));
+			runlog.append(line_separator);
+			runlog.append(line_separator);
+			//step 1: generate source location
 			String case_url = (String) one_call_data.get(pool_attr.call_caseurl);
 			runlog.append("Source Location(Case URL) ==> " + case_url.replaceAll("\\\\", "/") + line_separator);
-			//step 1: generate runtime location
-			String host_name = client_info.get_client_machine_data().get("terminal");
+			//step 2: generate runtime location
 			String run_path = (String) one_call_data.get(pool_attr.call_laudir);
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
-			//step 2: generate save location
+			//step 3: generate save location
 			runlog.append(save_location_generate(task_data.get("Paths").get("save_path"), status));
-			//step 3: notes
+			//step 4: notes
 			runlog.append("Note:" + line_separator);
 			runlog.append("1. If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);
@@ -528,11 +539,11 @@ public class result_waiter extends Thread {
 					+ line_separator);			
 			runlog.append(line_separator);
 			runlog.append(line_separator);
-			//step 4: generate runtime outputs
+			//step 5: generate runtime outputs
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get(pool_attr.call_output);
 			runlog.append(String.join(line_separator, runtime_output_filter(runtime_output_list)));
 			runlog.append(line_separator);
-			//step 5: return data
+			//step 6: return data
 			String runlog_str = runlog.toString();
 			hash_data.put("runLog", remove_xml_modifier(runlog_str));
 			runtime_data.put(call_index, hash_data);
@@ -682,6 +693,7 @@ public class result_waiter extends Thread {
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
 	}
+	
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, Object>> generate_case_report_data() {
 		HashMap<String, HashMap<String, Object>> case_data = new HashMap<String, HashMap<String, Object>>();
