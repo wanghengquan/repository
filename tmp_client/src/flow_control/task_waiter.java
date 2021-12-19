@@ -1143,9 +1143,22 @@ public class task_waiter extends Thread {
 		status_data.put("location", report_path);
 		task_info.update_case_to_processed_task_queues_map(queue_name, case_id, task_data);
 		//task 2 send case report to local disk
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(client_info.get_client_system_data());
+		String host_name = client_info.get_client_machine_data().get("terminal");
+		String account = client_info.get_client_machine_data().getOrDefault("account", "NA");
 		ArrayList<String> title_list = new ArrayList<String>();
 		title_list.add("");
 		title_list.add("============================================================");
+		
+		title_list.add("Run Time:" + time_info.get_date_time());
+		StringBuilder hostlog = new StringBuilder();
+		hostlog.append("Host Info:");
+		hostlog.append(host_name + "(" + account + "), ");
+		hostlog.append("OS:" + system_data.getOrDefault("os", "NA") + ", ");
+		hostlog.append("CPU:" + system_data.getOrDefault("cpu", "NA") + ", ");
+		hostlog.append("MEM:" + system_data.getOrDefault("mem", "NA"));
+		title_list.add(hostlog.toString());
 		title_list.add("Task Queue:" + queue_name);
 		title_list.add("Task Case:" + case_id);
 		title_list.add("");
