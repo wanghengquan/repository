@@ -107,10 +107,13 @@ public class system_call implements Callable<Object> {
 		Iterator<String> cmd_it = cmd_status.keySet().iterator();
 		while(cmd_it.hasNext()) {
 			String cmd_index = cmd_it.next();
-			if(cmd_status.containsKey(cmd_index) && cmd_status.get(cmd_index).equals(cmd_enum.PASSED)) {
-				eval_str.replaceAll(cmd_index, "True");
+			if (!eval_str.contains(cmd_index)) {
+				continue;
+			}
+			if(cmd_status.get(cmd_index).equals(cmd_enum.PASSED)) {
+				eval_str = eval_str.replaceAll(cmd_index, "True");
 			} else {
-				eval_str.replaceAll(cmd_index, "False");
+				eval_str = eval_str.replaceAll(cmd_index, "False");
 			}
 		}
 		return eval_str;
@@ -120,10 +123,10 @@ public class system_call implements Callable<Object> {
 			List<String> ctl_lst
 			) {
 		Boolean check_result = Boolean.valueOf(true);
-		String pyton = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String python = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
 		for(String eval_item: ctl_lst) {
 			String eval_str = new String(exectrl_result_update(eval_item));
-			if(!exp_eval.python_eval_bol(pyton, eval_str)) {
+			if(!exp_eval.python_eval_bol(python, eval_str)) {
 				return false;
 			}
 		}
@@ -357,7 +360,7 @@ public class system_call implements Callable<Object> {
 					public void run() {
 						ArrayList<String> result_parallel = new ArrayList<>();
 						result_parallel.add(">>>LC:" + job_title);
-						//force_cmd_env won't be happened here since we removed it during prepare
+						//force_cmd_env=0 won't be happened here since we removed it during prepare
 						if (env_map.getOrDefault(force_cmd_env, "NA").equals("1")) {
 							result_parallel.add(">ENV command force on, skip exectrl check.");
 							result_parallel.add(">" + force_cmd_env + ":" + env_map.get(force_cmd_env));
@@ -404,11 +407,10 @@ public class system_call implements Callable<Object> {
 			} else {
 				ArrayList<String> result_serial = new ArrayList<>();
 				result_serial.add(">>>LC:" + job_title);
-				//force_cmd_env won't be happened here since we removed it during prepare
+				//force_cmd_env=0 won't be happened here since we removed it during prepare
 				if (env_map.getOrDefault(force_cmd_env, "NA").equals("1")) {
 					result_serial.add(">ENV command force on, skip exectrl check.");
 					result_serial.add(">" + force_cmd_env + ":" + env_map.get(force_cmd_env));
-					result_serial.add("");
 				} else {
 					//exectrl ready check
 					if(!exectrl_ready_check(ctl_lst)) {
