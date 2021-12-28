@@ -228,7 +228,7 @@ public class public_data {
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
 	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
-	public final static int PERF_AUTO_MAXIMUM_CPU = 75;
+	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 50;
