@@ -124,7 +124,7 @@ public class task_waiter extends Thread {
 		}
 	}
 
-	private Boolean get_cpu_overload(){
+	private Boolean get_cpu_high_usage(){
 		Boolean status = Boolean.valueOf(false);
 		String cpu_used = client_info.get_client_system_data().getOrDefault("cpu", "NA");
 		int cpu_used_int = 0;
@@ -133,13 +133,13 @@ public class task_waiter extends Thread {
 		} catch (Exception e) {
 			return false;
 		}
-		if (cpu_used_int >= public_data.RUN_LIMITATION_CPU){
+		if (cpu_used_int >= public_data.RUN_LIMITATION_CPU * 4 / 5){
 			status = true;
 		}
 		return status;
 	}
 	
-	private Boolean get_mem_overload(){
+	private Boolean get_mem_high_usage(){
 		Boolean status = Boolean.valueOf(false);
 		String mem_used = client_info.get_client_system_data().getOrDefault("mem", "NA");
 		int mem_used_int = 0;
@@ -148,7 +148,7 @@ public class task_waiter extends Thread {
 		} catch (Exception e) {
 			return false;
 		}
-		if (mem_used_int >= public_data.RUN_LIMITATION_MEM){
+		if (mem_used_int >= public_data.RUN_LIMITATION_MEM * 4 / 5){
 			status = true;
 		}
 		return status;
@@ -157,7 +157,7 @@ public class task_waiter extends Thread {
 	private Boolean start_new_task_check(){
 		Boolean available = Boolean.valueOf(true);
 		//system resource ready ? cpu, mem
-		if(get_cpu_overload() || get_mem_overload()) {
+		if(get_cpu_high_usage() || get_mem_high_usage()) {
 			if (waiter_name.equalsIgnoreCase("tw_0")){
 				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for System ready(CPU, MEM)");
 			}			

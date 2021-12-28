@@ -494,7 +494,7 @@ public class hall_manager extends Thread {
 			cleanup_auto_adjust_record();
 			return;
 		}
-		if(cpu_avgs > public_data.PERF_AUTO_MAXIMUM_CPU || mem_avgs > public_data.PERF_AUTO_MAXIMUM_MEM){
+		if(cpu_avgs >= public_data.PERF_AUTO_MAXIMUM_CPU || mem_avgs >= public_data.PERF_AUTO_MAXIMUM_MEM){
 			run_system_overload_thread_update(use_thread, max_thread);
 		} 
 		if (cpu_avgs < public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs < public_data.PERF_AUTO_MAXIMUM_MEM){
