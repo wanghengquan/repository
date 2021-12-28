@@ -124,42 +124,79 @@ public class task_waiter extends Thread {
 		}
 	}
 
+	private Boolean get_cpu_overload(){
+		Boolean status = Boolean.valueOf(false);
+		String cpu_used = client_info.get_client_system_data().getOrDefault("cpu", "NA");
+		int cpu_used_int = 0;
+		try{
+			cpu_used_int = Integer.parseInt(cpu_used);
+		} catch (Exception e) {
+			return false;
+		}
+		if (cpu_used_int >= public_data.RUN_LIMITATION_CPU){
+			status = true;
+		}
+		return status;
+	}
+	
+	private Boolean get_mem_overload(){
+		Boolean status = Boolean.valueOf(false);
+		String mem_used = client_info.get_client_system_data().getOrDefault("mem", "NA");
+		int mem_used_int = 0;
+		try{
+			mem_used_int = Integer.parseInt(mem_used);
+		} catch (Exception e) {
+			return false;
+		}
+		if (mem_used_int >= public_data.RUN_LIMITATION_MEM){
+			status = true;
+		}
+		return status;
+	}
+	
 	private Boolean start_new_task_check(){
 		Boolean available = Boolean.valueOf(true);
+		//system resource ready ? cpu, mem
+		if(get_cpu_overload() || get_mem_overload()) {
+			if (waiter_name.equalsIgnoreCase("tw_0")){
+				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for System ready(CPU, MEM)");
+			}			
+			return false;
+		}
 		//client soft stop request ?
 		if (switch_info.get_client_soft_stop_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
 				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for Client soft stop...");
 			}			
-			available = false;			
+			return false;			
 		}		
 		//work space ready ?
 		if (switch_info.get_work_space_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
 				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for work space update...");
 			}			
-			available = false;			
+			return false;			
 		}
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
 				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for core script update...");
 			}			
-			available = false;
+			return false;
 		}
 		//thread available ?
 		if (pool_info.get_available_thread_for_reserve() < 1){
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No more threads available...");
 			}			
-			available = false;
+			return false;
 		}
 		//executing queue available ?
 		if (task_info.get_executing_admin_queue_list().size() < 1) {
 			if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No Runnable queue found.");
 			}
-			available = false;
+			return false;
 		}		
 		return available;
 	}

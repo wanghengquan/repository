@@ -281,7 +281,7 @@ public class maintain_status extends abstract_status {
 				e.printStackTrace();
 			}
 			//5 just make a gap for trigger again
-			if (mem_used_int > public_data.RUN_LIMITATION_MEM - 5){
+			if (mem_used_int > public_data.RUN_LIMITATION_MEM - 2){
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {
@@ -375,7 +375,7 @@ public class maintain_status extends abstract_status {
 				e.printStackTrace();
 			}
 			//5 just make a gap for trigger again
-			if (cpu_used_int > public_data.RUN_LIMITATION_CPU - 5){
+			if (cpu_used_int > public_data.RUN_LIMITATION_CPU - 2){
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {

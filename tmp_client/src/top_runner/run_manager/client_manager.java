@@ -117,7 +117,7 @@ public class client_manager extends Thread  {
 		} catch (Exception e) {
 			return false;
 		}
-		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
+		if (cpu_used_int >= public_data.RUN_LIMITATION_CPU){
 			status = true;
 		}
 		return status;
@@ -132,7 +132,7 @@ public class client_manager extends Thread  {
 		} catch (Exception e) {
 			return false;
 		}
-		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
+		if (mem_used_int >= public_data.RUN_LIMITATION_MEM){
 			status = true;
 		}
 		return status;

@@ -27,9 +27,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.96"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21296; //version for code use
-	public final static String BASE_BUILDDATE = "2021/12/27";
+	public final static String BASE_CURRENTVERSION = "2.12.97"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21297; //version for code use
+	public final static String BASE_BUILDDATE = "2021/12/28";
 	public final static String BASE_SUITEFILEVERSION = "1.23";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -44,8 +44,8 @@ public class public_data {
 
 	// ========================
 	// Client run limitation (system requirements)
-	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
-	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
+	public final static int RUN_LIMITATION_CPU = 90;//client suspend when CPU usage large than this value
+	public final static int RUN_LIMITATION_MEM = 90;//client suspend when MEM usage large than this value
 	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
 	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
 	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
@@ -228,8 +228,8 @@ public class public_data {
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
 	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
-	public final static int PERF_AUTO_MAXIMUM_CPU = 80;
-	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
+	public final static int PERF_AUTO_MAXIMUM_CPU = 75;
+	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 50;
 	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
