@@ -27,8 +27,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.97"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21297; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.12.98"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21298; //version for code use
 	public final static String BASE_BUILDDATE = "2021/12/28";
 	public final static String BASE_SUITEFILEVERSION = "1.23";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -45,7 +45,7 @@ public class public_data {
 	// ========================
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 90;//client suspend when CPU usage large than this value
-	public final static int RUN_LIMITATION_MEM = 90;//client suspend when MEM usage large than this value
+	public final static int RUN_LIMITATION_MEM = 95;//client suspend when MEM usage large than this value
 	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
 	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
 	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
@@ -236,7 +236,7 @@ public class public_data {
 	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
 	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
-	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
+	public final static int PERF_AUTO_ADJUST_CYCLE = 12;
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
 	public final static int PERF_MAX_LIN_WAITER	= 12;

@@ -480,7 +480,7 @@ public class hall_manager extends Thread {
 		}
 		thread_auto_adjust_counter += 1;
 		if(thread_auto_adjust_counter <= public_data.PERF_AUTO_ADJUST_CYCLE){
-			return;// adjust cycle = 6 * 10 seconds
+			return;// adjust cycle = 12 * 10 seconds
 		}
 		//only when used thread >= pool_curent_size, this feature work
 		String def_thread_str = client_info.get_client_preference_data().get("max_threads");
