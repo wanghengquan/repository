@@ -387,6 +387,8 @@ public class hall_manager extends Thread {
 		title_sb.append("CoreScript");
 		String title = title_sb.toString();
 		//generate message line
+		String thread_mode = new String();
+		thread_mode = auto_adjust ? "A" : "M";
 		int use_thread = pool_info.get_pool_used_threads();
 		int max_thread = pool_info.get_pool_current_size();
 		HashMap<String, String> system_data = new HashMap<String, String>();
@@ -395,7 +397,7 @@ public class hall_manager extends Thread {
 		corescript_data.putAll(deep_clone.clone(client_info.get_client_corescript_data()));
 		StringBuilder msg_sb = new StringBuilder();
 		msg_sb.append(time_info.get_date_time() + ",");
-		msg_sb.append(String.valueOf(use_thread) + "/"+ String.valueOf(max_thread) + ",");
+		msg_sb.append(String.valueOf(use_thread) + "/" + String.valueOf(max_thread) + "(" + thread_mode + "),");
 		msg_sb.append(system_data.getOrDefault("cpu", "NA") + ",");
 		msg_sb.append(system_data.getOrDefault("mem", "NA") + ",");
 		msg_sb.append(system_data.getOrDefault("space", "NA") + ",");
