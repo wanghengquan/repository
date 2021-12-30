@@ -139,7 +139,7 @@ public class hall_manager extends Thread {
 	
 	private void implement_task_blocker_actions(){
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -200,7 +200,7 @@ public class hall_manager extends Thread {
 		Integer timeout_num = Integer.valueOf(0);
 		Integer others_num = Integer.valueOf(0);
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -234,7 +234,7 @@ public class hall_manager extends Thread {
 		Integer timeout_num = Integer.valueOf(0);
 		Integer others_num = Integer.valueOf(0);
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -522,7 +522,7 @@ public class hall_manager extends Thread {
 			increase_max_thread();
 			return;
 		}
-		if (max_thread < def_thread) {
+		if (max_thread < half_def_thread) {
 			increase_max_thread();
 			return;
 		} 
@@ -635,7 +635,7 @@ public class hall_manager extends Thread {
 			String queue_name){
 		String result_string = new String("");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
 		if (summary_map.containsKey(queue_name)){
 			run_queue_data.putAll(summary_map.get(queue_name));
@@ -651,7 +651,7 @@ public class hall_manager extends Thread {
 			String queue_name){
 		String run_result = new String("");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
 		if (summary_map.containsKey(queue_name)){
 			run_queue_data.putAll(summary_map.get(queue_name));
@@ -710,8 +710,8 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
 		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
-		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
-		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
+		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_status_map().size());
+		for (String queue_name: task_info.get_client_run_case_summary_status_map().keySet()){
 			HALL_MANAGER_LOGGER.info(">>>Run    Task:" + queue_name);
 			HALL_MANAGER_LOGGER.info(">>>Task Report:" + get_report_file_path(queue_name));
 			HALL_MANAGER_LOGGER.info(">>>Submit Code:" + get_task_queue_run_id(queue_name));

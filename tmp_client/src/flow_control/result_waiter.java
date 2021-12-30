@@ -395,7 +395,66 @@ public class result_waiter extends Thread {
 		return release_status;
 	}
 	
-	private Boolean update_client_run_case_summary(
+	private void update_client_run_case_summary(
+			HashMap<String, HashMap<String, Object>> case_report_map) {
+		update_client_run_case_status_summary(case_report_map);
+		update_client_run_case_memory_summary();
+	}
+	
+	private Boolean update_client_run_case_memory_summary() {
+		Boolean update_status = Boolean.valueOf(true);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
+			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);			
+			// only done call will be release. timeout call will be get in
+			// the next cycle(at that time status will be done)
+			if (!call_status.equals(call_state.DONE)) {
+				continue;
+			}
+			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
+			String memory_info = (String) one_call_data.get(pool_attr.call_expmem);
+			if(memory_info.contains(".")) {
+				memory_info = memory_info.split("\\.")[0];
+			}
+			if(memory_valid_check(memory_info)) {
+				task_info.update_client_run_case_summary_memory_map(queue_name, get_valid_memory_data(memory_info));
+			}
+		}
+		return update_status;
+	}
+	
+	private Boolean memory_valid_check(
+			String memory_value
+			) {
+		Boolean status = Boolean.valueOf(true);
+		Integer value = Integer.valueOf(0);
+		try {
+			value = Integer.valueOf(memory_value);
+		} catch (NumberFormatException e) {
+			RESULT_WAITER_LOGGER.debug(memory_value + ", not a number");
+			return false;
+		}
+		if (value < 0) {
+			return false;
+		}
+		return status;
+	}
+	
+	private Integer get_valid_memory_data(
+			String memory_value
+			) {
+		Integer value = Integer.valueOf(memory_value);
+		if (value > Integer.valueOf(public_data.TASK_DEF_MAX_MEM_USG)) {
+			value = 16;
+		}
+		return value;
+	}
+	
+	private Boolean update_client_run_case_status_summary(
 			HashMap<String, HashMap<String, Object>> case_report_map) {
 		Boolean update_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
@@ -418,28 +477,28 @@ public class result_waiter extends Thread {
 			task_enum case_result = (task_enum) case_report_map.get(call_index).get("status");
 			switch (case_result) {
 			case PASSED:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.PASSED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.PASSED, 1);
 				break;
 			case FAILED:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.FAILED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.FAILED, 1);
 				break;
 			case TIMEOUT:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TIMEOUT, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.TIMEOUT, 1);
 				break;
 			case TBD:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TBD, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.TBD, 1);
 				break;
 			case BLOCKED:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.BLOCKED, 1);
 				break;	
 			case SWISSUE:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.SWISSUE, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.SWISSUE, 1);
 				break;	
 			case CASEISSUE:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.CASEISSUE, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.CASEISSUE, 1);
 				break;				
 			default:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.OTHERS, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.OTHERS, 1);
 			}
 		}
 		return update_status;
@@ -1114,21 +1173,22 @@ public class result_waiter extends Thread {
 			}
 			// task 2 : terminate running call
 			terminate_user_request_running_call();
-			// task 3 : general and send task report
+			// task 3 : generate and send task report
 			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(case_report_data);
 			report_obj.send_tube_task_data_report(case_report_data, true);			
 			report_obj.send_tube_task_runtime_report(case_runtime_log_data);
-			// task 4 : update memory case run summary
+			// task 4 : generate console report
 			generate_console_report(waiter_name, case_report_data);
+			// task 5 : update case run summary
 			update_client_run_case_summary(case_report_data);
-			// task 5 : update processed task data info
+			// task 6 : update processed task data info
 			update_processed_task_data(case_report_data);
-			// task 6 : local report
+			// task 7 : local report
 			run_local_disk_report(case_report_data);
-			// task 7 : run post process
+			// task 8 : run post process
 			run_post_process(case_report_data);
-			// task 8 : release occupied resource
+			// task 9 : release occupied resource
 			release_resource_usage();
 		}
 	}

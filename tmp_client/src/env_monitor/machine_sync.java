@@ -50,7 +50,8 @@ import utility_funcs.linux_info;
  * 					mem		=	xx%
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx 
- *                  start_time = xxx	
+ *                  start_time = xxx
+ *                  mem_phy =   32G	
  */
 public class machine_sync extends Thread {
 	// public property
@@ -69,6 +70,7 @@ public class machine_sync extends Thread {
 	private static OperatingSystem os_info = sys_info.getOperatingSystem();
 	private static LinkedList<Double> cpu_list =new LinkedList<Double>();
 	private static LinkedList<Long> mem_list =new LinkedList<Long>();
+	private static LinkedList<Long> mem_free_list =new LinkedList<Long>();
 	
 	// public function update data every interval seconds
 	public machine_sync(int base_interval) {
@@ -211,6 +213,31 @@ public class machine_sync extends Thread {
 		}
 	}
 
+	private String get_mem_total() {
+		String mem_total = new String("NA");
+		GlobalMemory memory = hw_info.getMemory();
+        long total_g = memory.getTotal() / 1024 / 1024 /1024;
+        mem_total = String.valueOf(total_g);
+        return mem_total;
+	}
+	
+	private String get_mem_available() {
+		String mem_free_str = new String("NA");
+		GlobalMemory memory = hw_info.getMemory();
+		long current_data = memory.getAvailable() / 1024 / 1024 /1024;
+        mem_free_list.addFirst(current_data);
+        if (mem_free_list.size() > public_data.RUN_MEM_FILTER_LENGTH) {//60 seconds average
+        	mem_free_list.removeLast();
+        }
+        long sum = 0;
+        for(long tick_data: mem_free_list) {
+        	sum = sum + tick_data;
+        }
+        long average_data = sum / mem_free_list.size();
+        mem_free_str = String.valueOf(average_data);
+        return mem_free_str;
+	}
+	
 	private String get_mem_usage() {
 		String mem_usage = new String("NA");
 		GlobalMemory memory = hw_info.getMemory();
@@ -302,6 +329,7 @@ public class machine_sync extends Thread {
 		machine_data.put("terminal",get_host_name());
 		machine_data.put("ip", get_host_ip());
 		machine_data.put("start_time", get_start_time());
+		machine_data.put("mem_phy", get_mem_total());
 		machine_hash.put("System", system_data);
 		machine_hash.put("Machine", machine_data);
 	}
@@ -318,6 +346,7 @@ public class machine_sync extends Thread {
 		system_data.put("space", space);
 		system_data.put("cpu", cpu);
 		system_data.put("mem", mem);
+		system_data.put("mem_free", get_mem_available());
 		machine_hash.put("System", system_data);
 	}
 	
@@ -396,6 +425,9 @@ public class machine_sync extends Thread {
 	 */
 	public static void main(String[] args) {
 		machine_sync.test_print();
+		switch_data switch_info = new switch_data();
+		machine_sync my_test = new machine_sync(switch_info);
+		System.out.println(my_test.get_mem_available());
 		/*
 		client_update.start();
 		System.out.println(client_update.get_start_time());

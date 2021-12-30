@@ -124,6 +124,7 @@ public class task_waiter extends Thread {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private Boolean get_cpu_high_usage(){
 		Boolean status = Boolean.valueOf(false);
 		String cpu_used = client_info.get_client_system_data().getOrDefault("cpu", "NA");
@@ -139,6 +140,7 @@ public class task_waiter extends Thread {
 		return status;
 	}
 	
+	@SuppressWarnings("unused")
 	private Boolean get_mem_high_usage(){
 		Boolean status = Boolean.valueOf(false);
 		String mem_used = client_info.get_client_system_data().getOrDefault("mem", "NA");
@@ -156,13 +158,6 @@ public class task_waiter extends Thread {
 	
 	private Boolean start_new_task_check(){
 		Boolean available = Boolean.valueOf(true);
-		//system resource ready ? cpu, mem
-		if(get_cpu_high_usage() || get_mem_high_usage()) {
-			if (waiter_name.equalsIgnoreCase("tw_0")){
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for System ready(CPU, MEM)");
-			}			
-			return false;
-		}
 		//client soft stop request ?
 		if (switch_info.get_client_soft_stop_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
@@ -416,12 +411,62 @@ public class task_waiter extends Thread {
 		return status;
 	}
 	
+	private Integer get_thread_pool_case_memory_total() {
+		Integer total_estimate_usage = Integer.valueOf(0);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
+			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
+			Integer memory_estimate = Integer.valueOf(0);
+			String memory_est_str = (String) one_call_data.get(pool_attr.call_estmem);
+			Integer memory_est = Integer.valueOf(memory_est_str);
+			Integer memory_exp = task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("avg", 0);
+			if (memory_estimate.compareTo(memory_est) < 0) {
+				memory_estimate = memory_est;
+			}
+			if (memory_estimate.compareTo(memory_exp) < 0) {
+				memory_estimate = memory_exp;
+			}
+			total_estimate_usage = total_estimate_usage +  memory_estimate;
+		}
+		return total_estimate_usage;
+	}
+	
+	private Boolean system_memory_estimate_check(
+			String est_mem
+			) {
+		Boolean status = Boolean.valueOf(true);
+		//current running thread memory calculate
+		synchronized (this.getClass()) {
+			Integer estimate_total = Integer.valueOf(0);
+			estimate_total = Integer.valueOf(est_mem) + get_thread_pool_case_memory_total() + client_info.get_registered_memory();
+			Integer memory_free = Integer.valueOf(0);
+			memory_free = Integer.valueOf(client_info.get_client_system_data().get("mem_free"));
+			Float available_memory = Float.valueOf(memory_free * public_data.PERF_GOOD_MEM_USAGE_RATE);
+			if (available_memory.intValue() >= estimate_total.intValue()) {
+				status = true;
+				client_info.add_registered_memory(Integer.valueOf(est_mem));
+			} else {
+				status = false;
+			}
+			TASK_WAITER_LOGGER.debug(waiter_name + ":memory_free:" + memory_free.toString());
+			TASK_WAITER_LOGGER.debug(waiter_name + ":available_memory:" + available_memory.toString());
+			TASK_WAITER_LOGGER.debug(waiter_name + ":estimate_total:" + estimate_total.toString());
+			TASK_WAITER_LOGGER.debug(waiter_name + ":status:" + status.toString());
+		}
+		return status;
+	}
+	
 	private Boolean system_resource_booking(
 			String queue_name,
 			Boolean cmds_parallel,
+			String est_mem,
 			HashMap<String, HashMap<String, String>> admin_data
 			){
-		Boolean book_status = Boolean.valueOf(true);
+		Boolean book_status = Boolean.valueOf(true);		
 		//system ready? CPU, MEM, Space
 		if (!system_cpu_meet_admin_request(admin_data)) {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":System CPU not available, skipping:" + queue_name);
@@ -435,17 +480,24 @@ public class task_waiter extends Thread {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":System Space not available, skipping:" + queue_name);
 			return false;
 		}
+		//system ready for launch another thread
+		if (!system_memory_estimate_check(est_mem)) {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":System MEM not available for task launch, skipping:" + queue_name);
+			return false;
+		}		
 		//software booking
 		Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 		if (!software_booking) {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
+			client_info.sub_registered_memory(Integer.valueOf(est_mem));
 			return false;
 		}
 		//thread booking
 		Boolean thread_booking = pool_info.booking_reserved_threads(1);
 		if (!thread_booking) {
-			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 			TASK_WAITER_LOGGER.debug(waiter_name + ":No Thread available, skipping:" + queue_name);
+			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+			client_info.sub_registered_memory(Integer.valueOf(est_mem));
 			return false;
 		}
 		return book_status;
@@ -1220,6 +1272,24 @@ public class task_waiter extends Thread {
 		report_obj.send_tube_task_data_report(report_data, false);
 	}
 	
+	private Boolean estimate_memory_valid_check(
+			String memory_value
+			) {
+		Boolean status = Boolean.valueOf(true);
+		Integer value = Integer.valueOf(0);
+		try {
+			value = Integer.valueOf(memory_value);
+		} catch (NumberFormatException e) {
+			TASK_WAITER_LOGGER.debug(memory_value + ", not a number");
+			return false;
+		}
+		if (value < 0 || value > 16) {
+			TASK_WAITER_LOGGER.info("memory_value:" + memory_value + "out of range, 0 ~ " + public_data.TASK_DEF_MAX_MEM_USG);
+			return false;
+		}
+		return status;
+	}
+	
 	public void run() {
 		try {
 			monitor_run();
@@ -1289,10 +1359,18 @@ public class task_waiter extends Thread {
 				TASK_WAITER_LOGGER.warn(waiter_name + ":Empty admin queue find," + queue_name);
 				continue; // in case this queue deleted by other threads
 			}
+			String est_mem = new String(admin_data.get("CaseInfo").getOrDefault("est_mem", public_data.TASK_DEF_ESTIMATE_MEM).trim());
+			if (!estimate_memory_valid_check(est_mem)) {
+				est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
+			}
 			Boolean cmds_parallel = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL).trim());
 			// task 4 : resource booking (thread, software) =>Resource booking finished, release if not launched
-			if (!system_resource_booking(queue_name, cmds_parallel, admin_data)) {
-				TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+			if (!system_resource_booking(queue_name, cmds_parallel, est_mem, admin_data)) {
+				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
+					TASK_WAITER_LOGGER.info(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+				} else {
+					TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+				}
 				continue;
 			}
 			// task 5 : get task data =>key variable 3: task_data OK now
@@ -1318,7 +1396,8 @@ public class task_waiter extends Thread {
 				task_info.increase_emptied_admin_queue_list(queue_name);
 				// release booking info
 				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				pool_info.release_reserved_threads(1);				
+				client_info.sub_registered_memory(Integer.valueOf(est_mem));
+				pool_info.release_reserved_threads(1);			
 				continue;
 			}
 			// task 6 : get case_id, variable 4: case_id OK now
@@ -1326,6 +1405,7 @@ public class task_waiter extends Thread {
 			if (case_id == "" || case_id == null){
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Task id find, skip launching:" + task_data.toString());
 				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+				client_info.sub_registered_memory(Integer.valueOf(est_mem));
 				pool_info.release_reserved_threads(1);
 				continue;				
 			}
@@ -1344,6 +1424,7 @@ public class task_waiter extends Thread {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
 				}
 				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+				client_info.sub_registered_memory(Integer.valueOf(est_mem));
 				pool_info.release_reserved_threads(1);
 				continue;// register false, someone register this case already.
 			}
@@ -1364,14 +1445,16 @@ public class task_waiter extends Thread {
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){
 				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+				client_info.sub_registered_memory(Integer.valueOf(est_mem));
 				pool_info.release_reserved_threads(1);
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.BLOCKED, 1);
 				TASK_WAITER_LOGGER.info("Task launch failed:" + queue_name + "," + case_id);
-				continue;			
+				continue;
 			} 
 			// task 11 : launch
 			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, client_info.get_client_tools_data());
-			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, case_timeout);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout);
+			client_info.sub_registered_memory(Integer.valueOf(est_mem));
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
 		}
 	}

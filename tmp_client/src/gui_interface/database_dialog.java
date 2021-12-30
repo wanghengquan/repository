@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -36,7 +37,7 @@ import data_center.switch_data;
 import flow_control.pool_data;
 import flow_control.post_data;
 
-public class database_dialog extends JDialog implements ChangeListener{
+public class database_dialog extends JDialog implements ChangeListener, ActionListener{
 	/**
 	 * 
 	 */
@@ -47,7 +48,7 @@ public class database_dialog extends JDialog implements ChangeListener{
 	private view_data view_info;
 	private pool_data pool_info;
 	private post_data post_info;
-	
+	private JButton close;
 	private JTabbedPane tabbed_pane;
 
 	public database_dialog(
@@ -68,6 +69,7 @@ public class database_dialog extends JDialog implements ChangeListener{
 		this.post_info = post_info;
 		Container container = this.getContentPane();
 		container.add(construct_tab_pane(), BorderLayout.CENTER);
+		container.add(construct_south_panel(), BorderLayout.SOUTH);
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
 		this.setSize(1000, 800);
@@ -82,9 +84,22 @@ public class database_dialog extends JDialog implements ChangeListener{
 			String database_name = new String("");
 			database_name = database.substring(0, 1).toUpperCase() + database.substring(1);
 			ImageIcon icon_image = new ImageIcon(public_data.ICON_SOFTWARE_TAB_PNG);
-			tabbed_pane.addTab(database_name, icon_image, new database_pane(database, switch_info, client_info, view_info, task_info, pool_info, post_info, this), "Click and show");
+			database_pane current_db = new database_pane(database, switch_info, client_info, view_info, task_info, pool_info, post_info, this);
+			tabbed_pane.addTab(database_name, icon_image, current_db, "Click and show");
+			new Thread(current_db).start();
 		}
 		return tabbed_pane;
+	}
+	
+	private JPanel construct_south_panel(){
+		JPanel south_panel = new JPanel(new GridLayout(1,4,5,20));
+		close = new JButton("Close");
+		close.addActionListener(this);		
+		south_panel.add(new JLabel(""));
+		south_panel.add(new JLabel(""));
+		south_panel.add(new JLabel(""));
+		south_panel.add(close);
+		return south_panel;
 	}
 	
 	@Override
@@ -92,6 +107,14 @@ public class database_dialog extends JDialog implements ChangeListener{
 		// TODO Auto-generated method stub
 		int select_index = tabbed_pane.getSelectedIndex();
 		tabbed_pane.setSelectedIndex(select_index);
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+		if (arg0.getSource().equals(close)) {
+			this.dispose();		
+		}
 	}
 	
 	public static void main(String[] args) {
@@ -106,7 +129,7 @@ public class database_dialog extends JDialog implements ChangeListener{
 	}
 }
 
-class database_pane extends JPanel implements ActionListener{
+class database_pane extends JPanel implements Runnable{
 	/**
 	 * 
 	 */
@@ -117,13 +140,12 @@ class database_pane extends JPanel implements ActionListener{
 	private view_data view_info;
 	private pool_data pool_info;
 	private post_data post_info;
-	private database_dialog top_panel;
 	private String tab_name;
 	private JTable db_table;
 	//private JTextField jt_max_insts, jt_scan_dir;
 	private Vector<String> table_column = new Vector<String>();
 	private Vector<Vector<String>> table_data = new Vector<Vector<String>>();
-	private JButton close;
+	
 	
 	public database_pane(
 			String tab_name, 
@@ -142,18 +164,16 @@ class database_pane extends JPanel implements ActionListener{
 		this.task_info = task_info;
 		this.pool_info = pool_info;
 		this.post_info = post_info;
-		this.top_panel = top_panel;
 		this.setLayout(new BorderLayout());
 		this.add(construct_center_panel(), BorderLayout.CENTER);
-		this.add(construct_south_panel(), BorderLayout.SOUTH);
-	}
 		
-	private JPanel construct_center_panel(){
-		JPanel center_panel = new JPanel(new BorderLayout());
-		table_column.add("Option");
-		table_column.add("Value");
+	}
+	
+	private HashMap<String, String> get_database_hashmap(
+			String database_name
+			){
 		HashMap<String, String> data_map = new HashMap<String, String>();
-		switch(tab_name){
+		switch(database_name){
 		case "switch":
 			data_map.putAll(switch_info.get_database_info());
 			break;
@@ -175,6 +195,13 @@ class database_pane extends JPanel implements ActionListener{
 		default:
 			break;
 		}
+		return data_map;
+	}
+	
+	private void update_database_table_data() {
+		table_data.clear();
+		HashMap<String, String> data_map = new HashMap<String, String>();
+		data_map.putAll(get_database_hashmap(tab_name));
 		Iterator<String> data_map_it = data_map.keySet().iterator();
 		while(data_map_it.hasNext()){
 			String option = new String(data_map_it.next());
@@ -184,30 +211,45 @@ class database_pane extends JPanel implements ActionListener{
 			one_line.add(value);
 			table_data.add(one_line);
 		}
+	}
+	
+	private JPanel construct_center_panel(){
+		JPanel center_panel = new JPanel(new BorderLayout());
+		table_column.add("Option");
+		table_column.add("Value");
+		update_database_table_data();
 		db_table = new setting_table(table_data, table_column);
 		db_table.getColumn("Option").setMinWidth(200);
-		db_table.getColumn("Option").setMaxWidth(300);
+		db_table.getColumn("Option").setMaxWidth(400);
 		JScrollPane scro_panel = new JScrollPane(db_table);
 		center_panel.add(scro_panel, BorderLayout.CENTER);
 		return center_panel;
 	}
 	
-	private JPanel construct_south_panel(){
-		JPanel south_panel = new JPanel(new GridLayout(1,4,5,20));
-		close = new JButton("Close");
-		close.addActionListener(this);		
-		south_panel.add(new JLabel(""));
-		south_panel.add(new JLabel(""));
-		south_panel.add(new JLabel(""));
-		south_panel.add(close);
-		return south_panel;
-	}
-	
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void run() {
 		// TODO Auto-generated method stub
-		if (arg0.getSource().equals(close)) {
-			top_panel.dispose();		
+		while (true) {
+			update_database_table_data();
+			if (SwingUtilities.isEventDispatchThread()) {
+				db_table.validate();
+				db_table.updateUI();
+			} else {
+				SwingUtilities.invokeLater(new Runnable(){
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						db_table.validate();
+						db_table.updateUI();
+					}
+				});
+			}
+			try {
+				Thread.sleep(1000 * public_data.PERF_GUI_BASE_INTERVAL);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

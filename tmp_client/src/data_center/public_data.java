@@ -27,10 +27,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.12.98"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21298; //version for code use
-	public final static String BASE_BUILDDATE = "2021/12/28";
-	public final static String BASE_SUITEFILEVERSION = "1.23";
+	public final static String BASE_CURRENTVERSION = "2.12.99"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21299; //version for code use
+	public final static String BASE_BUILDDATE = "2021/12/30";
+	public final static String BASE_SUITEFILEVERSION = "1.24";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -44,7 +44,7 @@ public class public_data {
 
 	// ========================
 	// Client run limitation (system requirements)
-	public final static int RUN_LIMITATION_CPU = 90;//client suspend when CPU usage large than this value
+	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
 	public final static int RUN_LIMITATION_MEM = 95;//client suspend when MEM usage large than this value
 	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
 	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
@@ -209,6 +209,8 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
+	public final static String TASK_DEF_ESTIMATE_MEM = "1"; //in G, 1G
+	public final static String TASK_DEF_MAX_MEM_USG = "16";
 	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
 	public final static String TASK_DEF_CMD_DECISION = "last"; //last, all, <indiviual cmd>, <indiviual cmds> join with Python:and,or
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
@@ -228,15 +230,16 @@ public class public_data {
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
 	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
-	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
+	public final static int PERF_AUTO_MAXIMUM_CPU = 80;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
+	public final static int PERF_AUTO_ADJUST_CYCLE = 6;
+	public final static float PERF_GOOD_MEM_USAGE_RATE = 0.85f;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 50;
 	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
 	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
 	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
-	public final static int PERF_AUTO_ADJUST_CYCLE = 12;
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
 	public final static int PERF_MAX_LIN_WAITER	= 12;
@@ -395,5 +398,19 @@ public class public_data {
 		String build_name = new String("3.1?cmd_1");
 		build_name = build_name.replaceAll("\\?" + "cmd_1", "");
 		System.out.println(time_info.get_date_time());
+        // <status>Passed</status>
+		String ttt = new String(" <status>Passed</status>");
+        Pattern p = Pattern.compile("status\\s*>\\s*(.+?)<");
+        Matcher m = p.matcher(ttt);
+        if (m.find()) {
+        	System.out.println(m.group(1));
+        }
+        Integer memory_est = Integer.valueOf(80);
+        Integer memory_exp = Integer.valueOf(96);
+        System.out.println(memory_est + memory_exp);
+        float rate = 0.85f;
+        System.out.println(memory_exp * rate);
+        Float available = Float.valueOf(memory_exp * rate);
+        available.intValue();
 	}
 }

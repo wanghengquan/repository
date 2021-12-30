@@ -23,7 +23,9 @@ public enum pool_attr {
 	call_canceled(10, "call_canceled_YoN"),
 	call_timeout(11, "call_timeout_YoN"),
 	call_terminate(12, "call_terminate_YoN"),
-    call_output(13, "call_output");
+	call_estmem(13, "call_estimate_memory"),
+	call_expmem(14, "call_max_expend_memory"),
+    call_output(15, "call_output");
 	private int index;
 	private String description;
 	
