@@ -81,7 +81,7 @@ public class submit_dialog extends JDialog implements ActionListener {
 			String queue_name){
 		String result_string = new String("");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
 		if (summary_map.containsKey(queue_name)){
 			run_queue_data.putAll(summary_map.get(queue_name));
@@ -97,7 +97,7 @@ public class submit_dialog extends JDialog implements ActionListener {
 			String queue_name){
 		String run_result = new String("Unknown");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
 		if (summary_map.containsKey(queue_name)){
 			run_queue_data.putAll(summary_map.get(queue_name));

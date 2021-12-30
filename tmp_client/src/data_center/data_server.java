@@ -49,6 +49,7 @@ import utility_funcs.time_info;
  * 					space	=	xx	G
  * 					cpu		=	xx	%
  * 					mem		=	xx	%
+ * 					mem_free=   xx  G
  * 					status  =   Free/Busy/Suspend
  * 
  *      CoreScript: version =   xx
@@ -60,6 +61,7 @@ import utility_funcs.time_info;
  *                  
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
+ * 					mem_phy =   xxx
  * 					group	=	xxx
  *                  account =   xxx
  * 					private	=	0/1

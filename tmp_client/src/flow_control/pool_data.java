@@ -139,9 +139,11 @@ public class pool_data {
 			String launch_path,
 			String case_path,
 			String case_url,
+			String est_mem,
 			int time_out) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
+		String exp_mem = new String("NA");
 		HashMap<pool_attr, Object> sys_call_data = new HashMap<pool_attr, Object>();
 		sys_call_data.put(pool_attr.call_back, future_call_back);
 		sys_call_data.put(pool_attr.call_queue, queue_name);
@@ -153,6 +155,8 @@ public class pool_data {
 		sys_call_data.put(pool_attr.call_gentime, start_time);
 		sys_call_data.put(pool_attr.call_reqtime, time_out);
 		sys_call_data.put(pool_attr.call_canceled, false);
+		sys_call_data.put(pool_attr.call_estmem, est_mem);
+		sys_call_data.put(pool_attr.call_expmem, exp_mem);
 		sys_call_data.put(pool_attr.call_timeout, false);
 		sys_call_data.put(pool_attr.call_terminate, false);
 		sys_call_data.put(pool_attr.call_status, call_state.INITIATE);
@@ -177,7 +181,7 @@ public class pool_data {
 			if (current_time - start_time > time_out + 5) {
 				hash_data.put(pool_attr.call_timeout, true);
 				hash_data.put(pool_attr.call_canceled, call_back.cancel(true));
-			}			
+			}
 			// run report action
 			if (call_back.isDone()) {
 				hash_data.put(pool_attr.call_status, call_state.DONE);
@@ -198,11 +202,28 @@ public class pool_data {
 					call_output.add(">>>Timeout extra run:");
 					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir), tools_data));
 				}
+				hash_data.put(pool_attr.call_expmem, get_memory_info(call_output));
 			} else {
 				hash_data.put(pool_attr.call_status, call_state.PROCESSIONG);
 			}
 		}
-	}	
+	}
+	
+    private String get_memory_info(ArrayList<String> call_output) {
+        String memory = new String("NA");
+        if(call_output == null || call_output.isEmpty()){
+            return memory;
+        }
+        // <status>Passed</status>
+        Pattern p = Pattern.compile("memory\\s*>\\s*(.+?)<");
+        for (String line : call_output) {
+            Matcher m = p.matcher(line);
+            if (m.find()) {
+            	memory = m.group(1);
+            }
+        }
+        return memory;
+    }
 	
 	private Boolean is_child_process_timeout(ArrayList<String> cmd_output) {
 		if (cmd_output == null | cmd_output.isEmpty()){

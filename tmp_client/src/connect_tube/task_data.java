@@ -74,7 +74,8 @@ public class task_data {
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();	
 	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
-	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_data_map = new HashMap<String, HashMap<task_enum, Integer>>();
+	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_status_map = new HashMap<String, HashMap<task_enum, Integer>>();
+	private HashMap<String, HashMap<String, Integer>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Integer>>();
 	private HashMap<String,Integer> finished_queue_dump_delay_counter = new HashMap<String,Integer>();
 	//====data not used====
 	private ArrayList<String> thread_pool_admin_queue_list  = new ArrayList<String>();
@@ -112,7 +113,8 @@ public class task_data {
 			result.put("running_admin_queue_list", running_admin_queue_list.toString());
 			result.put("finished_admin_queue_list", finished_admin_queue_list.toString());
 			result.put("reported_admin_queue_list", reported_admin_queue_list.toString());
-			result.put("client_run_case_summary_data_map", client_run_case_summary_data_map.toString());
+			result.put("client_run_case_summary_status_map", client_run_case_summary_status_map.toString());
+			result.put("client_run_case_summary_memory_map", client_run_case_summary_memory_map.toString());
 			result.put("finished_queue_dump_delay_counter", finished_queue_dump_delay_counter.toString());
 		} finally {
 			rw_lock.readLock().unlock();
@@ -1249,36 +1251,116 @@ public class task_data {
 		}
 	}
 	
-	public HashMap<String, HashMap<task_enum, Integer>> get_client_run_case_summary_data_map() {
+	public HashMap<String, HashMap<String, Integer>> get_client_run_case_summary_memory_map() {
 		rw_lock.readLock().lock();
-		HashMap<String, HashMap<task_enum, Integer>> temp = new HashMap<String, HashMap<task_enum, Integer>>();
+		HashMap<String, HashMap<String, Integer>> temp = new HashMap<String, HashMap<String, Integer>>();
 		try {
-			temp.putAll(client_run_case_summary_data_map);
+			temp.putAll(client_run_case_summary_memory_map);
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return temp;
 	}
 
-	public void reset_client_run_case_summary_data_map() {
+	public HashMap<String, Integer> get_client_run_case_summary_memory_map(String queue_name) {
+		rw_lock.readLock().lock();
+		HashMap<String, Integer> temp = new HashMap<String, Integer>();
+		try {
+			if (client_run_case_summary_memory_map.containsKey(queue_name)) {
+				temp.putAll(client_run_case_summary_memory_map.get(queue_name));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void reset_client_run_case_summary_memory_map() {
 		rw_lock.writeLock().lock();
 		try {
-			client_run_case_summary_data_map.clear();
+			client_run_case_summary_memory_map.clear();
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public void increase_client_run_case_summary_data_map(String queue_name, task_enum result_type, Integer increase_num) {
+	public void update_client_run_case_summary_memory_map(
+			String queue_name, 
+			HashMap<String, Integer> memory_map) {
+		rw_lock.writeLock().lock();
+		HashMap<String, Integer> memory_data = new HashMap<String, Integer>();
+		try {
+			if (client_run_case_summary_memory_map.containsKey(queue_name)){
+				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
+			}
+			memory_data.putAll(memory_map);
+			client_run_case_summary_memory_map.put(queue_name, memory_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_run_case_summary_memory_map(
+			String queue_name, 
+			Integer new_data) {
+		rw_lock.writeLock().lock();
+		HashMap<String, Integer> memory_data = new HashMap<String, Integer>();
+		try {
+			if (client_run_case_summary_memory_map.containsKey(queue_name)){
+				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
+			}
+			Integer min = memory_data.getOrDefault("min", 0);
+			Integer max = memory_data.getOrDefault("max", 1);
+			Integer avg = memory_data.getOrDefault("avg", 1);
+			Integer num = memory_data.getOrDefault("num", 0);
+			if (new_data.compareTo(min) < 0) {
+				min = new_data;
+			}
+			if (new_data.compareTo(max) > 0) {
+				max = new_data;
+			}
+			avg = (avg * num + new_data) / (num + 1);
+			num = num + 1;
+			memory_data.put("min", min);
+			memory_data.put("max", max);
+			memory_data.put("avg", avg);
+			memory_data.put("num", num);
+			client_run_case_summary_memory_map.put(queue_name, memory_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public HashMap<String, HashMap<task_enum, Integer>> get_client_run_case_summary_status_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<task_enum, Integer>> temp = new HashMap<String, HashMap<task_enum, Integer>>();
+		try {
+			temp.putAll(client_run_case_summary_status_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void reset_client_run_case_summary_status_map() {
+		rw_lock.writeLock().lock();
+		try {
+			client_run_case_summary_status_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void increase_client_run_case_summary_status_map(String queue_name, task_enum result_type, Integer increase_num) {
 		rw_lock.writeLock().lock();
 		HashMap<task_enum, Integer> queue_data = new HashMap<task_enum, Integer>();
 		try {
-			if (client_run_case_summary_data_map.containsKey(queue_name)){
-				queue_data.putAll(client_run_case_summary_data_map.get(queue_name));
+			if (client_run_case_summary_status_map.containsKey(queue_name)){
+				queue_data.putAll(client_run_case_summary_status_map.get(queue_name));
 			}
 			Integer new_pass_num = queue_data.getOrDefault(result_type, 0) + increase_num;
 			queue_data.put(result_type, new_pass_num);
-			client_run_case_summary_data_map.put(queue_name, queue_data);
+			client_run_case_summary_status_map.put(queue_name, queue_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
