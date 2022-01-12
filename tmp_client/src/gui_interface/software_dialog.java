@@ -36,6 +36,7 @@ import javax.swing.event.ChangeListener;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 
 public class software_dialog extends JDialog implements ChangeListener{
@@ -47,7 +48,10 @@ public class software_dialog extends JDialog implements ChangeListener{
 	private switch_data switch_info;
 	private JTabbedPane tabbed_pane;
 
-	public software_dialog(main_frame main_view, switch_data switch_info, client_data client_info){
+	public software_dialog(
+			main_frame main_view, 
+			switch_data switch_info, 
+			client_data client_info){
 		super(main_view, "Software Setting", true);
 		this.client_info = client_info;
 		this.switch_info = switch_info;
@@ -258,8 +262,24 @@ class value_pane extends JPanel implements ActionListener{
 			}
 			//client_hash.putAll(client_info.get_client_data());
 			ori_data.putAll(deep_clone.clone(client_info.get_client_data().get(tab_name)));
-			new_data.put("scan_dir", jt_scan_dir.getText().replaceAll("\\\\", "/"));
-			new_data.put("max_insts", jt_max_insts.getText());
+			
+			
+			String new_scan_dir = new String(jt_scan_dir.getText().replaceAll("\\\\", "/"));
+			File new_dir_dobj = new File(new_scan_dir);
+			String new_max_insts = new String(jt_max_insts.getText());
+			if (new_scan_dir.length() > 0  &&  !new_dir_dobj.exists()){
+				String message = new String("Wrong 'scan_dir' found, please update it before 'Apply' again.");
+				JOptionPane.showMessageDialog(this, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			//software external max instances should match thread pool size
+			if (!data_check.num_scope_check(new_max_insts, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
+				String message = new String("Valid 'max_insts' values:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE +", please update it before 'Apply' again.");
+				JOptionPane.showMessageDialog(this, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			new_data.put("scan_dir", new_scan_dir);
+			new_data.put("max_insts", new_max_insts);
 			if(ori_data.containsKey("scan_cmd")){
 				new_data.put("scan_cmd", ori_data.get("scan_cmd"));
 			}

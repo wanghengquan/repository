@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
 import utility_funcs.des_decode;
+import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 
 public class task_prepare {
@@ -57,7 +60,7 @@ public class task_prepare {
 	protected Boolean get_task_path_ready(
 			HashMap<String, HashMap<String, String>> task_data
 			){
-		task_prepare_info.add(">>>Prepare task path:");
+		task_prepare_info.add(">Prepare task path:");
 		String task_path = task_data.get("Paths").get("task_path").trim();
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
 		File task_path_dobj = new File(task_path);
@@ -96,7 +99,7 @@ public class task_prepare {
 	protected Boolean get_case_path_ready(
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data){
-		task_prepare_info.add(line_separator + ">>>Prepare case path:");
+		task_prepare_info.add(line_separator + ">Prepare case path:");
 		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		//String case_name = task_data.get("Paths").get("case_name").trim();
@@ -162,7 +165,7 @@ public class task_prepare {
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
 			){
-		task_prepare_info.add(line_separator + ">>>Prepare script path:");
+		task_prepare_info.add(line_separator + ">Prepare script path:");
 		String script_url = task_data.get("Paths").get("script_url").trim();
 		String script_path = task_data.get("Paths").get("script_path").trim();
 		String script_base = task_data.get("Paths").get("script_base").trim();
@@ -207,7 +210,7 @@ public class task_prepare {
 		zip_enum szip_type = get_zip_type(script_url, "szip_type", task_data.get("CaseInfo"));
 		//step 4: remove existing script
 		if (case_mode.equals("hold_case") || keep_path.equals("true")) {
-			task_prepare_info.add("Warn : hold_case/keep_path mode, skip existing script remove");
+			task_prepare_info.add("Warning : hold_case/keep_path mode, skip existing script remove");
 		} else {
 			Boolean remove_ok = remove_exist_path(script_path, script_base);
 			if (!remove_ok) {
@@ -372,7 +375,11 @@ public class task_prepare {
 					CASE_PREPARE_LOGGER.warn("Previously file remove Fail:" + case_path);
 					return false;
 				}
-			}			
+			}
+			//delete ori log file
+			file_action.del_file_match_extension(case_parent_path.getAbsolutePath(), ".txt");
+			file_action.del_file_match_extension(case_parent_path.getAbsolutePath(), ".log");
+			file_action.del_file_match_extension(case_parent_path.getAbsolutePath(), ".csv");	
 		}
 		return true;
 	}	
@@ -405,13 +412,13 @@ public class task_prepare {
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		//step 1:check source
-		task_prepare_info.add(">>>Unzip Task case with CMD(s):");		
+		task_prepare_info.add(">Unzip Task case with CMD(s):");		
 		if(dzip_type.equals(zip_enum.NO)) {
-			task_prepare_info.add(">>>Source found, no extract needed.");
+			task_prepare_info.add(">Source found, no extract needed.");
 			return true;
 		}
 		if(dzip_type.equals(zip_enum.UNKNOWN)) {
-			task_prepare_info.add(">>>Source considered, no extract needed.");
+			task_prepare_info.add(">Source considered, no extract needed.");
 			return true;
 		}
 		//step 2:get unzip command
@@ -460,7 +467,7 @@ public class task_prepare {
 		}
 		//step 3:command lines check
 		if (cmd_array.isEmpty()) {
-			task_prepare_info.add("Warn : No unzip command found for given source:" + base_name);
+			task_prepare_info.add("Warning : No unzip command found for given source:" + base_name);
 			return false;
 		}
 		task_prepare_info.addAll(cmd_array);
@@ -669,7 +676,7 @@ public class task_prepare {
 		default:
 			break;
 		} 
-		task_prepare_info.add(">>>Export Task case with CMD(s):");
+		task_prepare_info.add(">Export Task case with CMD(s):");
 		task_prepare_info.addAll(cmd_array);		
 		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
 		return export_ok;
@@ -971,7 +978,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(case_parent_path);
 		return exe_cmd.toString();
-	}	
+	}
 	
 	private Boolean run_common_cmds(
 			ArrayList<String> export_cmd_list,
@@ -991,14 +998,81 @@ public class task_prepare {
 		}
 		return true;
 	}
+	
+	protected TreeMap<String, HashMap<cmd_attr, List<String>>> get_launch_commands(
+			String python_version,
+			Boolean corescript_link_status,
+			HashMap<String, String> client_tools,
+			HashMap<String, HashMap<String, String>> task_data,
+			HashMap<String, HashMap<String, String>> client_data
+			) {
+		task_prepare_info.add(line_separator + ">Prepare Launch CMDs(LCs):");
+		TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>(new cmdid_compare());
+		Iterator<String> option_it  = task_data.get("LaunchCommand").keySet().iterator();
+		while (option_it.hasNext()) {
+			String option_name = option_it.next();
+			if(!option_name.startsWith("cmd_") && !option_name.equalsIgnoreCase("cmd")) {
+				continue;
+			}
+			//job command line prepare
+			HashMap<cmd_attr, List<String>> cmd_data = new HashMap<cmd_attr, List<String>>();
+			String cmd_string  = new String(task_data.get("LaunchCommand").get(option_name));
+			cmd_data.put(cmd_attr.command, Arrays.asList(get_launch_cmd(cmd_string, python_version, corescript_link_status, client_tools, task_data)));
+			//job environment prepare
+			HashMap<String, String> cmd_env = new HashMap<String, String>();
+			cmd_env.putAll(get_launch_env(option_name, python_version, corescript_link_status, task_data, client_data));
+			if(cmd_env.getOrDefault("FORCE_" + option_name.toUpperCase(), "NA").equals("0")) {
+				task_prepare_info.add("Warning:ENV command force off, skip command:" + option_name);
+				task_prepare_info.add("FORCE_" + option_name + ":0");
+				task_prepare_info.add("");
+				continue;
+			}
+			List<String> env_array = new ArrayList<String>();
+			Iterator<String> env_it = cmd_env.keySet().iterator();
+			while(env_it.hasNext()) {
+				String env_key = env_it.next();
+				String env_value = cmd_env.get(env_key);
+				env_array.add(env_key + "=" + env_value);
+			}
+			cmd_data.put(cmd_attr.environ, env_array);
+			//job run control prepare
+			List<String> ctl_array = new ArrayList<String>();
+			String ctl_string = new String(task_data.get("LaunchCommand").getOrDefault("exe_ctrl", "").trim());
+			for(String ctl_item: ctl_string.split(",")) {
+				if(ctl_item.contains("?" + option_name)) {
+					ctl_array.add(ctl_item.replaceAll("\\?" + option_name, ""));
+				}
+			}
+			cmd_data.put(cmd_attr.exectrl, ctl_array);
+			launch_cmds.put(option_name, cmd_data);
+		}
+		//Sanity check for multiple commands mode
+		if (launch_cmds.size() > 1 && launch_cmds.containsKey("cmd")) {
+			task_prepare_info.add("Warning:Multiple command lines found, skip 'cmd' run.");
+			task_prepare_info.add("");
+			launch_cmds.remove("cmd");
+		}
+		//Show details
+		Iterator<String> cmd_it = launch_cmds.keySet().iterator();
+		while (cmd_it.hasNext()) {
+			String cmd_index = cmd_it.next();
+			task_prepare_info.add(">LC" + ":" + cmd_index);
+			task_prepare_info.add("exectrl:" + launch_cmds.get(cmd_index).get(cmd_attr.exectrl).toString());
+			task_prepare_info.add("environ:" + launch_cmds.get(cmd_index).get(cmd_attr.environ).toString());
+			task_prepare_info.add("command:" + launch_cmds.get(cmd_index).get(cmd_attr.command).toString());
+			task_prepare_info.add("");
+		}
+		return launch_cmds;
+	}
 
-	protected String[] get_launch_command(
+	protected String[] get_launch_cmd(
+			String cmd_string,
 			String python_version,
 			Boolean corescript_link_status,
 			HashMap<String, String> client_tools,
 			HashMap<String, HashMap<String, String>> task_data
 			) {
-		String launch_cmd = task_data.get("LaunchCommand").get("cmd").trim().replaceAll("\\\\", "/");
+		String launch_cmd = cmd_string.trim().replaceAll("\\\\", "/");
 		String launch_path = task_data.get("Paths").get("launch_path").trim();
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
@@ -1028,7 +1102,9 @@ public class task_prepare {
 		if (exe_match.find()){
 			exe_path = exe_match.group().trim();
 		} else {
-			task_prepare_info.add(">>>Unkown launch file found. Supported exe file type:pl,py,rb,jar,class,bat,exe,sh,csh,bash");
+			task_prepare_info.add("No executable program found for command:" + launch_cmd);
+			task_prepare_info.add("Supported exe file type:pl,py,rb,jar,class,bat,exe,sh,csh,bash");
+			task_prepare_info.add("");
 			return launch_cmd.split(" ", 2);
 		}
 		Boolean abs_path_ok = Boolean.valueOf(false);
@@ -1115,20 +1191,31 @@ public class task_prepare {
 		for(int j =0;j<cmd_list.length;j++){
 		  array[j] = cmd_list[j].replaceAll(tmp_str, " ");
 		}
-		// local report 
-		task_prepare_info.add(line_separator + ">>>Prepare launch CMD:");
-		task_prepare_info.add(Arrays.toString(array));
 		return array;
 	}	
 	
-	protected HashMap<String, String> get_launch_environment(
+	private int get_cmd_index(
+			String cmd_index
+			) {
+		int int_id = 0;
+		Pattern p = Pattern.compile("_(\\d+)$");
+		Matcher m = p.matcher(cmd_index);
+		if (m.find()) {
+			int_id = Integer.valueOf(m.group(1));
+		}
+		return int_id;
+	}
+	
+	protected HashMap<String, String> get_launch_env(
+			String cmd_index,
 			String python_version,
 			Boolean corescript_link_status,
 			HashMap<String, HashMap<String, String>> task_data,
-			HashMap<String, HashMap<String, String>> client_data) {
+			HashMap<String, HashMap<String, String>> client_data
+			) {
 		HashMap<String, String> run_env = new HashMap<String, String>();
 		// put Python unbuffered environment
-		if (task_data.get("LaunchCommand").get("cmd").toLowerCase().contains("python")) {
+		if (task_data.get("LaunchCommand").get(cmd_index).toLowerCase().contains("python")) {
 			run_env.put("PYTHONUNBUFFERED", "1");
 		}
 		// put system level default tools path
@@ -1144,7 +1231,7 @@ public class task_prepare {
 			core_path = public_data.LOCAL_CORE_SCRIPT_DIR2;
 		} else if (python_version.startsWith("3")) {
 			if(corescript_link_status) {
-				core_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", " " + work_space);
+				core_path = public_data.REMOTE_CORE_SCRIPT_DIR.replaceAll("\\$work_path", work_space);
 			} else {
 				core_path = public_data.LOCAL_CORE_SCRIPT_DIR3;
 			}
@@ -1158,8 +1245,13 @@ public class task_prepare {
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
 			while (software_request_it.hasNext()) {
 				String software_name = software_request_it.next();
-				String software_build = task_data.get("Software").get(software_name);
-				String software_path = client_data.get(software_name).get(software_build);
+				//request_build can be: ng3_1p.1@cmd_2, ng3_1p.2@cmd_1, ng3_1p.33
+				String request_build = task_data.get("Software").get(software_name);
+				String software_path = new String("");
+				software_path = get_correct_build_path(software_name, request_build, cmd_index, client_data);
+				if(software_path == "" ||software_path == null) {
+					continue;
+				}
 				String software_env_name = "EXTERNAL_" + software_name.toUpperCase() + "_PATH";
 				run_env.put(software_env_name, software_path);
 			}
@@ -1169,28 +1261,89 @@ public class task_prepare {
 		while (env_request_it.hasNext()) {
 			String env_name = env_request_it.next();
 			String env_value = task_data.get("Environment").get(env_name);
-			run_env.put(env_name, get_updated_environment_string(env_value, task_data, client_data));
-		}
-		// local report 
-		task_prepare_info.add(line_separator + ">>>Prepare launch ENV:");
-		task_prepare_info.add(run_env.toString());
+			if(env_value.contains("@cmd")) {
+				if(env_value.endsWith(cmd_index)) {
+					env_value = env_value.replaceAll("@.*$", "");
+				} else {
+					continue;
+				}
+			}
+			if (env_value.contains("@all")) {
+				env_value = env_value.replaceAll("@.*$", "");
+			}
+			run_env.put(env_name, get_updated_environment_string(env_value, cmd_index, task_data, client_data));
+		} 
 		return run_env;
 	}	
 
+	private String get_correct_build_path(
+			String software_name,
+			String available_builds,
+			String cmd_index,
+			HashMap<String, HashMap<String, String>> client_data
+			) {
+		String software_path = new String("");
+		if (available_builds == null || available_builds == "") {
+			return software_path;
+		}
+		ArrayList<String> available_builds_list = new ArrayList<String>();		
+		if (available_builds.contains(",")){
+			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*,\\s*")));
+		} else if (available_builds.contains(";")){
+			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*;\\s*")));
+		} else{
+			available_builds_list.add(available_builds);
+		}
+		if (available_builds_list.size() == 1) {
+			if (available_builds.contains("@cmd")) {
+				if (available_builds.contains(cmd_index)) {
+					software_path = client_data.get(software_name).get(available_builds.replaceAll("@.*$", ""));
+				}
+			} else {
+				software_path = client_data.get(software_name).get(available_builds);
+			}
+		} else if (available_builds_list.size() > 1) {
+			//search by location 
+			int cmd_index_int = get_cmd_index(cmd_index);
+			if (cmd_index_int > 0 && cmd_index_int <= available_builds_list.size()) {
+				String index_build = new String(available_builds_list.get(cmd_index_int - 1));
+				if (!index_build.contains("@cmd")) {
+					software_path = client_data.get(software_name).get(index_build);
+				}
+			}
+			//override with explicit instruction
+			for(String build_string:available_builds_list) {
+				if (build_string.endsWith("@" + cmd_index)) {
+					software_path = client_data.get(software_name).get(build_string.replaceAll("@.*$", ""));
+					break;
+				}
+			}
+		} else {
+			;
+		}
+		return software_path;
+	}
+	
 	private String get_updated_environment_string(
 			String env_string,
+			String cmd_index,
 			HashMap<String, HashMap<String, String>> task_data,
 			HashMap<String, HashMap<String, String>> client_data
 			){
+		if(!env_string.contains("$")) {
+			return env_string;
+		}
 		Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
 		while (software_request_it.hasNext()) {
 			String software_name = software_request_it.next();
-			String software_build = task_data.get("Software").get(software_name);
-			String software_path = client_data.get(software_name).get(software_build);
-			if (env_string.contains("$" + software_name)){
-				env_string = env_string.replaceAll("\\$" + software_name, software_path);
+			if (!env_string.contains("$" + software_name)){
+				continue;
 			}
-		}		
+			String software_builds = task_data.get("Software").get(software_name);
+			String software_path = new String("");
+			software_path = get_correct_build_path(software_name, software_builds, cmd_index, client_data);
+			env_string = env_string.replaceAll("\\$" + software_name, software_path);
+		}
 		return env_string;
 	}
 	

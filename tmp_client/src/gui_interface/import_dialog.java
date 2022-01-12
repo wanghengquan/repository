@@ -401,7 +401,6 @@ class path_pane extends JPanel implements ActionListener{
 	private static final Logger PATH_PANE_LOGGER = LogManager.getLogger(file_pane.class.getName());
 	private import_dialog tabbed_pane;
 	private task_data task_info;
-	@SuppressWarnings("unused")
 	private client_data client_info;
 	private JLabel jl_suite_path, jl_key_pattern, jl_exe_file, jl_dat_file, jl_arguments, jl_extra_env, jl_case_sort;
 	private JLabel jl_standard_path, jl_standard_pattern, jl_standard_extra_env, jl_standard_case_sort;

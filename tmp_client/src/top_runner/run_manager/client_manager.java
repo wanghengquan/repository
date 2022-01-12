@@ -61,12 +61,12 @@ public class client_manager extends Thread  {
 	// private function	
 	
 	public client_manager(
+			HashMap<String, String> cmd_info,
 			switch_data switch_info, 
 			client_data client_info,
 			task_data task_info,
 			view_data view_info,
 			pool_data pool_info,
-			HashMap<String, String> cmd_info,
 			post_data post_info){
 		this.switch_info = switch_info;
 		this.client_info = client_info;
@@ -117,7 +117,7 @@ public class client_manager extends Thread  {
 		} catch (Exception e) {
 			return false;
 		}
-		if (cpu_used_int > public_data.RUN_LIMITATION_CPU){
+		if (cpu_used_int >= public_data.RUN_LIMITATION_CPU){
 			status = true;
 		}
 		return status;
@@ -132,7 +132,7 @@ public class client_manager extends Thread  {
 		} catch (Exception e) {
 			return false;
 		}
-		if (mem_used_int > public_data.RUN_LIMITATION_MEM){
+		if (mem_used_int >= public_data.RUN_LIMITATION_MEM){
 			status = true;
 		}
 		return status;
@@ -188,6 +188,7 @@ public class client_manager extends Thread  {
 		if (get_work_space_updated()){
 			switch_info.update_client_maintain_list(maintain_enum.workspace);
 		}
+		CLIENT_MANAGER_LOGGER.debug("Maintain list:" + switch_info.get_client_maintain_list().toString());
 	}
 	
 	private Boolean start_work_mode(client_status client_sts){
@@ -248,7 +249,7 @@ public class client_manager extends Thread  {
 			monitor_run();
 		} catch (Exception run_exception) {
 			run_exception.printStackTrace();
-			String dump_path = client_info.get_client_preference_data().get("work_path") 
+			String dump_path = client_info.get_client_preference_data().get("work_space") 
 					+ "/" + public_data.WORKSPACE_LOG_DIR + "/core_dump/dump.log";
 			String dump_message = get_dump_string(run_exception);
 			file_action.append_file(dump_path, dump_message);
@@ -267,35 +268,36 @@ public class client_manager extends Thread  {
 		// initial 1 : get all runner
 		view_server view_runner = new view_server(cmd_info, switch_info,client_info, task_info, view_info, pool_info, post_info);
 		tube_server tube_runner = new tube_server(cmd_info, switch_info, client_info, pool_info, task_info);
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
 		hall_manager hall_runner = new hall_manager(switch_info, client_info, pool_info, task_info, view_info, post_info);
-		link_server task_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_TASK_PORT);
-		link_server cmd_server = new link_server(switch_info, client_info, task_info, pool_info, post_info, public_data.SOCKET_DEF_CMD_PORT);
+		link_server link_runner = new link_server(switch_info, client_info, view_info, task_info, pool_info, post_info);
 		console_server console_runner = new console_server(switch_info);
 		Timer misc_timer = new Timer("misc_timer");
+		switch_info.update_threads_object_map(thread_enum.view_runner, view_runner);
+		switch_info.update_threads_object_map(thread_enum.tube_runner, tube_runner);
+		switch_info.update_threads_object_map(thread_enum.data_runner, data_runner);
+		switch_info.update_threads_object_map(thread_enum.hall_runner, hall_runner);
+		switch_info.update_threads_object_map(thread_enum.link_runner, link_runner);
+		switch_info.update_threads_object_map(thread_enum.console_runner, console_runner);
 		// initial 2 : get client current status
 		client_status client_sts = new client_status(
+				cmd_info,
 				switch_info, 
 				client_info, 
 				task_info, 
 				view_info, 
 				pool_info, 
-				cmd_info,
 				post_info,
 				view_runner,
 				tube_runner,
 				data_runner,
 				hall_runner,
-				task_server,
-				cmd_server,
+				link_runner,
 				console_runner,
 				misc_timer);
 		client_sts.set_current_status(client_sts.INITIAL);
 		// initial 3 : go to work status
 		client_sts.to_work_status();
-		//if (cmd_info.get("interactive").equals("1")){
-		//	return;
-		//}
 		// start loop:
 		while (!stop_request) {
 			if (wait_request) {
@@ -309,6 +311,7 @@ public class client_manager extends Thread  {
 				}
 			} else {
 				CLIENT_MANAGER_LOGGER.debug("Client Thread running...");
+				switch_info.update_threads_active_map(thread_enum.top_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 0 : current misc info update

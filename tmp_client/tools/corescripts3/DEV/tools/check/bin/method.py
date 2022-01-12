@@ -226,6 +226,10 @@ class CheckValue(Method):
             real_judge_string = judge_string.format(**self.env.value_dict)
         except KeyError:
             raise ConfigIssue("not specified all value for {}".format(judge_string))
+        if 'None' in real_judge_string:
+            self.log_error("None in string: {}".format(real_judge_string))
+            self.ret = Default.FAIL
+            return
         try:
             judge_result = eval(real_judge_string)
             self.log_info('Judging: {}, the Result is: {}'.format(real_judge_string, judge_result))
@@ -499,6 +503,15 @@ class CheckRadiantFlow(Method):
 
         self.basic_result = {}
         for flow in self.basic_flow:
+            # if check_radiant_flow has synthesis, basic flow will check lse and synp by default
+            if flow in ("synp", "lse"):
+                if flow not in under_check_flow:
+                    if "synthesis" not in under_check_flow:
+                        continue
+                else:
+                    pass  # will check later
+            elif flow not in under_check_flow:
+                continue
             check_info = self.basic_flow[flow]
             check_string = check_info['check_string']
             uncheck_files = [os.path.abspath(filename) for filename in check_info['sub_path'].split(';')]
@@ -589,7 +602,7 @@ class CheckBlock(Method):
             return
 
         # DO NOT COMPARE EMPTY LINE
-        with open(golden_file, 'rb') as f:
+        with open(golden_file, 'r') as f:
             md5_golden = hashlib.md5()
             len_golden = 0
             for line in f:
@@ -605,7 +618,7 @@ class CheckBlock(Method):
         index = 0
         while True:
             md5_compare = hashlib.md5()
-            with open(compare_file, 'rb') as f:
+            with open(compare_file, 'r') as f:
                 for _ in range(index):
                     if not f.readline():
                         self.ret = Default.FAIL
@@ -791,7 +804,13 @@ class CheckGrep(Method):
 
     def handle(self, task, section):
         filename = os.path.abspath(section['file'])
-        filename = glob.glob(filename)[0]
+        perhaps_files = glob.glob(filename)
+        if perhaps_files:
+            filename = perhaps_files[0]
+        else:
+            self.ret = Default.FAIL
+            return
+
         grep_str = section['grep'].replace(r'\;', ';')
         modifier = section['modifier'] if 'modifier' in section else ''
         action = section['action'] if 'action' in section else ''
@@ -957,8 +976,8 @@ class CheckBinary(Method):
         partial = True if 'partial' in section and section['partial'] == '1' else False
         compare_file = glob.glob(compare_file)[0]
         golden_file = glob.glob(golden_file)[0]
-        compare_bin = ''
-        golden_bin = ''
+        compare_bin = b''
+        golden_bin = b''
 
         with open(compare_file, 'rb') as f:
             bit = f.read(1024)
@@ -1430,17 +1449,6 @@ class CheckSimrel(Method):
         return max(ratio1, ratio2) / self.columns
 
 
-def string2re(raw_string):
-    if not raw_string:
-        return None, None
-    raw_string = raw_string.strip()
-    if not raw_string:
-        return None, None
-    shorten_string = re.sub(r"\s+", "", raw_string)
-    raw_string = re.sub(r"\s+", r"\s+", raw_string)
-    return re.compile(raw_string), shorten_string
-
-
 class CheckNumber(Method):
     def __init__(self):
         Method.__init__(self)
@@ -1462,7 +1470,7 @@ class CheckNumber(Method):
             self.ret = Default.FAIL
             return
         filename = _[0]
-        pattern, _nouse = string2re(section.get('pattern'))
+        pattern, _nouse = tools.string2re(section.get('pattern'))
         if pattern is None:
             self.log_error("No valid pattern in check settings")
             self.ret = Default.FAIL
@@ -1473,7 +1481,7 @@ class CheckNumber(Method):
         for k, v in list(section.items()):
             sub_m = sub_p.search(k)
             if sub_m:
-                before_pattern, before_pattern_string = string2re(v)
+                before_pattern, before_pattern_string = tools.string2re(v)
                 try:
                     pattern_window_max = int(sub_m.group(1))
                 except Exception:
@@ -1496,7 +1504,7 @@ class CheckNumber(Method):
             self.tolerance = 0
         self.group_name = section.get('group_name')
         error_message = ""
-        with open(filename, 'rb') as f:
+        with open(filename, 'r') as f:
             pattern_window_wid = 0
             for line in f:
                 if before_pattern:

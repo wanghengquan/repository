@@ -38,14 +38,19 @@ public class client_dialog extends JDialog implements ActionListener {
 	private Vector<Vector<String>> client_data = new Vector<Vector<String>>();
 	private Vector<String> terminal = new Vector<String>();
 	private Vector<String> group = new Vector<String>();
+	private Vector<String> account = new Vector<String>();
 	private Vector<String> client_private = new Vector<String>();
 	private Vector<String> unattended = new Vector<String>();
-	private Vector<String> debug_mode = new Vector<String>();
+	//private Vector<String> debug_mode = new Vector<String>();
 	
 	private JButton discard, apply, close;
 	private JTable client_table;
 
-	public client_dialog(main_frame main_view, switch_data switch_info, client_data client_info) {
+	public client_dialog(
+			main_frame main_view, 
+			switch_data switch_info, 
+			client_data client_info
+			) {
 		super(main_view, "Client Setting:", true);
 		this.switch_info = switch_info;
 		this.client_info = client_info;
@@ -58,39 +63,44 @@ public class client_dialog extends JDialog implements ActionListener {
 		container.add(table_head, BorderLayout.NORTH);
 		//this.setLocation(800, 500);
 		//this.setLocationRelativeTo(main_view);
-		this.setSize(450, 250);
+		this.setSize(450, 300);
 	}
 
 	public void reset_table_data() {
 		terminal.clear();
 		group.clear();
+		account.clear();
 		client_private.clear();
 		client_data.clear();
 		unattended.clear();
-		debug_mode.clear();
+		//debug_mode.clear();
 		terminal.add("Terminal:");
 		group.add("Group:");
+		account.add("Account:");
 		client_private.add("Private Client:");
 		unattended.add("Unattended Mode:");
-		debug_mode.add("Debug Mode:");
+		//debug_mode.add("Debug Mode:");
 		if (client_info.get_client_data().containsKey("Machine")) {
 			terminal.add(client_info.get_client_machine_data().get("terminal"));
 			group.add(client_info.get_client_machine_data().get("group"));
+			account.add(System.getProperty("user.name"));
 			client_private.add(client_info.get_client_machine_data().get("private"));
 			unattended.add(client_info.get_client_machine_data().get("unattended"));
-			debug_mode.add(client_info.get_client_machine_data().get("debug"));
+			//debug_mode.add(client_info.get_client_machine_data().get("debug"));
 		} else {
 			terminal.add("Test");
 			group.add("Test");
+			account.add("Test");
 			client_private.add("Test");
 			unattended.add("Test");
-			debug_mode.add("Test");
+			//debug_mode.add("Test");
 		}
 		client_data.add(terminal);
 		client_data.add(group);
+		client_data.add(account);
 		client_data.add(client_private);
 		client_data.add(unattended);
-		client_data.add(debug_mode);
+		//client_data.add(debug_mode);
 	}
 
 	public JTable construct_table_panel() {
@@ -104,6 +114,11 @@ public class client_dialog extends JDialog implements ActionListener {
 	}
 
 	public JPanel construct_action_panel() {
+		JPanel action_panel = new JPanel(new GridLayout(2,1,5,5));
+		//comments
+		JPanel comment = new JPanel(new GridLayout(1, 1, 5, 5));
+		comment.add(new JLabel("*:Account value is read-only."));
+		//action
 		JPanel action = new JPanel(new GridLayout(1, 4, 5, 5));
 		discard = new JButton("Discard");
 		discard.addActionListener(this);
@@ -115,7 +130,9 @@ public class client_dialog extends JDialog implements ActionListener {
 		action.add(new JLabel(""));
 		action.add(apply);
 		action.add(close);
-		return action;
+		action_panel.add(comment);
+		action_panel.add(action);
+		return action_panel;
 	}
 
 	@Override
@@ -129,15 +146,16 @@ public class client_dialog extends JDialog implements ActionListener {
 			HashMap<String, String> machine_data = new HashMap<String, String>();
 			machine_data.put("terminal", (String) client_table.getValueAt(0, 1));
 			machine_data.put("group", (String) client_table.getValueAt(1, 1));
-			machine_data.put("private", (String) client_table.getValueAt(2, 1));
-			machine_data.put("unattended", (String) client_table.getValueAt(3, 1));
-			machine_data.put("debug", (String) client_table.getValueAt(4, 1));
+			machine_data.put("account", System.getProperty("user.name"));
+			machine_data.put("private", (String) client_table.getValueAt(3, 1));
+			machine_data.put("unattended", (String) client_table.getValueAt(4, 1));
+			//machine_data.put("debug", (String) client_table.getValueAt(5, 1));
 			client_info.update_client_machine_data(machine_data);
 			switch_info.set_client_updated();			
 		}
 		if (arg0.getSource().equals(close)) {
-			this.dispose();		
-		}		
+			this.dispose();
+		}
 	}
 
 	public static void main(String[] args) {

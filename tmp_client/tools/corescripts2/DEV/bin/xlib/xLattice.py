@@ -1433,6 +1433,7 @@ def get_task_list(flow_options, user_options):
     till_map = flow_options.get("till_map")
     for (task_name, task_cmd) in [
         ["translate",       ["Translate", ""]],
+        ["synthesis_trace", ["Synthesis", "SynTrace"]],
         ["map",             ["Map", ""]],
         ["map_trace",       ["Map", "MapTrace"]],
         ["map_vlg",         ["Map", "MapVerilogSimFile"]],

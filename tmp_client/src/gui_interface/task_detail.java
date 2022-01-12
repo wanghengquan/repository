@@ -90,7 +90,7 @@ public class task_detail extends JFrame {
 		while(item_it.hasNext()){
 			String item = item_it.next();
 			//debug mode has 'path' show
-			if (client_info.get_client_machine_data().get("debug").equals("0")){
+			if (client_info.get_client_preference_data().get("debug_mode").equals("0")){
 				if (item.equals("Paths") || item.equals("Preference")){
 					continue;
 				}

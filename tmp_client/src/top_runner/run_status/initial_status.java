@@ -18,6 +18,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import data_center.public_data;
 import env_monitor.kill_winpop;
 import self_update.app_update;
+import env_monitor.core_update;
 import env_monitor.dev_checker;
 import env_monitor.env_checker;
 
@@ -49,15 +50,15 @@ class initial_status extends abstract_status {
 	public void to_work() {
 		client.STATUS_LOGGER.debug(">>>####################");
 		client.STATUS_LOGGER.info("Initializing...");
-		// task 1: launch client
-		launch_user_interface();
-		// task 2: get and wait client data ready 
-		get_client_data_ready();		
+		// task 1: get and wait client data ready 
+		get_client_data_ready();
+		// task 2: launch client
+		launch_user_interface();		
 		// task 3: get daemon process ready
 		get_daemon_process_ready();
 		// task 4: client self update
 		get_client_self_update();
-		// task 5 : core script select 
+		// task 5 : core script select & update if need
 		release_corescript_msg();
 		// task 6: auto restart warning message print
 		release_auto_restart_msg();		
@@ -70,7 +71,7 @@ class initial_status extends abstract_status {
 		// task 10: get hall manager ready
 		get_hall_manager_ready();
 		//waiting for all waiter ready
-		if (client.client_info.get_client_machine_data().get("debug").equals("1")){
+		if (client.client_info.get_client_preference_data().get("debug_mode").equals("1")){
 			client.STATUS_LOGGER.debug("Client run in Debug Mode.");
 		}
 		client.STATUS_LOGGER.info("Working...");
@@ -98,12 +99,23 @@ class initial_status extends abstract_status {
 	//=============================================================
 	//methods for locals
 	private void launch_link_services(){
-		client.cmd_server.start();
-		client.task_server.start();
-		client.STATUS_LOGGER.info("Socket servers power up.");
+		client.link_runner.start();
+		client.STATUS_LOGGER.info("Socket server power up.");
 	}
-	
+
 	private void launch_user_interface() {
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		if (interface_mode.equals("int")){
+			mute_log4j_outputs();
+			client.console_runner.start();
+		}
+		if (interface_mode.equals("gui")){
+			client.view_runner.start();
+		} //don't wait until GUI ready
+	}	
+	
+	@SuppressWarnings("unused")
+	private void launch_user_interface_bak() {
 		if (client.cmd_info.get("interactive").equals("1")){
 			mute_log4j_outputs();
 			client.console_runner.start();
@@ -139,7 +151,7 @@ class initial_status extends abstract_status {
 	//core script update
 	private void release_corescript_msg(){
 		//Three corescript available:
-		//1. remote(locate in subversion)
+		//1. workspace(sync with subversion)
 		//2. local_python3(integrated in Client)
 		//3. local_python2(integrated in Client)
 		String python_version = new String(client.switch_info.get_system_python_version());
@@ -151,6 +163,14 @@ class initial_status extends abstract_status {
 			client.STATUS_LOGGER.info("Python " + python_version + " used.");
 			if(client.switch_info.get_remote_corescript_linked()) {
 				client.STATUS_LOGGER.info("CoreScript sync up with:" + public_data.CORE_SCRIPT_REMOTE_URL);
+				//start initial update
+				core_update core_obj = new core_update(client.client_info);
+				Boolean update_status = core_obj.update();
+				if (update_status){
+					client.STATUS_LOGGER.info("CoreScript version:" + client.client_info.get_client_corescript_data().getOrDefault("version", "NA"));	
+				} else {
+					client.STATUS_LOGGER.info("CoreScript initial update failed, Manual check please.");
+				}
 			} else {
 				client.STATUS_LOGGER.info("Local CoreScript linked:" + public_data.LOCAL_CORE_SCRIPT_DIR3);
 				client.STATUS_LOGGER.info("No update support.");
@@ -164,7 +184,8 @@ class initial_status extends abstract_status {
 	//self update
 	private void get_client_self_update(){ 
 		//wait until main GUI start and then start update self
-		while(client.cmd_info.get("cmd_gui").equals("gui")){
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		while(interface_mode.equals("gui")){
 			if (client.switch_info.get_main_gui_power_up()){
 				break;
 			}
@@ -177,6 +198,12 @@ class initial_status extends abstract_status {
 		}		
 		app_update update_obj = new app_update(client.client_info, client.switch_info);
 		update_obj.smart_update();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		if (update_obj.update_skipped) {
 			client.STATUS_LOGGER.info("Client self-update skipped.");
 		} else {
@@ -238,11 +265,9 @@ class initial_status extends abstract_status {
 	private void local_console_run_recognize(){
 		HashMap<String, String> preference_data = new HashMap<String, String>();
 		preference_data.putAll(client.client_info.get_client_preference_data());
-		String link_mode = new String("");
-		String cmd_gui = new String("");
-		link_mode = preference_data.getOrDefault("link_mode", public_data.DEF_CLIENT_LINK_MODE);
-		cmd_gui = preference_data.getOrDefault("cmd_gui", "");
-		if(link_mode.equalsIgnoreCase("local") && cmd_gui.equalsIgnoreCase("cmd")){
+		String link_mode = new String(preference_data.getOrDefault("link_mode", public_data.DEF_CLIENT_LINK_MODE));
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		if(link_mode.equalsIgnoreCase("local") && interface_mode.equalsIgnoreCase("cmd")){
 			client.switch_info.set_local_console_mode(true);
 		} else {
 			client.switch_info.set_local_console_mode(false);

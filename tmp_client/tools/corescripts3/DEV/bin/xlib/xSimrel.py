@@ -535,7 +535,8 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     #Jason added for cov_work remove --2018/01/27
     cov_work_path = os.path.join(simrel_dir, 'cov_work')
     if os.path.exists(cov_work_path):
-        shutil.rmtree(cov_work_path)
+        xTools.rm_with_error(cov_work_path)  # do not care
+        # shutil.rmtree(cov_work_path)
     original_fc_ctl = "fc.ctl.original"
     if not os.path.isfile(original_fc_ctl):
         shutil.copy2("fc.ctl", original_fc_ctl)
@@ -572,6 +573,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     if os.path.isfile("rbt_to_sspi_init_bus.pl"):
         print("perl rbt_to_sspi_init_bus.pl fc.rbt", file=temp_sh)
     print("# use original fc.tcl file: {}".format(use_original_ctl), file=temp_sh)
+    print("# Date: {} CWD: {}".format(time.ctime(), os.getcwd()), file=temp_sh)
     temp_sh.close()
 
     os.system("sh {}".format(temp_sh_file))
@@ -604,6 +606,9 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
         will_copy = xTools.get_true(general_options, "simrel_copy_wave")
     if will_copy:
         print("cp -rf outwaves %s/outwaves" % rbt_avc_folder, file=t_copy)
+    # remove results
+    for r in ("outwaves", "*.log", "*.out"):
+        print("rm -rf {}".format(r), file=t_copy)
     t_copy.close()
     # execute it!
     os.system("sh copy_files")
@@ -654,6 +659,8 @@ def get_simrel_path(simrel_dirname, device):
             if m_sentry:
                 _size_in_device = int(m_sentry.group(1))  # current values: 2100, 4300, 6900, 9400
                 simrel_family = get_sentry_simrel_path(_size_in_device)
+            elif re.search("lfmnx-", device, re.I):
+                simrel_family = get_sentry_simrel_path(9400)  # use sentry simrel path
             else:
                 xTools.say_it("Error. Unknown device: %s" % device)
                 return "", "", ""
@@ -675,6 +682,9 @@ def get_simrel_path(simrel_dirname, device):
                     continue
                 else:
                     t = open(check_file, "w")
+                    print(os.getcwd(), file=t)
+                    print(xTools.get_machine_name(), file=t)
+                    print(time.ctime(), file=t)
                     t.close()
                     return simrel_root, foo, simrel_family
 

@@ -51,7 +51,7 @@ public class menu_bar extends JMenuBar implements ActionListener {
 	JMenuItem view_all, view_waiting, view_processing, view_passed, view_failed, view_tbd, view_timeout, view_halted;
 	JMenuItem play, pause, stop;
 	JMenuItem retest_all, retest_selected, retest_passed, retest_failed, retest_tbd, retest_timeout, retest_halted;
-	JMenuItem upload, key_gen;
+	JMenuItem upload, key_gen, debug_mode, debug_thread, debug_database;
 	JMenuItem client, software, tools, preference;
 	JMenuItem client_restart_now, client_restart_later, client_shutdown_now, client_shutdown_later, host_restart_now, host_restart_later, host_shutdown_now, host_shutdown_later;
 	JMenuItem usage, client_help, tmp_doc, tmp_example, welcome_page, contact, about;
@@ -186,8 +186,20 @@ public class menu_bar extends JMenuBar implements ActionListener {
 		upload.addActionListener(this);
 		key_gen = new JMenuItem("Keygen...");
 		key_gen.addActionListener(this);
+		JMenu debug = new JMenu("Debug");
+		debug_mode = new JMenuItem("Mode...");
+		debug_mode.addActionListener(this);
+		debug_thread = new JMenuItem("Thread...");
+		debug_thread.addActionListener(this);
+		debug_database = new JMenuItem("Database...");
+		debug_database.addActionListener(this);
+		debug.add(debug_mode);
+		debug.addSeparator();
+		debug.add(debug_thread);
+		debug.add(debug_database);
 		tools.add(upload);
 		tools.add(key_gen);
+		tools.add(debug);
 		return tools;
 	}
 
@@ -417,6 +429,22 @@ public class menu_bar extends JMenuBar implements ActionListener {
 			encode_dialog encode_view = new encode_dialog(main_view);
 			encode_view.setLocationRelativeTo(main_view);
 			encode_view.setVisible(true);
+		}
+		if (e.getSource().equals(debug_mode)) {
+			debug_dialog debug_view = new debug_dialog(main_view, switch_info, client_info);
+			debug_view.setLocationRelativeTo(main_view);
+			debug_view.setVisible(true);
+		}
+		if (e.getSource().equals(debug_thread)) {
+			thread_dialog thread_view = new thread_dialog(main_view, switch_info, client_info);
+			new Thread(thread_view).start();
+			thread_view.setLocationRelativeTo(main_view);
+			thread_view.setVisible(true);
+		}
+		if (e.getSource().equals(debug_database)) {
+			database_dialog database_view = new database_dialog(main_view, switch_info, client_info, view_info, task_info, pool_info, post_info);
+			database_view.setLocationRelativeTo(main_view);
+			database_view.setVisible(true);
 		}
 		if (e.getSource().equals(client)) {
 			client_dialog client_view = new client_dialog(main_view, switch_info, client_info);

@@ -33,6 +33,7 @@ import flow_control.pool_data;
 import flow_control.queue_enum;
 import info_parser.cmd_parser;
 import info_parser.xml_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
@@ -150,7 +151,7 @@ public class tube_server extends Thread {
 		String client_current_private = client_hash.get("Machine").get("private");
 		//Scenario 1 local task (not remote)
 		if (queue_name.contains("0@")){
-			//this is a local task queue no private need to check
+			//this is a local task queue, don't need to check
 			return machine_match;
 		}		
 		//Scenario 2 without machine requirement data
@@ -162,7 +163,7 @@ public class tube_server extends Thread {
 			}
 			return machine_match;
 		}
-		//Scenario 3 with machine requirement data without 'terminal'
+		//Scenario 3 with machine requirement data, without 'terminal'
 		HashMap<String, String> machine_require_data = queue_data.get("Machine");
 		if (client_current_private.equals("1") && !machine_require_data.containsKey("terminal")) {
 			machine_match = false;
@@ -194,26 +195,21 @@ public class tube_server extends Thread {
 			} else{
 				client_value_list.add(client_value);
 			}
-			Boolean item_match = Boolean.valueOf(false);
-
-            for (String terminal_model: request_value_list){
-                if(terminal_model.contains("!")){
-                    item_match = true;
-                    break;
-                }
-            }
-
-			for (String individual: client_value_list){
-				if (request_value_list.contains(individual)){
-					item_match = true;
+			Boolean individual_check = Boolean.valueOf(false);
+			if (request_value.contains("!")) {//negative match enable
+				individual_check = true;
+			}
+			for (String individual_value: client_value_list){
+				if (request_value_list.contains(individual_value)){
+					individual_check = true;
 					break;
 				}
-                if (request_value_list.contains("!" + individual)){
-                    item_match = false;
+                if (request_value_list.contains("!" + individual_value)){
+                	individual_check = false;
                     break;
                 }
 			}
-			if (!item_match){
+			if (!individual_check){
 				machine_match = false;
 				break;
 			}
@@ -230,24 +226,41 @@ public class tube_server extends Thread {
 			return software_match;
 		}
 		// check software match
-		HashMap<String, String> software_require_data = queue_data.get("Software");
-		Set<String> software_require_set = software_require_data.keySet();
-		Iterator<String> software_require_it = software_require_set.iterator();
+		HashMap<String, String> software_require_data = new HashMap<String, String>();
+		software_require_data.putAll(queue_data.get("Software"));
+		Iterator<String> software_require_it = software_require_data.keySet().iterator();
 		while (software_require_it.hasNext()) {
-			String sw_name = software_require_it.next();
-			String sw_build = software_require_data.get(sw_name);
-			if (!client_hash.containsKey(sw_name)) {
+			String request_key = software_require_it.next();
+			String request_value = software_require_data.get(request_key);
+			ArrayList<String> request_value_list = new ArrayList<String>();		
+			if (request_value.contains(",")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
+			} else if (request_value.contains(";")){
+				request_value_list.addAll(Arrays.asList(request_value.split("\\s*;\\s*")));
+			} else{
+				request_value_list.add(request_value);
+			}
+			// Key check			
+			if (!client_hash.containsKey(request_key)) {
 				software_match = false;
 				break;
 			}
-			if (!client_hash.get(sw_name).containsKey(sw_build)) {
+			// Value check
+			Boolean item_match = Boolean.valueOf(true);
+			for (String individual: request_value_list){
+				if (!client_hash.get(request_key).keySet().contains(individual.replaceAll("@.*$", ""))){
+					item_match = false;
+					break;
+				}
+			}
+			if (!item_match){
 				software_match = false;
 				break;
 			}
 		}
 		return software_match;
 	}
-
+	
 	public ArrayList<String> admin_queue_mismatch_list_check(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data,
@@ -294,6 +307,18 @@ public class tube_server extends Thread {
 		while (queue_it.hasNext()) {
 			String queue_name = queue_it.next();
 			HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+			HashMap<String, String> caseinfo_map = new HashMap<String, String>();
+			queue_data.put("CaseInfo", caseinfo_map);
+			HashMap<String, String> launchcmd_map = new HashMap<String, String>();
+			queue_data.put("LaunchCommand", launchcmd_map);
+			HashMap<String, String> environ_map = new HashMap<String, String>();
+			queue_data.put("Environment", environ_map);
+			HashMap<String, String> software_map = new HashMap<String, String>();
+			queue_data.put("Software", software_map);
+			HashMap<String, String> system_map = new HashMap<String, String>();
+			queue_data.put("System", system_map);
+			HashMap<String, String> machine_map = new HashMap<String, String>();
+			queue_data.put("Machine", machine_map);
 			queue_data.putAll(total_admin_queue.get(queue_name));
 			// check mismatch list
 			ArrayList<String> mismatch_item = new ArrayList<String>();
@@ -352,6 +377,7 @@ public class tube_server extends Thread {
 		int max_thread = pool_info.get_pool_current_size();
 		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
+		simple_data.put("account", System.getProperty("user.name"));
 		simple_data.put("status", system_status);
 		simple_data.put("used_thread", rpt_thread);
 		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
@@ -699,6 +725,7 @@ public class tube_server extends Thread {
 				}
 			} else {
 				TUBE_SERVER_LOGGER.debug("Tube Server running...");
+				switch_info.update_threads_active_map(thread_enum.tube_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: open/close remote tubes
@@ -756,7 +783,7 @@ public class tube_server extends Thread {
 		client_data client_info = new client_data();
 		pool_data pool_info = new pool_data(10);
 		task_data task_info = new task_data();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {

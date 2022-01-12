@@ -36,8 +36,10 @@ import flow_control.pool_data;
 import flow_control.post_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
+import utility_funcs.time_info;
 
 public class view_server extends Thread {
 	// public property
@@ -438,11 +440,12 @@ public class view_server extends Thread {
 		machine_data.putAll(client_info.get_client_machine_data());
 		preference_data.putAll(client_info.get_client_preference_data());
 		String run_mode = machine_data.getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE);
+		String interface_mode = new String(client_info.get_client_preference_data().get("interface_mode"));
 		if (run_mode.equals("1")){
 			//in unattended mode, no one take care this client
 			return;
 		}
-		if (preference_data.get("cmd_gui").equals("cmd")){
+		if (!interface_mode.equals("gui")){
 			//in console mode no gui interface
 			return;
 		}
@@ -698,14 +701,14 @@ public class view_server extends Thread {
 			if (!task_import_status){
 				VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 				view_info.set_watching_queue_data(get_blank_data());
-				view_info.set_request_watching_queue("");
+				//view_info.set_request_watching_queue("");
 				return show_update; // no data show
 			}
 		}
 		if (!task_info.get_processed_task_queues_map().containsKey(request_queue)) {
 			VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
-			view_info.set_request_watching_queue("");
+			//view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>(new taskid_compare());
@@ -713,7 +716,7 @@ public class view_server extends Thread {
 		if (queue_data.size() < 1) {
 			VIEW_SERVER_LOGGER.warn("Empty Queue found:" + request_queue + ", " + request_area.get_description());
 			view_info.set_watching_queue_data(get_blank_data());
-			view_info.set_request_watching_queue("");
+			//view_info.set_request_watching_queue("");
 			return show_update;
 		}
 		Iterator<String> case_it = queue_data.keySet().iterator();
@@ -856,6 +859,7 @@ public class view_server extends Thread {
 				}
 			} else {
 				VIEW_SERVER_LOGGER.debug("Thread running...");
+				switch_info.update_threads_active_map(thread_enum.view_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1 : run "retest" cases
@@ -871,7 +875,7 @@ public class view_server extends Thread {
 			// task 6 : update captured_queue_data
 			implements_captured_queue_data_update();
 			// task 7 : update working_queue_data
-			implements_working_queue_data_update();			
+			implements_working_queue_data_update();	
 			try {
 				Thread.sleep(public_data.PERF_GUI_BASE_INTERVAL * 1 * 1000);
 			} catch (InterruptedException e) {

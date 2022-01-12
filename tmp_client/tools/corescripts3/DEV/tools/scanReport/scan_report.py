@@ -72,11 +72,11 @@ def report(options):
 
     csv_row = []
     if not os.path.exists(rpt):
-        with open(rpt, 'wb') as f:
+        with open(rpt, 'w') as f:
             writer = csv.writer(f)
             writer.writerow(['Design'] + list(maps.keys()))
 
-    with open(rpt, 'ab') as f:
+    with open(rpt, 'a') as f:
         writer = csv.writer(f)
         csv_row.append(os.path.basename(options.design))
         r = {}

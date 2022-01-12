@@ -138,7 +138,7 @@ class stop_status extends abstract_status {
 		} else {
 			sw_path = sw_home + "/bin/client.jar";
 		}
-		if(preference_data.get("cmd_gui").equals("gui")){
+		if(preference_data.get("interface_mode").equals("gui")){
 			run_mode = " -g";
 		} else {
 			run_mode = " -c";
@@ -225,17 +225,17 @@ class stop_status extends abstract_status {
     }
     
     private void stop_user_interface() {
-		if (client.cmd_info.get("interactive").equals("1")){
+    	String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
+		if (interface_mode.equals("int")){
 			client.console_runner.soft_stop();
 		}
-		if (client.cmd_info.get("cmd_gui").equals("gui")){
+		if (interface_mode.equals("gui")){
 			client.view_runner.soft_stop();
 		} 
     }
     
 	private void stop_link_services(){
-		client.cmd_server.soft_stop();
-		client.task_server.soft_stop();
+		client.link_runner.soft_stop();
 	}
 
 }

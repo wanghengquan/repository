@@ -42,6 +42,17 @@ public class post_data {
 		
 	}
 	
+	public HashMap<String, String> get_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("call_map", call_map.toString());
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
 	public HashMap<String, HashMap<post_attr, Object>> get_postrun_call_link() {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<post_attr, Object>> call_data = new HashMap<String, HashMap<post_attr, Object>>();

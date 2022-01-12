@@ -22,14 +22,15 @@ import org.apache.logging.log4j.Logger;
 
 import env_monitor.config_sync;
 import env_monitor.machine_sync;
-import flow_control.pool_data;
 import info_parser.cmd_parser;
 import info_parser.ini_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import top_runner.run_status.state_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import utility_funcs.system_cmd;
+import utility_funcs.time_info;
 
 /*
  * This class used to get the basic information of the client.
@@ -48,6 +49,7 @@ import utility_funcs.system_cmd;
  * 					space	=	xx	G
  * 					cpu		=	xx	%
  * 					mem		=	xx	%
+ * 					mem_free=   xx  G
  * 					status  =   Free/Busy/Suspend
  * 
  *      CoreScript: version =   xx
@@ -59,7 +61,9 @@ import utility_funcs.system_cmd;
  *                  
  * 		Machine	:	terminal=	xxx
  * 					ip		=	xxx
+ * 					mem_phy =   xxx
  * 					group	=	xxx
+ *                  account =   xxx
  * 					private	=	0/1
  * 					unattended = 0/1
  * 					stable_version = 0/1
@@ -94,7 +98,6 @@ public class data_server extends Thread {
 	private HashMap<String, String> cmd_info;
 	private client_data client_info;
 	private switch_data switch_info;
-	private pool_data pool_info;
 	//private String line_separator = System.getProperty("line.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 	// sub threads need to be launched
@@ -107,12 +110,10 @@ public class data_server extends Thread {
 	public data_server(
 			HashMap<String, String> cmd_info, 
 			switch_data switch_info,  
-			client_data client_info,
-			pool_data pool_info) {
+			client_data client_info) {
 		this.cmd_info = cmd_info;
 		this.client_info = client_info;
 		this.switch_info = switch_info;
-		this.pool_info = pool_info;
 		this.config_runner = new config_sync(switch_info, client_info);
 		this.machine_runner = new machine_sync(switch_info);
 	}
@@ -177,17 +178,15 @@ public class data_server extends Thread {
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.put("private", public_data.DEF_MACHINE_PRIVATE);
 		machine_data.put("group", public_data.DEF_GROUP_NAME);
+		machine_data.put("account", System.getProperty("user.name"));
 		machine_data.put("unattended", public_data.DEF_UNATTENDED_MODE);
-		machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
+		//machine_data.put("debug", public_data.DEF_CLIENT_DEBUG_MODE);
 		machine_data.putAll(machine_hash.get("Machine")); // Scan data
 		if (config_hash.containsKey("tmp_machine")) {
 			machine_data.putAll(config_hash.get("tmp_machine")); // configuration
 		}
 		if(cmd_hash.containsKey("unattended")){				// add command line data
 			machine_data.put("unattended", cmd_hash.get("unattended"));
-		}
-		if(cmd_hash.containsKey("debug")){
-			machine_data.put("debug", cmd_hash.get("debug"));
 		}
 		client_data.put("Machine", machine_data);
 		// 4. merge tools data
@@ -248,6 +247,7 @@ public class data_server extends Thread {
 		preference_data.put("task_mode", public_data.DEF_TASK_ASSIGN_MODE);
 		preference_data.put("link_mode", public_data.DEF_CLIENT_LINK_MODE);
 		preference_data.put("case_mode", public_data.DEF_CLIENT_CASE_MODE);
+		preference_data.put("interface_mode", public_data.DEF_INTERFACE_MODE);
 		preference_data.put("stable_version", public_data.DEF_STABLE_VERSION);
 		preference_data.put("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
 		preference_data.put("result_keep", public_data.TASK_DEF_RESULT_KEEP);
@@ -262,13 +262,17 @@ public class data_server extends Thread {
 		preference_data.put("space_reserve", public_data.RUN_LIMITATION_SPACE);
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
-		//the following two are for history name support
+		preference_data.put("debug_mode", public_data.DEF_CLIENT_DEBUG_MODE);
+		//the following three are for history name support
 		if(config_hash.get("tmp_preference").containsKey("work_path")){
 			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path").replaceAll("\\\\", "/"));
 		}
 		if(config_hash.get("tmp_preference").containsKey("save_path")){
 			preference_data.put("save_space", config_hash.get("tmp_preference").get("save_path").replaceAll("\\\\", "/"));
-		}		
+		}
+		if(config_hash.get("tmp_machine").containsKey("debug")){
+			preference_data.put("debug_mode", config_hash.get("tmp_machine").get("debug"));
+		}
 		preference_data.putAll(config_hash.get("tmp_preference"));
 		preference_data.putAll(cmd_hash);
 		client_data.put("preference", preference_data);
@@ -276,17 +280,17 @@ public class data_server extends Thread {
 		DATA_SERVER_LOGGER.debug(client_data.toString());
 	}
 
-	private void initial_thread_pool_setting(){
-		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
-		int max_threads = Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
-		pool_info.initialize_thread_pool(pool_size);
-		if (max_threads > pool_size){
-			DATA_SERVER_LOGGER.warn("max_threads > pool_size, will use pool_size:" + pool_size +" as maximum threads num");
-			pool_info.set_pool_current_size(pool_size);
-		} else {
-			pool_info.set_pool_current_size(max_threads);
-		}
-	}
+	/*
+	 * private void initial_thread_pool_setting(){ int pool_size =
+	 * Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+	 * int max_threads =
+	 * Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
+	 * pool_info.initialize_thread_pool(pool_size); if (max_threads > pool_size){
+	 * DATA_SERVER_LOGGER.warn("max_threads > pool_size, will use pool_size:" +
+	 * pool_size +" as maximum threads num");
+	 * pool_info.set_pool_current_size(pool_size); } else {
+	 * pool_info.set_pool_current_size(max_threads); } }
+	 */
 	
 	private void dynamic_merge_system_data(){
 		HashMap<String, String> system_data = new HashMap<String, String>();
@@ -612,7 +616,7 @@ public class data_server extends Thread {
  		// initial 2 : generate initial client data
 		initial_merge_client_data(cmd_info);
 		// initial 3 : update default current size into Pool Data
-		initial_thread_pool_setting();
+		// initial_thread_pool_setting();  1213 //should this item go to hall manager
 		// initial 4 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start
@@ -628,6 +632,7 @@ public class data_server extends Thread {
 				}
 			} else {
 				DATA_SERVER_LOGGER.info("data_server Thread running...");
+				switch_info.update_threads_active_map(thread_enum.data_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			// task 1: update client build data
@@ -696,8 +701,7 @@ public class data_server extends Thread {
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		switch_data switch_info = new switch_data();
 		client_data client_info = new client_data();
-		pool_data pool_info = new pool_data(10);
-		data_server server_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server server_runner = new data_server(cmd_info, switch_info, client_info);
 		server_runner.start();
 		try {
 			Thread.sleep(10 * 1000);

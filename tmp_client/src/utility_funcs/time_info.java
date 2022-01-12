@@ -10,6 +10,7 @@
 package utility_funcs;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -82,6 +83,10 @@ public class time_info {
 		return new Timestamp(new Date().getTime());
 	}
 	
+	public static long get_timestamp() {
+		return new Date().getTime()/1000;
+	}
+	
 	public static String get_runtime_string_dhms(String from_time_secs, String to_time_secs){
 		StringBuilder runtime_string = new StringBuilder();
 		long begin_time = Long.valueOf(from_time_secs).longValue();
@@ -124,11 +129,43 @@ public class time_info {
 		return runtime_string.toString();
 	}
 	
+	public static long get_timestamp_user_format(
+			String time_date, 
+			String time_format) {
+		long timestamp = 0;
+		SimpleDateFormat format = new SimpleDateFormat(time_format);
+		Date date = null;
+		try {
+			date = format.parse(time_date);
+			timestamp  = date.getTime() / 1000;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return timestamp;
+	}
+	
+	public static long get_timestamp_yyMMdd_HHmmss(
+			String time_date) {
+		long timestamp = 0;
+		SimpleDateFormat format = new SimpleDateFormat("yyMMdd_HHmmss");
+		Date date = null;
+		try {
+			date = format.parse(time_date);
+			timestamp  = date.getTime() / 1000;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+		}
+		return timestamp;
+	}
+	
 	public static void main(String[] argv) {
 		System.out.println(get_time_hhmm());
 		System.out.println(System.currentTimeMillis() / 1000); 
 		System.out.println(get_time_stamp());
 		System.out.println(get_date_time());
+		System.out.println(get_timestamp_yyMMdd_HHmmss("210714_160500"));
+		System.out.println(get_timestamp());
 	}
-
 }

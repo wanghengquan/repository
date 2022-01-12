@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import top_runner.top_launcher;
+import utility_funcs.time_info;
 
 public class public_data {
 	// private static final Logger PUB_LOGGER =
@@ -26,10 +27,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.11.05"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21105; //version for code use
-	public final static String BASE_BUILDDATE = "2021/10/11";
-	public final static String BASE_SUITEFILEVERSION = "1.19";
+	public final static String BASE_CURRENTVERSION = "2.13.01"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21301; //version for code use
+	public final static String BASE_BUILDDATE = "2022/01/12";
+	public final static String BASE_SUITEFILEVERSION = "1.24";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -44,7 +45,7 @@ public class public_data {
 	// ========================
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
-	public final static int RUN_LIMITATION_MEM = 98;//client suspend when MEM usage large than this value
+	public final static int RUN_LIMITATION_MEM = 95;//client suspend when MEM usage large than this value
 	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
 	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
 	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
@@ -135,6 +136,7 @@ public class public_data {
 	public final static String TOOLS_SSHPASS = SW_HOME_PATH + "/tools/sshpass/sshpass";
 	public final static String TOOLS_KILL_PROCESS = SW_HOME_PATH + "/tools/kill_process.py";
 	public final static String TOOLS_KILL_WINPOP = SW_HOME_PATH + "/tools/kill_winpop.py";
+	public final static String TOOLS_EXP_CHECK = SW_HOME_PATH + "/tools/exp_check.py";
 	public final static String TOOLS_OS_NAME = SW_HOME_PATH + "/tools/os_name.py";
 	public final static String TOOLS_GET_CPU = SW_HOME_PATH + "/tools/get_cpu.py";
 	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
@@ -173,8 +175,7 @@ public class public_data {
 	// ========================
 	// link to Other Clients configuration data shown here
 	// manually check RabbitMQ queue status: http://linux-D50553:15672/#/queues
-	public final static int SOCKET_DEF_TASK_PORT = 55533;
-	public final static int SOCKET_DEF_CMD_PORT = 33355;
+	public final static int SOCKET_DEF_LINK_PORT = 55555;
 	public final static String SOCKET_DEF_ACKNOWLEDGE = "@received@";
 	public final static String SOCKET_LINK_ACKNOWLEDGE = "@linked@";
 	public final static String SOCKET_DEF_TERMINAL = "localhost";
@@ -208,6 +209,10 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
+	public final static String TASK_DEF_ESTIMATE_MEM = "1"; //in G, 1G
+	public final static String TASK_DEF_MAX_MEM_USG = "16";
+	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
+	public final static String TASK_DEF_CMD_DECISION = "last"; //last, all, <indiviual cmd>, <indiviual cmds> join with Python:and,or
 	public final static String TASK_DEF_PRIORITY = "5"; // 0 > 2 > 9
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
 	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
@@ -221,16 +226,23 @@ public class public_data {
     public final static int PERF_GUI_BASE_INTERVAL = 1;
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 120;   //Case same status report interval
-	public final static int PERF_POOL_CURRENT_SIZE = 3;      //current max size to external
+	public final static int PERF_POOL_CURRENT_SIZE = 3;      //Current max size to external
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
-	public final static int PERF_POOL_LIN_MAX_SIZE = 30;
+	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
-	public final static int PERF_AUTO_MAXIMUM_CPU = 75;
-	public final static int PERF_AUTO_MAXIMUM_MEM = 85;
-	public final static int PERF_AUTO_ADJUST_CYCLE = 5;
+	public final static int PERF_AUTO_MAXIMUM_CPU = 80;
+	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
+	public final static int PERF_AUTO_ADJUST_CYCLE = 6;
+	public final static float PERF_GOOD_MEM_USAGE_RATE = 0.85f;
+	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
+	public final static int PERF_SQUISH_WIN_MAX_MEM = 50;
+	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
+	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
+	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
+	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
-	public final static int PERF_MAX_LIN_WAITER	= 6;
+	public final static int PERF_MAX_LIN_WAITER	= 12;
 	public final static int PERF_MAX_TASK_WAITER = get_maximum_waiters();
 
 	// ========================
@@ -262,6 +274,7 @@ public class public_data {
 	public final static String DEF_STABLE_VERSION = "1"; // 1 get stable update, 0 get develop update
 	public final static String DEF_CLIENT_DEBUG_MODE = "0"; //1: Client run in debug mode
 	// preference
+	public final static String DEF_INTERFACE_MODE = "gui"; // "gui", "cmd", "int"(interactive)
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial", parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
 	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local","remote","both"
@@ -289,6 +302,24 @@ public class public_data {
 		File bin_dobj = new File(bin_path);
 		String install_path = bin_dobj.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 		return install_path.replaceAll("\\\\", "/");
+	}
+	
+	private static int get_squish_max_cpu(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_SQUISH_WIN_MAX_CPU;
+		} else {
+			return public_data.PERF_SQUISH_LIN_MAX_CPU;
+		}
+	}
+	
+	private static int get_squish_max_mem(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_SQUISH_WIN_MAX_MEM;
+		} else {
+			return public_data.PERF_SQUISH_LIN_MAX_MEM;
+		}
 	}
 	
 	private static int get_maximum_threads(){
@@ -364,5 +395,22 @@ public class public_data {
 		System.out.println(System.getProperty("os.name"));
 		System.out.println(System.getProperty("os.arch"));
 		System.out.println(System.getProperty("os.version"));
+		String build_name = new String("3.1?cmd_1");
+		build_name = build_name.replaceAll("\\?" + "cmd_1", "");
+		System.out.println(time_info.get_date_time());
+        // <status>Passed</status>
+		String ttt = new String(" <status>Passed</status>");
+        Pattern p = Pattern.compile("status\\s*>\\s*(.+?)<");
+        Matcher m = p.matcher(ttt);
+        if (m.find()) {
+        	System.out.println(m.group(1));
+        }
+        Integer memory_est = Integer.valueOf(80);
+        Integer memory_exp = Integer.valueOf(96);
+        System.out.println(memory_est + memory_exp);
+        float rate = 0.85f;
+        System.out.println(memory_exp * rate);
+        Float available = Float.valueOf(memory_exp * rate);
+        available.intValue();
 	}
 }

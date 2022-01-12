@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -321,7 +323,7 @@ public class xml_parser {
 			while (level2_data_it.hasNext()) {
 				String level3_key = level2_data_it.next();
 				String level3_value = level2_data.get(level3_key);
-				level2_element.addElement(level3_key).addText(level3_value);
+				level2_element.addElement(element_name_update(queue_name,level3_key)).addText(level3_value);
 			}
 		}
 		OutputFormat format = OutputFormat.createPrettyPrint();
@@ -355,7 +357,7 @@ public class xml_parser {
 				while (level3_data_it.hasNext()) {
 					String level4_key = level3_data_it.next();
 					String level4_value = level3_data.get(level4_key);
-					level3_element.addElement(level4_key).addText(level4_value);
+					level3_element.addElement(element_name_update(queue_name,level4_key)).addText(level4_value);
 				}
 			}
 		}
@@ -365,6 +367,25 @@ public class xml_parser {
 		writer.flush();
 		writer.close();
 		return dump_status;
+	}
+	
+	public static String element_name_update(
+			String queue_name, 
+			String element_name) {
+		Pattern violate_pattern1 = Pattern.compile("\\W");
+		Matcher violate_match1 = violate_pattern1.matcher(element_name);
+		if (violate_match1.find()) {
+			XML_PARSER_LOGGER.warn("Non word character found in:" + queue_name + ", key:" + element_name + ", will be replaced with '_'");
+		}
+		element_name = element_name.replaceAll("\\W", "_");
+		element_name = element_name.replaceAll("_+", "_");
+		Pattern violate_pattern2 = Pattern.compile("^\\d");
+		Matcher violate_match2 = violate_pattern2.matcher(element_name);
+		if (violate_match2.find()) {
+			XML_PARSER_LOGGER.warn("Digital character found at the begining" + queue_name + ", key:" + element_name + ", will add extra '_'");
+			element_name = "_" + element_name;
+		}
+		return element_name;
 	}
 
 	public static HashMap<String, HashMap<String, String>> get_xml_file_admin_queue_data(String xml_path)

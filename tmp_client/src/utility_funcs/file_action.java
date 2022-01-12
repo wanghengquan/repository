@@ -84,7 +84,7 @@ public class file_action {
 			FILE_ACTION_LOGGER.warn("Write file exception:" + file_path);
 			return 1;
 		}
-	}	
+	}
 	
 	public static void copy_file(String src_file, String dest_file) {
 		File src = new File(src_file);
@@ -93,7 +93,9 @@ public class file_action {
 			FileUtils.copyFile(src, dest);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			FILE_ACTION_LOGGER.warn("Copy file exception");
+			FILE_ACTION_LOGGER.warn("Copy file exception:");
+			FILE_ACTION_LOGGER.warn("Source:" + src_file);
+			FILE_ACTION_LOGGER.warn("destination:" + dest_file);
 		}
 	}
 
@@ -102,6 +104,37 @@ public class file_action {
 		return FileUtils.deleteQuietly(delFile);
 	}
 
+	public static Boolean del_file_match_extension(
+			String run_path,
+			String extension
+			) {
+		File run_path_dobj = new File(run_path);
+		FilenameFilter filter = new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				// TODO Auto-generated method stub
+				File test_file = new File(dir, name);
+				return test_file.isFile() && test_file.getName().endsWith(extension);
+			}
+		};
+		if (!run_path_dobj.exists()) {
+			FILE_ACTION_LOGGER.warn("run_path doesn't exists:" + run_path);
+			return false;
+		}
+		if (!run_path_dobj.canWrite()) {
+			FILE_ACTION_LOGGER.warn("run_path doesn't writeable:" + run_path);
+			return false;
+		}
+		for(File file_obj:run_path_dobj.listFiles(filter)) {
+			if(file_obj.canWrite()){
+				file_obj.delete();
+			} else {
+				FILE_ACTION_LOGGER.warn("Delete file failed:" + file_obj.getAbsolutePath());
+			}
+		}
+        return true;
+	}
+	
 	public static int append_file(String file, String conent) {
 		/*
 		 * If the file size larger than 2M, a new file will be created true: 0
@@ -134,6 +167,48 @@ public class file_action {
 		}
 	}
 
+	public static int append_file_with_title(
+			String file, 
+			String title,
+			String conent) {
+		/*
+		 * If the file size larger than 2M, a new file will be created true: 0
+		 * will be return false: 1 will be return
+		 */
+		Boolean new_file = Boolean.valueOf(false);
+		BufferedWriter out = null;
+		File file_hand = new File(file);
+		if (file_hand.exists() && file_hand.isFile()) {
+			if (file_hand.length() < 2 * 1000000) {
+				new_file = false;
+			} else {
+				String temp_file = file + System.currentTimeMillis() / 1000;
+				copy_file(file, temp_file);
+				del_file(file);
+				new_file = true;
+			}
+		} else {
+			new_file = true;
+		}
+		try {
+			File file_parent = file_hand.getParentFile();
+			if (file_parent.isDirectory() && file_parent.exists())
+				;
+			else
+				file_parent.mkdirs();
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true)));
+			if (new_file) {
+				out.write(title + System.getProperty("line.separator"));
+			}
+			out.write(conent);
+			out.close();
+			return 0;
+		} catch (Exception e) {
+			FILE_ACTION_LOGGER.warn("Append Error:" + file);
+			return 1;
+		}
+	}
+	
 	public static String read_file(String filename) {
 		File file = new File(filename);
 		Scanner input;
@@ -408,7 +483,7 @@ public class file_action {
 		return String.join(",", return_list);
 	}
 	
-	public static void main(String[] args) {
+	public static void main1(String[] args) {
 		//System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
 		String work_dir = System.getProperty("user.dir");
 		System.out.println(work_dir);
@@ -424,21 +499,7 @@ public class file_action {
 		}
 	}
 	
-	public static void main2(String[] args) {
-		String work_dir = System.getProperty("user.dir");
-		System.out.println(work_dir);
-		String init_content = "AAAA" + System.lineSeparator() + "BBBB" + System.lineSeparator();
-		System.out.println("write file:");
-		file_action.write_file("./lab.txt", init_content);
-		System.out.println("read after write:");
-		String read_content = file_action.read_file("lab.txt");
-		System.out.println(read_content);
-		System.out.println("append file:");
-		file_action.append_file("./lab.txt", "CCCC");
-		System.out.println("read file after append:");
-		read_content = file_action.read_file("lab.txt");
-		System.out.println(read_content);
-		System.out.println(file_action.delete_file("lab.txt"));
-		
+	public static void main(String[] args) {
+		del_file_match_extension("C:/Users/jwang1/Desktop/T22356061", ".csv");
 	}
 }

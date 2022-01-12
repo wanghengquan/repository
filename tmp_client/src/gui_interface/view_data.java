@@ -54,6 +54,36 @@ public class view_data {
 
 	}
 	
+	public HashMap<String, String> get_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("view_debug", view_debug.toString());
+			result.put("current_watching_queue", current_watching_queue);
+			result.put("request_watching_queue", request_watching_queue);
+			result.put("current_watching_area", current_watching_area.get_description());
+			result.put("request_watching_area", request_watching_area.get_description());
+			result.put("request_delete_queue", request_delete_queue.toString());
+			result.put("request_retest_area", request_retest_area.toString());
+			result.put("request_retest_list", request_retest_list.toString());
+			result.put("request_terminate_list", request_terminate_list.toString());
+			result.put("run_action_request", run_action_request.toString());
+			result.put("export_queue_list", export_queue_list.toString());
+			result.put("export_title_list", export_title_list.toString());
+			result.put("rejected_sorting_request", rejected_sorting_request.get_description());
+			result.put("captured_sorting_request", captured_sorting_request.get_description());
+			result.put("space_cleanup_apply", space_cleanup_apply.toString());
+			result.put("environ_issue_apply", environ_issue_apply.toString());
+			result.put("corescript_update_apply", corescript_update_apply.toString());
+			result.put("rejected_queue_data", rejected_queue_data.toString());
+			result.put("captured_queue_data", captured_queue_data.toString());
+			result.put("watching_queue_data", watching_queue_data.toString());
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
 	public Boolean get_view_debug() {
 		rw_lock.readLock().lock();
 		Boolean temp = Boolean.valueOf(false);

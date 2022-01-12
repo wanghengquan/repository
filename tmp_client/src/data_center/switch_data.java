@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import env_monitor.machine_sync;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import top_runner.run_status.maintain_enum;
 import top_runner.run_status.state_enum;
@@ -54,7 +55,7 @@ public class switch_data {
 	private Boolean link_server_power_up = Boolean.valueOf(false);
 	private Boolean console_server_power_up = Boolean.valueOf(false);
 	private Boolean hall_server_power_up = Boolean.valueOf(false);
-	private Boolean local_console_mode = Boolean.valueOf(false);
+	private Boolean local_console_mode = Boolean.valueOf(false);	
 	// suite file updating
 	// private ArrayList<String> suite_file_list = new ArrayList<String>();
 	// client hall status(idle or busy) : thread pool not empty == busy
@@ -77,11 +78,54 @@ public class switch_data {
 	private String space_warning_announced_date = new String("");
 	private String environ_warning_announced_date = new String("");
 	private String corescript_warning_announced_date = new String("");
+	//Thread active records
+	private HashMap<thread_enum, String> threads_active_map = new HashMap<thread_enum, String>();
+	//thread object map
+	private HashMap<thread_enum, Object> threads_object_map = new HashMap<thread_enum, Object>();
 	// public function
 	public switch_data() {
 
 	}
 
+	public HashMap<String, String> get_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("system_client_insts", String.valueOf(system_client_insts));
+			result.put("system_svn_exists", String.valueOf(system_svn_exists));
+			result.put("remote_corescript_linked", String.valueOf(remote_corescript_linked));
+			result.put("system_python_version", system_python_version);
+			result.put("send_admin_request", String.valueOf(send_admin_request));
+			result.put("dump_config_request", String.valueOf(dump_config_request));
+			result.put("check_core_request", String.valueOf(check_core_request));
+			result.put("house_keep_request", String.valueOf(house_keep_request));
+			result.put("client_stop_request", client_stop_request.toString());
+			result.put("client_soft_stop_request", String.valueOf(client_soft_stop_request));
+			result.put("client_stop_exception", client_stop_exception.toString());
+			result.put("start_progress_power_up", String.valueOf(start_progress_power_up));
+			result.put("main_gui_power_up", String.valueOf(main_gui_power_up));
+			result.put("data_server_power_up", String.valueOf(data_server_power_up));
+			result.put("tube_server_power_up", String.valueOf(tube_server_power_up));
+			result.put("link_server_power_up", String.valueOf(link_server_power_up));
+			result.put("console_server_power_up", String.valueOf(console_server_power_up));
+			result.put("hall_server_power_up", String.valueOf(hall_server_power_up));
+			result.put("local_console_mode", String.valueOf(local_console_mode));
+			result.put("client_console_updating", String.valueOf(client_console_updating));
+			result.put("client_maintain_list", client_maintain_list.toString());
+			result.put("client_run_state", client_run_state.get_description());
+			result.put("client_environ_issue", String.valueOf(client_environ_issue));
+			result.put("core_script_update_request", String.valueOf(core_script_update_request));
+			result.put("work_space_update_request", String.valueOf(work_space_update_request));
+			result.put("space_warning_announced_date", space_warning_announced_date);
+			result.put("environ_warning_announced_date", environ_warning_announced_date);
+			result.put("corescript_warning_announced_date", corescript_warning_announced_date);
+			result.put("threads_active_map", threads_active_map.toString());
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}	
+	
 	public int get_system_client_insts() {
 		rw_lock.writeLock().lock();
 		String terminal = new String(machine_sync.get_host_name());
@@ -125,7 +169,7 @@ public class switch_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	
 	public void set_client_updated() {
 		rw_lock.writeLock().lock();
 		try {
@@ -799,5 +843,104 @@ public class switch_data {
 	 */
 	// protected function
 	// private function
-
+	
+	public void set_threads_active_map(HashMap<thread_enum, String> new_hashmap) {
+		rw_lock.writeLock().lock();
+		try {
+			this.threads_active_map.clear();
+			this.threads_active_map.putAll(new_hashmap);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_threads_active_map(thread_enum thread_name, String active_time) {
+		rw_lock.writeLock().lock();
+		try {
+			this.threads_active_map.put(thread_name, active_time);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public HashMap<thread_enum, String> get_threads_active_map() {
+		HashMap<thread_enum, String> hashmap = new HashMap<thread_enum, String>();
+		rw_lock.readLock().lock();
+		try {
+			hashmap.putAll(this.threads_active_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return hashmap;
+	}
+	
+	public HashMap<String, String> get_threads_active_map_string() {
+		HashMap<String, String> hashmap_string = new HashMap<String, String>();
+		HashMap<thread_enum, String> hashmap = new HashMap<thread_enum, String>();
+		rw_lock.readLock().lock();
+		try {
+			hashmap.putAll(this.threads_active_map);
+			Iterator<thread_enum> map_itr = hashmap.keySet().iterator();
+			while(map_itr.hasNext()) {
+				thread_enum thread_name = map_itr.next();
+				String active_time = hashmap.get(thread_name);
+				hashmap_string.put(thread_name.toString(), active_time);
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return hashmap_string;
+	}
+	
+	public String get_threads_active_map(thread_enum thread_name) {
+		String active_time = new String();
+		rw_lock.readLock().lock();
+		try {
+			active_time = threads_active_map.get(thread_name);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return active_time;
+	}
+	
+	public void set_threads_object_map(HashMap<thread_enum, Object> new_hashmap) {
+		rw_lock.writeLock().lock();
+		try {
+			this.threads_object_map.clear();
+			this.threads_object_map.putAll(new_hashmap);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_threads_object_map(thread_enum thread_name, Object thread_object) {
+		rw_lock.writeLock().lock();
+		try {
+			this.threads_object_map.put(thread_name, thread_object);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public HashMap<thread_enum, Object> get_threads_object_map() {
+		HashMap<thread_enum, Object> hashmap = new HashMap<thread_enum, Object>();
+		rw_lock.readLock().lock();
+		try {
+			hashmap.putAll(this.threads_object_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return hashmap;
+	}
+	
+	public Object get_threads_object_map(thread_enum thread_name) {
+		Object thread_object = new Object();
+		rw_lock.readLock().lock();
+		try {
+			thread_object = threads_object_map.get(thread_name);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return thread_object;
+	}
 }

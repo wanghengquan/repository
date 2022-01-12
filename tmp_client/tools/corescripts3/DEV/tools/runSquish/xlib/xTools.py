@@ -648,7 +648,7 @@ def simple_parser(a_file, patterns, but_lines=0):
     i = 0
     for line in open(a_file):
         i += 1
-        if line < start_line:
+        if i < start_line:
             continue
         line = line.strip()
         for p in patterns:
@@ -671,8 +671,11 @@ def get_environment(radiant_diamond, nt_lin, squish):
     _tmp_path = _ld_library_path + [os.path.join(squish, "bin")]
     if nt_lin.startswith("nt"):
         kwargs["PATH"] = _tmp_path + ["%PATH%"]
+        kwargs["CASE_PATH"] = ['%realParentPath%']
     else:
         kwargs["PATH"] = _tmp_path + ["$PATH"]
+        kwargs["CASE_PATH"] = ['$(cd "$(dirname "$0")"; cd ..; pwd)']
+    kwargs["PATH"].insert(0, os.path.dirname(sys.executable))
     # ------------
     env_lines = list()
     _env_cmd = "set" if nt_lin.startswith("nt") else "export"

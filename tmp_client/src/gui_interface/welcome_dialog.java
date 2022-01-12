@@ -105,6 +105,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		} else {
 			jt_work.setText(preference_data.get("work_space"));
 		}
+		jt_work.setEditable(true);
 		// save space
 		JLabel jl_save = new JLabel("Save Space");
 		jt_save = new JTextField();
@@ -113,6 +114,7 @@ public class welcome_dialog extends JDialog implements ActionListener {
 		} else {
 			jt_save.setText(preference_data.get("save_space"));
 		}
+		jt_save.setEditable(true);
 		// package
 		initial_panel.add(jl_work);
 		initial_panel.add(jt_work);

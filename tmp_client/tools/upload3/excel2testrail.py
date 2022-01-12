@@ -26,16 +26,25 @@ DROP_DOWN_DICT = dict(custom_automated=dict(YES=1, NO=2),
                       custom_fpga_rtl=dict(YES=1, NO=2, unkonwn=3),
                       custom_test_bench=dict(YES=1, NO=2, unkonwn=3),
                       custom_smoke=dict(YES=1, NO=2),
-                      custom_nouse=dict(YES=2, NO=1))
+                      # new field name: Reusable
+                      custom_automation_type=dict(YES=1, NO=2, unkonwn=3),
+                      custom_nouse=dict(YES=2, NO=1),
+                      )
 
 
-def get_drop_down_value(raw_case_data):
+def get_drop_down_value(raw_case_data, default_value_dict):
     for k, v in list(raw_case_data.items()):
         v_dict = DROP_DOWN_DICT.get(k)
         if not v_dict:
             continue
         new_v = v_dict.get(v)
         raw_case_data[k] = new_v
+    for kk, vv in list(default_value_dict.items()):
+        if not vv:  # no default value
+            pass
+        now_value = raw_case_data.get(kk)
+        if not now_value:
+            raw_case_data[kk] = vv
 
 
 class UploadSuites(object):
@@ -445,9 +454,10 @@ def get_case_dict(csv_file):
     start_tag1 = "Order"
     start_tag2 = "Title"
     tmp_lines = list()
-    with open(csv_file) as ob:
+    with open(csv_file, "rb") as ob:
         start = 0
         for line in ob:
+            line = line.decode()
             if not start:
                 line_list = tools.comma_split(line, sep_mark=",")
                 if start_tag1 in line_list and start_tag2 in line_list:
@@ -475,10 +485,38 @@ class GetCasesData(object):
             self.case_types[foo.get("name")] = foo.get("id")
 
     def get_fields_system_name(self):
-        sel_cmd = "SELECT system_name, label from fields where is_active=1 and entity_id=1"
+        """
+        system_name	        label
+        custom_config	    Configuration
+        custom_test_level	TestLevel
+        custom_fpga_family	Family
+        custom_fpga_slice	Slice
+        custom_fpga_pio	    PIO
+        custom_fpga_rtl	    RTLCase
+        custom_fpga_flow	Flow
+        custom_scenarios	TestScenarios
+        custom_description	Description
+        custom_fpga_ebr	    EBR
+        custom_fpga_dsp	    DSP
+        custom_test_bench	Test Bench
+        custom_fpga_cr	    CRs
+        custom_automated	Automated
+        custom_nouse	    NoUse
+        custom_automation_type	Reusable
+        custom_smoke	    Smoke
+        custom_author	    Author
+        """
+        sel_cmd = "SELECT system_name, label, configs from fields where is_active=1 and entity_id=1"
         self.fields_system_name = dict()
+        self.default_field_value = dict()
         for foo in self.db.query(sel_cmd):
             self.fields_system_name[foo.get("label")] = foo.get("system_name")
+            my_config = json.loads(foo.get("configs"))
+            # {'is_required': False, 'default_value': '', 'items': '1, YES\n2, NO\n3, unknown'}
+            my_options = my_config[0].get("options")
+            my_default = my_options.get("default_value")
+            if my_default:
+                self.default_field_value[foo.get("system_name")] = my_default
 
     def get_priority_id(self):
         sel_cmd = "SELECT id, name from priorities"
@@ -541,16 +579,7 @@ class GetCasesData(object):
                         case_data["priority_id"] = p_id
                     else:
                         LOGGER.warning("Unknown Priority name: {} for {}".format(v, raw_dict))
-        # automated and nouse
-        key_no_use = "custom_nouse"
-        if case_data.get(key_no_use, "") != "YES":
-            case_data[key_no_use] = "NO"
-        key_automated = "custom_automated"
-        if case_data.get(key_automated, "") != "NO":
-            case_data[key_automated] = "YES"
-        key_smoke = "custom_smoke"
-        if case_data.get(key_smoke, "") != "YES":
-            case_data[key_smoke] = "NO"
+
         for int_key in self.int_keys:
             this_value = case_data.get(int_key)
             if this_value:
@@ -564,7 +593,7 @@ class GetCasesData(object):
                     except:
                         LOGGER.warning("{} is {}, not an integer".format(int_key, this_value))
                         case_data.pop(int_key)
-        get_drop_down_value(case_data)
+        get_drop_down_value(case_data, self.default_field_value)
         return case_data["title"], case_data
 
     def get_config(self, raw_dict):
@@ -586,8 +615,12 @@ class GetCasesData(object):
             v = raw_dict.get(k)
             if v:
                 _config.append("[{}]".format(k))
+                v = re.sub(r"\\;", "HH_my_semicolon_HH", v)
                 v_list = tools.comma_split(v, sep_mark=";")
-                _config.extend(v_list)
+                y_list = list()
+                for foo in v_list:
+                    y_list.append(re.sub("HH_my_semicolon_HH", ";", foo))
+                _config.extend(y_list)
         self.config = "\n".join(_config)
 
 

@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import glob
 import time
@@ -112,7 +113,8 @@ def wrap_run_tcl(tcl_mark_name, tcl_lines, log_tag=None):
     yose_timeout = os.getenv("YOSE_TIMEOUT")
     this_log_tag = log_tag if log_tag else tcl_mark_name
     def _func():
-        return xTools.run_command("pnmainc %s" % tcl_file, this_log_tag+".log", this_log_tag+".time")
+        bin_file = "TRIAL_AND_ERROR_pnmainc" if os.getenv("trial_and_error") else "pnmainc"
+        return xTools.run_command("{} {}".format(bin_file, tcl_file), this_log_tag+".log", this_log_tag+".time")
     if yose_timeout:
         timeout = int(yose_timeout)
         results = yTimeout.run_func_with_timeout(_func, timeout)
@@ -155,7 +157,9 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
         tcl_lines.append(tcl_cmd.get("save"))
     tcl_lines.append('set r 0')
     for (process, task) in process_task:
-        if task:
+        if (not is_ng_flow) and task == "SynTrace":
+            task = ""
+        elif task:
             task = "-task %s" % task
         _line = "prj_run %s %s -forceOne" % (process, task)
         if process in ("Map", "Export", "PAR"):
@@ -454,13 +458,17 @@ class LatticeEnvironment:
                 os.environ[env_key] = value
         if self.set_env:
             for item in self.set_env:
-                xTools.say_it("Set User Environment: {}".format(item))
                 env_val = re.split("=", item)
                 if len(env_val) != 2:
                     xTools.say_it("Warning. Can not set %s" % item)
                     continue
                 env_key, env_value = env_val
-                os.environ[env_key.strip()] = env_value.strip()
+                env_value = env_value.strip()
+                split_mark = ";" if ";" in env_value else ":"
+                env_value_list = re.split(split_mark, env_value)
+                env_value = os.pathsep.join(env_value_list)
+                xTools.say_it("Set User Environment: {}: {}".format(env_key, env_value))
+                os.environ[env_key.strip()] = env_value
 
     def get_right_diamond(self, diamond_path):
         if not self.loose_match:
@@ -576,11 +584,14 @@ class LatticeEnvironment:
         self.run_questasim = xTools.get_true(self.flow_options, "run_questasim")
         self.run_riviera = xTools.get_true(self.flow_options, "run_riviera")
         self.run_activehdl = xTools.get_true(self.flow_options, "run_activehdl")
-        if not (self.run_modelsim or self.run_questasim or self.run_riviera or self.run_activehdl):
+        self.run_vcs = xTools.get_true(self.flow_options, "run_vcs")
+        self.run_xrun = xTools.get_true(self.flow_options, "run_xrun")
+        if not (self.run_modelsim or self.run_questasim or self.run_riviera or
+                self.run_activehdl or self.run_vcs or self.run_xrun):
             # try to read EXTERNAL_SIMULATION_TOOL value
             est = self.flow_options.get("simulation_tool")
             if est:
-                if est not in ("modelsim", "riviera", "questasim", "activehdl"):
+                if est not in ("modelsim", "riviera", "questasim", "activehdl", "vcs", "xrun"):
                     xTools.say_it("Error. Unknown simulation tools name: {}".format(est))
                     return 1
                 self.flow_options["run_{}".format(est)] = True
@@ -589,6 +600,8 @@ class LatticeEnvironment:
                 self.run_questasim = xTools.get_true(self.flow_options, "run_questasim")
                 self.run_riviera = xTools.get_true(self.flow_options, "run_riviera")
                 self.run_activehdl = xTools.get_true(self.flow_options, "run_activehdl")
+                self.run_vcs = xTools.get_true(self.flow_options, "run_vcs")
+                self.run_xrun = xTools.get_true(self.flow_options, "run_xrun")
         if self.run_riviera:
             closest_simulation_library = self.sim_vendor_name = self.riviera_path
             tool_name = "Riviera"
@@ -602,6 +615,13 @@ class LatticeEnvironment:
             if not self.sim_vendor_name:
                 # comes from Radiant/Diamond install path
                 self.sim_vendor_name = closest_simulation_library
+        elif self.run_vcs:
+            tool_name = "VCS"
+            self.sim_vendor_name = ""
+            closest_simulation_library = ""
+        elif self.run_xrun:
+            tool_name = "XRUN"
+            self.sim_vendor_name, closest_simulation_library = "", ""
         else:  # modelsim
             if not self.run_modelsim:
                 xTools.say_it("Use Modelsim as the default simulation tool ")
@@ -617,12 +637,14 @@ class LatticeEnvironment:
                 closest_simulation_library = os.path.join(self.diamond_be, "modeltech", oem_path)
             if not self.sim_vendor_name:
                 self.sim_vendor_name = closest_simulation_library
-
-        if xTools.not_exists(self.sim_vendor_name, "Simulation Tool Path: {}".format(tool_name)):
-            return 1
+        if self.sim_vendor_name:
+            if xTools.not_exists(self.sim_vendor_name, "Simulation Tool Path: {}".format(tool_name)):
+                return 1
+            os.environ["PATH"] = os.pathsep.join([self.sim_vendor_name, os.getenv("PATH", "")])
+        else:
+            self.sim_vendor_name = tool_name
         os.environ["SIM_VENDOR_BIN"] = self.sim_vendor_name
         os.environ["CLOSEST_SIM_LIB"] = closest_simulation_library
-        os.environ["PATH"] = os.pathsep.join([self.sim_vendor_name, os.getenv("PATH", "")])
 
     def explore_simulation_type(self):
         self.run_simrel = self.flow_options.get("run_simrel")
@@ -721,6 +743,7 @@ class UpdateLDF:
                     # <Source name="../import/PCK_CRC32_D8_(AAL5).vhd" type="VHDL" type_short="VHDL">
                     src_file = re.sub("\(", r"\(", src_file)
                     src_file = re.sub("\)", r"\)", src_file)
+                src_file = re.sub(r'\\', r"\\\\", src_file)
                 line = re.sub(src_file, real_src_file, line)
             else:
                 line = self.update_inc_path(line)
@@ -1371,14 +1394,18 @@ class CreateDiamondProjectFile:
         # add_lines.append('%s "%s"' % (self.tcl_cmd.get("save"), self.final_ldf_file))
         if self.dry_run:
             pass
+        x_syn = ""
         if self.run_synthesis:
-            add_lines.append("prj_run Synthesis -forceOne")
+            x_syn = "prj_run Synthesis {} -forceOne"
         elif self.sim_rtl:
             if self.sim_others:
-                add_lines.append("prj_run Synthesis")
+                x_syn = "prj_run Synthesis {} -forceOne"
         elif self.is_ng_flow:
             if self.flow_options.get("gen_pdc"):
-                add_lines.append("prj_run Synthesis -forceOne")
+                x_syn = "prj_run Synthesis {} -forceOne"
+        if x_syn:
+            st = "-task SynTrace " if self.is_ng_flow else ""
+            add_lines.append(x_syn.format(st))
 
         add_lines.append('%s "%s"' % (self.tcl_cmd.get("save"), self.final_ldf_file))
         add_lines.append(self.tcl_cmd.get("close"))
@@ -1388,46 +1415,23 @@ class CreateDiamondProjectFile:
         if wrap_run_tcl("synthesis_flow", add_lines, log_tag="run_pb"):
             return 1
 
-def old_parse_ldf_file(ldf_file):
-    from xml.etree import ElementTree
-    if xTools.not_exists(ldf_file, "Ldf File"):
-        return
-    root = ElementTree.parse(ldf_file)
-    ldf_dict = dict()
-
-    def get_node(node_name):
-        node = root.getiterator(node_name)
-        if not node:
-            xTools.say_it("-Error. Not found node %s in %s" % (node_name, ldf_file))
-            return ""
-        return node
-
-    # BaliProject
-    bali_node = get_node("BaliProject")
-    if bali_node:
-        ldf_dict["bali"] = bali_node[0].attrib
-
-    # Implementation
-    impl_node = get_node("Implementation")
-    if impl_node:
-        ldf_dict["impl"] = impl_node[0].attrib
-    # Source
-    src_node = get_node("Source")
-    if src_node:
-        src_list = list()
-        for child in src_node:
-            src_list.append(child.attrib)
-        ldf_dict["source"] = src_list
-    return ldf_dict
 
 def parse_ldf_file(ldf_file, for_radiant):
     from . import readXML
     return readXML.parse_ldf_file(ldf_file=ldf_file, for_radiant=for_radiant)
 
-def get_task_list(flow_options, user_options):
+def get_task_list(flow_options, user_options, donot_infer_options=True):
     task_list = list()
     till_map = flow_options.get("till_map")
+    x = "run_par_trace"
+    if donot_infer_options:
+        pass
+    else:
+        if flow_options.get(x) or user_options.get(x):
+            user_options["run_map_trace"] = 1
+            user_options["run_synthesis"] = 1
     for (task_name, task_cmd) in [
+        ["synthesis",       ["Synthesis", "SynTrace"]],
         ["translate",       ["Translate", ""]],
         ["map",             ["Map", ""]],
         ["map_trace",       ["Map", "MapTrace"]],
@@ -1729,14 +1733,15 @@ class RunTclFlow:
         user_options = dict()
         if self.till_map:
             return self._run_till_map_flow()
-        task_list = get_task_list(self.flow_options, user_options)
+        dnio = False if self.is_ng_flow else True
+        task_list = get_task_list(self.flow_options, user_options, donot_infer_options=dnio)
         if self.synthesis_only:
             return
         if not task_list:
             if self.run_synthesis:
                 return
             user_options = dict(run_par_trace=1)
-            task_list = get_task_list(dict(), user_options)
+            task_list = get_task_list(dict(), user_options, donot_infer_options=dnio)
         # User must specify which flow will be executed!
         sts = run_ldf_file("run_pb.tcl", self.final_ldf_file, task_list, flow_settings, is_ng_flow=self.is_ng_flow)
         self.run_ncl_flow()
@@ -1886,7 +1891,10 @@ class RunTclFlow:
             create_empty_lpf(my_lpf)
             disable_lines.append('prj_src add -exclude "%s"' % my_lpf)
             disable_lines.append('prj_src enable "%s"' % my_lpf)
-        process_task = [["Map", "MapTrace"]]
+        if self.is_ng_flow:
+            process_task = [["Synthesis", "SynTrace"], ["Map", "MapTrace"]]
+        else:
+            process_task = [["Map", "MapTrace"]]
         sts = run_ldf_file("run_till_map.tcl", self.final_ldf_file, process_task,
                            disable_lines, is_ng_flow=self.is_ng_flow)
         if sts:
@@ -2016,7 +2024,10 @@ class RunTclFlow:
                     xTools.say_it("Warning. Cannot specify synthesis frequency value!")
                 else:
                     my_flow_settings.append(self.special_frequency.format(fmax))
-                my_flow_settings.append("prj_run Synthesis -forceOne")
+                if self.is_ng_flow:
+                    my_flow_settings.append("prj_run Synthesis -task SynTrace -forceOne")
+                else:
+                    my_flow_settings.append("prj_run Synthesis -forceOne")
             sts = run_ldf_file(run_mark+".tcl", self.final_ldf_file, process_task, my_flow_settings, is_ng_flow=self.is_ng_flow)
             self.run_ncl_flow()
             move_bak_results(run_mark+".tcl", self.impl_dir, run_mark, sts)
@@ -2027,6 +2038,8 @@ class RunTclFlow:
 
     def _run_till_map_flow(self):
         process_task = [["Map", "MapTrace"]]
+        if self.is_ng_flow:
+            process_task = [["Synthesis", "SynTrace"], ["Map", "MapTrace"]]
         my_flow_settings = list()
         if self.is_ng_flow and self.fmax_sweep:
             #  disable sdc/ldc file
@@ -2351,5 +2364,28 @@ def run_scuba_flow(source_list, run_scuba, conf_options):
                 new_source_list.append(tt)
     return 0, new_source_list
 
-if __name__ == "__main__":
-    pass
+
+def run_pre_post_process(base_path, pp_scripts):
+    """
+    add function for getting the real scripts if it has command arguments
+    """
+    pp_scripts_list = re.split("\s+", pp_scripts)
+    real_pp = xTools.get_abs_path(pp_scripts_list[0], base_path)
+    if xTools.not_exists(real_pp, "pre/post process scripts"):
+        return 1
+    start_from_dir, pp = os.path.split(real_pp)
+    _recov = xTools.ChangeDir(start_from_dir)
+    fext = xTools.get_fext_lower(real_pp)
+    if fext == ".py":
+        cmd_line = "%s %s " % (sys.executable, pp)
+    elif fext == ".pl":
+        cmd_line = "perl %s " % pp
+    else:
+        xTools.say_it("Unknown pre/post process scripts: %s" % pp)
+        return 1
+    if len(pp_scripts_list) > 1:
+        cmd_line += " ".join(pp_scripts_list[1:])
+    xTools.say_it("Launching %s" % cmd_line)
+    sts = os.system(cmd_line)
+    _recov.comeback()
+    return sts

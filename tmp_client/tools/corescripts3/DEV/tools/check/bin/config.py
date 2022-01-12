@@ -9,6 +9,7 @@ class Environment(Default):
     """ Parse config file """
     def __init__(self, conf_file, flags=None):
         super(Environment, self).__init__()
+        # self.parser = configparser.ConfigParser(interpolation=None)
         self.parser = configparser.ConfigParser()
         self.conf_file = conf_file
         self.flags = flags
@@ -97,6 +98,8 @@ class Environment(Default):
                 return False
             if 'par' in method and 'sim_par' not in self.flags:
                 return False
+            return True
+        if method.startswith("check_value"):
             return True
 
         if 'file' not in configs:

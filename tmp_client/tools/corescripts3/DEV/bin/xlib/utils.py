@@ -341,8 +341,13 @@ def get_net_clk_names(mrp_file, is_ng_flow):
     long_lines = " ".join(hot_lines)
     nets = p_net.findall(long_lines)
     # assert clk_num == len(nets), "Not find all clocks in %s (%d != %d)" % (mrp_file, clk_num, len(nets))
-    f = lambda x: x.replace(" ", "")
-    return list(map(f, nets))
+    new_list = list()
+    for foo in nets:
+        foo = foo.replace(" ", "")
+        if foo[0] == "{":
+            foo = foo[1:-1]  # remove { and }
+        new_list.append(foo)
+    return new_list
 
 
 """
@@ -469,9 +474,11 @@ class GetClockFreq(object):
                     break
                 if self.p_following.search(line):
                     continue
-                t = re.split("\|", line)
-                t = list(map(string.strip, t))
-                self.hot_lines.append(t)
+                tt = re.split(r"\|", line)
+                x = list()
+                for foo in tt:
+                    x.append(foo.strip())
+                self.hot_lines.append(x)
 
     def get_real_list(self):
         self.real_list = list()
@@ -509,7 +516,10 @@ class GetClockFreq(object):
             raw_cons = item[0]
             m_clk_name = self.p_clk_name.search(raw_cons)
             if m_clk_name:
-                item[0] = [m_clk_name.group(1), m_clk_name.group(2)]
+                _name = m_clk_name.group(2)
+                if _name.startswith('{'):
+                    _name = _name[1:-1]
+                item[0] = [m_clk_name.group(1), _name]
                 self.clock_freq.append(dict(list(zip(titles, item))))
         xTools.say_it(self.clock_freq, "Clock Frequency", self.debug)
 

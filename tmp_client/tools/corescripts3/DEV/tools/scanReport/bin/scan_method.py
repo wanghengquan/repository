@@ -533,8 +533,7 @@ class ScanResource(ScanBasic):
                 'keyword_num': 'LSRMaxLoadNum',
             },
         ]
-
-        self.call_lower_method(ScanPattern, options, sorted(patterns_1.values()))
+        self.call_lower_method(ScanPattern, options, patterns_1.values())
         self.call_lower_method(ScanNumbers, options, patterns_2, handle_number=self.handle_number)
         self.call_lower_method(ScanNumbers, options, patterns_3)
 
@@ -574,7 +573,7 @@ class ScanLSE(ScanBasic):
             }
         ]
 
-        self.call_lower_method(ScanPattern, options, sorted(patterns_1.values()))
+        self.call_lower_method(ScanPattern, options, patterns_1.values())
         self.call_lower_method(ScanNumbers, options, patterns_2)
 
         carry = even = odd = lut = 0
@@ -621,7 +620,7 @@ class ScanPAR(ScanBasic):
                     'start_pattern': self.patterns['par_start_pattern'],
                 }
         patterns_1['par_signals'].pop('start_pattern')
-        self.call_lower_method(ScanPattern, options, sorted(patterns_1.values()))
+        self.call_lower_method(ScanPattern, options, patterns_1.values())
 
 
 class ScanCPU(ScanBasic):
@@ -657,7 +656,7 @@ class ScanCPU(ScanBasic):
         patterns_1['postsyn_cpu_Time']['start_pattern'] = self.patterns['cpu_postsyn_start_pattern']
         patterns_1['postsyn_cpu_Time']['stop_pattern'] = self.patterns['cpu_postsyn_stop_pattern']
 
-        self.call_lower_method(ScanPattern, options, sorted(patterns_1.values()), handle_number=self.handle_number)
+        self.call_lower_method(ScanPattern, options, patterns_1.values(), handle_number=self.handle_number)
 
         filename = get_file(self.files['cpu_synp_Time_file'])
         if filename:
@@ -744,7 +743,7 @@ class ScanMemory(ScanBasic):
             }
         ]
 
-        self.call_lower_method(ScanPattern, options, sorted(patterns_1.values()))
+        self.call_lower_method(ScanPattern, options, patterns_1.values())
         self.call_lower_method(ScanNumbers, options, patterns_2)
         self.call_lower_method(ScanPattern, options, patterns_3)
 

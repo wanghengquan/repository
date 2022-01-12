@@ -28,10 +28,12 @@ import data_center.switch_data;
 import gui_interface.view_data;
 import gui_interface.view_server;
 import info_parser.cmd_parser;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 import utility_funcs.des_encode;
+import utility_funcs.file_action;
 import utility_funcs.mail_action;
 import utility_funcs.time_info;
 import data_center.public_data;
@@ -43,6 +45,9 @@ public class hall_manager extends Thread {
 	private static final Logger HALL_MANAGER_LOGGER = LogManager.getLogger(hall_manager.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
+	private boolean auto_adjust = false;
+	private boolean auto_adjust_thread_match = false;
+	private Integer auto_adjust_prvious_finish = 0;
 	private Thread current_thread;
 	private switch_data switch_info;
 	private task_data task_info;
@@ -57,8 +62,8 @@ public class hall_manager extends Thread {
 	private ArrayList<Integer> client_history_cpu_list = new ArrayList<Integer>();
 	private ArrayList<Integer> client_history_mem_list = new ArrayList<Integer>();
 	// sub threads need to be launched
-	HashMap<String, task_waiter> task_waiters;
-	result_waiter waiter_result;
+	HashMap<String, task_waiter> task_runners;
+	result_waiter result_runner;
 	// public function
 	// protected function
 	// private function
@@ -134,7 +139,7 @@ public class hall_manager extends Thread {
 	
 	private void implement_task_blocker_actions(){
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -189,11 +194,13 @@ public class hall_manager extends Thread {
 		HashMap<task_enum, String> run_summary = new HashMap<task_enum, String>();
 		Integer pass_num = Integer.valueOf(0);
 		Integer fail_num = Integer.valueOf(0);
+		Integer swissue_num = Integer.valueOf(0);
+		Integer caseissue_num = Integer.valueOf(0);
 		Integer tbd_num = Integer.valueOf(0);
 		Integer timeout_num = Integer.valueOf(0);
 		Integer others_num = Integer.valueOf(0);
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		Iterator<String> queue_it = summary_map.keySet().iterator();
 		while(queue_it.hasNext()){
 			String queue_name = queue_it.next();
@@ -201,17 +208,68 @@ public class hall_manager extends Thread {
 			queue_data.putAll(summary_map.get(queue_name));
 			pass_num = pass_num + queue_data.getOrDefault(task_enum.PASSED, 0);
 			fail_num = fail_num + queue_data.getOrDefault(task_enum.FAILED, 0);
+			swissue_num = swissue_num + queue_data.getOrDefault(task_enum.SWISSUE, 0);
+			caseissue_num = caseissue_num + queue_data.getOrDefault(task_enum.CASEISSUE, 0);
 			tbd_num = tbd_num + queue_data.getOrDefault(task_enum.TBD, 0);
 			timeout_num = timeout_num + queue_data.getOrDefault(task_enum.TIMEOUT, 0);
 			others_num = others_num + queue_data.getOrDefault(task_enum.OTHERS, 0);
 		}
 		run_summary.put(task_enum.PASSED, pass_num.toString());
 		run_summary.put(task_enum.FAILED, fail_num.toString());
+		run_summary.put(task_enum.SWISSUE, swissue_num.toString());
+		run_summary.put(task_enum.CASEISSUE, caseissue_num.toString());
 		run_summary.put(task_enum.TBD, tbd_num.toString());
 		run_summary.put(task_enum.TIMEOUT, timeout_num.toString());
-		run_summary.put(task_enum.OTHERS, others_num.toString() );
+		run_summary.put(task_enum.OTHERS, others_num.toString());
 		return run_summary;
 	}	
+	
+	private HashMap<task_enum, Integer> get_client_run_case_summary_int(){
+		HashMap<task_enum, Integer> run_summary = new HashMap<task_enum, Integer>();
+		Integer pass_num = Integer.valueOf(0);
+		Integer fail_num = Integer.valueOf(0);
+		Integer swissue_num = Integer.valueOf(0);
+		Integer caseissue_num = Integer.valueOf(0);		
+		Integer tbd_num = Integer.valueOf(0);
+		Integer timeout_num = Integer.valueOf(0);
+		Integer others_num = Integer.valueOf(0);
+		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
+		Iterator<String> queue_it = summary_map.keySet().iterator();
+		while(queue_it.hasNext()){
+			String queue_name = queue_it.next();
+			HashMap<task_enum, Integer> queue_data = new HashMap<task_enum, Integer>();
+			queue_data.putAll(summary_map.get(queue_name));
+			pass_num = pass_num + queue_data.getOrDefault(task_enum.PASSED, 0);
+			fail_num = fail_num + queue_data.getOrDefault(task_enum.FAILED, 0);
+			swissue_num = swissue_num + queue_data.getOrDefault(task_enum.SWISSUE, 0);
+			caseissue_num = caseissue_num + queue_data.getOrDefault(task_enum.CASEISSUE, 0);			
+			tbd_num = tbd_num + queue_data.getOrDefault(task_enum.TBD, 0);
+			timeout_num = timeout_num + queue_data.getOrDefault(task_enum.TIMEOUT, 0);
+			others_num = others_num + queue_data.getOrDefault(task_enum.OTHERS, 0);
+		}
+		run_summary.put(task_enum.PASSED, pass_num);
+		run_summary.put(task_enum.FAILED, fail_num);
+		run_summary.put(task_enum.SWISSUE, swissue_num);
+		run_summary.put(task_enum.CASEISSUE, caseissue_num);		
+		run_summary.put(task_enum.TBD, tbd_num);
+		run_summary.put(task_enum.TIMEOUT, timeout_num);
+		run_summary.put(task_enum.OTHERS, others_num);
+		return run_summary;
+	}
+	
+	private Integer get_client_current_run_case_number() {
+		Integer total = Integer.valueOf(0);
+		HashMap<task_enum, Integer> run_data = new HashMap<task_enum, Integer>();
+		run_data.putAll(get_client_run_case_summary_int());
+		Iterator<task_enum> state_it = run_data.keySet().iterator();
+		while(state_it.hasNext()){
+			task_enum current_state = state_it.next();
+			Integer current_num = run_data.getOrDefault(current_state, 0);
+			total = total + current_num;
+		}
+		return total;
+	}
 	
 	private void implement_general_console_report() {
 		// skip for local console mode
@@ -223,7 +281,7 @@ public class hall_manager extends Thread {
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		//HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		// report Captured queue list
 		ArrayList<String> captured_queue_list = new ArrayList<String>();
@@ -311,22 +369,92 @@ public class hall_manager extends Thread {
 		}
 	}
 	
-	private void implement_thread_auto_adjustment(){
-		HashMap<String, String> preference_data = new HashMap<String, String>();
-		preference_data.putAll(client_info.get_client_preference_data());
-		if (preference_data.get("thread_mode").equals("manual")){
-			return;
+	private Boolean implement_local_debug_data_dump(){
+		Boolean dump_status = Boolean.valueOf(true);
+		if (!client_info.get_client_preference_data().get("debug_mode").equals("1")){
+			return dump_status;
 		}
-		//only when executing queue list not empty, this feature work
+		String work_space = client_info.get_client_preference_data().get("work_space");
+		String log_folder = public_data.WORKSPACE_LOG_DIR;
+		String dump_file = work_space + "/" + log_folder + "/debug/local/client_data.txt";
+		//generate title
+		StringBuilder title_sb = new StringBuilder();
+		title_sb.append("Time" + ",");
+		title_sb.append("Threads" + ",");		
+		title_sb.append("CPU" + ",");
+		title_sb.append("MEM" + ",");
+		title_sb.append("Space" + ",");
+		title_sb.append("CoreScript");
+		String title = title_sb.toString();
+		//generate message line
+		String thread_mode = new String();
+		thread_mode = auto_adjust ? "A" : "M";
+		int use_thread = pool_info.get_pool_used_threads();
+		int max_thread = pool_info.get_pool_current_size();
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(deep_clone.clone(client_info.get_client_system_data()));
+		HashMap<String, String> corescript_data = new HashMap<String, String>();
+		corescript_data.putAll(deep_clone.clone(client_info.get_client_corescript_data()));
+		StringBuilder msg_sb = new StringBuilder();
+		msg_sb.append(time_info.get_date_time() + ",");
+		msg_sb.append(String.valueOf(use_thread) + "/" + String.valueOf(max_thread) + "(" + thread_mode + "),");
+		msg_sb.append(system_data.getOrDefault("cpu", "NA") + ",");
+		msg_sb.append(system_data.getOrDefault("mem", "NA") + ",");
+		msg_sb.append(system_data.getOrDefault("space", "NA") + ",");
+		msg_sb.append(corescript_data.getOrDefault("version", "NA") + line_separator);
+		String message = msg_sb.toString();
+		//dump
+		file_action.append_file_with_title(dump_file, title, message);
+		return dump_status;
+	}
+	
+	private void thread_auto_adjustment_start_check() {
+		if (auto_adjust) {
+			return;//already in auto adjustment status
+		}
+		String def_thread_str = client_info.get_client_preference_data().get("max_threads");
+		int def_thread = Integer.parseInt(def_thread_str);		
+		//condition1: used thread = max_threads setting
+		if (!auto_adjust_thread_match) {
+			int used_thread = pool_info.get_pool_used_threads();
+			if (used_thread < def_thread) {
+				return;//default max threads didn't fully occupied
+			} else {
+				auto_adjust_thread_match = true;
+				auto_adjust_prvious_finish = get_client_current_run_case_number();
+				return;
+			}
+		}
+		//condition2: finish half of launched case
+		int new_finished_number = get_client_current_run_case_number() - auto_adjust_prvious_finish;
+		int half_def_thread_num = def_thread / 2;
+		if (new_finished_number >= half_def_thread_num) {
+			auto_adjust = true;
+		}
+	}
+	
+	private void thread_auto_adjustment_end_check() {
+		if (!auto_adjust) {
+			return;//already in non-auto adjustment status
+		}
+		int used_thread = pool_info.get_pool_used_threads();
+		if (used_thread <= 0) {
+			auto_adjust = false;
+			auto_adjust_thread_match = false;
+			auto_adjust_prvious_finish = 0;
+		}
+	}
+	
+	private void thread_auto_adjustment_status_check() {
+		//step 1. manual mode, no auto adjustment
+		if (client_info.get_client_preference_data().get("thread_mode").equals("manual")){
+			return;//manual mode no auto adjustment
+		}
+		//step 2. thread limitation sensed, no auto adjustment
 		ArrayList<String> executing_queue_list = new ArrayList<String>();
 		executing_queue_list.addAll(task_info.get_executing_admin_queue_list());
-		if(executing_queue_list.isEmpty()){
-			return;
-		}
-		//check thread limitation
 		HashMap<String, HashMap<String, HashMap<String, String>>> admin_queues_map = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		admin_queues_map.putAll(deep_clone.clone(task_info.get_captured_admin_queues_treemap()));		
-		//max threads setting.
 		Integer limit_threads = Integer.valueOf(0); //no limitation
 		for (String queue_name : executing_queue_list) {
 			if (!admin_queues_map.containsKey(queue_name)) {
@@ -340,17 +468,25 @@ public class hall_manager extends Thread {
 			HALL_MANAGER_LOGGER.info("Threads limitation found, 'Thread auto adjustment feature' disabled.");
 			return;
 		}
-		//system info record if not successfully record, skip this point
+		//step 3. do start end check
+		thread_auto_adjustment_start_check();
+		thread_auto_adjustment_end_check();
+	}
+	
+	private void implement_thread_auto_adjustment(){
+		//system info record, if not successfully recorded, skip this point
 		if (!current_system_info_record()){
 			return;
 		}
 		thread_auto_adjust_counter += 1;
 		if(thread_auto_adjust_counter <= public_data.PERF_AUTO_ADJUST_CYCLE){
-			return;// adjust cycle = 6 * 10 seconds
+			return;// adjust cycle = 12 * 10 seconds
 		}
 		//only when used thread >= pool_curent_size, this feature work
+		String def_thread_str = client_info.get_client_preference_data().get("max_threads");
+		int def_thread = Integer.parseInt(def_thread_str);	
 		int max_thread = pool_info.get_pool_current_size();
-		int used_thread = pool_info.get_pool_used_threads();
+		int use_thread = pool_info.get_pool_used_threads();
 		int cpu_avgs = get_integer_list_average(client_history_cpu_list);
 		int mem_avgs = get_integer_list_average(client_history_mem_list);
 		if(cpu_avgs == 0 || mem_avgs ==0){
@@ -358,17 +494,42 @@ public class hall_manager extends Thread {
 			cleanup_auto_adjust_record();
 			return;
 		}
-		if(cpu_avgs > public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs > public_data.PERF_AUTO_MAXIMUM_MEM){
-			if (used_thread <= max_thread){
-				decrease_max_thread();
-			}
+		if(cpu_avgs >= public_data.PERF_AUTO_MAXIMUM_CPU || mem_avgs >= public_data.PERF_AUTO_MAXIMUM_MEM){
+			run_system_overload_thread_update(use_thread, max_thread);
 		} 
 		if (cpu_avgs < public_data.PERF_AUTO_MAXIMUM_CPU && mem_avgs < public_data.PERF_AUTO_MAXIMUM_MEM){
-			if (used_thread >= max_thread){
-				increase_max_thread();
-			}			
+			run_system_normal_thread_update(use_thread, max_thread, def_thread);
 		}
 		cleanup_auto_adjust_record();	
+	}
+	
+	private void run_system_overload_thread_update(
+			int use_thread,
+			int max_thread
+			){
+		if (use_thread <= max_thread){
+			decrease_max_thread();
+		}
+	}
+	
+	private void run_system_normal_thread_update(
+			int use_thread,
+			int max_thread,
+			int def_thread
+			){
+		int half_def_thread = def_thread / 2;
+		if (use_thread >= max_thread){
+			increase_max_thread();
+			return;
+		}
+		if (max_thread < half_def_thread) {
+			increase_max_thread();
+			return;
+		} 
+		if (max_thread > def_thread && use_thread <= half_def_thread) {
+			decrease_max_thread();
+			return;
+		}
 	}
 	
 	private void decrease_max_thread(){
@@ -474,7 +635,7 @@ public class hall_manager extends Thread {
 			String queue_name){
 		String result_string = new String("");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
 		if (summary_map.containsKey(queue_name)){
 			run_queue_data.putAll(summary_map.get(queue_name));
@@ -490,7 +651,7 @@ public class hall_manager extends Thread {
 			String queue_name){
 		String run_result = new String("");
 		HashMap<String, HashMap<task_enum, Integer>> summary_map = new HashMap<String, HashMap<task_enum, Integer>>();
-		summary_map.putAll(task_info.get_client_run_case_summary_data_map());
+		summary_map.putAll(task_info.get_client_run_case_summary_status_map());
 		HashMap<task_enum, Integer> run_queue_data = new HashMap<task_enum, Integer>();
 		if (summary_map.containsKey(queue_name)){
 			run_queue_data.putAll(summary_map.get(queue_name));
@@ -547,10 +708,10 @@ public class hall_manager extends Thread {
 		// report processing queue list
 		HALL_MANAGER_LOGGER.info(">>>==========Exit Report==========");
 		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
-		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("cmd_gui"));
+		HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
-		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_data_map().size());
-		for (String queue_name: task_info.get_client_run_case_summary_data_map().keySet()){
+		HALL_MANAGER_LOGGER.info(">>>Finished queue(s): " + task_info.get_client_run_case_summary_status_map().size());
+		for (String queue_name: task_info.get_client_run_case_summary_status_map().keySet()){
 			HALL_MANAGER_LOGGER.info(">>>Run    Task:" + queue_name);
 			HALL_MANAGER_LOGGER.info(">>>Task Report:" + get_report_file_path(queue_name));
 			HALL_MANAGER_LOGGER.info(">>>Submit Code:" + get_task_queue_run_id(queue_name));
@@ -684,7 +845,7 @@ public class hall_manager extends Thread {
 	private void update_run_environment(
 			ArrayList<String> executing_list
 			) {
-		//Idle status go to default status
+		//Idle status go to default threads setting
 		if (executing_list.isEmpty()) {
 			reset_default_max_thread();
 			return;
@@ -785,8 +946,11 @@ public class hall_manager extends Thread {
 	}
 	
 	private void job_implementation_monitor() {
+		thread_auto_adjustment_status_check();
 		// task 1 : Maximum threads adjustment
-		implement_thread_auto_adjustment();
+		if(auto_adjust) {
+			implement_thread_auto_adjustment();
+		}
 		// task 2 : Send mail for task queue with too many blockers
 		implement_task_blocker_actions();
 	}
@@ -796,31 +960,45 @@ public class hall_manager extends Thread {
 		implement_general_console_report();
 		// task 2 : exit apply for local command line mode
 		implement_local_cmd_mode_exit();
+		// task 3 : local client and system info dump
+		implement_local_debug_data_dump();
 	}
 	
 	private void stop_sub_threads() {
-		waiter_result.soft_stop();
-		Iterator<String> waiters_it = task_waiters.keySet().iterator();
+		result_runner.soft_stop();
+		Iterator<String> waiters_it = task_runners.keySet().iterator();
 		while (waiters_it.hasNext()) {
 			String waiter_name = waiters_it.next();
-			task_waiter waiter = task_waiters.get(waiter_name);
+			task_waiter waiter = task_runners.get(waiter_name);
 			waiter.soft_stop();
 		}
 	}
 
 	private void wait_sub_threads(){
-		waiter_result.wait_request();
-		Iterator<String> waiters_it = task_waiters.keySet().iterator();
+		result_runner.wait_request();
+		Iterator<String> waiters_it = task_runners.keySet().iterator();
 		while (waiters_it.hasNext()) {
 			String waiter_name = waiters_it.next();
-			task_waiter waiter = task_waiters.get(waiter_name);
+			task_waiter waiter = task_runners.get(waiter_name);
 			waiter.wait_request();
 		}		
 	}
 	
 	private void wake_sub_threads(){
-		waiter_result.wake_request();
-		start_right_task_waiter(task_waiters, pool_info.get_pool_current_size());
+		result_runner.wake_request();
+		start_right_task_waiter(task_runners, pool_info.get_pool_current_size());
+	}
+	
+	private void initial_thread_pool_setting(){
+		int pool_size = Integer.valueOf(client_info.get_client_preference_data().get("pool_size"));
+		int max_threads = Integer.valueOf(client_info.get_client_preference_data().get("max_threads"));
+		pool_info.initialize_thread_pool(pool_size);
+		if (max_threads > pool_size){
+			HALL_MANAGER_LOGGER.warn("max_threads > pool_size, will use pool_size:" + pool_size +" as maximum threads num");
+			pool_info.set_pool_current_size(pool_size);
+		} else {
+			pool_info.set_pool_current_size(max_threads);
+		}
 	}
 	
 	public void run() {
@@ -836,10 +1014,12 @@ public class hall_manager extends Thread {
 	private void monitor_run() {
 		current_thread = Thread.currentThread();
 		// ============== All static job start from here ==============
+		// initial 0 : update default current size into Pool Data
+		initial_thread_pool_setting();
 		// initial 1 : start task waiters
-		task_waiters = get_task_waiter_ready();
+		task_runners = get_task_waiter_ready();
 		// initial 2 : start result waiter
-		waiter_result = get_result_waiter_ready();
+		result_runner = get_result_waiter_ready();
 		// initial 3 : Announce hall server ready
 		switch_info.set_hall_server_power_up();
 		HALL_MANAGER_LOGGER.info("Work Space:" + client_info.get_client_preference_data().get("work_space"));
@@ -855,6 +1035,7 @@ public class hall_manager extends Thread {
 				}
 			} else {
 				HALL_MANAGER_LOGGER.debug("hall manager Thread running...");
+				switch_info.update_threads_active_map(thread_enum.hall_runner, time_info.get_date_time());
 			}
 			// ============== All dynamic job start from here ==============
 			//task 1: build system environment according admin queues
@@ -912,7 +1093,7 @@ public class hall_manager extends Thread {
 		pool_data pool_info = new pool_data(public_data.PERF_POOL_MAXIMUM_SIZE);
 		view_server view_runner = new view_server(cmd_info, switch_info, client_info, task_info, view_info, pool_info, post_info);
 		view_runner.start();
-		data_server data_runner = new data_server(cmd_info, switch_info, client_info, pool_info);
+		data_server data_runner = new data_server(cmd_info, switch_info, client_info);
 		data_runner.start();
 		while (true) {
 			if (switch_info.get_data_server_power_up()) {

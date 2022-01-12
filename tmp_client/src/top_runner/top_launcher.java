@@ -31,6 +31,7 @@ import flow_control.pool_data;
 import gui_interface.view_data;
 import info_parser.cmd_parser;
 import top_runner.run_manager.client_manager;
+import top_runner.run_manager.thread_enum;
 
 
 public class top_launcher {
@@ -59,7 +60,7 @@ public class top_launcher {
             bin_path = bin_path.substring(0, bin_path.lastIndexOf("/") + 1);
         }
         File file = new File(bin_path);
-        bin_path = file.getAbsolutePath().replaceAll("\\\\", "/");
+        bin_path = file.getAbsolutePath().replaceAll("\\.$", "").replaceAll("\\\\", "/");
         return bin_path;
     }
 
@@ -117,15 +118,16 @@ public class top_launcher {
 		cmd_parser cmd_run = new cmd_parser(args);
 		HashMap<String, String> cmd_info = cmd_run.cmdline_parser();
 		// initial 2 : client manager launch
-		client_manager manager = new client_manager(
+		client_manager top_runner = new client_manager(
+				cmd_info,				
 				switch_info, 
 				client_info, 
 				task_info, 
 				view_info, 
 				pool_info,
-				cmd_info,
 				post_info);
-		manager.start();
+		top_runner.start();
+		switch_info.update_threads_object_map(thread_enum.top_runner, top_runner);
 		System.out.println(">>>Info: Run Machine:" + machine_sync.get_host_name());
 		System.out.println(">>>Info: Run Account:" + System.getProperty("user.name"));
 		int start_insts = switch_info.get_system_client_insts();

@@ -23,6 +23,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import gui_interface.view_data;
+import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.postrun_call;
@@ -292,6 +293,24 @@ public class result_waiter extends Thread {
 		post_info.fresh_postrun_call();
 		//clean post run map data (sys call map will be clean later)
 		clean_postrun_map_data();
+		//clean history send data
+		clean_history_send_data();
+		return run_status;
+	}
+	
+	private Boolean clean_history_send_data(){
+		Boolean run_status = Boolean.valueOf(true);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());
+		HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>>();
+		history_send_data.putAll(deep_clone.clone(pool_info.get_history_send_data()));
+		Iterator<String> history_index_it = history_send_data.keySet().iterator();
+		while (history_index_it.hasNext()){
+			String history_index = history_index_it.next();
+			if (!call_data.containsKey(history_index)){
+				pool_info.remove_history_send_data(history_index);
+			}
+		}
 		return run_status;
 	}
 	
@@ -349,7 +368,8 @@ public class result_waiter extends Thread {
 			String case_id = (String) one_call_data.get(pool_attr.call_case);
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
-			release_status = client_info.release_used_soft_insts(case_data.get("Software"));
+			Boolean parallel_cmd = Boolean.valueOf(case_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL));
+			release_status = client_info.release_used_soft_insts(case_data.get("Software"), parallel_cmd);
 		}
 		return release_status;
 	}
@@ -376,7 +396,66 @@ public class result_waiter extends Thread {
 		return release_status;
 	}
 	
-	private Boolean update_client_run_case_summary(
+	private void update_client_run_case_summary(
+			HashMap<String, HashMap<String, Object>> case_report_map) {
+		update_client_run_case_status_summary(case_report_map);
+		update_client_run_case_memory_summary();
+	}
+	
+	private Boolean update_client_run_case_memory_summary() {
+		Boolean update_status = Boolean.valueOf(true);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
+			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);			
+			// only done call will be release. timeout call will be get in
+			// the next cycle(at that time status will be done)
+			if (!call_status.equals(call_state.DONE)) {
+				continue;
+			}
+			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
+			String memory_info = (String) one_call_data.get(pool_attr.call_expmem);
+			if(memory_info.contains(".")) {
+				memory_info = memory_info.split("\\.")[0];
+			}
+			if(memory_valid_check(memory_info)) {
+				task_info.update_client_run_case_summary_memory_map(queue_name, get_valid_memory_data(memory_info));
+			}
+		}
+		return update_status;
+	}
+	
+	private Boolean memory_valid_check(
+			String memory_value
+			) {
+		Boolean status = Boolean.valueOf(true);
+		Integer value = Integer.valueOf(0);
+		try {
+			value = Integer.valueOf(memory_value);
+		} catch (NumberFormatException e) {
+			RESULT_WAITER_LOGGER.debug(memory_value + ", not a number");
+			return false;
+		}
+		if (value < 0) {
+			return false;
+		}
+		return status;
+	}
+	
+	private Integer get_valid_memory_data(
+			String memory_value
+			) {
+		Integer value = Integer.valueOf(memory_value);
+		if (value > Integer.valueOf(public_data.TASK_DEF_MAX_MEM_USG)) {
+			value = 16;
+		}
+		return value;
+	}
+	
+	private Boolean update_client_run_case_status_summary(
 			HashMap<String, HashMap<String, Object>> case_report_map) {
 		Boolean update_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
@@ -399,28 +478,28 @@ public class result_waiter extends Thread {
 			task_enum case_result = (task_enum) case_report_map.get(call_index).get("status");
 			switch (case_result) {
 			case PASSED:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.PASSED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.PASSED, 1);
 				break;
 			case FAILED:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.FAILED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.FAILED, 1);
 				break;
 			case TIMEOUT:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TIMEOUT, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.TIMEOUT, 1);
 				break;
 			case TBD:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.TBD, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.TBD, 1);
 				break;
 			case BLOCKED:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.BLOCKED, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.BLOCKED, 1);
 				break;	
 			case SWISSUE:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.SWISSUE, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.SWISSUE, 1);
 				break;	
 			case CASEISSUE:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.CASEISSUE, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.CASEISSUE, 1);
 				break;				
 			default:
-				task_info.increase_client_run_case_summary_data_map(queue_name, task_enum.OTHERS, 1);
+				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.OTHERS, 1);
 			}
 		}
 		return update_status;
@@ -463,7 +542,12 @@ public class result_waiter extends Thread {
 
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, String>> generate_case_runtime_log_data(
-			HashMap<String, HashMap<String, Object>> case_report_map) {
+			HashMap<String, HashMap<String, Object>> case_report_map
+			){
+		HashMap<String, String> system_data = new HashMap<String, String>();
+		system_data.putAll(client_info.get_client_system_data());
+		String host_name = client_info.get_client_machine_data().get("terminal");
+		String account = client_info.get_client_machine_data().getOrDefault("account", "NA");
 		HashMap<String, HashMap<String, String>> runtime_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());		
@@ -489,16 +573,25 @@ public class result_waiter extends Thread {
 			StringBuilder runlog = new StringBuilder();
 			//step 0: generate runlog title
 			runlog.append(line_separator);
-			runlog.append(line_separator);
 			runlog.append("####################" + line_separator);
-			runlog.append("Run with TMP client:" + public_data.BASE_CURRENTVERSION + line_separator);
-			//step 1: generate runtime location
-			String host_name = client_info.get_client_machine_data().get("terminal");
+			runlog.append("TMP Client:" + public_data.BASE_CURRENTVERSION + line_separator);
+			runlog.append("Run Time:" + time_info.get_date_time() + line_separator);
+			runlog.append("Host Info:");
+			runlog.append(host_name + "(" + account + "), ");
+			runlog.append("OS:" + system_data.getOrDefault("os", "NA") + ", ");
+			runlog.append("CPU:" + system_data.getOrDefault("cpu", "NA") + ", ");
+			runlog.append("MEM:" + system_data.getOrDefault("mem", "NA"));
+			runlog.append(line_separator);
+			runlog.append(line_separator);
+			//step 1: generate source location
+			String case_url = (String) one_call_data.get(pool_attr.call_caseurl);
+			runlog.append("Source Location(Case URL) ==> " + case_url.replaceAll("\\\\", "/") + line_separator);
+			//step 2: generate runtime location
 			String run_path = (String) one_call_data.get(pool_attr.call_laudir);
 			runlog.append("Runtime Location(Launch Path) ==> " + host_name + ":" + run_path + line_separator);
-			//step 2: generate save location
+			//step 3: generate save location
 			runlog.append(save_location_generate(task_data.get("Paths").get("save_path"), status));
-			//step 3: notes
+			//step 4: notes
 			runlog.append("Note:" + line_separator);
 			runlog.append("1. If the link above not work, please copy it to your file explorer manually."
 					+ line_separator);
@@ -506,11 +599,11 @@ public class result_waiter extends Thread {
 					+ line_separator);			
 			runlog.append(line_separator);
 			runlog.append(line_separator);
-			//step 4: generate runtime outputs
+			//step 5: generate runtime outputs
 			ArrayList<String> runtime_output_list = (ArrayList<String>) one_call_data.get(pool_attr.call_output);
 			runlog.append(String.join(line_separator, runtime_output_filter(runtime_output_list)));
 			runlog.append(line_separator);
-			//step 5: return data
+			//step 6: return data
 			String runlog_str = runlog.toString();
 			hash_data.put("runLog", remove_xml_modifier(runlog_str));
 			runtime_data.put(call_index, hash_data);
@@ -660,6 +753,7 @@ public class result_waiter extends Thread {
 		xml_string = xml_string.replaceAll(">", "&gt;");
 		return xml_string;
 	}
+	
 	@SuppressWarnings("unchecked")
 	private HashMap<String, HashMap<String, Object>> generate_case_report_data() {
 		HashMap<String, HashMap<String, Object>> case_data = new HashMap<String, HashMap<String, Object>>();
@@ -682,8 +776,8 @@ public class result_waiter extends Thread {
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
-			task_enum cmd_status = task_enum.OTHERS;
-			String cmd_reason = new String("NA");
+			task_enum task_status = task_enum.OTHERS;
+			String task_reason = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
 			String defects = new String("");
@@ -692,13 +786,13 @@ public class result_waiter extends Thread {
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
-					cmd_status = task_enum.TIMEOUT;
+					task_status = task_enum.TIMEOUT;
 				} else if(call_terminate) {
-					cmd_status = task_enum.HALTED;
+					task_status = task_enum.HALTED;
 				} else {
-					cmd_status = get_cmd_status((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+					task_status = get_task_status((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				}
-				cmd_reason = get_cmd_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+				task_reason = get_task_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				milestone = get_milestone_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
@@ -706,7 +800,7 @@ public class result_waiter extends Thread {
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));				
 			}  else {
-				cmd_status = task_enum.PROCESSING;
+				task_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
             hash_data.put("scan_result", scan_result);
@@ -714,8 +808,8 @@ public class result_waiter extends Thread {
 			hash_data.put("defects_history", defects_history);
 			hash_data.put("milestone", milestone);
 			hash_data.put("key_check", key_check);
-			hash_data.put("status", cmd_status);
-			hash_data.put("reason", cmd_reason);
+			hash_data.put("status", task_status);
+			hash_data.put("reason", task_reason);
 			hash_data.put("location", (String) one_call_data.get(pool_attr.call_laudir));
 			long start_time = (long) one_call_data.get(pool_attr.call_gentime);
 			long current_time = System.currentTimeMillis() / 1000;
@@ -759,61 +853,63 @@ public class result_waiter extends Thread {
 		return report_data;
 	}
 
-	private task_enum get_cmd_status(ArrayList<String> cmd_output) {
-		task_enum task_status = task_enum.OTHERS;
+	private task_enum get_task_status(ArrayList<String> call_output) {
+		task_enum task_status = task_enum.UNKNOWN;
 		String status = new String("NA");
-		if(cmd_output == null || cmd_output.isEmpty()) {
+		if(call_output == null || call_output.isEmpty()) {
 			return task_status;
 		}
 		// <status>Passed</status>
 		Pattern p = Pattern.compile("status>(.+?)</");
-		for (String line : cmd_output) {
+		for (String line : call_output) {
 			if (!line.contains("<status>")) {
 				continue;
 			}
 			Matcher m = p.matcher(line);
-			if (m.find()) {
-				status = m.group(1);
+			if (!m.find()) {
+				continue;
 			}
-		}
-		switch (status) {
-		case "Passed":
-			task_status = task_enum.PASSED;
-			break;
-		case "Failed":
-			task_status = task_enum.FAILED;
-			break;
-		case "TBD":
-			task_status = task_enum.TBD;
-			break;
-		case "Timeout":
-			task_status = task_enum.TIMEOUT;
-			break;
-		case "Case_Issue":
-			task_status = task_enum.CASEISSUE;
-			break;
-		case "SW_Issue":
-			task_status = task_enum.SWISSUE;
-			break;		
-		//web page no blocked status yet
-		//case "Blocked":
-		//	task_status = task_enum.FAILED; 
-		//	break;
-		default:
-			task_status = task_enum.OTHERS;
+			task_enum current_status = task_enum.UNKNOWN;
+			status = m.group(1);
+			//break; to find the last one
+			switch (status) {
+			case "Passed":
+				current_status = task_enum.PASSED;
+				break;
+			case "Failed":
+				current_status = task_enum.FAILED;
+				break;
+			case "TBD":
+				current_status = task_enum.TBD;
+				break;
+			case "Timeout":
+				current_status = task_enum.TIMEOUT;
+				break;
+			case "Case_Issue":
+				current_status = task_enum.CASEISSUE;
+				break;
+			case "SW_Issue":
+				current_status = task_enum.SWISSUE;
+				break;
+			default:
+				current_status = task_enum.OTHERS;
+			}
+			if (current_status.compareTo(task_status) > 0) {
+				task_status = current_status;
+			}
 		}
 		return task_status;
 	}
 
-	private String get_cmd_reason(ArrayList<String> cmd_output) {
+	private String get_task_reason(ArrayList<String> call_output) {
 		String reason = new String("NA");
-		if(cmd_output == null || cmd_output.isEmpty()){
+		if(call_output == null || call_output.isEmpty()){
 			return reason;
 		}
 		// get failed check points :  <section result>
 		Pattern section_patt = Pattern.compile("<\\s*?section\\s*?result\\s*?>\\s*?(.+?)\\s*?:\\s*?failed", Pattern.CASE_INSENSITIVE);
 		ArrayList<String> failed_array = new ArrayList<String>();
-		for (String line : cmd_output) {
+		for (String line : call_output) {
 			Matcher section_match = section_patt.matcher(line);
 			if (section_match.find()){
 				failed_array.add(section_match.group(1));
@@ -824,7 +920,7 @@ public class result_waiter extends Thread {
 		}
 		// get failed error messages
 		Pattern reason_patt = Pattern.compile("reason>(.+?)</");		
-		for (String line : cmd_output) {
+		for (String line : call_output) {
 			if (!line.contains("<reason>")) {
 				continue;
 			}
@@ -1052,6 +1148,7 @@ public class result_waiter extends Thread {
 				}
 			} else {
 				RESULT_WAITER_LOGGER.debug(waiter_name + ":Thread running...");
+				switch_info.update_threads_active_map(thread_enum.result_runner, time_info.get_date_time());
 			}
 			// take a rest
 			try {
@@ -1077,21 +1174,22 @@ public class result_waiter extends Thread {
 			}
 			// task 2 : terminate running call
 			terminate_user_request_running_call();
-			// task 3 : general and send task report
+			// task 3 : generate and send task report
 			HashMap<String, HashMap<String, Object>> case_report_data = generate_case_report_data();
 			HashMap<String, HashMap<String, String>> case_runtime_log_data = generate_case_runtime_log_data(case_report_data);
 			report_obj.send_tube_task_data_report(case_report_data, true);			
 			report_obj.send_tube_task_runtime_report(case_runtime_log_data);
-			// task 4 : update memory case run summary
+			// task 4 : generate console report
 			generate_console_report(waiter_name, case_report_data);
+			// task 5 : update case run summary
 			update_client_run_case_summary(case_report_data);
-			// task 5 : update processed task data info
+			// task 6 : update processed task data info
 			update_processed_task_data(case_report_data);
-			// task 6 : local report
+			// task 7 : local report
 			run_local_disk_report(case_report_data);
-			// task 7 : run post process
+			// task 8 : run post process
 			run_post_process(case_report_data);
-			// task 8 : release occupied resource
+			// task 9 : release occupied resource
 			release_resource_usage();
 		}
 	}

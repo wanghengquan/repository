@@ -10,6 +10,7 @@ from . import xTools
 
 __author__ = 'syan'
 
+
 class XOptions:
     def __init__(self, private_options):
         self.scripts_options = private_options
@@ -145,6 +146,7 @@ class XOptions:
                                help="specify sections")
         pub_group.add_argument("--check-smart", action="store_true", help="check results smartly")
         pub_group.add_argument("--check-logic-timing-not", action="store_true", help="DO NOT check logic timing")
+        pub_group.add_argument("--toe", action="store_true", help="trial and error")
 
         # self.parser.add_argument_group(pub_group)
 
@@ -175,12 +177,14 @@ class XOptions:
         ex_group.add_argument("--sim-questasim", dest="run_questasim", action="store_true", help="run simulation with Questasim")
         ex_group.add_argument("--sim-riviera",   dest="run_riviera", action="store_true", help="run simulation with Riviera")
         ex_group.add_argument("--sim-activehdl", dest="run_activehdl", action="store_true", help="run simulation with ActiveHDL")
+        ex_group.add_argument("--sim-vcs", dest="run_vcs", action="store_true", help="run simulation with VCS")
+        ex_group.add_argument("--sim-xrun", dest="run_xrun", action="store_true", help="run simulation with XRUN")
 
         sim_group.add_argument("--sim-rtl",     action="store_true", help="run rtl simulation")
         sim_group.add_argument("--sim-syn-vhd", action="store_true", help="run post synthesis simulation(VHDL)")
         sim_group.add_argument("--sim-syn-vlg", action="store_true", help="run post synthesis simulation(Verilog)")
         sim_group.add_argument("--sim-postsyn-vm", action="store_true",
-                             help="run post synthesis simulation with vm file( Radiant )")
+                               help="run post synthesis simulation with vm file( Radiant )")
         sim_group.add_argument("--sim-no-lst", action="store_true", help="do not dump lst file in simulation flow")
         if self.is_ng_flow:
             sim_group.add_argument("--dms", action="store_true", help="run Radiant DMS flow")
@@ -283,6 +287,9 @@ class XOptions:
         if not self.is_ng_flow:
             backend_group.add_argument("--run-map-vlg", action="store_true", help="generate Map Verilog Simulation File")
             backend_group.add_argument("--run-map-vhd", action="store_true", help="generate Map VHDL Simulation File")
+        else:
+            backend_group.add_argument("--run-synthesis-trce", dest="run_synthesis_trace", action="store_true",
+                                       help="run Radiant synthesis trace flow")
         backend_group.add_argument("--run-par", action="store_true", help="run PAR flow")
         backend_group.add_argument("--run-par-trce", dest="run_par_trace", action="store_true", help="run Place & Route Trace flow")
         backend_group.add_argument("--run-par-iota", dest="run_par_ta", action="store_true", help="run I/O Timing Analysis flow")
@@ -324,6 +331,9 @@ class XOptions:
         self.dms_standalone = self.scripts_options.get("dms_standalone")
         if self.timeout:
             os.environ["YOSE_TIMEOUT"] = str(self.timeout)
+        self.toe = self.scripts_options.get("toe")
+        if self.toe:
+            os.environ["trial_and_error"] = "1"
         self.info_file_name = self.scripts_options.get("info")
         self.job_dir = self.scripts_options.get("job_dir")
         self.tag = self.scripts_options.get("tag")

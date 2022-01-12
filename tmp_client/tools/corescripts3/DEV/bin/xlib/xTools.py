@@ -11,7 +11,6 @@ import configparser
 from . import revision_record
 import datetime
 
-
 __version__ = '2436 2019-3-22'
 __author__ = 'syan'
 
@@ -363,13 +362,13 @@ def rm_with_error(a_path):
     if os.path.isfile(a_path):
         try:
             os.remove(a_path)
-        except Exception as e:
-            pass
+        except Exception as ee:
+            e = ee
     elif os.path.isdir(a_path):
         try:
             shutil.rmtree(a_path)
-        except Exception as e:
-            pass
+        except Exception as ee:
+            e = ee
     if e:
         say_it(e)
         return 1
@@ -468,6 +467,9 @@ def get_status_output(cmd):
     except MemoryError:
         text = list()  # empty it!
         text.append("MemoryError, Failed to dump log for '{}'".format(cmd))
+    except Exception as e:
+        text = list()
+        text.append("{}, Failed to dump log for {}".format(repr(e), cmd))
     try:
         sts = pipe.close()
         if sts is None: sts = 0
@@ -476,7 +478,30 @@ def get_status_output(cmd):
     except IOError:
         sts = 1
     if sts is None: sts = 0
+    text = remove_needless_newline(text)
     return sts, text
+
+
+def remove_needless_newline(raw_list):
+    """In Python3.8.7, command like 'pnmainc xx.tcl' log has many needless newline
+       so need to be removed!
+    """
+    if not sys.platform.startswith("win"):
+        return raw_list
+    # make sure
+    x = raw_list[:1000][7::2]  # 1000: shorten time
+    if x.count("") < len(x) * 0.7:
+        return raw_list
+
+    new_list = list()
+    for i, item in enumerate(raw_list):
+        new_item = item.rstrip()
+        if divmod(i, 2)[1] == 1:
+            if not new_item:
+                continue
+        new_list.append(new_item)
+    return new_list
+
 
 def get_file_line_count(a_file):
     """
@@ -517,6 +542,7 @@ p_license_error = [re.compile(r"check\s+your\s+license\s+setup\s+to\s+ensure"),
                    re.compile("License unavailable"),
                    re.compile("You do not have a valid license"),
                    re.compile(r"Failure\s+to\s+obtain.+license"),
+                   re.compile(r"Failed to obtain license"),  # VCS
                    re.compile(r"Fail\s+to\s+get\s+license\s+for\s+")
                    # re.compile("Segmentation fault"),
                    # add more Exception here.
@@ -859,13 +885,25 @@ def run_safety(func, lock_file, *args, **kwargs):
         fcntl.flock(lock_ob,fcntl.LOCK_UN)
     return sts
 
-if __name__ == "__main__":
-    #print get_relative_path("none.log", r"D:\lscc31057\diamond\3.1\active-hdl\Books", r"f:\Mike")
-    print(get_file_line_count("rrr"))
 
-
-
-
-
-
-
+def remove_license_setting(phase="removing LICENSE_FILE"):
+    if sys.platform.startswith("win"):
+        import winreg
+        try:
+            _key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\FLEXlm License Manager')
+            _value, _type = winreg.QueryValueEx(_key, 'LATTICE_LICENSE_FILE')
+            reg_cmd = 'reg delete "hkcu\software\FLEXlm License Manager" /f /v LATTICE_LICENSE_FILE'
+            sts, text = get_status_output(reg_cmd)
+            if sts:
+                text.insert(0, phase)
+                say_it(text)
+        except:
+            sts = 1   # no LATTICE_LICENSE_FILE in register
+    else:
+        _flex_file = os.path.join(os.path.expanduser('~'), ".flexlmrc")
+        if not os.path.isfile(_flex_file):
+            sts = 1
+        else:
+            sts = rm_with_error(_flex_file)
+    if not sts:
+        say_it("{} removed successfully.".format(phase))

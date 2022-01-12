@@ -9,6 +9,8 @@
  */
 package data_center;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -30,6 +32,7 @@ public class client_data {
 	private HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 	private HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 	private HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
+	private Integer registered_memory = Integer.valueOf(0);
 	/*
 	 * private String task_assign_mode = public_data.DEF_TASK_ASSIGN_MODE;
 	 * private String thread_work_mode = public_data.DEF_MAX_THREAD_MODE;
@@ -48,6 +51,20 @@ public class client_data {
 
 	}
 
+	public HashMap<String, String> get_database_info() {
+		HashMap<String, String> result = new HashMap<String, String>();
+		rw_lock.readLock().lock();
+		try {
+			result.put("client_hash", client_hash.toString());
+			result.put("max_soft_insts", max_soft_insts.toString());
+			result.put("use_soft_insts", use_soft_insts.toString());
+			result.put("registered_memory", registered_memory.toString());
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return result;
+	}
+	
 	public HashMap<String, HashMap<String, String>> get_client_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
@@ -68,7 +85,7 @@ public class client_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
-
+	
 	public HashMap<String, String> get_client_system_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, String> temp = new HashMap<String, String>();
@@ -439,20 +456,35 @@ public class client_data {
 		return temp;
 	}
 
-	// release 1 usage for every software
-	public Boolean release_used_soft_insts(HashMap<String, String> release_data) {
+	// release usage for every software
+	public Boolean release_used_soft_insts(
+			HashMap<String, String> release_data,
+			Boolean cmds_parallel
+			) {
 		rw_lock.writeLock().lock();
 		Boolean release_result = Boolean.valueOf(true);
 		try {
 			if(release_data != null && !release_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
-				Set<String> release_data_set = release_data.keySet();
-				Iterator<String> release_data_it = release_data_set.iterator();
+				Iterator<String> release_data_it = release_data.keySet().iterator();
 				while (release_data_it.hasNext()) {
 					String sw_name = release_data_it.next();
 					Integer sw_insts = future_soft_insts.get(sw_name);
-					sw_insts = sw_insts - 1;
+					String sw_builds = release_data.get(sw_name);
+					ArrayList<String> sw_build_list = new ArrayList<String>();		
+					if (sw_builds.contains(",")){
+						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*,\\s*")));
+					} else if (sw_builds.contains(";")){
+						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*;\\s*")));
+					} else{
+						sw_build_list.add(sw_builds);
+					}
+					if (cmds_parallel) {
+						sw_insts = sw_insts - sw_build_list.size();
+					} else {
+						sw_insts = sw_insts - 1;
+					}
 					if (sw_insts < 0) {
 						sw_insts = 0;
 						release_result = false;
@@ -468,7 +500,9 @@ public class client_data {
 		return release_result;
 	}
 
-	public Boolean release_used_soft_insts_multi(HashMap<String, Integer> release_data) {
+	public Boolean release_used_soft_insts_multi(
+			HashMap<String, Integer> release_data
+			) {
 		rw_lock.writeLock().lock();
 		Boolean release_result = Boolean.valueOf(true);
 		try {
@@ -494,25 +528,38 @@ public class client_data {
 		return release_result;
 	}
 
-	// software name , build
-	// booking 1 usage for every used software
-	public Boolean booking_used_soft_insts(HashMap<String, String> booking_data) {
+	public Boolean booking_used_soft_insts(
+			HashMap<String, String> booking_data,
+			Boolean cmds_parallel
+			) {
 		rw_lock.writeLock().lock();
 		Boolean booking_result = Boolean.valueOf(true);
 		try {
 			if(booking_data != null && !booking_data.isEmpty()){
 				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
 				future_soft_insts.putAll(use_soft_insts);
-				Set<String> booking_data_set = booking_data.keySet();
-				Iterator<String> booking_data_it = booking_data_set.iterator();
+				Iterator<String> booking_data_it = booking_data.keySet().iterator();
 				while (booking_data_it.hasNext()) {
 					String sw_name = booking_data_it.next();
+					String sw_builds = booking_data.get(sw_name);
+					ArrayList<String> sw_build_list = new ArrayList<String>();		
+					if (sw_builds.contains(",")){
+						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*,\\s*")));
+					} else if (sw_builds.contains(";")){
+						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*;\\s*")));
+					} else{
+						sw_build_list.add(sw_builds);
+					}
 					Integer sw_insts = Integer.valueOf(0);
 					if (future_soft_insts.containsKey(sw_name)) {
 						sw_insts = future_soft_insts.get(sw_name);
 					}
 					Integer sw_max_insts = max_soft_insts.get(sw_name);
-					sw_insts = sw_insts + 1; // booking 1 usage for every software
+					if (cmds_parallel) {
+						sw_insts = sw_insts + sw_build_list.size();
+					} else {
+						sw_insts = sw_insts + 1;
+					}
 					if (sw_insts > sw_max_insts) {
 						booking_result = false;
 						break;
@@ -594,6 +641,54 @@ public class client_data {
 		}
 	}
 
+	//test_waiter registered_memory
+	public void clean_registered_memory() {
+		rw_lock.writeLock().lock();
+		try {
+			registered_memory = 0;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public Integer get_registered_memory() {
+		rw_lock.readLock().lock();
+		Integer temp = Integer.valueOf(0);
+		try {
+			temp = registered_memory;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void sub_registered_memory(
+			Integer value
+			) {
+		rw_lock.writeLock().lock();
+		Integer new_value = Integer.valueOf(0);
+		try {
+			new_value = registered_memory - value;
+			if (new_value < 0) {
+				registered_memory = 0;
+			} else {
+				registered_memory = new_value;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void add_registered_memory(
+			Integer value
+			) {
+		rw_lock.writeLock().lock();
+		try {
+			registered_memory = registered_memory + value;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
 	/*
 	 * main entry for test
 	 */

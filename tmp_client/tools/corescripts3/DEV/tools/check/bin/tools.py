@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 from .config import Environment
 from .__default__ import Default, ConfigIssue
@@ -7,19 +10,15 @@ import time
 import logging
 from .history_funcs import get_message
 import sys
-import json
-import urllib.request, urllib.error, urllib.parse
-import base64
 import glob
-import random
+from jira import JIRA
 import shutil
 from .pattern import FILE_PATTERNS
-from jira import JIRA
 
 
 def get_valid_crs(cr_note):
     valid_crs = list()
-    p_cr = re.compile("((SOF|DNG)-\d+)", re.I)
+    p_cr = re.compile(r"((SOF|DNG)-\d+)", re.I)
     m_all = p_cr.findall(cr_note)
     options = dict(server="http://jira",
                    basic_auth=Default.AUTHS[0])
@@ -87,15 +86,27 @@ def get_designs(args):
     return designs
 
 
+_KEYCRE = re.compile(r"%\(([^)]+)\)s")
+_KEY_TEMP = "LATTE-LATTICE-LSCC-LSH"
 def replace_tag(conf_file, args):
-    if args.tag:
-        with open(conf_file, 'r') as f:
-            lines = f.readlines()
-
-        with open(conf_file, 'w') as f:
-            for line in lines:
-                f.write(line.replace('*tag*', args.tag))
-
+    lines = list()
+    with open(conf_file, "r") as in_ob:
+        for line in in_ob:
+            lines.append(line)
+    with open(conf_file, 'w') as f:
+        for line in lines:
+            if args.tag:
+                line = line.replace('*tag*', args.tag)
+            if "%" in line:
+                if "%%" in line:
+                    pass
+                elif not _KEYCRE.search(line):   # same as Python2.7
+                    line = re.sub("%", "%%", line)
+            line = re.sub(r'\\r\\n', _KEY_TEMP, line)
+            line = re.sub("\\r", "", line)
+            line = re.sub(_KEY_TEMP, '\r\n', line)
+            if line:
+                f.write(line)
 
 def get_category(args):
     preset_options = args.preset_options
@@ -550,27 +561,46 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     :return: line number if str found else None
     """
     string = string.replace(' ', '').strip()
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        if index is not None:
-            if grep:
-                if re.search(string, lines[index].replace(' ', '').strip()):
-                    return index
-                else:
-                    return None
+    lines = try_to_get_lines_from_file(filename)
+    if index is not None:
+        if grep:
+            if re.search(string, lines[index].replace(' ', '').strip()):
+                return index
             else:
-                if string in lines[index].replace(' ', '').strip():
-                    return index
-                else:
-                    return None
-        for num, line in enumerate(lines[start+1:], 0):
-            if grep:
-                if re.search(string, line.replace(' ', '').strip()):
-                    return num
+                return None
+        else:
+            if string in lines[index].replace(' ', '').strip():
+                return index
             else:
-                if string in line.replace(' ', '').strip():
-                    return num
+                return None
+    for num, line in enumerate(lines[start+1:], 0):
+        if grep:
+            if re.search(string, line.replace(' ', '').strip()):
+                return num
+        else:
+            if string in line.replace(' ', '').strip():
+                return num
     return None
+
+
+def try_to_get_lines_from_file(a_file):
+    lines = list()
+    try:
+        with open(a_file, 'r') as f:
+            old_lines = f.readlines()
+            for foo in old_lines:
+                lines.append(foo)
+    except UnicodeDecodeError:
+        with open(a_file, 'rb') as f:
+            old_lines = f.readlines()
+            for foo in old_lines:
+                try:
+                    x = re.sub(b"\W", b"", foo)
+                    x = str(x, encoding="utf-8")
+                    lines.append(x)
+                except UnicodeDecodeError:
+                    pass
+    return lines
 
 
 def get_index_list_from_file_by_string(string, filename, index=None, start=-1, grep=False):
@@ -583,29 +613,28 @@ def get_index_list_from_file_by_string(string, filename, index=None, start=-1, g
     :return: index list
     """
     string = string.replace(' ', '').strip()
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        if index is not None:
-            if grep:
-                if re.search(string, lines[index].replace(' ', '').strip()):
-                    return [index]
-                else:
-                    return None
+    lines = try_to_get_lines_from_file(filename)
+    if index is not None:
+        if grep:
+            if re.search(string, lines[index].replace(' ', '').strip()):
+                return [index]
             else:
-                if string in lines[index].replace(' ', '').strip():
-                    return [index]
-                else:
-                    return None
-        index_list = list()
-        for num, line in enumerate(lines[start+1:], 0):
-            if grep:
-                if re.search(string, line.replace(' ', '').strip()):
-                    index_list.append(num)
+                return None
+        else:
+            if string in lines[index].replace(' ', '').strip():
+                return [index]
             else:
-                if string in line.replace(' ', '').strip():
-                    index_list.append(num)
-        if index_list:
-            return index_list
+                return None
+    index_list = list()
+    for num, line in enumerate(lines[start+1:], 0):
+        if grep:
+            if re.search(string, line.replace(' ', '').strip()):
+                index_list.append(num)
+        else:
+            if string in line.replace(' ', '').strip():
+                index_list.append(num)
+    if index_list:
+        return index_list
     return None
 
 
@@ -659,7 +688,7 @@ def string2re(raw_string, re_flag=None):
     if not raw_string:
         return None, None
     shorten_string = re.sub(r"\s+", "", raw_string)
-    raw_string = re.sub(r"\s+", r"\s+", raw_string)
+    raw_string = re.sub(r"\s+", r"\\s+", raw_string)
     raw_string = re.sub(r'"', r'\"', raw_string)
     if re_flag:
         flag_str = ', {}'.format(re_flag)
@@ -751,9 +780,9 @@ class GetStringFromFile(object):
                         counter += 1
                         if counter >= search_window:
                             m_start = None
-                            self.this_string = self._get_it(line)
-                            if self.this_string:
-                                return
+                        self.this_string = self._get_it(line)
+                        if self.this_string:
+                            return
 
     def _get_it(self, line):
         for p in self.pattern_list:

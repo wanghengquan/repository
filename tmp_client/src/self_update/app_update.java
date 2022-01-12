@@ -87,7 +87,7 @@ public class app_update implements UpdatedApplication  {
 			update_path = public_data.UPDATE_URL_DEV;
 		}		
 		// user_interface gui or cmd and attended or unattended
-		String user_interface = client_info.get_client_preference_data().get("cmd_gui");
+		String user_interface = new String(client_info.get_client_preference_data().get("interface_mode"));
 		String unattended_mode = client_info.get_client_machine_data().get("unattended");		
 		Boolean console_update = Boolean.valueOf(false); 
 		if (user_interface.equalsIgnoreCase("cmd")){ 
