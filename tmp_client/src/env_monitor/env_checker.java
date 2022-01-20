@@ -56,7 +56,7 @@ public class env_checker extends TimerTask {
 		python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
 		String cur_ver = version_info.get_python_version(python_cmd);
 		if (cur_ver.equals("unknown")) {
-			ENV_CHECKER_LOGGER.error("Get Python version error: unknown version");
+			ENV_CHECKER_LOGGER.warn("Get Python version error: unknown version");
 			return false;
 		}
 		String[] ver_array = cur_ver.split("\\.");
@@ -64,7 +64,7 @@ public class env_checker extends TimerTask {
 		if (version_info.version_suitable_check(public_data.BASE_PYTHONBASEVERSION, cur_ver_str, public_data.BASE_PYTHONMAXVERSION)) {
 			return true;
 		} else {
-			ENV_CHECKER_LOGGER.error("Python version out of scope:" + cur_ver_str);
+			ENV_CHECKER_LOGGER.warn("Python version out of scope:" + cur_ver_str);
 			return false;
 		}
 	}
@@ -81,7 +81,7 @@ public class env_checker extends TimerTask {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			ENV_CHECKER_LOGGER.error("Python environment check error out");
+			ENV_CHECKER_LOGGER.warn("Python environment check error out");
 		}
 		Pattern ok_patt = Pattern.compile("python\\s*ok", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
@@ -136,12 +136,12 @@ public class env_checker extends TimerTask {
 			}
 		}
 		if (!check_result) {
-			ENV_CHECKER_LOGGER.error("==Self Check failed==" + time_info.get_date_time());
-			ENV_CHECKER_LOGGER.error("Client Python Version:" + python_pass.toString());
-			ENV_CHECKER_LOGGER.error("Client Python Environ:" + python_env.toString());
-			ENV_CHECKER_LOGGER.error("Work Path Writable Check:" + writable_pass.toString());
-			ENV_CHECKER_LOGGER.error("Work Path:" + work_space);
-			ENV_CHECKER_LOGGER.error("");
+			ENV_CHECKER_LOGGER.warn("==Self Check failed==" + time_info.get_date_time());
+			ENV_CHECKER_LOGGER.warn("Client Python Version:" + python_pass.toString());
+			ENV_CHECKER_LOGGER.warn("Client Python Environ:" + python_env.toString());
+			ENV_CHECKER_LOGGER.warn("Work Path Writable Check:" + writable_pass.toString());
+			ENV_CHECKER_LOGGER.warn("Work Path:" + work_space);
+			ENV_CHECKER_LOGGER.warn("");
 			switch_info.set_client_environ_issue(true);
 		} else {
 			switch_info.set_client_environ_issue(false);

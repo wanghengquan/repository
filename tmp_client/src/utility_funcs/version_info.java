@@ -34,10 +34,10 @@ public class version_info {
 			excute_retruns.addAll(system_cmd.run(cmd));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			VERSION_INFO_LOGGER.error("Run command failed:" + cmd);
-			VERSION_INFO_LOGGER.error(e.toString());
+			VERSION_INFO_LOGGER.warn("Run command failed:" + cmd);
+			VERSION_INFO_LOGGER.warn(e.toString());
 			for(Object item: e.getStackTrace()){
-				VERSION_INFO_LOGGER.error(item.toString());
+				VERSION_INFO_LOGGER.warn(item.toString());
 			}
 		}
 		Pattern version_patt = Pattern.compile("python\\s(\\d*\\.\\d*.\\d*)", Pattern.CASE_INSENSITIVE);
@@ -51,9 +51,9 @@ public class version_info {
 			}
 		}
 		if (ver_str.equals("unknown")){
-			VERSION_INFO_LOGGER.error("Got unknown Python version. command returns:");
+			VERSION_INFO_LOGGER.warn("Got unknown Python version. command returns:");
 			for(String item: excute_retruns){
-				VERSION_INFO_LOGGER.error(item);
+				VERSION_INFO_LOGGER.warn(item);
 			}
 		}
 		return ver_str;
@@ -75,10 +75,10 @@ public class version_info {
 			excute_retruns.addAll(system_cmd.run(cmd));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			VERSION_INFO_LOGGER.error("Run command failed:" + cmd);
-			VERSION_INFO_LOGGER.error(e.toString());
+			VERSION_INFO_LOGGER.warn("Run command failed:" + cmd);
+			VERSION_INFO_LOGGER.warn(e.toString());
 			for(Object item: e.getStackTrace()){
-				VERSION_INFO_LOGGER.error(item.toString());
+				VERSION_INFO_LOGGER.warn(item.toString());
 			}		
 		}
 		Pattern version_patt = Pattern.compile("svn.+\\s+(\\d\\.\\d+\\.\\d+)", Pattern.CASE_INSENSITIVE);
@@ -92,9 +92,9 @@ public class version_info {
 			}
 		}
 		if (ver_str.equals("unknown")){
-			VERSION_INFO_LOGGER.error("Got unknown SVN version. command returns:");
+			VERSION_INFO_LOGGER.warn("Got unknown SVN version. command returns:");
 			for(String item: excute_retruns){
-				VERSION_INFO_LOGGER.error(item);
+				VERSION_INFO_LOGGER.warn(item);
 			}
 		}		
 		return ver_str;
