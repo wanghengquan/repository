@@ -13,14 +13,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.tube_server;
+import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.data_server;
@@ -964,6 +967,182 @@ public class hall_manager extends Thread {
 		implement_local_debug_data_dump();
 	}
 	
+	private void job_environment_cleanup() {
+		// task 1 : cleanup server deleted runs
+		implement_deleted_run_results();
+	}
+	
+	private void implement_deleted_run_results() {
+		// task 1 : get server deleted run info
+		Map<String, HashMap<String, HashMap<String, String>>> action_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		String host_names = client_info.get_client_machine_data().get("terminal");
+		try {
+			action_data.putAll(rmq_tube.read_action_server(host_names.split("\\s*,\\s*")[0], client_info));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			HALL_MANAGER_LOGGER.debug("Error out in cleanup queue reading.");
+		}
+		if (action_data.isEmpty() || !action_data.containsKey("action")) {
+			HALL_MANAGER_LOGGER.debug("No action data.");
+			return;
+		}
+		if (!action_data.get("action").containsKey("cleanup")) {
+			HALL_MANAGER_LOGGER.debug("No cleanup data.");
+			return;
+		}
+		// task 2 : prepare delete items
+		HashMap<String, String> cleanup_data = new HashMap<String, String>();
+		cleanup_data.putAll(action_data.get("action").get("cleanup"));
+		if(!cleanup_data.containsKey("run_id")) {
+			HALL_MANAGER_LOGGER.debug("No run_id data.");
+			return;
+		}
+		if(!cleanup_data.containsKey("project_id")) {
+			HALL_MANAGER_LOGGER.debug("No project_id data.");
+			return;
+		}
+		String project_id = new String(cleanup_data.get("project_id"));
+		String run_ids = new String(cleanup_data.get("run_id"));
+		// task 3 : delete run id check
+		ArrayList<String> deletable_ids = new ArrayList<String>();
+		deletable_ids.addAll(get_deletable_run_ids(run_ids));
+		// task 4 : delete data in memory
+		delete_memory_queue_info(deletable_ids);
+		// task 5 : delete log on disk
+		delete_local_log_info(deletable_ids);
+		// task 6 : delete work space run results
+		delete_work_space_results(project_id, deletable_ids);
+		// task 7 : delete save space run results
+		delete_save_space_results(project_id, deletable_ids);
+	}
+	
+	private void delete_save_space_results(
+			String project,
+			ArrayList<String> id_list
+			) {
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		String save_space = new String(client_info.get_client_preference_data().get("save_space"));
+		String tmp_result = new String(public_data.WORKSPACE_RESULT_DIR);
+		String prj_dir_name = new String("prj" + project);
+		String file_seprator = System.getProperty("file.separator");
+		Thread del_thread = new Thread() {
+			public void run() {
+				for(String run_id : id_list) {
+					String run_dir_name = new String("run" + run_id);
+					for(String save_path : save_space.split("\\s*,\\s*")) {
+			            if (save_path.equalsIgnoreCase(work_space)) {
+			                continue;
+			            }
+			            if (save_path.trim().equals("")) {
+			                continue;
+			            }
+						String[] path_array = new String[] { save_path, tmp_result, prj_dir_name, run_dir_name };
+						String result_url = String.join(file_seprator, path_array);	
+						File result_url_fobj = new File(result_url);
+						FileUtils.deleteQuietly(result_url_fobj);
+					}
+				}
+			}
+		};
+		del_thread.start();
+	}
+	
+	private void delete_work_space_results(
+			String project,
+			ArrayList<String> id_list
+			) {
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		String tmp_result = new String(public_data.WORKSPACE_RESULT_DIR);
+		String prj_dir_name = new String("prj" + project);
+		String file_seprator = System.getProperty("file.separator");
+		Thread del_thread = new Thread() {
+			public void run() {
+				for(String run_id : id_list) {
+					String run_dir_name = new String("run" + run_id);
+					String[] path_array = new String[] { work_space, tmp_result, prj_dir_name, run_dir_name };
+					String result_url = String.join(file_seprator, path_array);	
+					File result_url_fobj = new File(result_url);
+					FileUtils.deleteQuietly(result_url_fobj);
+				}
+			}
+		};
+		del_thread.start();
+	}
+	
+	private void delete_local_log_info(
+			ArrayList<String> id_list
+			) {
+		String work_space = new String(client_info.get_client_preference_data().get("work_space"));
+		String log_folder = new String(public_data.WORKSPACE_LOG_DIR);
+		String admin_dir = new String(work_space + "/" + log_folder + "/finished/admin");
+		String task_dir = new String(work_space + "/" + log_folder + "/finished/task");
+		for(String run_id : id_list) {
+			String run_id_str = new String("run_" + run_id);
+			file_action.del_file_match_expression(admin_dir, run_id_str);
+			file_action.del_file_match_expression(task_dir, run_id_str);
+		}
+	}
+	
+	private void delete_memory_queue_info(
+			ArrayList<String> id_list
+			) {
+		for(String run_id : id_list) {
+			String run_id_str = new String("run_" + run_id);
+			for (String queue_name: task_info.get_received_admin_queues_treemap().keySet()) {
+				if (queue_name.contains(run_id_str)) {
+					task_info.remove_queue_from_received_admin_queues_treemap(queue_name);
+				}
+			}
+			for (String queue_name: task_info.get_received_task_queues_map().keySet()) {
+				if (queue_name.contains(run_id_str)) {
+					task_info.remove_queue_from_received_task_queues_map(queue_name);
+				}
+			}
+			for (String queue_name: task_info.get_processed_admin_queues_treemap().keySet()) {
+				if (queue_name.contains(run_id_str)) {
+					task_info.remove_queue_from_processed_admin_queues_treemap(queue_name);
+				}
+			}
+			for (String queue_name: task_info.get_processed_task_queues_map().keySet()) {
+				if (queue_name.contains(run_id_str)) {
+					task_info.remove_queue_from_processed_task_queues_map(queue_name);
+				}
+			}
+			for (String queue_name: task_info.get_captured_admin_queues_treemap().keySet()) {
+				if (queue_name.contains(run_id_str)) {
+					task_info.remove_queue_from_captured_admin_queues_treemap(queue_name);
+				}
+			}
+			for (String queue_name: task_info.get_finished_admin_queue_list()) {
+				if (queue_name.contains(run_id_str)) {
+					task_info.remove_finished_admin_queue_list(queue_name);
+				}
+			}
+		}
+	}
+	
+	private ArrayList<String> get_deletable_run_ids(
+			String id_list
+			) {
+		ArrayList<String> deletable_ids = new ArrayList<String>();
+		for(String run_id : id_list.split("\\s*,\\s*")) {
+			String run_id_str = new String("run_" + run_id);
+			Boolean running_task = Boolean.valueOf(false);
+			for (String queue_name : task_info.get_running_admin_queue_list()) {
+				if (queue_name.contains(run_id_str)) {
+					HALL_MANAGER_LOGGER.debug("Cannot delete a running queue:" + queue_name);
+					running_task = true;
+					break;
+				}
+			}
+			if (!running_task) {
+				deletable_ids.add(run_id);
+			}
+		}
+		return deletable_ids;
+	}
+	
 	private void stop_sub_threads() {
 		result_runner.soft_stop();
 		Iterator<String> waiters_it = task_runners.keySet().iterator();
@@ -1044,6 +1223,8 @@ public class hall_manager extends Thread {
 			job_implementation_monitor();
 			//task 3: run environment update(thread pool, task waiter)
 			job_report_generation();
+			//task 4 run environment cleanup
+			job_environment_cleanup();
 			try {
 				Thread.sleep(base_interval * 2 * 1000);
 			} catch (InterruptedException e) {

@@ -1016,7 +1016,7 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("work_suite", work_suite);		
 		//get suite save path save_suite
-        String[] tmp_space = save_space.split(",");
+        String[] tmp_space = save_space.split("\\s*,\\s*");
         ArrayList<String> tmp_suite = new ArrayList<String>();    
 		if (case_mode.equalsIgnoreCase("hold_case")){
 			save_suite = repository + "/" + suite_path;

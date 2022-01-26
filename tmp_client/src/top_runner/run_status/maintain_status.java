@@ -612,10 +612,10 @@ public class maintain_status extends abstract_status {
 				client.STATUS_LOGGER.warn("Task file removed:" + task_path);
 			}
 			// delete results in disk
-			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+			String tmp_result = public_data.WORKSPACE_RESULT_DIR;
 			String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 			String run_dir_name = "run" + admin_data.get("ID").get("run");
-			String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name };
+			String[] path_array = new String[] { work_space, tmp_result, prj_dir_name, run_dir_name };
 			String file_seprator = System.getProperty("file.separator");
 			String result_url = String.join(file_seprator, path_array);	
 			File result_url_fobj = new File(result_url);

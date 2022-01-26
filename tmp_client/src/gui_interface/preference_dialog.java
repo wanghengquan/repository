@@ -446,7 +446,7 @@ public class preference_dialog extends JDialog implements ActionListener, Runnab
 			} else {
 				save_space = jt_save_path.getText().trim().replaceAll("\\\\", "/");
 			}
-            String save_spaces[] = save_space.split(",");
+            String save_spaces[] = save_space.split("\\s*,\\s*");
             String message = new String("save space Not Exists:");
             for(String tmp_space:save_spaces){
                 File work_dobj = new File(tmp_space.trim());

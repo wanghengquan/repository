@@ -102,9 +102,9 @@ public class postrun_call implements Callable<Object> {
 			String result_keep){
 		Boolean run_status = Boolean.valueOf(true);
 		//task 1: copy run results
-        String[] tmp_space = save_space.split(",");
-        String[] tmp_suite = save_suite.split(",");
-        String[] tmp_path = save_path.split(",");
+        String[] tmp_space = save_space.split("\\s*,\\s*");
+        String[] tmp_suite = save_suite.split("\\s*,\\s*");
+        String[] tmp_path = save_path.split("\\s*,\\s*");
         String os_type = System.getProperty("os.name").toLowerCase();
         for(int i=0; i<tmp_space.length; i++) {
             String save_space_index = tmp_space[i].trim();
@@ -247,8 +247,8 @@ public class postrun_call implements Callable<Object> {
 			return true;
 		}
 		//task 1: copy run results
-        String[] tmp_space = save_space.split(",");
-        String[] tmp_suite = save_suite.split(",");
+        String[] tmp_space = save_space.split("\\s*,\\s*");
+        String[] tmp_suite = save_suite.split("\\s*,\\s*");
         for(int i=0; i<tmp_space.length; i++) {
             String save_space_index = tmp_space[i].trim();
             String save_suite_index = tmp_suite[i].trim();
