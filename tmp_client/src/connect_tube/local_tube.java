@@ -56,7 +56,7 @@ public class local_tube {
 
 	public static Boolean suite_files_sanity_check(String file_paths) {
 		Boolean all_pass = Boolean.valueOf(true);
-		for (String file:file_paths.split(",")){
+		for (String file:file_paths.split("\\s*,\\s*")){
 			if (!suite_file_sanity_check(file)){
 				all_pass = false;
 			}
@@ -376,7 +376,7 @@ public class local_tube {
 					continue;
 				}
 				String case_order = new String("");
-				String[] flow_array = column_flow.split(";");
+				String[] flow_array = column_flow.split("\\s*;\\s*");
 				for (String flow_item : flow_array) {
 					Map<String, String> row_data = new HashMap<String, String>();
 					case_order = String.join("_", column_order, flow_item);
@@ -509,7 +509,7 @@ public class local_tube {
 		if (sort_str == null || sort_str.equals("")){
 			return return_data;
 		}
-		for (String section : sort_str.split(";")){
+		for (String section : sort_str.split("\\s*;\\s*")){
 			String option = new String("");
 			String value = new String("");
 			option = section.split("=")[0].trim().toLowerCase();
@@ -579,7 +579,7 @@ public class local_tube {
 					LOCAL_TUBE_LOGGER.warn("Skip macro action non key=value input for columns" + column_list.toString());
 					continue;
 				}
-				String[] ori_value_list = ori_value.split(";");
+				String[] ori_value_list = ori_value.split("\\s*;\\s*");
 				List<String> final_value_list = new ArrayList<String>();
 				for (String item : ori_value_list) {
 					if (item.contains("=")) {
@@ -743,9 +743,9 @@ public class local_tube {
 		List<String> env_list = new ArrayList<String>();
 		if (extra_env.length() > 0){
 			if (extra_env.contains(",")){
-				env_list.addAll(Arrays.asList(extra_env.split(",")));
+				env_list.addAll(Arrays.asList(extra_env.split("\\s*,\\s*")));
 			} else if (extra_env.contains(";")){
-				env_list.addAll(Arrays.asList(extra_env.split(";")));
+				env_list.addAll(Arrays.asList(extra_env.split("\\s*;\\s*")));
 			} else{
 				env_list.add(extra_env);
 			}
@@ -803,8 +803,8 @@ public class local_tube {
 	private HashMap<String, String> comm_suite_case_merge(String suite_info, String case_info) {
 		String globle_str = suite_info.replaceAll("^;", "");
 		String local_str = case_info.replaceAll("^;", "");
-		String[] globle_array = globle_str.split(";");
-		String[] local_array = local_str.split(";");
+		String[] globle_array = globle_str.split("\\s*;\\s*");
+		String[] local_array = local_str.split("\\s*;\\s*");
 		HashMap<String, String> globle_data = new HashMap<String, String>();
 		for (String globle_item : globle_array) {
 			if (!globle_item.contains("=")) {
@@ -1121,7 +1121,7 @@ public class local_tube {
 	public static Boolean suite_paths_sanity_check(
 			String suite_paths, 
 			String suite_key) {
-		for (String suite_path : suite_paths.split(",")){
+		for (String suite_path : suite_paths.split("\\s*,\\s*")){
 			File path_fobj = new File(suite_path);
 			if(!path_fobj.exists()){
 				suite_path_error_msg = "Error: Suite path not exists:" + suite_paths;
@@ -1338,9 +1338,9 @@ public class local_tube {
 		List<String> env_list = new ArrayList<String>();
 		if (extra_env.length() > 0){
 			if (extra_env.contains(",")){
-				env_list.addAll(Arrays.asList(extra_env.split(",")));
+				env_list.addAll(Arrays.asList(extra_env.split("\\s*,\\s*")));
 			} else if (extra_env.contains(";")){
-				env_list.addAll(Arrays.asList(extra_env.split(";")));
+				env_list.addAll(Arrays.asList(extra_env.split("\\s*;\\s*")));
 			} else{
 				env_list.add(extra_env);
 			}
@@ -1630,9 +1630,9 @@ public class local_tube {
 		List<String> env_list = new ArrayList<String>();
 		if (extra_env.length() > 0){
 			if (extra_env.contains(",")){
-				env_list.addAll(Arrays.asList(extra_env.split(",")));
+				env_list.addAll(Arrays.asList(extra_env.split("\\s*,\\s*")));
 			} else if (extra_env.contains(";")){
-				env_list.addAll(Arrays.asList(extra_env.split(";")));
+				env_list.addAll(Arrays.asList(extra_env.split("\\s*;\\s*")));
 			} else{
 				env_list.add(extra_env);
 			}
@@ -1809,7 +1809,7 @@ public class local_tube {
 				}
 				String case_value = new String(check_data.get(request_option).toLowerCase());
 				//if (!check_data.get(request_option).equalsIgnoreCase(request_value)) {
-				if (!Arrays.asList(request_value.split(",")).contains(case_value)) {
+				if (!Arrays.asList(request_value.split("\\s*,\\s*")).contains(case_value)) {
 					valid_case = false;
 					break;
 				}

@@ -616,7 +616,7 @@ public class result_waiter extends Thread {
 		StringBuilder loc_rpt = new StringBuilder();
         String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
         String lin_href = "<a href=file:///%s  target='_blank'>%s";		
-        String[] ori_paths = save_paths.split(",");
+        String[] ori_paths = save_paths.split("\\s*,\\s*");
         //get effective and unique paths
         ArrayList<String> uniq_paths = new ArrayList<String>();
         for(String path: ori_paths) {

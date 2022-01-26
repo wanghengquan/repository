@@ -121,7 +121,7 @@ public class data_check {
 	public static Boolean str_sort_format_check(
 			String input_data){
 		Boolean check_result = Boolean.valueOf(true);
-		String [] sort_sections = input_data.split(";");
+		String [] sort_sections = input_data.split("\\s*;\\s*");
 		for (String section : sort_sections){
 			Boolean section_ok = str_regexp_check(section, "\\w\\s*=\\s*\\w");
 			if (!section_ok){

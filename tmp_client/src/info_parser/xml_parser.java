@@ -161,6 +161,7 @@ public class xml_parser {
 			"<data>" + 
 				"<Sub name=\"request\" value=\"data\"></Sub>" +
 				"<Sub name=\"return\" value=\"data\"></Sub>" +
+			"</data>" +	
 		"</slave_data>";
 		Map<String, HashMap<String, HashMap<String, String>>> level1_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Document xml_doc = null;

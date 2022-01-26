@@ -1038,7 +1038,7 @@ public class task_prepare {
 			//job run control prepare
 			List<String> ctl_array = new ArrayList<String>();
 			String ctl_string = new String(task_data.get("LaunchCommand").getOrDefault("exe_ctrl", "").trim());
-			for(String ctl_item: ctl_string.split(",")) {
+			for(String ctl_item: ctl_string.split("\\s*,\\s*")) {
 				if(ctl_item.contains("?" + option_name)) {
 					ctl_array.add(ctl_item.replaceAll("\\?" + option_name, ""));
 				}
