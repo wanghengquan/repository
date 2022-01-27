@@ -1,0 +1,18 @@
+[QAS Information]
+Owener = XQ
+QOR Level = 1
+ID = 125_vlog_statmchs_sum3
+Keyword = LSE
+QAS Type = LSE
+[Case Information]
+Family = LatticeECP2
+Package = FPBGA900
+Module = vlog_statmchs_sum3
+Project = vlog_statmchs_sum3
+File List = vlog_statmchs_sum3.v, vlog_statmchs_sum3_tb.v
+Design = vlog_statmchs_sum3
+Device = LFE2-70E
+Entry = Verilog HDL
+Speed = 7
+[QAS Description]
+; LSE UT by XQ

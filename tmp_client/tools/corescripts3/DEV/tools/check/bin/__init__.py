@@ -10,6 +10,8 @@ CheckNo().plugin()
 
 CheckBlock().plugin()
 
+CheckRbt().plugin()
+
 CheckData().plugin()
 
 CheckFlow().plugin()
@@ -47,6 +49,8 @@ CheckSynSim().plugin()
 CheckMapSim().plugin()
 
 CheckParSim().plugin()
+
+CheckBitSim().plugin()
 
 CheckClkLse().plugin()
 

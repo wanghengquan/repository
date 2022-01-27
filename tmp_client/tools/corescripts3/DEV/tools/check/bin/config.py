@@ -98,6 +98,8 @@ class Environment(Default):
                 return False
             if 'par' in method and 'sim_par' not in self.flags:
                 return False
+            if 'bit' in method and 'sim_bit' not in self.flags:
+                return False
             return True
         if method.startswith("check_value"):
             return True

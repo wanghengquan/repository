@@ -1,0 +1,18 @@
+[QAS Information]
+Owener = XQ
+QOR Level = 1
+ID = 028_vhdl_misc_resrcshr_on
+Keyword = LSE
+QAS Type = LSE
+[Case Information]
+Family = LatticeECP2
+Package = FPBGA900
+Module = vhdl_misc_resrcshr_on
+Project = vhdl_misc_resrcshr_on
+File List = vhdl_misc_resrcshr_on.vhd, vhdl_misc_resrcshr_on_tb.vhd
+Design = vhdl_misc_resrcshr_on
+Device = LFE2-70E
+Entry = VHDL
+Speed = 7
+[QAS Description]
+; LSE UT by XQ

@@ -226,19 +226,20 @@ class CheckValue(Method):
             real_judge_string = judge_string.format(**self.env.value_dict)
         except KeyError:
             raise ConfigIssue("not specified all value for {}".format(judge_string))
+        x_out = '"{}": {}'.format(judge_string, real_judge_string)
         if 'None' in real_judge_string:
-            self.log_error("None in string: {}".format(real_judge_string))
+            self.log_error('Failed due to None in string {}'.format(x_out))
             self.ret = Default.FAIL
             return
         try:
             judge_result = eval(real_judge_string)
-            self.log_info('Judging: {}, the Result is: {}'.format(real_judge_string, judge_result))
+            self.log_info('Judging {}, the Result is: {}'.format(x_out, judge_result))
             if judge_result is False:
-                self.log_error("Expression: {} IS FAIL".format(real_judge_string))
+                self.log_error("Expression {} IS FAIL".format(x_out))
                 self.ret = Default.FAIL
                 return
         except TypeError:
-            raise ConfigIssue('cannot get judge result for {}'.format(real_judge_string))
+            raise ConfigIssue('cannot get judge result for {}'.format(x_out))
         self.ret = Default.PASS
 
 
@@ -582,6 +583,59 @@ class CheckDiamondFlow(CheckRadiantFlow):
         self.logic_flow = {
             'synthesis': 'synp | lse'
         }
+
+
+class CheckRbt(Method):
+    def __init__(self):
+        Method.__init__(self)
+        self.__name__ = 'check_rbt'
+
+    @staticmethod
+    def get_rbt_data(rbt_file):
+        _data = dict()
+        with open(rbt_file) as ob:
+            for i, line in enumerate(ob):
+                if i > 30:  # ONLY parse 30 lines
+                    break
+                line = line.strip()
+                if not line:
+                    continue
+                line = re.sub(r"\s", "", line)
+                line_list = re.split(":", line)
+                if len(line_list) > 1:
+                    _data[line_list[0]] = ":".join(line_list[1:])
+        return _data
+
+    def handle_for_rbt_file(self, old_rbt_file, new_rbt_file):
+        must_be_same_titles = ("Rows", "Cols", "Bits", "BitstreamCRC", "FileFormat")  # no space
+        must_be_diff_titles = ("Date",)
+        old_dict = self.get_rbt_data(old_rbt_file)
+        new_dict = self.get_rbt_data(new_rbt_file)
+        for k in must_be_same_titles:
+            old_v, new_v = old_dict.get(k), new_dict.get(k)
+            if old_v != new_v:
+                self.log_error("value {} and {} for {} should be same!".format(old_v, new_v, k))
+                self.ret = Default.FAIL
+                return
+        for k in must_be_diff_titles:
+            old_v, new_v = old_dict.get(k), new_dict.get(k)
+            if old_v == new_v and new_v:
+                self.log_error("value {} for {} should be different.".format(new_v, k))
+                self.ret = Default.FAIL
+                return
+        self.log_info('check rbt pass!')
+
+    def handle(self, task, section):
+        try:
+            compare_file = os.path.abspath(section['compare_file'])
+            compare_file = glob.glob(compare_file)[0]
+            golden_file = os.path.abspath(section['golden_file'])
+            golden_file = glob.glob(golden_file)[0]
+        except Exception:
+            self.log_error("Cannot find golden_file and/or compare_file")
+            self.ret = Default.FAIL
+            return
+        return self.handle_for_rbt_file(golden_file, compare_file)
 
 
 class CheckBlock(Method):
@@ -1091,6 +1145,17 @@ class CheckParSim(CheckSim):
         self.language = 'verilog'
         self.passkey = 'PASS'
         self.failkey = 'FAIL'
+        
+
+class CheckBitSim(CheckSim):
+    def __init__(self):
+        CheckSim.__init__(self)
+        self.__name__ = 'check_sim_bit'
+        self.path = './_scratch/sim_bit_vlg'
+        self.filename = 'outlog.log'
+        self.language = 'verilog'
+        self.passkey = 'PASS'
+        self.failkey = 'FAIL'        
 
 
 class CheckResource(Method):

@@ -209,7 +209,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
 
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -266,15 +266,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$',
                 },
             },
 
@@ -429,7 +432,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
 
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -486,15 +489,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$'
                 },
             },
         }
@@ -669,7 +675,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
 
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -726,15 +732,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$'
                 },
             },
 
@@ -907,7 +916,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
                     
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -965,15 +974,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$'
                 },
             },
         }

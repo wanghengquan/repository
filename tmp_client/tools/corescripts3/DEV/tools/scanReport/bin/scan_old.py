@@ -113,7 +113,11 @@ def get_simple_digit_str(a_float_int):
 
 def get_run_time(f, patterns):
     raw_time_list = list()
-    for line in open(f):
+    for line in open(f, "rb"):   # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xdd
+        try:
+            line = line.decode()
+        except:
+            continue
         for p in patterns:
             m = p.findall(line)
             if m:

@@ -56,8 +56,8 @@ radix -hex
 
 ##start to run simulation
 ##<sim_start>
-# v-s-i-m -L work %(sim_top)s  -L %(lib_name)s -L black_box %(pmi_work)s %(resolution)s
-vsim -L work %(sim_top)s  -L %(lib_name)s  %(pmi_work)s %(resolution)s
+# v-s-i-m -L work %(sim_top)s  -L %(lib_name)s -L black_box %(pmi_work)s %(resolution)s %(suppress)s
+vsim -L work %(sim_top)s  -L %(lib_name)s  %(pmi_work)s %(resolution)s %(suppress)s
 
 # /* 20150601 Sally
 #  * Fatal: (vsim-3693) The minimum time resolution limit (1ps) in the Verilog source is smaller than the one chosen

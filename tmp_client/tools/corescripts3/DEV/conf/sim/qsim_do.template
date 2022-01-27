@@ -55,7 +55,7 @@ radix -hex
 
 ##start to run simulation
 ##<sim_start>
-vsim -voptargs=+acc -L work %(sim_top)s  -L %(lib_name)s -L black_box %(pmi_work)s %(resolution)s
+vsim -voptargs=+acc -L work %(sim_top)s  -L %(lib_name)s -L black_box %(pmi_work)s %(resolution)s %(suppress)s
 if {$gui_cmd == "cmd"} {
     add list -nodelta -hex -notrigger *
     configure list -usestrobe 1

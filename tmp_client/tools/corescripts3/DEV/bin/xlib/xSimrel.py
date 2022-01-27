@@ -17,6 +17,7 @@ from . import xTools
 import threading
 from collections import OrderedDict
 from . import pad2signal
+from . import filelock
 __author__ = 'syan'
 
 TCL_NCV = """#NC Verilog command file
@@ -171,7 +172,10 @@ def get_lst_dict(lst_file):
                     m_lst_port = p_lst_port.search(_t)
                     if m_lst_port:
                         # /tb_mac_18x19/UUT/LD /tb_mac_18x19/UUT/OVERFLOW --> OVERFLOW
-                        keys.append(m_lst_port.group(1))
+                        if "\\" in _t:
+                            keys.append(_t)
+                        else:
+                            keys.append(m_lst_port.group(1))
                     else:
                         keys.append(_t)
             yield dict(list(zip(keys, line_list)))
@@ -311,11 +315,125 @@ def get_in_out_bidi_vref(sorted_ports, pad_dict, simrel_options):
     return ports_in, ports_out, ports_bidi, ports_vref
 
 
+class GetActiveInput(object):
+    """
+    raw_settings = dict(active_input="sel_1")
+    raw_settings = dict(active_output="n_sel_2")
+    raw_settings = dict(active_input_1="sel_2 : bidi_1, bidi_3[4:0]",
+                        active_output_1="sel_1 : bidi_2",
+                        active_output_2="sel_3 : bidi_3[9:5]")
+    """
+    def __init__(self, raw_settings):
+        self.raw_settings = raw_settings
+        self.tag_input = "active_input"
+        self.tab_output = "active_output"
+        self.p_select_ports = re.compile("([^:]+):(.+)")
+        self.p_position = re.compile(r"""(?P<port_name>[^\]]+)
+                                         \[
+                                         (?P<position>[^\]]+)
+                                         \]""", re.VERBOSE)
+        self.p_position_2 = re.compile(r"(\d+):(\d+)")
+        self.input_output = dict()
+
+    def port_to_list(self, raw_ports):
+        new_list = list()
+        raw_list = re.split(",", raw_ports)
+        for foo in raw_list:
+            foo = re.sub(r"\s", "", foo)
+            m_position = self.p_position.search(foo)
+            if m_position:
+                m_p2 = self.p_position_2.search(m_position.group('position'))
+                if m_p2:
+                    left, right = m_p2.group(1), m_p2.group(2)
+                    left, right = int(left), int(right)
+                    max_position = max(left, right)
+                    min_position = min(left, right)
+                    for i in range(min_position, max_position+1):
+                        new_list.append("{}[{}]".format(m_position.group('port_name'), i))
+                else:
+                    new_list.append(foo)
+            else:
+                new_list.append(foo)
+        return new_list
+
+    def process(self):
+        if not self.raw_settings:
+            return
+        for k, v in list(self.raw_settings.items()):
+            v = v.strip()
+            if k.startswith(self.tag_input):
+                new_key = "input"
+            elif k.startswith(self.tab_output):
+                new_key = "output"
+            else:
+                continue
+            self.input_output.setdefault(new_key, dict())
+            m_s_p = self.p_select_ports.search(v)
+            if not m_s_p:
+                self.input_output[new_key][v] = None
+            else:
+                select_signal = m_s_p.group(1)
+                select_signal = select_signal.strip()
+                ports = m_s_p.group(2)
+                self.input_output[new_key][select_signal] = self.port_to_list(ports)
+        return self.check_define_port_one_time_only()
+
+    def define_input(self, inner_name, lst_data):
+        for i_o, sp_dict in list(self.input_output.items()):
+            if not sp_dict:
+                continue
+            got_it = None
+            for s, p in list(sp_dict.items()):
+                select_01 = lst_data.get(s)
+                if select_01 is None:
+                    xTools.say_it("Error. Not found select_signal {} value".format(s))
+                    return
+                if p is None:
+                    if select_01 == "1":
+                        got_it = i_o
+                        break
+                    else:  # if select_01 == "0":
+                        got_it = "output" if i_o == "input" else "input"
+                        break
+                bus_name = re.sub(r"[-\+]$", "", inner_name)   # bidi_2[17]-, bidi_2[17]+
+                bus_name = re.sub(r"\[\d+\]", "", bus_name)
+                #
+                if bus_name in p or inner_name in p:
+                    got_it = i_o if select_01 == "1" else ("output" if i_o == "input" else "input")
+                    break
+            if got_it:
+                return got_it
+
+    def check_define_port_one_time_only(self):
+        sts = 0
+        # if None is port list, only input is valid when input is not None
+        _input = self.input_output.get("input")
+        if _input:
+            for k, v in list(_input.items()):
+                if v is None:
+                    self.input_output["output"] = None
+        full_list = list()
+        for i_o, sp_dict in list(self.input_output.items()):
+            if not sp_dict:
+                continue
+            for s, p in list(sp_dict.items()):
+                if p is None:
+                    continue
+                for sub_port in p:
+                    bus_name = re.sub(r"\[\d+\]", "", sub_port)
+                    if bus_name in full_list or sub_port in full_list:
+                        sts = 1
+                        xTools.say_it("Error. Duplicate select signal for {}".format(sub_port))
+                    else:
+                        full_list.append(sub_port)
+        return sts
+
+
 p_name_index = re.compile(r"^(_*)([^[]+)\[(\d+)\](\W*)")
 
 
 def get_avc_bin_code(lst_data, ports_in, ports_bidi, ports_vref, ports_plus, ports_minus,
-                     sim_vendor_name, simrel_options):
+                     sim_vendor_name, active_class):
     bin_code = ""
     one_time_dict = dict()
     for (_ports, is_minus) in ((ports_plus, False), (ports_minus, True)):
@@ -348,18 +466,16 @@ def get_avc_bin_code(lst_data, ports_in, ports_bidi, ports_vref, ports_plus, por
                 if inner_name in ports_in:
                     is_input = True
                 if inner_name in ports_bidi:
-                    active_input = simrel_options.get("active_input")
-                    active_output = simrel_options.get("active_output")
-                    if active_input:
-                        mux_value = lst_data.get(active_input)
-                        if mux_value == "1":
+                    if active_class:
+                        input_or_output = active_class.define_input(inner_name, lst_data)
+                        if input_or_output is None:
+                            assert 0, "please check active_input or active_output settings for {}".format(inner_name)
+                        if input_or_output == "input":
                             is_input = True
-                    elif active_output:
-                        mux_value = lst_data.get(active_output)
-                        if mux_value == "0":
-                            is_input = True
+                        else:
+                            is_input = False
                     else:
-                        assert 0, "active_input or active_output should be defined in simrel section"
+                        assert 0, "please check active_input or active_output settings for {}".format(inner_name)
                 if is_minus:
                     if raw_value == "0":
                         raw_value = "1"
@@ -510,6 +626,14 @@ def generate_avc_file(avc_file, lst_file, pad_file, sim_vendor_name, simrel_opti
     third_line.append(";")
     print(" ".join(second_line), file=avc_ob)
     print(" ".join(third_line), file=avc_ob)
+    if simrel_options.get("avc_file"):
+        return   # do not run following lines
+    else:
+        get_active = GetActiveInput(simrel_options)
+        sts = get_active.process()
+    if sts:
+        xTools.say_it("Error. Failed to read active_input/active_output settings")
+        return 1
     for item in lst_dict:
         ps = item.get("ps")
         if not ps:
@@ -517,7 +641,7 @@ def generate_avc_file(avc_file, lst_file, pad_file, sim_vendor_name, simrel_opti
             if not fs:
                 continue
         avc_bin_code = get_avc_bin_code(item, ports_in, ports_bidi, ports_vref, ports_plus,
-                                        ports_minus, sim_vendor_name, simrel_options)
+                                        ports_minus, sim_vendor_name, get_active)
         print("r1 name  %s;" % avc_bin_code, file=avc_ob)
     avc_ob.close()
 # --------------------------
@@ -561,7 +685,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     for _file in src_files:
         a = os.path.join(rbt_avc_folder, _file)
         if os.path.isfile(a):
-            print("rm %s" % _file, file=temp_sh)
+            print("rm -f %s" % _file, file=temp_sh)
         print("cp -f %s %s" % (a, _file), file=temp_sh)
     for _file in dst_files[:-1]:
         if _file in ("fc.ctl", "tcl_ncv"):
@@ -569,15 +693,22 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
         if os.path.isfile(_file):
             print("rm %s" % _file, file=temp_sh)
     if use_original_ctl:
+        x = "fc.ctl"
+        if os.path.isfile(x):
+            print("rm -f {}".format(x), file=temp_sh)
         print("cp {} fc.ctl".format(original_fc_ctl), file=temp_sh)
+    _txt_file = "bitstream_lmmi.txt"  # perl scripts cannot chmod this file with different user
     if os.path.isfile("rbt_to_sspi_init_bus.pl"):
+        if os.path.isfile(_txt_file):
+            print("rm -rf {}".format(_txt_file), file=temp_sh)
         print("perl rbt_to_sspi_init_bus.pl fc.rbt", file=temp_sh)
     print("# use original fc.tcl file: {}".format(use_original_ctl), file=temp_sh)
     print("# Date: {} CWD: {}".format(time.ctime(), os.getcwd()), file=temp_sh)
     temp_sh.close()
 
     os.system("sh {}".format(temp_sh_file))
-    real_ncv = "xsim_ncv" if re.search(r"jedi\Wjedi", simrel_dir) else "sim_ncv"
+    real_ncv = "xsim_ncv" if re.search(r"\Wxncv", simrel_dir) else "sim_ncv"
+    real_ncv = os.path.abspath(real_ncv)
     xTools.say_it("Running {}".format(real_ncv))
     sts = os.system("{} > x_simrel_flow.log".format(real_ncv))
     if sts:
@@ -616,60 +747,46 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     xTools.say_it("Simrel flow is Done.")
 
 
-def get_sentry_simrel_path(size_in_device):
-    sentry_size_dict = OrderedDict()
-    sentry_size_dict[9000] = "10000"
-    sentry_size_dict[6000] = "6000"   # TODO: size kept number
-    sentry_size_dict[4000] = "4000"
-    sentry_size_dict[2000] = "2000"   # TODO: size kept number
-    my_size = "10000"  # default
-    for _num, _size in list(sentry_size_dict.items()):
-        if size_in_device > _num:
-            my_size = _size
-            break
-    return os.path.join('sentry', "sentry_{}".format(my_size), "ncv")
-
-
-FAMILY_PATH = dict()
-FAMILY_PATH["lif-"] = os.path.join("snow", "snow_5", "ncv")
-FAMILY_PATH["sii1866"] = os.path.join("macgyver", "mac_45", "ncv")
-FAMILY_PATH["lifcl-17"] = os.path.join("jedi", "jedi_15k", "xncv")
-FAMILY_PATH["lifcl-40"] = os.path.join("jedi", "jedi_30k", "xncv")
-FAMILY_PATH["LFD2NX-17"] = os.path.join("jedi", "jedi_15k", "xncv")
-FAMILY_PATH["LFD2NX-40"] = os.path.join("jedi", "jedi_30k", "xncv")
-FAMILY_PATH["jd5d80"] = os.path.join("jedi", "jedi_d1_80k", "xncv")
-FAMILY_PATH["lfcpnx-100"] = os.path.join("jedi", "jedi_d1_80k", "xncv")
-
-
-def get_simrel_path(simrel_dirname, device):
+def get_simrel_path(general_options, simrel_dirname, device):
     device = device.lower()
-    p = re.compile("LFE5UM*-(\d+)F", re.I)
-    p_sentry = re.compile("L[AC]MXO3D-(\d+)", re.I)
-    m = p.search(device)
-    simrel_root, simrel_family = simrel_dirname, ""
-    if m:
-        simrel_family = os.path.join("sapphire", "sa_%sh" % m.group(1), "ncv")
-    else:
-        for k, v in list(FAMILY_PATH.items()):
-            if re.search(k, device, re.I):
+    simrel_root = simrel_dirname
+    simrel_family = ""
+    path_config = general_options.get("family_simrel_path")
+    for k, v in list(path_config.items()):
+        if simrel_family:
+            break
+        p = re.compile(k)
+        m = p.search(device)
+        if m:
+            try:
+                pkg_number = int(m.group(1))
+            except:
+                pkg_number = -1
+            if pkg_number < 0:
                 simrel_family = v
-                break
-        else:
-            m_sentry = p_sentry.search(device)
-            if m_sentry:
-                _size_in_device = int(m_sentry.group(1))  # current values: 2100, 4300, 6900, 9400
-                simrel_family = get_sentry_simrel_path(_size_in_device)
-            elif re.search("lfmnx-", device, re.I):
-                simrel_family = get_sentry_simrel_path(9400)  # use sentry simrel path
             else:
-                xTools.say_it("Error. Unknown device: %s" % device)
-                return "", "", ""
+                v_lines = v.splitlines()
+                for foo in v_lines:
+                    foo = re.sub(r"\s", "", foo)
+                    foo_list = re.split(",", foo)
+                    if foo_list[0] == "default":
+                        simrel_family = foo_list[1]
+                        break
+                    else:
+                        judge_string = "{}{}".format(pkg_number, foo_list[0])
+                        if eval(judge_string):
+                            simrel_family = foo_list[1]
+                            break
+    if not simrel_family:
+        xTools.say_it("Error. Unknown device: %s" % device)
+        return "", "", ""
+
     i = 0
     while True:
         xTools.say_it(" -- <{}> Searching real simrel path in {} for {} ...".format(i, simrel_root, simrel_family))
         time.sleep(5)
         i += 1
-        for foo in os.listdir(simrel_root):
+        for foo in set(os.listdir(simrel_root)):
             abs_foo = os.path.join(simrel_root, foo)
             if os.path.isdir(abs_foo):
                 check_file = os.path.join(abs_foo, "check_running.log")
@@ -793,7 +910,15 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
     if not my_device:
         xTools.say_it("Error. Never got here. No device specified in ldf file.")
         return 1
-    simrel_root, branch_name, simrel_family = get_simrel_path(simrel_dirname, my_device[1].group(1))
+    # simrel_root, branch_name, simrel_family = get_simrel_path(general_options, simrel_dirname, my_device[1].group(1))
+    this_args = (general_options, simrel_dirname, my_device[1].group(1))
+    temp_recov = xTools.ChangeDir(simrel_dirname)
+    simrel_root, branch_name, simrel_family = None, None, None
+    try:
+        simrel_root, branch_name, simrel_family = filelock.safe_run_function(get_simrel_path, args=this_args)
+    except:
+        xTools.say_it("Failed to get simrel path")
+    temp_recov.comeback()
     if not simrel_root:
         return 1
     # -----------------------------

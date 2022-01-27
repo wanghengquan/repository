@@ -90,7 +90,8 @@ _KEYCRE = re.compile(r"%\(([^)]+)\)s")
 _KEY_TEMP = "LATTE-LATTICE-LSCC-LSH"
 def replace_tag(conf_file, args):
     lines = list()
-    with open(conf_file, "r") as in_ob:
+    # add encoding for UnicodeDecodeError: 'gbk' codec can't decode byte 0x93 in position : illegal multibyte sequence
+    with open(conf_file, "r", encoding="utf-8") as in_ob:
         for line in in_ob:
             lines.append(line)
     with open(conf_file, 'w') as f:

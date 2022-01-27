@@ -1,13 +1,21 @@
 import os
+from . import filelock
 import re
 import sys
 import time
 import shlex
 import shutil
 import configparser
+from collections import OrderedDict
 
 __author__ = 'syan'
 __version__ = '17:21 14/1/17'
+
+LINE_MARK = OrderedDict()
+LINE_MARK["dos"] = [r"\r\n", "\r\n"]
+LINE_MARK["unix"] = [r"\n", "\n"]
+LINE_MARK["mac"] = [r"\r", "\r"]
+
 
 def say_it(an_object, comments="", show=1):
     """
@@ -169,6 +177,60 @@ def write_file(a_file, lines):
     """
     return append_file(a_file, lines, append=False)
 
+
+def get_file_format(a_file):
+    if os.path.isfile(a_file):
+        with open(a_file, "rb") as ob:
+            for line in ob:
+                line = repr(line)
+                for k, v in list(LINE_MARK.items()):
+                    if v[0] in line:
+                        return k
+
+
+def new_write_file(this_file, lines, append=False, file_format=""):
+    """Write/append a file
+    """
+    this_file = os.path.abspath(this_file)
+    this_dir = os.path.dirname(this_file)
+    ret = wrap_md(this_dir, "")
+    if ret:
+        return ret
+    if append and (not file_format):
+        file_format = get_file_format(this_file)
+    new_line = LINE_MARK.get(file_format)
+    if new_line:
+        new_line = new_line[1]
+    if new_line:
+        aw = "a+b" if append else "w+b"
+    else:
+        aw = "a" if append else "w"
+    if isinstance(lines, str):
+        lines = [lines]
+    for i in range(5):
+        try:
+            with open(this_file, aw) as file_ob:
+                for item in lines:
+                    if new_line:
+                        new_item = item + new_line
+                        new_item = new_item.encode(encoding="utf-8")
+                        file_ob.write(new_item)
+                    else:
+                        print(item, file=file_ob)
+            return
+        except IOError:
+            time.sleep(2.71)
+    return "Failed to open file: {}".format(this_file)
+
+
+def update_file(this_file, new_lines):
+    """Update a file and keep the original file format
+    """
+    file_format = get_file_format(this_file)
+    return new_write_file(this_file, new_lines, file_format=file_format)
+
+
+
 def generate_file(a_file, template_file, kwargs):
     """
     generate a file from a template file and its keywords arguments
@@ -179,6 +241,23 @@ def generate_file(a_file, template_file, kwargs):
         new_ob.write(line)
     new_ob.close()
 
+
+def safe_copy_file(_src, _dst, _force):
+    if os.path.isfile(_dst):
+        if _force:
+            try:
+                os.remove(_dst)
+            except:
+                pass
+        else:
+            return
+    try:
+        shutil.copy2(_src, _dst)
+    except:
+        print("Failed to copy {} to {}".format(_src, _dst))
+        pass
+
+
 def wrap_cp_file(src, dst, force=True):
     """
     copy a file
@@ -187,25 +266,19 @@ def wrap_cp_file(src, dst, force=True):
     abs_dst = os.path.abspath(dst)
     if abs_src == abs_dst:
         return
-    try:
-        if os.path.isfile(abs_dst):
-            if force:
-                os.remove(abs_dst)
-        else:
-            dst_dir = os.path.dirname(dst)
-            if wrap_md(dst_dir, "path"):
-                return 1
-        shutil.copy2(src, dst)
-    except Exception as e:
-        say_it("- Error. Not copy %s to %s" % (src, dst))
-        say_it("- %s" % e)
-        return 1
+    copy_lock_file = os.path.splitext(abs_dst)[0] + ".lock"
+    dir_name = os.path.dirname(abs_dst)
+    if not os.path.isdir(dir_name):
+        wrap_md(dir_name, "layout_path")
+    filelock.safe_run_function(safe_copy_file, args=(abs_src, abs_dst, force), func_lock_file=copy_lock_file)
+
 
 def get_original_lines(a_file):
     bak_file = a_file + ".original_bak"
     if wrap_cp_file(a_file, bak_file, force=False):
         return 1
     return open(bak_file).readlines()
+
 
 def wrap_move_file_folder(src, dst):
     """
@@ -684,6 +757,59 @@ def get_environment(radiant_diamond, nt_lin, squish):
         env_lines.append(_)
 
     return "\n".join(env_lines)
+
+
+def set_lm_license_environment(root_file):
+    env_key = "LM_LICENSE_FILE"
+    # DO NOt use .. to get the DEV path
+    root_file = os.path.abspath(root_file)
+    root_path = os.path.dirname(root_file)
+    for i in range(2):
+        root_path = os.path.dirname(root_path)
+
+    conf_file = os.path.join(root_path, "conf", "default.ini")
+    if not os.path.isfile(conf_file):
+        print("Warning. Not found {}".format(conf_file))
+        return 1
+    sts, options = get_conf_options(conf_file, key_lower=False)
+    my_env = options.get("environment", dict()).get(env_key)
+    if my_env:
+        os.environ[env_key] = os.pathsep.join(my_env)
+    else:
+        print("Warning. Not found {} in {}".format(env_key, conf_file))
+        return 1
+
+
+IMG_PERL = ('testSettings->logScreenshotOnError(1);', 'testSettings->logScreenshotOnFail(1);')
+
+
+def update_test_pl_file(design_path):
+    msg = "update test.pl in {}".format(design_path)
+    pl_files = list()
+    file_a = os.path.join(design_path, "test.pl")
+    if os.path.isfile(file_a):
+        pl_files.append(file_a)
+    for foo in os.listdir(design_path):
+        file_b = os.path.join(design_path, foo, "test.pl")
+        if os.path.isfile(file_b):
+            pl_files.append(file_b)
+    for pl in pl_files:
+        new_lines = list()
+        added = 0
+        with open(pl, encoding="utf-8") as ob:
+            for line in ob:
+                line_y = line.rstrip()
+                line_x = re.sub(r"\s", "", line)
+                if not line_x:
+                    if not added:
+                        new_lines.extend(IMG_PERL)
+                        added = 1
+                elif line_x in IMG_PERL:
+                    continue
+                new_lines.append(line_y)
+        sts = "Successfully" if added else "NO Changes!"
+        print("{}: {}".format(msg, sts))
+        update_file(pl, new_lines)
 
 
 if __name__ == "__main__":
