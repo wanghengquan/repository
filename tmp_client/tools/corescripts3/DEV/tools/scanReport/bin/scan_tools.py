@@ -138,6 +138,7 @@ def get_part_lines(f, start_pattern, stop_pattern, flags=None):
     while True:
         line = f.readline()
         if line:
+            line = line.strip()
             if stop_pattern:
                 if flags:
                     m = re.search(stop_pattern, line, flags)

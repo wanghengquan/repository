@@ -5,6 +5,7 @@ import glob
 import time
 import shutil
 import platform
+import getpass
 
 from . import xTools
 from . import xReport
@@ -12,6 +13,7 @@ from . import xLatticeDev
 from . import xCommandFlow
 from . import changeNames
 from . import utils
+from . import filelock
 from . import scan_radiant
 
 from . import yTimeout
@@ -656,13 +658,14 @@ class LatticeEnvironment:
         self.sim_map_vlg = xTools.get_true(self.flow_options, "sim_map_vlg")
         self.sim_map_vhd = xTools.get_true(self.flow_options, "sim_map_vhd")
         self.sim_par_vlg = xTools.get_true(self.flow_options, "sim_par_vlg")
+        self.sim_bit_vlg = xTools.get_true(self.flow_options, "sim_bit_vlg")
         self.sim_par_vhd = xTools.get_true(self.flow_options, "sim_par_vhd")
         self.sim_all = xTools.get_true(self.flow_options, "sim_all")
         self.will_run_sim = 0
         for item in (self.sim_all, self.sim_rtl,
                      self.sim_syn_vhd, self.sim_syn_vlg,
                      self.sim_map_vhd, self.sim_map_vlg,
-                     self.sim_par_vhd, self.sim_par_vlg):
+                     self.sim_par_vhd, self.sim_par_vlg, self.sim_bit_vlg):
             if item:
                 self.will_run_sim = 1
                 break
@@ -1029,27 +1032,31 @@ class CreateDiamondProjectFile:
         if self.synthesis_done:
             return
         if self.src_files or self.edf_file or self.ldf_file:
+            self.flow_options["reusing"] = self.x_reusing = False
             if self.clean:
                 t = xTools.ChangeDir("../..")
                 xTools.remove_dir_without_error(self.dst_design)
                 xTools.wrap_md(self.dst_design, "Job Working Design Path")
                 t.comeback()
             else:
-                xTools.remove_dir_without_error(self.impl_dir)
+                # xTools.remove_dir_without_error(self.impl_dir)
+                self.flow_options["reusing"] = self.x_reusing = os.path.isfile(self.final_ldf_file)
+                if self.x_reusing:
+                    _msg = "Warning: Project {} already exists, ".format(self.final_ldf_file)
+                    xTools.say_it(_msg + "will reuse it and current results.")
             # can use tcl console
-            if self.copy_other_files():
-                return 1
-
-            if self.ldf_file:
-                sts = self.update_ldf_file()
-            else:
-                sts = self.generate_ldf_file()
-            if sts:
-                return 1
+            if not self.x_reusing:
+                if self.copy_other_files():
+                    return 1
+                if self.ldf_file:
+                    sts = self.update_ldf_file()
+                else:
+                    sts = self.generate_ldf_file()
+                if sts:
+                    return 1
             self.ldf_dict = parse_ldf_file(self.final_ldf_file, self.is_ng_flow)
             if not self.ldf_dict:
                 return 1
-            # xTools.say_it(self.ldf_dict)
             impl_node = self.ldf_dict.get("impl")
             self.impl_name = impl_node.get("title")
             if self.run_scuba:
@@ -1061,8 +1068,7 @@ class CreateDiamondProjectFile:
                 self.new_src_files = new_source_files[:]
             if self.change_names:
                 changeNames.change_names(self.ldf_dict.get("top"), self.ldf_dict.get("source"))
-            if not sts:
-                sts = self.add_strategy_and_synthesis()
+            sts = self.add_strategy_and_synthesis()
             return sts
         else:
             if self.is_ng_flow:
@@ -1273,11 +1279,13 @@ class CreateDiamondProjectFile:
                         print('        <Option name="top" value="%s"/>' % self.top_module, file=_t_ldf_ob)
                     print("    </Options>", file=_t_ldf_ob)
             _t_ldf_ob.close()
+
     def add_strategy_and_synthesis(self):
         # update diamond version in ldf file
-        current_version, small_version = get_diamond_version()
-        if update_diamond_version(self.final_ldf_file, current_version):
-            return 1
+        if not self.x_reusing:
+            current_version, small_version = get_diamond_version()
+            if update_diamond_version(self.final_ldf_file, current_version):
+                return 1
         if self.scuba_type:
             if self.sim_others:
                 pass
@@ -1358,13 +1366,10 @@ class CreateDiamondProjectFile:
                 self.set_strategy = re.split(",", self.set_strategy)
             for item in self.set_strategy:
                 item = item.strip()
-                # remove brace
-                #if item.startswith("par_cmdline_args"):
-                #    item = "{%s}" % item
                 add_lines.append('%s %s' % (pre_set, item))
         if self.is_ng_flow:
             # generate lsedata in scripts mode
-            p_sty_file = re.compile('name="{}"\s+file="(.+)"'.format(sty_name))
+            p_sty_file = re.compile(r'name="{}"\s+file="(.+)"'.format(sty_name))
             _this_impl = self.ldf_dict.get("impl", dict()).get("dir", "implDir")
             _this_title = self.ldf_dict.get("bali", dict()).get("title", "title")
             sty_file = ""
@@ -1374,15 +1379,18 @@ class CreateDiamondProjectFile:
                     if m_sty_file:
                         sty_file = m_sty_file.group(1)
             old_str = ""
-            if sty_file and os.path.exists(sty_file):     #jason updated 2019/11/15
-                p_old_str = re.compile('"PROP_LST_CmdLineArgs"\s+value="([^"]+)"')
+            if sty_file and os.path.exists(sty_file):
+                p_old_str = re.compile(r'"PROP_LST_CmdLineArgs"\s+value="([^"]+)"')
                 with open(sty_file) as ob:
                     for line in ob:
                         m_old_str = p_old_str.search(line)
                         if m_old_str:
                             old_str = m_old_str.group(1)
                             break
-            add_lines.append('%s {lse_cmdline_args=%s -udb %s_%s_rtl.udb}' % (pre_set, old_str, _this_title, _this_impl))
+            new_str = " -udb %s_%s_rtl.udb" % (_this_title, _this_impl)
+            if old_str.strip() == new_str.strip():
+                new_str = ""
+            add_lines.append('%s {lse_cmdline_args=%s%s}' % (pre_set, old_str, new_str))
             # set syn/map/par trce report format
             add_lines.append('%s {syntrce_report_format=Diamond Style}' % pre_set)
             add_lines.append('%s {maptrce_report_format=Diamond Style}' % pre_set)
@@ -1399,10 +1407,12 @@ class CreateDiamondProjectFile:
             x_syn = "prj_run Synthesis {} -forceOne"
         elif self.sim_rtl:
             if self.sim_others:
-                x_syn = "prj_run Synthesis {} -forceOne"
+                if not self.x_reusing:
+                    x_syn = "prj_run Synthesis {} -forceOne"
         elif self.is_ng_flow:
-            if self.flow_options.get("gen_pdc"):
-                x_syn = "prj_run Synthesis {} -forceOne"
+            if not self.x_reusing:
+                if self.flow_options.get("gen_pdc"):
+                    x_syn = "prj_run Synthesis {} -forceOne"
         if x_syn:
             st = "-task SynTrace " if self.is_ng_flow else ""
             add_lines.append(x_syn.format(st))
@@ -1419,6 +1429,7 @@ class CreateDiamondProjectFile:
 def parse_ldf_file(ldf_file, for_radiant):
     from . import readXML
     return readXML.parse_ldf_file(ldf_file=ldf_file, for_radiant=for_radiant)
+
 
 def get_task_list(flow_options, user_options, donot_infer_options=True):
     task_list = list()
@@ -1733,7 +1744,10 @@ class RunTclFlow:
         user_options = dict()
         if self.till_map:
             return self._run_till_map_flow()
-        dnio = False if self.is_ng_flow else True
+        if self.flow_options.get("reusing"):
+            dnio = True
+        else:
+            dnio = False if self.is_ng_flow else True
         task_list = get_task_list(self.flow_options, user_options, donot_infer_options=dnio)
         if self.synthesis_only:
             return
@@ -2365,7 +2379,7 @@ def run_scuba_flow(source_list, run_scuba, conf_options):
     return 0, new_source_list
 
 
-def run_pre_post_process(base_path, pp_scripts):
+def _run_pre_post_process(base_path, pp_scripts):
     """
     add function for getting the real scripts if it has command arguments
     """
@@ -2389,3 +2403,23 @@ def run_pre_post_process(base_path, pp_scripts):
     sts = os.system(cmd_line)
     _recov.comeback()
     return sts
+
+
+def run_pre_post_process(base_path, pp_scripts):
+    args = (base_path, pp_scripts)
+    user = getpass.getuser()
+    if sys.platform.startswith("win"):
+        lock_file_path = os.path.join(r"C:\Users\%s\AppData\Roaming\custom_lock" % user)
+    else:
+        lock_file_path = "/users/%s/.config/custom_lock" % user
+    if not os.path.isdir(lock_file_path):
+        try:
+            os.makedirs(lock_file_path)
+        except:
+            xTools.say_it("Error. cannot create folder: {}".format(lock_file_path))
+            return _run_pre_post_process(*args)
+    my_lock_file = os.path.join(lock_file_path, "_lock_pre_post_process")
+    try:
+        filelock.safe_run_function(_run_pre_post_process, args=args, func_lock_file=my_lock_file, timeout=1200)
+    except:
+        _run_pre_post_process(*args)

@@ -562,6 +562,7 @@ class ScanLSE(ScanBasic):
                     'stop_pattern': self.patterns['lse_stop_pattern'],
                 }
         patterns_1.pop('lse_ebr')
+        patterns_1.pop('lse_carry')
 
         patterns_2 = [
             {
@@ -572,9 +573,18 @@ class ScanLSE(ScanBasic):
                 'operator': 'sum',
             }
         ]
-
+        patterns_3 = [
+            {
+                'file': self.files['lse_ebr_file'],
+                'pattern_1': self.patterns['lse_carry_pattern'][0],
+                'pattern_2': self.patterns['lse_carry_pattern'][1],
+                'keyword': 'lse_carry',
+                'operator': 'max',
+            }
+        ]
         self.call_lower_method(ScanPattern, options, patterns_1.values())
         self.call_lower_method(ScanNumbers, options, patterns_2)
+        self.call_lower_method(ScanNumbers, options, patterns_3)
 
         carry = even = odd = lut = 0
         for i in self.task_struct.stack:
@@ -587,9 +597,11 @@ class ScanLSE(ScanBasic):
             if 'lse_odd' in i:
                 odd = int(i['lse_odd'])
         if lut != 0:
-            lut = lut + 2 * carry - 2 * even - 3 * odd
+            # lut = lut + 2 * carry - 2 * even - 3 * odd
+            lut = lut + 2 * carry
         if carry != 0:
-            carry = 2 * carry - even - 2 * odd
+            # carry = 2 * carry - even - 2 * odd
+            carry = carry
         for i in self.task_struct.stack:
             if 'lse_carry' in i:
                 i['lse_carry'] = str(carry)
@@ -842,24 +854,28 @@ class ScanSimulation(ScanBasic):
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_rtl_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_rtl_time',
             },
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_syn_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_syn_time',
             },
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_map_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_map_time',
             },
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_par_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_par_time',
             },
         ]
@@ -873,6 +889,8 @@ class ScanSimulation(ScanBasic):
                 'pattern_4': self.patterns['simulation_sim_riviera_version_pattern'],
                 'pattern_5': self.patterns['simulation_sim_questa_tool_pattern'],
                 'pattern_6': self.patterns['simulation_sim_questa_version_pattern'],
+                'pattern_7': self.patterns['simulation_sim_modelsim_tool_pattern'],
+                'pattern_8': self.patterns['simulation_sim_modelsim_version_pattern'],
                 'keyword': 'sim_tool',
                 'join': '-',
             },

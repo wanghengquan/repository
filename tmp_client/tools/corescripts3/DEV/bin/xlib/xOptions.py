@@ -125,8 +125,9 @@ class XOptions:
         pub_group.add_argument("--info", help="specify info file name")
         pub_group.add_argument("--job-dir", help="specify the job working path name")
         pub_group.add_argument("-T", "--timeout", type=int, default=0, help="specify pnmainc timeout value")
-        pub_group.add_argument("--tag", default="_scratch", help="specify the job tag name, default is _scratch, " +
-                                                               "which is created in the design job working path")
+        _hlp = "specify the job tag name, default is _scratch, which is created in the design job working path"
+        pub_group.add_argument("--tag", default="_scratch", help=_hlp)
+        pub_group.add_argument("--bak-tag", help="specify backup tag, will try to copy all files in $tag directory")
         pub_group.add_argument("--qas", action="store_true", help="will run qas test flow")
         pub_group.add_argument("--dsp", action="store_true", help="will run DSP test flow")
         pub_group.add_argument("--pmi", action="store_true", help="run PMI implementation and simulation flow")
@@ -135,6 +136,7 @@ class XOptions:
         pub_group.add_argument("--scuba-only", action="store_true", help="run scuba flow only for IPExpress cases")
         pub_group.add_argument("--check-rpt", help="specify the check report file")
         pub_group.add_argument("--check-only", action="store_true", help="check results only")
+        pub_group.add_argument("--no-check", action="store_true", help="do not check results, always passed")
         pub_group.add_argument("--scan-only", action="store_true", help="scan and check results only")
         pub_group.add_argument("--check-conf", help="specify the check conf FILE NAME")
         pub_group.add_argument("--pre-process", help="run pre-process for a case")
@@ -170,7 +172,7 @@ class XOptions:
               "2. no: compile library with simulator" \
               "3. auto: default.active-hdl/modelsim: use pre-compiled library;others: compile library"
         sim_group.add_argument("--library-path", help=_h0)
-        sim_group.add_argument("--library-precompiled", choices=("yes", "no", "auto"), help=_h1)
+        sim_group.add_argument("-l", "--library-precompiled", choices=("yes", "no", "auto"), help=_h1)
 
         ex_group = sim_group.add_mutually_exclusive_group()
         ex_group.add_argument("--sim-modelsim",  dest="run_modelsim", action="store_true", help="run simulation with Modelsim")
@@ -194,6 +196,7 @@ class XOptions:
             sim_group.add_argument("--sim-map-vlg", action="store_true", help="run MapVerilog simulation")
         sim_group.add_argument("--sim-par-vhd", action="store_true", help="run ParVHDL simulation")
         sim_group.add_argument("--sim-par-vlg", action="store_true", help="run PARVerilog simulation")
+        sim_group.add_argument("--sim-bit-vlg", action="store_true", help="run BIT Verilog simulation")
         sim_group.add_argument("--sim-all", action="store_true", help="run all simulation flow")
         lp_choices = ("5", "1000", "0.5")
         sim_group.add_argument("--lst-precision", choices=lp_choices,
@@ -302,6 +305,7 @@ class XOptions:
         backend_group.add_argument("--run-export-bitstream", action="store_true", help="generate Export Bitstream File")
         backend_group.add_argument("--run-export-prom", action="store_true", help="generate Export PROM File")
         backend_group.add_argument("--run-export-xo3l", action="store_true", help="generate xo3l export files")
+        backend_group.add_argument("--run-export-rbt", action="store_true", help="generate .rbt file instead of .bit file")
         backend_group.add_argument("--till-map", action="store_true", help="run till map trace flow")
         backend_group.add_argument("--synthesis-only", action="store_true", help="run synthesis only")
 
@@ -357,7 +361,8 @@ class XOptions:
         self.devkit = self.scripts_options.get("devkit")
         self.random_devkit = self.scripts_options.get("random_devkit")
         self.run_simrel = self.scripts_options.get("run_simrel")
-        if self.run_simrel:
+        self.run_export_rbt = self.scripts_options.get("run_export_rbt")
+        if self.run_simrel or self.run_export_rbt:
             _t = "{bit_out_format=Raw Bit File (ASCII)}"
             self.scripts_options["run_export_bitstream"] = 1
             _set_strategy = self.scripts_options.get("set_strategy")
@@ -381,6 +386,13 @@ class XOptions:
                 self.devkit = one_devkit.strip()
                 xTools.say_it("* MSG: select devkit %s from %s" % (self.devkit, random_devkit))
                 self.scripts_options["devkit"] = self.devkit
+
+        x = self.scripts_options.get("sim_bit_vlg")
+        if x:
+            on_win, os_name = xTools.get_os_name()
+            if on_win:
+                print("Warning. Cannot run sim-bit-vlg flow on Windows")
+                self.scripts_options["sim_bit_vlg"] = None
 
     def _new_content(self, key, value):
         cmd_value = self.scripts_options.get(key)

@@ -7,7 +7,7 @@ _DEV=${_VERILOG_READY}/%(dev_name)s
 _UAP=${_VERILOG_READY}/uaplatform
 VERILOG_READY="-y ${_DEV} -y ${_UAP} +libext+.v +incdir+${_DEV}+${_UAP}"
 
-PMI_READY="vlogan -sverilog -f ${INSTALLED_PATH}/ip/pmi/pmi.f +incdir+${INSTALLED_PATH}/ip/pmi"
+PMI_READY="vlogan -sverilog -f ${INSTALLED_PATH}/ip/pmi/pmi.f ${VERILOG_READY}+${INSTALLED_PATH}/ip/pmi"
 echo $PMI_READY
 $PMI_READY
 

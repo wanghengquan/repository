@@ -10,6 +10,7 @@ import shutil
 import configparser
 from . import revision_record
 import datetime
+import getpass
 
 __version__ = '2436 2019-3-22'
 __author__ = 'syan'
@@ -488,18 +489,16 @@ def remove_needless_newline(raw_list):
     """
     if not sys.platform.startswith("win"):
         return raw_list
-    # make sure
-    x = raw_list[:1000][7::2]  # 1000: shorten time
-    if x.count("") < len(x) * 0.7:
-        return raw_list
-
     new_list = list()
-    for i, item in enumerate(raw_list):
-        new_item = item.rstrip()
-        if divmod(i, 2)[1] == 1:
-            if not new_item:
+    for i, foo in enumerate(raw_list):
+        last_1_foo = raw_list[i-1] if i else ""
+        last_2_foo = raw_list[i-2] if i > 1 else ""
+        if foo == "":
+            if last_1_foo:
                 continue
-        new_list.append(new_item)
+            if last_2_foo == "" and last_1_foo == "":
+                continue
+        new_list.append(foo)
     return new_list
 
 
@@ -708,7 +707,7 @@ def head_announce():
     lines.append("")
     lines.append("*---------------------------------------------")
     lines.append("* Welcome to Lattice Batch-queuing System Test Suite")
-    lines.append("* HOST NAME: %s" % get_machine_name())
+    lines.append("* HOST: {1}({0})".format(getpass.getuser(), get_machine_name()))
     lines.append("* Platform: %s" % platform.platform())
     lines.append("* Scripts Version: %s" % revision_record.REVISION[0])
     for foo in lines:
@@ -906,4 +905,4 @@ def remove_license_setting(phase="removing LICENSE_FILE"):
         else:
             sts = rm_with_error(_flex_file)
     if not sts:
-        say_it("{} removed successfully.".format(phase))
+        say_it("Remove {} successfully.".format(phase))

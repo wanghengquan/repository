@@ -62,6 +62,8 @@ def get_radiant_lib_file(family_path):
                 continue
             if not p_v_sv_f.search(bar):
                 continue
+            if "_build.f" in bar:
+                continue
             if p_package.search(os.path.basename(bar)):
                 t.insert(0, bar)
             else:
@@ -197,10 +199,29 @@ def get_lib_file_dict(cae_path, hdl_type, family, sim_vendor, is_ng_flow):
     return lib_file_dict
 
 
-def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool=""):
+def split_and_join(raw_string):
+    raw_string = re.sub(r"\s", "", raw_string)
+    _ = re.split(",", raw_string)
+    return '({})'.format("|".join(_))
+
+
+def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, general_options, vendor_tool=""):
     cmpl_lines = list()
     _is_ice = re.search("ice40up", work_name.lower())
     is_riviera_tplus = ("Riviera" in vendor_tool) and _is_ice or ("Active" in vendor_tool)
+    # args for compiling .f file
+    for_questasim_only = general_options.get("family_vlog_arg_for_f_file", dict()).get("for_questasim")
+    if not for_questasim_only:
+        for_questasim_only = "(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f|ap6a|lfmxo5)"  # DO NOT CHANGE THIS LINE
+    else:
+        for_questasim_only = split_and_join(for_questasim_only)
+    for_activehdl_only = general_options.get("family_vlog_arg_for_f_file", dict()).get("for_activehdl")
+    if not for_activehdl_only:
+        for_activehdl_only = "(lifcl|jd5d00|lfmxo5|lfcpnx|lfd2nx)"  # DO NOT CHANGE THIS LINE
+    else:
+        for_activehdl_only = split_and_join(for_activehdl_only)
+    #
+
     for item in hdl_files:
         fext = xTools.get_fext_lower(item)
         if fext in (".v", ".sv"):
@@ -217,13 +238,13 @@ def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool="
             item = " -v2k " + item
         elif fext == ".f":
             cmd_exe = vlog_cmd
-            if re.search("(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f|ap6a)", work_name.lower()) and "QuestaSim" in vendor_tool:
+            if re.search(for_questasim_only, work_name.lower()) and "QuestaSim" in vendor_tool:
                 cmd_exe += " -sv -mfcu "
             elif "Modelsim" in vendor_tool and os.getenv("YOSE_RADIANT") == "1" and not _is_ice:
                 cmd_exe += " -sv -mfcu "
             _path, _file = os.path.split(item)
             if "Active" in vendor_tool:
-                two_k_five = "-sv2k5" if re.search("(lifcl|jd5d00)", work_name.lower()) else "-v2k5"
+                two_k_five = "-sv2k5" if re.search(for_activehdl_only, work_name.lower()) else "-v2k5"
                 item = "{} -f {} +incdir+{} ".format(two_k_five, item, _path)
             elif is_riviera_tplus:
                 _fo = xTools.win2unix(os.getenv("FOUNDRY"))
@@ -254,7 +275,7 @@ def change_dot_lib_name(new_lib):
 
 
 def compile_library(*args):
-    diamond_path, hdl_type, family, sim_name, sim_bin_path, sim_vendor, is_ng_flow = args
+    diamond_path, hdl_type, family, sim_name, sim_bin_path, sim_vendor, is_ng_flow, general_options = args
     # family = family.lower()  # change case due to Linux platform
     cae_path = os.path.join(diamond_path, "cae_library")
     if os.getenv("BALI_USE_FOUNDRY_OUTSIDE") == "1":
@@ -293,7 +314,7 @@ def compile_library(*args):
             return
         for foo in x:
             if xTools.get_fext_lower(foo) == ".f":  # compile .f ONLY
-                _header = "xrun" if "pmi" in sim_name else "xrun -sv"
+                _header = "xrun" if re.search("(pmi|ice40up)", sim_name, re.I) else "xrun -sv"
                 names = [_header, sim_name, foo, os.path.dirname(foo)]
                 bat_lines.append("{} -compile -makelib ./{} -f {} -incdir {} -parallel -endlib".format(*names))
         if bat_lines:
@@ -321,10 +342,12 @@ def compile_library(*args):
     bat_lines.append("%s/vmap -del %s" % (sim_bin_path, sim_name))
     if vhdl_files:
         bat_lines.append("%s %s" % (vlib_cmd, sim_name))
-        bat_lines += vcom_vlog_file_lines(vhdl_files, vcom_cmd, vlog_cmd, sim_name, vendor_tool=sim_vendor)
+        bat_lines += vcom_vlog_file_lines(vhdl_files, vcom_cmd, vlog_cmd, sim_name,
+                                          general_options, vendor_tool=sim_vendor)
     elif verilog_files:
         bat_lines.append("%s %s" % (vlib_cmd, sim_name))
-        bat_lines += vcom_vlog_file_lines(verilog_files, vcom_cmd, vlog_cmd, sim_name, vendor_tool=sim_vendor)
+        bat_lines += vcom_vlog_file_lines(verilog_files, vcom_cmd, vlog_cmd, sim_name,
+                                          general_options, vendor_tool=sim_vendor)
     else:
         if family != "pmi":
             xTools.say_it("Error. Cannot find HDL library files in {} for {}".format(cae_path, family))
@@ -338,7 +361,7 @@ def compile_library(*args):
 
 class GetSimulationLibrary:
     def __init__(self, diamond_path, sim_vendor_name, sim_bin_path, hdl_type, family,
-                 root_lib_path, is_ng_flow, sim_lib_folder):
+                 root_lib_path, is_ng_flow, sim_lib_folder, general_options):
         """
         hdl_type: verilog or vhdl
         """
@@ -351,6 +374,7 @@ class GetSimulationLibrary:
         self.is_ng_flow = is_ng_flow
         self.sim_lib_name = ""
         self.sim_lib_folder = sim_lib_folder
+        self.general_options = general_options
 
     def get_sim_lib_path(self):
         base_dir = os.path.basename(self.sim_lib_path)
@@ -364,6 +388,16 @@ class GetSimulationLibrary:
         if self.sim_vendor_name == "Riviera":
             _my = os.path.join(_my, base_dir + ".lib")
         return xTools.win2unix(_my)
+
+    def copy_modelsim_ini_file(self):
+        """vmap will modify modelsim.ini file, it will be failed to read this file when using many threads simulation.
+        and the vmap uses local modelsim.ini file firstly, so copy to local path
+        """
+        source_file = os.path.join(self.sim_bin_path, "..", "modelsim.ini")
+        if os.path.isfile(source_file):
+            source_file = os.path.abspath(source_file)
+            xTools.say_it("Try to copy file to local: {}".format(source_file))
+            xTools.wrap_cp_file(source_file, "./modelsim.ini", force=True)
 
     def process(self):
         # use longer wait time for compiling simulation library from 5x30 to 20x60
@@ -391,7 +425,10 @@ class GetSimulationLibrary:
                     break
         else:
             xTools.wrap_md(os.path.dirname(self.sim_lib_path), "simulation library path")
-            args = (self.diamond_path, self.hdl_type, self.family, self.sim_name, self.sim_bin_path, self.sim_vendor_name, self.is_ng_flow)
+            if self.sim_vendor_name == "Modelsim":
+                self.copy_modelsim_ini_file()
+            args = (self.diamond_path, self.hdl_type, self.family, self.sim_name, self.sim_bin_path,
+                    self.sim_vendor_name, self.is_ng_flow, self.general_options)
             xTools.run_safety(compile_library, lock_file, *args)
             try:
                 os.remove(lock_file)
@@ -403,7 +440,7 @@ class GetSimulationLibrary:
         self.sim_name = self.family
         if self.hdl_type == "verilog" and self.sim_name != "pmi":
             self.sim_name = "ovi_" + self.sim_name
-        real_path = os.path.join(self.sim_lib_folder, self.sim_name)
+        real_path = os.path.join(self.sim_lib_folder, "M_" + self.family.upper(), self.sim_name)
         self.sim_lib_path = xTools.win2unix(real_path, 0)
 
 
@@ -422,15 +459,3 @@ def get_sim_tool_version(tool_bin):
         m = p.search(line)
         if m:
             return [m.group(1), m.group(3)]
-
-
-if __name__ == "__main__":
-    # a = get_lib_file_dict(r"D:\lscc\diamond\3.5_x64\cae_library", "vhdl", "ecp5u")
-    # xTools.say_it(a)
-    os.environ["FOUNDRY"] = r"D:\lscc\diamond\3.5_x64\ispfpga"
-    os.environ["PATH"] = r"D:\lscc\diamond\3.5_x64\ispfpga\bin\nt64;D:\lscc\diamond\3.5_x64\bin\nt64;%s" % os.getenv("path")
-    tst = GetSimulationLibrary(r"D:\lscc\diamond\3.5_x64", "questasim",
-                r"C:\questa_sim64_10.1a\win64",
-                "verilog", "ecp5u", r"D:\YibinSun\shawn", 0)
-    tst.process()
-

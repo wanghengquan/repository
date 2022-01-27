@@ -41,11 +41,12 @@ __author__ = 'syan'
 
 
 class ParserIP(object):
-    def __init__(self, radiant_ins_path, installed_ip_path):
+    def __init__(self, radiant_ins_path, installed_ip_path, general_options):
         self.ins_path = radiant_ins_path
         self.installed_ip_path = installed_ip_path
         self.xml_file = "metadata.xml"
         self.xml_files = list()
+        self.general_options = general_options
         self.p_name = re.compile("<lsccip:name>(.+)</lsccip:name>")
 
     def get_folder(self, module_name_in_ipx, apt_dict):
@@ -54,18 +55,17 @@ class ParserIP(object):
         if os.path.isdir(self.installed_ip_path):
             self.get_all_xml(self.installed_ip_path)
         _device, _arch = apt_dict.get("device", "no_device"), apt_dict.get("architecture", "no_arch")
-        if 'ice40' in _device.lower() or 'ice40' in _arch.lower():
-            dirs = ["iCE40UP", "common", "RadiantIPLocal"]
-        elif "je5d" in _device.lower() or "je5d" in _arch.lower():
-            dirs = ["je5d00", "common", "RadiantIPLocal", "lifcl"]
-        elif "lifcl" in _device.lower() or "lifcl" in _arch.lower():
-            dirs = ["lifcl", "common", "RadiantIPLocal"]
-        elif "jd5f" in _device.lower() or "jd5f" in _arch.lower():
-            dirs = ["je5d00", "common", "RadiantIPLocal", "lifcl"]
-        elif "ap6a" in _device.lower() or "ap6a" in _arch.lower():
-            dirs = ["avant", "common", "RadiantIPLocal"]
+        ip_paths = self.general_options.get("family_radiant_ip_path")
+        lower_device, lower_arch = _device.lower(), _arch.lower()
+        for k, v in list(ip_paths.items()):
+            k = k.lower()
+            if k in lower_device or k in lower_arch:
+                list_string = v
+                break
         else:
-            dirs = ["lifcl", "common", "RadiantIPLocal", "je5d00", "iCE40UP"]
+            list_string = ip_paths.get("default")
+        list_string = re.sub(r"\s", "", list_string)
+        dirs = re.split(",", list_string)
         not_found_ip_dir = 1
         for dd in dirs:
             for met in self.xml_files:
@@ -83,7 +83,6 @@ class ParserIP(object):
             xTools.say_it("  Error. Not found ip dir for xml files")
             xTools.say_it("    XML files are: {}".format(self.xml_files))
 
-
     def get_all_xml(self, ip_path):
         dfs = os.listdir(ip_path)
         if self.xml_file in dfs:
@@ -96,12 +95,17 @@ class ParserIP(object):
 
 
 class UpdateRadiantIP(object):
-    def __init__(self, cfg_file, sbx_file, radiant_dpd):
+    def __init__(self, cfg_file, sbx_file, general_options, abs_rdf_file, radiant_dpd):
         self.cfg_file = cfg_file
         self.sbx_file = sbx_file
+        self.general_options = general_options
         self.radiant_dpd = radiant_dpd  # dpd: digital-point-digital
         self.p_module = re.compile('RadiantModule.+\s+module="(.+?)"\s+')
         self.p_name = re.compile('RadiantModule.+\s+name="(.+?)"\s+')
+        if os.path.isfile(abs_rdf_file):
+            self.root_rdf_path = os.path.dirname(abs_rdf_file)
+        else:
+            self.root_rdf_path = ""
 
     def process(self):
         if xTools.not_exists(self.cfg_file, "Radiant IP configuration file"):
@@ -138,7 +142,7 @@ class UpdateRadiantIP(object):
             installed_ip_path = r"C:\Users\%s\RadiantIPLocal" % user
         else:
             installed_ip_path = "/users/%s/RadiantIPLocal" % user
-        t = ParserIP(self.radiant_dpd, installed_ip_path)
+        t = ParserIP(self.radiant_dpd, installed_ip_path, self.general_options)
         return t.get_folder(self.ipx_module, apt_dict)
 
     def process_generate(self):
@@ -170,13 +174,16 @@ class UpdateRadiantIP(object):
                                                                     self.cfg_file,
                                                                     self.ipx_name, apt_str)
                 cmd_line = xTools.win2unix(cmd_line, 0)
-                sts = xTools.run_command(cmd_line, "Update_%s.log" % self.ipx_name, "Update_%s.time" % self.ipx_name)
-                # Stop to support old command
-                # if sts:  # use old command
-                #     cmd_line = "%s -o %s %s %s %s" % (ipgen_file, os.path.dirname(cfg_dir), pmi_folder,
-                #                                       self.cfg_file, self.ipx_name)
-                #     cmd_line = xTools.win2unix(cmd_line, 0)
-                #     sts = xTools.run_command(cmd_line, "Upd_%s.log" % self.ipx_name, "Upd_%s.time" % self.ipx_name)
+                log_prefix = os.path.join(os.getcwd(), "Update_{}".format(self.ipx_name))
+                log_file, time_file = log_prefix + ".log", log_prefix + ".time"
+                if self.root_rdf_path:
+                    _rr = xTools.ChangeDir(self.root_rdf_path)
+                    sts = xTools.run_command(cmd_line, log_file, time_file)
+                    _rr.comeback()
+                    if sts:  # seldom
+                        sts = xTools.run_command(cmd_line, log_file, time_file)
+                else:  # never
+                    sts = xTools.run_command(cmd_line, log_file, time_file)
         _recov.comeback()
         return sts
 

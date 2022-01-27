@@ -688,7 +688,35 @@ def prepare_ipx_testbench_files(ipx_file, working_directory):
     return xTools.win2unix(this_tb_file, use_abs=0)
 
 
-if __name__ == "__main__":
-    t = GetClockFreq("x.twr", is_ng_flow=True, debug=True)
-    t.process()
-    print(t.clock_freq)
+def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
+    kept_keys = ("ENV", "LD_LIBRARY_PATH", "PATH", "FOUNDRY")
+    current_values = dict(zip(kept_keys, list(os.getenv(foo) for foo in kept_keys)))
+
+    verific_lib = "/tools/dist/verific/sv/Jul21/pythonmain/install"
+    python27 = "/lsh/sw/qa/lshqa/qa_home/qa_tools/python27_x64/bin/python"
+    build_name = os.path.basename(os.path.dirname(foundry_path))
+    new_values = dict()
+    _env = new_values["ENV"] = "/home/rel/{}/env/fpga".format(build_name)
+    bin_lin = "{}/bin/lin64".format(_env)
+    new_values["LD_LIBRARY_PATH"] = "{}:{}:{}".format(verific_lib, bin_lin, os.getenv("LD_LIBRARY_PATH"))
+    new_values["PATH"] = "{}:{}".format(bin_lin, os.getenv("PATH"))
+    new_values["FOUNDRY"] = foundry_path
+    args = dict(py27=python27, impl=impl_path, udb=udb_file, vo="test_bit2sim", env=_env)
+    cmd_line = "{py27} {env}/bin/lin64/bit2sim/bit2sim.py -w -i {impl}/{udb} -o {vo}".format(**args)
+    lines = list()
+    for k, v in list(new_values.items()):
+        os.environ[k] = v
+        lines.append("setenv {} {}".format(k, v))
+    xTools.run_command(cmd_line, "test_bit2sim.log", "test_bit2sim.time")
+    lines.append(cmd_line)
+    xTools.write_file("gen_vo.csh", lines)
+    for k, v in list(current_values.items()):
+        if not v:
+            os.environ.pop(k)
+        else:
+            os.environ[k] = v
+    vo_file = args.get("vo") + '.vo'
+    if os.path.isfile(vo_file):
+        return vo_file
+    print("Warning. cannot generate bit2sim.vo file")
+

@@ -42,18 +42,43 @@ def time2secs(time_str):
     except (KeyError, ValueError):
         return time_str
 
+
 def file_simple_parser(a_file, patterns, but_lines_number=0):
     i = 0
-    for line in open(a_file):
-        line = line.strip()
-        i += 1
-        for p in patterns:
-            m = p.findall(line)
-            if m:
-                return m
-        if but_lines_number:
-            if i > but_lines_number:
-                break
+    try:
+        for line in open(a_file):
+            line = line.strip()
+            i += 1
+            for p in patterns:
+                m = p.findall(line)
+                if m:
+                    return m
+            if but_lines_number:
+                if i > but_lines_number:
+                    break
+    except UnicodeDecodeError:
+        with open(a_file, "rb") as ob:
+            for line in ob:
+                line = line.strip()
+                new_line = ""
+                for cc in ("gbk", "utf-8"):
+                    try:
+                        new_line = line.decode(encoding=cc)
+                        break
+                    except UnicodeDecodeError:
+                        pass
+                if not new_line:
+                    continue
+
+                i += 1
+                for p in patterns:
+                    m = p.findall(new_line)
+                    if m:
+                        return m
+                if but_lines_number:
+                    if i > but_lines_number:
+                        break
+
 
 class ScanBasic:
     def __init__(self, last_number=800):
