@@ -9,9 +9,11 @@
  */
 package flow_control;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +28,7 @@ import gui_interface.view_data;
 import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
 import utility_funcs.postrun_call;
 import utility_funcs.time_info;
 
@@ -777,6 +780,7 @@ public class result_waiter extends Thread {
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
 			task_enum task_status = task_enum.OTHERS;
 			String task_reason = new String("NA");
+			String case_dir = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
 			String defects = new String("");
@@ -791,7 +795,8 @@ public class result_waiter extends Thread {
 				} else {
 					task_status = get_task_status((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				}
-				task_reason = get_task_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+				case_dir = (String) one_call_data.get(pool_attr.call_casedir);
+				task_reason = get_task_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output), case_dir);
 				milestone = get_milestone_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
@@ -900,7 +905,10 @@ public class result_waiter extends Thread {
 		return task_status;
 	}
 
-	private String get_task_reason(ArrayList<String> call_output) {
+	private String get_task_reason(
+			ArrayList<String> call_output,
+			String case_dir
+			) {
 		String reason = new String("NA");
 		if(call_output == null || call_output.isEmpty()){
 			return reason;
@@ -928,6 +936,21 @@ public class result_waiter extends Thread {
 				reason = reason_match.group(1);
 			}
 		}
+		// extra info from case_dir/console.log
+		String log_file = new String(case_dir + "/" + "console.log");
+		File log_frh = new File(log_file);
+		if (!log_frh.exists()) {
+			return reason;
+		}
+		List<String> file_lines = new ArrayList<String>();
+		file_lines.addAll(file_action.read_file_lines(log_file));
+		Pattern sense_patt = Pattern.compile("(error|fail).+?\\(screenshot.+?\\)\\s*?(.+?)$", Pattern.CASE_INSENSITIVE);
+		for (String line : file_lines) {
+			Matcher sense_match = sense_patt.matcher(line);
+			if (sense_match.find()) {
+				reason = sense_match.group(2);
+			}
+		}		
 		return reason;
 	}
 
