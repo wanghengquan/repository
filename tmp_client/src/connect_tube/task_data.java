@@ -75,7 +75,7 @@ public class task_data {
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();	
 	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_status_map = new HashMap<String, HashMap<task_enum, Integer>>();
-	private HashMap<String, HashMap<String, Integer>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Integer>>();
+	private HashMap<String, HashMap<String, Float>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Float>>();
 	private HashMap<String,Integer> finished_queue_dump_delay_counter = new HashMap<String,Integer>();
 	//====data not used====
 	private ArrayList<String> thread_pool_admin_queue_list  = new ArrayList<String>();
@@ -1251,9 +1251,9 @@ public class task_data {
 		}
 	}
 	
-	public HashMap<String, HashMap<String, Integer>> get_client_run_case_summary_memory_map() {
+	public HashMap<String, HashMap<String, Float>> get_client_run_case_summary_memory_map() {
 		rw_lock.readLock().lock();
-		HashMap<String, HashMap<String, Integer>> temp = new HashMap<String, HashMap<String, Integer>>();
+		HashMap<String, HashMap<String, Float>> temp = new HashMap<String, HashMap<String, Float>>();
 		try {
 			temp.putAll(client_run_case_summary_memory_map);
 		} finally {
@@ -1262,9 +1262,9 @@ public class task_data {
 		return temp;
 	}
 
-	public HashMap<String, Integer> get_client_run_case_summary_memory_map(String queue_name) {
+	public HashMap<String, Float> get_client_run_case_summary_memory_map(String queue_name) {
 		rw_lock.readLock().lock();
-		HashMap<String, Integer> temp = new HashMap<String, Integer>();
+		HashMap<String, Float> temp = new HashMap<String, Float>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)) {
 				temp.putAll(client_run_case_summary_memory_map.get(queue_name));
@@ -1286,9 +1286,9 @@ public class task_data {
 	
 	public void update_client_run_case_summary_memory_map(
 			String queue_name, 
-			HashMap<String, Integer> memory_map) {
+			HashMap<String, Float> memory_map) {
 		rw_lock.writeLock().lock();
-		HashMap<String, Integer> memory_data = new HashMap<String, Integer>();
+		HashMap<String, Float> memory_data = new HashMap<String, Float>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
@@ -1302,17 +1302,17 @@ public class task_data {
 	
 	public void update_client_run_case_summary_memory_map(
 			String queue_name, 
-			Integer new_data) {
+			Float new_data) {
 		rw_lock.writeLock().lock();
-		HashMap<String, Integer> memory_data = new HashMap<String, Integer>();
+		HashMap<String, Float> memory_data = new HashMap<String, Float>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
 			}
-			Integer min = memory_data.getOrDefault("min", 0);
-			Integer max = memory_data.getOrDefault("max", 1);
-			Integer avg = memory_data.getOrDefault("avg", 1);
-			Integer num = memory_data.getOrDefault("num", 0);
+			Float min = memory_data.getOrDefault("min", 0.0f);
+			Float max = memory_data.getOrDefault("max", 1.0f);
+			Float avg = memory_data.getOrDefault("avg", 1.0f);
+			Float num = memory_data.getOrDefault("num", 0.0f);
 			if (new_data.compareTo(min) < 0) {
 				min = new_data;
 			}

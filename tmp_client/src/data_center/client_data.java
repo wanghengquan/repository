@@ -32,7 +32,7 @@ public class client_data {
 	private HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();
 	private HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 	private HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
-	private Integer registered_memory = Integer.valueOf(0);
+	private float registered_memory = 0.0f;
 	/*
 	 * private String task_assign_mode = public_data.DEF_TASK_ASSIGN_MODE;
 	 * private String thread_work_mode = public_data.DEF_MAX_THREAD_MODE;
@@ -58,7 +58,7 @@ public class client_data {
 			result.put("client_hash", client_hash.toString());
 			result.put("max_soft_insts", max_soft_insts.toString());
 			result.put("use_soft_insts", use_soft_insts.toString());
-			result.put("registered_memory", registered_memory.toString());
+			result.put("registered_memory", String.valueOf(registered_memory) + "(G)");
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -645,15 +645,15 @@ public class client_data {
 	public void clean_registered_memory() {
 		rw_lock.writeLock().lock();
 		try {
-			registered_memory = 0;
+			registered_memory = 0.0f;
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
 	}
 	
-	public Integer get_registered_memory() {
+	public float get_registered_memory() {
 		rw_lock.readLock().lock();
-		Integer temp = Integer.valueOf(0);
+		float temp = 0.0f;
 		try {
 			temp = registered_memory;
 		} finally {
@@ -663,14 +663,14 @@ public class client_data {
 	}
 	
 	public void sub_registered_memory(
-			Integer value
+			float value
 			) {
 		rw_lock.writeLock().lock();
-		Integer new_value = Integer.valueOf(0);
+		float new_value = 0.0f;
 		try {
 			new_value = registered_memory - value;
 			if (new_value < 0) {
-				registered_memory = 0;
+				registered_memory = 0.0f;
 			} else {
 				registered_memory = new_value;
 			}
@@ -680,7 +680,7 @@ public class client_data {
 	}
 	
 	public void add_registered_memory(
-			Integer value
+			float value
 			) {
 		rw_lock.writeLock().lock();
 		try {

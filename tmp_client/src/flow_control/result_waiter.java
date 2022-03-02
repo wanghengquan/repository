@@ -10,6 +10,7 @@
 package flow_control;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
 import utility_funcs.file_action;
 import utility_funcs.postrun_call;
+import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
 public class result_waiter extends Thread {
@@ -47,6 +49,7 @@ public class result_waiter extends Thread {
 	private switch_data switch_info;
 	private post_data post_info;
 	private task_report report_obj;
+	private DecimalFormat decimalformat = new DecimalFormat("0.00");
 	private String line_separator = System.getProperty("line.separator");
 	//private String file_separator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
@@ -290,14 +293,34 @@ public class result_waiter extends Thread {
 
 	private Boolean fresh_thread_pool_data(){
 		Boolean run_status = Boolean.valueOf(true);
+		ArrayList<String> mem_info = new ArrayList<String>();
+		HashMap<String,String> tools_data = new HashMap<String,String>();
+		tools_data.putAll(client_info.get_client_tools_data());
+		mem_info.addAll(get_current_tasks_memory_output(tools_data));
 		//fresh pool call map data
-		pool_info.fresh_sys_call(client_info.get_client_tools_data());
+		pool_info.fresh_sys_call(mem_info, tools_data);
 		post_info.fresh_postrun_call();
 		//clean post run map data (sys call map will be clean later)
 		clean_postrun_map_data();
 		//clean history send data
 		clean_history_send_data();
 		return run_status;
+	}
+	
+	private ArrayList<String> get_current_tasks_memory_output(
+			HashMap<String,String> tools_data
+			){
+		ArrayList<String> output_data = new ArrayList<String>();
+		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String run_cmd = new String(python_cmd + " " + public_data.TOOLS_MEM_CHECK);
+		try {
+			output_data.addAll(system_cmd.run(run_cmd, System.getProperty("user.dir")));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			output_data.add("Run Memory check error out.");
+		}
+		return output_data;
 	}
 	
 	private Boolean clean_history_send_data(){
@@ -413,48 +436,14 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
 			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);			
-			// only done call will be release. timeout call will be get in
-			// the next cycle(at that time status will be done)
 			if (!call_status.equals(call_state.DONE)) {
 				continue;
 			}
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			String memory_info = (String) one_call_data.get(pool_attr.call_expmem);
-			if(memory_info.contains(".")) {
-				memory_info = memory_info.split("\\.")[0];
-			}
-			if(memory_valid_check(memory_info)) {
-				task_info.update_client_run_case_summary_memory_map(queue_name, get_valid_memory_data(memory_info));
-			}
+			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM);
+			task_info.update_client_run_case_summary_memory_map(queue_name, call_mem);
 		}
 		return update_status;
-	}
-	
-	private Boolean memory_valid_check(
-			String memory_value
-			) {
-		Boolean status = Boolean.valueOf(true);
-		Integer value = Integer.valueOf(0);
-		try {
-			value = Integer.valueOf(memory_value);
-		} catch (NumberFormatException e) {
-			RESULT_WAITER_LOGGER.debug(memory_value + ", not a number");
-			return false;
-		}
-		if (value < 0) {
-			return false;
-		}
-		return status;
-	}
-	
-	private Integer get_valid_memory_data(
-			String memory_value
-			) {
-		Integer value = Integer.valueOf(memory_value);
-		if (value > Integer.valueOf(public_data.TASK_DEF_MAX_MEM_USG)) {
-			value = 16;
-		}
-		return value;
 	}
 	
 	private Boolean update_client_run_case_status_summary(
@@ -533,6 +522,7 @@ public class result_waiter extends Thread {
 			case_status.put("key_check", (String) case_report_map.get(call_index).get("key_check"));
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
+			case_status.put("mem_used", (String) case_report_map.get(call_index).get("mem_used"));
 			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
             case_status.put("defects", (String) case_report_map.get(call_index).get("defects"));
             case_status.put("defects_history", (String) case_report_map.get(call_index).get("defects_history"));
@@ -786,6 +776,7 @@ public class result_waiter extends Thread {
 			String defects = new String("");
 			String defects_history = new String("NA");
 			String scan_result = "";
+			float task_memory = 0.0f;
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -802,8 +793,10 @@ public class result_waiter extends Thread {
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
-				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));				
+				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));
+				task_memory = (float) one_call_data.get(pool_attr.call_maxmem);
 			}  else {
+				task_memory = (float) one_call_data.get(pool_attr.call_curmem);
 				task_status = task_enum.PROCESSING;
 			}
 			hash_data.putAll(detail_report);
@@ -818,6 +811,7 @@ public class result_waiter extends Thread {
 			long start_time = (long) one_call_data.get(pool_attr.call_gentime);
 			long current_time = System.currentTimeMillis() / 1000;
 			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
+			hash_data.put("mem_used", decimalformat.format(task_memory));
 			hash_data.put("update_time", time_info.get_man_date_time());
 			case_data.put(call_index, hash_data);
 		}

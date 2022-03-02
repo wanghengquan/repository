@@ -10,6 +10,7 @@
 package data_center;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +28,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.08"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21408; //version for code use
-	public final static String BASE_BUILDDATE = "2022/02/09";
+	public final static String BASE_CURRENTVERSION = "2.14.09"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21409; //version for code use
+	public final static String BASE_BUILDDATE = "2022/03/02";
 	public final static String BASE_SUITEFILEVERSION = "1.24";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -137,6 +138,7 @@ public class public_data {
 	public final static String TOOLS_KILL_PROCESS = SW_HOME_PATH + "/tools/kill_process.py";
 	public final static String TOOLS_KILL_WINPOP = SW_HOME_PATH + "/tools/kill_winpop.py";
 	public final static String TOOLS_EXP_CHECK = SW_HOME_PATH + "/tools/exp_check.py";
+	public final static String TOOLS_MEM_CHECK = SW_HOME_PATH + "/tools/mem_check.py";
 	public final static String TOOLS_OS_NAME = SW_HOME_PATH + "/tools/os_name.py";
 	public final static String TOOLS_GET_CPU = SW_HOME_PATH + "/tools/get_cpu.py";
 	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
@@ -209,7 +211,7 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
-	public final static String TASK_DEF_ESTIMATE_MEM = "1"; //in G, 1G
+	public final static float TASK_DEF_ESTIMATE_MEM = 1.0f; //in G, 1G
 	public final static String TASK_DEF_MAX_MEM_USG = "16";
 	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
 	public final static String TASK_DEF_CMD_DECISION = "last"; //last, all, <indiviual cmd>, <indiviual cmds> join with Python:and,or
@@ -408,9 +410,11 @@ public class public_data {
         Integer memory_est = Integer.valueOf(80);
         Integer memory_exp = Integer.valueOf(96);
         System.out.println(memory_est + memory_exp);
-        float rate = 0.85f;
+        float rate = 100.85456f;
         System.out.println(memory_exp * rate);
         Float available = Float.valueOf(memory_exp * rate);
         available.intValue();
+        DecimalFormat decimalformat = new DecimalFormat("0.00");
+        System.out.println(decimalformat.format(rate));
 	}
 }
