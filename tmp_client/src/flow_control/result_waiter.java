@@ -522,7 +522,7 @@ public class result_waiter extends Thread {
 			case_status.put("key_check", (String) case_report_map.get(call_index).get("key_check"));
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
-			case_status.put("mem_used", (String) case_report_map.get(call_index).get("mem_used"));
+			case_status.put("used_mem", (String) case_report_map.get(call_index).get("used_mem"));
 			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
             case_status.put("defects", (String) case_report_map.get(call_index).get("defects"));
             case_status.put("defects_history", (String) case_report_map.get(call_index).get("defects_history"));
@@ -619,9 +619,12 @@ public class result_waiter extends Thread {
         	if (path.startsWith("/lsh/")) {
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("/lsh/", "//lsh-smb02/").replace("\\", "/");
+        	} else if (path.startsWith("\\\\lsh-smb01\\")){
+        		match_str1 = ori_path.replace("\\", "/");
+        		match_str2 = ori_path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
         	} else if (path.startsWith("\\\\lsh-smb02\\")){
         		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
+        		match_str2 = ori_path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");        		
         	} else if (path.startsWith("/disks/")){
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("/disks/", "//ldc-smb01/").replace("\\", "/");
@@ -649,7 +652,7 @@ public class result_waiter extends Thread {
         for(String path: uniq_paths) {
             path = path.trim();
             String site = new String("");
-            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb02\\")) {
+            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb01\\") || path.startsWith("\\\\lsh-smb02\\")) {
             	site = "(LSH)";
             } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb01\\")) {
             	site = "(LSV)";
@@ -664,6 +667,14 @@ public class result_waiter extends Thread {
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
+            } else if (path.startsWith("\\\\lsh-smb01\\")) {
+            	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
+            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
+            	loc_rpt.append("</a>" + line_separator);
+            	path = path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
+            	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
+            	loc_rpt.append(String.format(lin_href, path, path));
+            	loc_rpt.append("</a>" + line_separator);
             } else if (path.startsWith("\\\\lsh-smb02\\")) {
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
@@ -671,7 +682,7 @@ public class result_waiter extends Thread {
             	path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
-            	loc_rpt.append("</a>" + line_separator);
+            	loc_rpt.append("</a>" + line_separator);            	
             } else if (path.startsWith("/disks/")){
             	//for LSV path, passed case will not be copy, so don't show link
             	if (status.equals(task_enum.PASSED)) {
@@ -776,7 +787,8 @@ public class result_waiter extends Thread {
 			String defects = new String("");
 			String defects_history = new String("NA");
 			String scan_result = "";
-			float task_memory = 0.0f;
+			float used_mem = 0.0f;
+			float peak_mem = 0.0f;
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -794,11 +806,12 @@ public class result_waiter extends Thread {
 				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));
-				task_memory = (float) one_call_data.get(pool_attr.call_maxmem);
+				used_mem = (float) one_call_data.get(pool_attr.call_maxmem);
 			}  else {
-				task_memory = (float) one_call_data.get(pool_attr.call_curmem);
 				task_status = task_enum.PROCESSING;
+				used_mem = (float) one_call_data.get(pool_attr.call_curmem);
 			}
+			peak_mem = (float) one_call_data.get(pool_attr.call_maxmem);
 			hash_data.putAll(detail_report);
             hash_data.put("scan_result", scan_result);
 			hash_data.put("defects", defects);
@@ -811,7 +824,8 @@ public class result_waiter extends Thread {
 			long start_time = (long) one_call_data.get(pool_attr.call_gentime);
 			long current_time = System.currentTimeMillis() / 1000;
 			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
-			hash_data.put("mem_used", decimalformat.format(task_memory));
+			hash_data.put("used_mem", decimalformat.format(used_mem));
+			hash_data.put("peak_mem", decimalformat.format(peak_mem));
 			hash_data.put("update_time", time_info.get_man_date_time());
 			case_data.put(call_index, hash_data);
 		}

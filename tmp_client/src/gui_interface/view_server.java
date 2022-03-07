@@ -809,8 +809,8 @@ public class view_server extends Thread {
 		} else {
 			add_line.add("NA");
 		}
-		if (design_data.get("Status").containsKey("mem_used")) {
-			add_line.add(design_data.get("Status").get("mem_used"));
+		if (design_data.get("Status").containsKey("used_mem")) {
+			add_line.add(design_data.get("Status").get("used_mem"));
 		} else {
 			add_line.add("NA");
 		}
