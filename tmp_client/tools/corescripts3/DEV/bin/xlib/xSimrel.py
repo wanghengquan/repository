@@ -917,6 +917,7 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
     try:
         simrel_root, branch_name, simrel_family = filelock.safe_run_function(get_simrel_path, args=this_args)
     except:
+        xTools.say_tb_msg()
         xTools.say_it("Failed to get simrel path")
     temp_recov.comeback()
     if not simrel_root:

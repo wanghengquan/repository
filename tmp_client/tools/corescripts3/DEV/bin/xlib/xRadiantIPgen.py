@@ -157,6 +157,7 @@ class UpdateRadiantIP(object):
             on_win, os_name = xTools.get_os_name()
             ipgen_file = os.path.join(self.radiant_dpd, "ispfpga", "bin", os_name, "ipgen")
             apt_str, apt_dict = get_apt()
+            update_design_xml_file()
             pmi_folder = self.get_pmi_folder(apt_dict, on_win)
             if not pmi_folder:
                 xTools.say_it("Error. Not found ip path for %s" % self.ipx_module)
@@ -189,22 +190,35 @@ class UpdateRadiantIP(object):
 
 
 def get_apt():
-    xml_file = "component.xml"
-    if not os.path.isfile(xml_file):
-        return " ", dict()
-    # <lsccip:device>iCE40UP5K</lsccip:device>
-    # <lsccip:performanceGrade>High-Performance_1.2V</lsccip:performanceGrade>
-    # <lsccip:architecture>ice40tp</lsccip:architecture>
-    # <lsccip:package>CM225</lsccip:package>
     keys = ["architecture", "device", "package", "(performanceGrade|speed)"]
     short_k = ["-a", "-p", "-t", "-sp"]
-    patterns = [(re.compile(":%s>(?P<sp>[^<]+)<" % k), k) for k in keys]
-    apt = dict()
-    for line in open(xml_file):
-        for (p, k) in patterns:
-            m = p.search(line)
-            if m:
-                apt[k] = m.group("sp")
+    _ut24cp_list = ["UT24CP", "UT24CP100", "BBG484", "8_High-Performance_1.0V"]
+    _ut24c_list = ["UT24C", "UT24C40", "CABGA256", "7_High-Performance_1.0V"]
+    custom_ipgen_env = os.getenv("EXTERNAL_IPGEN_ARGS")
+    if not custom_ipgen_env:
+        xml_file = "component.xml"
+        if not os.path.isfile(xml_file):
+            return " ", dict()
+        # <lsccip:device>iCE40UP5K</lsccip:device>
+        # <lsccip:performanceGrade>High-Performance_1.2V</lsccip:performanceGrade>
+        # <lsccip:architecture>ice40tp</lsccip:architecture>
+        # <lsccip:package>CM225</lsccip:package>
+        patterns = [(re.compile(":%s>(?P<sp>[^<]+)<" % k), k) for k in keys]
+        apt = dict()
+        for line in open(xml_file):
+            for (p, k) in patterns:
+                m = p.search(line)
+                if m:
+                    apt[k] = m.group("sp")
+    else:
+        custom_ipgen_env = custom_ipgen_env.lower()
+        if custom_ipgen_env == "ut24c":
+            apt = dict(zip(keys, _ut24c_list))
+        elif custom_ipgen_env == "ut24cp":
+            apt = dict(zip(keys, _ut24cp_list))
+        else:
+            print("Error. Unknown env value EXTERNAL_IPGEN_ARGS: {}".format(custom_ipgen_env))
+            apt = dict()
     my_apt = " "
     if len(apt) == len(keys):
         for i, v in enumerate(keys):
@@ -212,5 +226,29 @@ def get_apt():
     return my_apt, apt
 
 
-if __name__ == "__main__":
-    pass
+def update_design_xml_file():
+    d_xml = "design.xml"
+    if not os.path.isfile(d_xml):
+        return
+    p = re.compile('referenceId="TABLE_FULL_PATH">(.+)</ipxact:configurableElementValue>')
+    with open(d_xml) as rd_ob:
+        for line in rd_ob:
+            if p.search(line):
+                break
+        else:
+            return  # Do not need to update
+    new_lines = list()
+    with open(d_xml) as rd_ob:
+        for line in rd_ob:
+            m = p.search(line)
+            if m:
+                now_file = m.group(1)
+                new_file = xTools.win2unix(os.path.basename(now_file))
+                if not os.path.isfile(new_file):
+                    print("Warning. not found file {}".format(new_file))
+                    return
+                line = re.sub(now_file, new_file, line)
+            new_lines.append(line)
+    with open(d_xml, "w") as wr_ob:
+        for line in new_lines:
+            print(line, file=wr_ob, end="")

@@ -275,7 +275,7 @@ class ScanTiming(ScanBasic):
                 'keyword': 'maxLoads',
             },
         ]
-        
+
         self.call_lower_method(ScanPattern, options, pattern_args, handle_number=self.handle_number)
         self.call_lower_method(ScanNumbers, options, numbers_args_1)
 
@@ -301,7 +301,7 @@ class ScanTiming(ScanBasic):
                 'keyword': 'scoreSetup'
             },
         ]
-        
+
         numbers_args_1 = [
             {
                 'file': self.files['timing_totalloads_file'],
@@ -320,7 +320,7 @@ class ScanTiming(ScanBasic):
                 'keyword': 'maxLoads',
             },
         ]
-        
+
         self.call_lower_method(ScanPattern, options, pattern_args, handle_number=self.handle_number)
         self.call_lower_method(ScanNumbers, options, numbers_args_1)
 
@@ -758,6 +758,30 @@ class ScanMemory(ScanBasic):
         self.call_lower_method(ScanPattern, options, patterns_1.values())
         self.call_lower_method(ScanNumbers, options, patterns_2)
         self.call_lower_method(ScanPattern, options, patterns_3)
+
+
+class ScanCoverage(ScanBasic):
+    def __init__(self):
+        ScanBasic.__init__(self, name='scan_coverage')
+        self.descriptor = 'Coverage'
+
+    def handle(self, options, args):
+        eval('self.handle_' + options['software'])(options, args)
+
+    def handle_diamond(self, options, args):
+        self.handle_radiant(options, args)
+
+    def handle_radiant(self, options, args):
+        patterns = [
+            {
+                'file': os.path.join(options['tag_path'], "sim_rtl", "cover_report.txt"),
+                'pattern': r'Total Coverage By [^:]+: ([\.\d]+%)',
+                # Total Coverage By Instance (filtered view): 37.17%
+                'keyword': 'rtl_sim_coverage',
+            },
+
+        ]
+        self.call_lower_method(ScanPattern, options, patterns)
 
 
 class ScanErrors(ScanBasic):

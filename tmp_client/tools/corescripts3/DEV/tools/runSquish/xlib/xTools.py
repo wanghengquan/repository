@@ -783,7 +783,7 @@ def set_lm_license_environment(root_file):
 IMG_PERL = ('testSettings->logScreenshotOnError(1);', 'testSettings->logScreenshotOnFail(1);')
 
 
-def update_test_pl_file(design_path):
+def _update_test_pl_file(design_path):
     msg = "update test.pl in {}".format(design_path)
     pl_files = list()
     file_a = os.path.join(design_path, "test.pl")
@@ -812,12 +812,68 @@ def update_test_pl_file(design_path):
         update_file(pl, new_lines)
 
 
-if __name__ == "__main__":
-    print(get_relative_path("none.log", r"D:\lscc31057\diamond\3.1\active-hdl\Books", r"f:\Mike"))
+def _remove_console_log_file(design_path):
+    log_file = os.path.join(design_path, "console.log")
+    if os.path.isfile(log_file):
+        log_file = os.path.realpath(log_file)
+        print("removing {}".format(log_file))
+        rm_with_error(log_file)
 
 
+def very_first_process(design_path):
+    _update_test_pl_file(design_path)
+    _remove_console_log_file(design_path)
 
 
+def sort_by_num(raw_string):
+    p = re.compile(r"_(\d+)")
+    m = p.search(raw_string)
+    if m:
+        return int(m.group(1))
+    else:
+        return 0
 
 
+def _printout_images_info(design_path):
+    """Show 9 pictures at most.
+       will try to print the newer file if exceed 9.
+    """
+    _max_pic_number = 8
+    images = dict()
+    for foo in os.listdir(design_path):
+        abs_foo = os.path.join(design_path, foo)
+        if os.path.isfile(abs_foo):
+            continue
+        if foo.endswith("Images"):
+            images.setdefault(foo, list())
+            for bar in os.listdir(abs_foo):
+                if bar.endswith(".png"):
+                    images[foo].append(bar)
+    if images:
+        for k, v in list(images.items()):
+            v.sort(key=sort_by_num, reverse=True)
+        nine_images = dict()
+        images_number = 0
+        for i in range(0, 10):
+            if images_number > _max_pic_number:
+                break
+            for k, v in list(images.items()):
+                nine_images.setdefault(k, list())
+                try:
+                    nine_images[k].append(v[i])
+                    images_number += 1
+                    if images_number > _max_pic_number:
+                        break
+                except IndexError:
+                    continue
+        say_it("")
+        say_it("Images Number: {}".format(images_number))
+        ii = 1
+        for kk, vv in list(nine_images.items()):
+            for foo in vv:
+                say_it("-PNG{}: {}/{}".format(ii, kk, foo))
+                ii += 1
 
+
+def ultimate_process(design_path):
+    _printout_images_info(design_path)

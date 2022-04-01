@@ -280,6 +280,9 @@ class FlowLattice(XOptions):
         if not dump_only:
             xx = self.original_options.get("check_sections")
             yy = self.original_options.get("check_smart")
+            if os.getenv("INNER_APB_FLOW"):
+                yy = True
+                self.original_options["run_export_bitstream"] = False
             new_args = list()
             if not (xx or yy):
                 new_args.append("check_normal")

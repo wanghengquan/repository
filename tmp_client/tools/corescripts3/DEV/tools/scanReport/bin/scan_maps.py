@@ -12,10 +12,11 @@ categories = {
     8: 'Errors',
     9: 'Milestone',
     10: 'Simulation',
+    11: 'Coverage',
 }
 
 
-MAX_ID = 110
+MAX_ID = 118
 ''' keyword: (id, [categories list]) '''
 maps = OrderedDict(sorted(list({
     'version': (0, [1]),
@@ -132,5 +133,6 @@ maps = OrderedDict(sorted(list({
     'sim_syn_time': (99, [10]),
     'sim_map_time': (100, [10]),
     'sim_par_time': (101, [10]),
+    'rtl_sim_coverage': (117, [11]),
     'fmax_type': (110, [3]),
 }.items()), key=lambda t: t[1][0]))

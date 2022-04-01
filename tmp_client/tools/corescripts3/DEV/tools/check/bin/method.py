@@ -478,12 +478,15 @@ class CheckRadiantFlow(Method):
         }
 
     @staticmethod
-    def file_not_empty(filename):
+    def file_not_empty(flow_name, filename):
         flag = False
         files = glob.glob(filename)
         if not files:
             return flag
         for f in files:
+            if flow_name == "bitstream":
+                if re.search(r"\Wsim_\w+", f):  # wrong bin file in sim_par_vlg/init.bin for checking bitstream
+                    continue
             if os.path.getsize(f) != 0:
                 flag = True
                 break
@@ -520,7 +523,7 @@ class CheckRadiantFlow(Method):
             if check_string == 'FILE_EXISTS':
                 ret = []
                 for uncheck_file in uncheck_files:
-                    ret.append(self.file_not_empty(uncheck_file))
+                    ret.append(self.file_not_empty(flow, uncheck_file))
                 if any(ret):
                     self.basic_result[flow] = True
                 else:
