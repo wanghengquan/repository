@@ -13,6 +13,7 @@ scan_par = 1
 scan_cpu =1
 scan_memory = 1
 scan_errors = 1
+scan_coverage = 1
 scan_milestone = 1
 scan_simulation = 1
 
@@ -55,6 +56,8 @@ keyword = loads
 [scan_memory]
 
 [scan_errors]
+
+[scan_coverage]
 
 [scan_milestone]
 

@@ -50,8 +50,15 @@ def get_config(args):
         dirs = []
         print(e)
 
-    configs = [os.path.join(top, d) for d in dirs
-               if os.path.isfile(os.path.join(top, d)) and d.endswith('.scf')]
+    #configs = [os.path.join(top, d) for d in dirs
+    #           if os.path.isfile(os.path.join(top, d)) and d.endswith('.scf')]
+    configs = list()
+    for foo in dirs:
+        if foo == "scan_full.scf":   # try to use the latest one
+            continue
+        abs_foo = os.path.join(top, foo)
+        if os.path.isfile(abs_foo) and foo.endswith(".scf"):
+            configs.append(abs_foo)
 
     if not configs:
         print("Warning: No configure files found, use default config instead!")

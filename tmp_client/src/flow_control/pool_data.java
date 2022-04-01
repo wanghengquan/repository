@@ -226,7 +226,9 @@ public class pool_data {
 			){
 		float current_mem = 0.0f;
 		String scan_value = new String("0.0");
+		//System.out.println(mem_info);
 		for (String line: mem_info) {
+			line = line.replace(")", "");//for python2.7 compatibility
 			if(line.contains("T" + case_id) && line.contains(" ")) {
 				scan_value = line.split("\\s+")[1];
 				current_mem = Float.valueOf(scan_value).floatValue();

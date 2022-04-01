@@ -104,6 +104,7 @@ class RunSquishCase:
         xTools.set_lm_license_environment(__file__)
         sts = self._process()
         xTools.say_it("---- End of running Squish test case ...")
+        xTools.ultimate_process(self.design)
         return sts
 
     def _process(self):
@@ -188,7 +189,7 @@ class RunSquishCase:
         return unix_path
 
     def run_batch_file(self):
-        xTools.update_test_pl_file(self.design)
+        xTools.very_first_process(self.design)
         testrun_path = os.path.join(self.design, "_scratch_cmd")
         if xTools.wrap_md(testrun_path, "TestRun Path"):
             return 1

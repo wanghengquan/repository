@@ -209,6 +209,8 @@ class XOptions:
         _h2 = "run simrel flow and specify the lst file type, valid choices are: %s" % ", ".join(simrel_types)
         sim_group.add_argument("--run-simrel", choices=simrel_types, help=_h2)
         sim_group.add_argument("--simrel-copy-wave", action="store_true", help="copy back Simrel outwaves")
+        sim_group.add_argument("--sim-coverage", action="store_true", help="run Questasim coverage flow")
+        sim_group.add_argument("--sim-coverage-args", default="sbecft", help="Questasim coverage flow arguments")
         # self.parser.add_argument_group(sim_group)
 
     def add_diamond_options(self):

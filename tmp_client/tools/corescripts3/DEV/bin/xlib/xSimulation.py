@@ -4,6 +4,7 @@ import sys
 import time
 import glob
 import shutil
+from collections import OrderedDict
 
 from . import xTools
 from . import xReport
@@ -127,9 +128,9 @@ class RunSimulationFlow:
         _recov = xTools.ChangeDir(self.impl_name)
         udb_file = "%s_%s.udb" % (self.project_name, self.impl_name)
         cmd_lines = [("udb2sv -view physical %s -o test_udb2sv.v" % udb_file, "flow_udb2sv"),
-                     #("udb2txt %s -o test_udb2txt.xml" % udb_file, "flow_udb2txt"),
-                     #("bitgen -dw -simbitmap %s" % udb_file, "flow_bitgen")
-                    ]
+                     # ("udb2txt %s -o test_udb2txt.xml" % udb_file, "flow_udb2txt"),
+                     # ("bitgen -dw -simbitmap %s" % udb_file, "flow_bitgen")
+                     ]
         for cl, t in cmd_lines:
             xTools.run_command(cl, "%s.log" % t, "%s.time" % t)  # Do not care return code
         _recov.comeback()
@@ -143,7 +144,7 @@ class RunSimulationFlow:
         cmd_args = dict(rtl=("rtl", "_rtl", "_rtl"),
                         syn=("logical", "_syn", "_syn"),
                         map=("physical", "_map", "_map"),
-                        par=("physical", "", "_par"),)
+                        par=("physical", "", "_par"), )
         cmd_tmpl = "udb2sv -w -view {0} %s_%s{1}.udb -o test_udb2sv{2}.v" % (self.project_name, self.impl_name)
         _recov = xTools.ChangeDir(self.impl_name)
         for x in udb2sv_cmd_list:
@@ -180,14 +181,14 @@ class RunSimulationFlow:
             return 1
 
         for (sim_type, sim_path, sim_func) in (
-            (self.sim_rtl, "sim_rtl", self.run_rtl_simulation),
-            (self.sim_syn_vhd, "sim_syn_vhd", self.run_syn_vhd_simulation),
-            (self.sim_syn_vlg, "sim_syn_vlg", self.run_syn_vlg_simulation),
-            (self.sim_map_vhd, "sim_map_vhd", self.run_map_vhd_simulation),
-            (self.sim_map_vlg, "sim_map_vlg", self.run_map_vlg_simulation),
-            (self.sim_par_vhd, "sim_par_vhd", self.run_par_vhd_simulation),
-            (self.sim_par_vlg, "sim_par_vlg", self.run_par_vlg_simulation),
-            (self.sim_bit_vlg, "sim_bit_vlg", self.run_bit_vlg_simulation),
+                (self.sim_rtl, "sim_rtl", self.run_rtl_simulation),
+                (self.sim_syn_vhd, "sim_syn_vhd", self.run_syn_vhd_simulation),
+                (self.sim_syn_vlg, "sim_syn_vlg", self.run_syn_vlg_simulation),
+                (self.sim_map_vhd, "sim_map_vhd", self.run_map_vhd_simulation),
+                (self.sim_map_vlg, "sim_map_vlg", self.run_map_vlg_simulation),
+                (self.sim_par_vhd, "sim_par_vhd", self.run_par_vhd_simulation),
+                (self.sim_par_vlg, "sim_par_vlg", self.run_par_vlg_simulation),
+                (self.sim_bit_vlg, "sim_bit_vlg", self.run_bit_vlg_simulation),
         ):
             if sim_type:
                 if sim_path == "sim_syn_vlg":
@@ -244,12 +245,12 @@ class RunSimulationFlow:
     def get_user_options(self):
         user_options = dict()
         for (sim_type, flow_opt) in (
-            (self.sim_map_vhd, "run_map_vhd"),
-            (self.sim_map_vlg, "run_map_vlg"),
-            (self.sim_par_vhd, "run_export_vhd"),
-            (self.sim_par_vlg, "run_export_vlg"),
-            (self.sim_bit_vlg, "run_export_vlg"),
-            ):
+                (self.sim_map_vhd, "run_map_vhd"),
+                (self.sim_map_vlg, "run_map_vlg"),
+                (self.sim_par_vhd, "run_export_vhd"),
+                (self.sim_par_vlg, "run_export_vlg"),
+                (self.sim_bit_vlg, "run_export_vlg"),
+        ):
             if sim_type:
                 user_options[flow_opt] = 1
         return user_options
@@ -413,18 +414,7 @@ class RunSimulationFlow:
         else:
             family_name = device.lower()
         if self.is_ng_flow:
-            radiant_sim_map_dict = self.flow_options.get("family_radiant_map_sim_lib", dict())
-            for k, v in list(radiant_sim_map_dict.items()):
-                if family_name.startswith(k):
-                    map_lib_name = v
-                    break
-            else:  # change 5k to None, \d\d to 00
-                family_name_list = family_name.split("-|_")
-                perhaps_name = family_name_list[0]
-                perhaps_name = re.sub(r"\d+k$", "", perhaps_name)
-                perhaps_name = re.sub(r"\d+$", "00", perhaps_name)
-                map_lib_name = perhaps_name
-                print("Warning. use perhaps simulation library name: {}".format(map_lib_name))
+            map_lib_name = self.get_real_simulation_lib_name(family_name)
         else:
             my_dict = self.flow_options.get("family_diamond_map_sim_lib")
             map_lib_name = my_dict.get(family_name.lower())
@@ -474,6 +464,34 @@ class RunSimulationFlow:
         else:
             _sim_time = "10 us"
         self.do_args["sim_time"] = _sim_time
+
+    def get_real_simulation_lib_name(self, family_name):
+        """
+        iCE40UP5K-UWG30ITR --> iCE40UP
+        LFMXO5-25-7BBG256C --> lfmxo5
+        UT24C-40-7BG256A   --> lfd2nx
+        UT24CP-100-8BBG484I--> lfcpnx
+        LFD2NX-17-7MG121I  --> lfd2nx
+        """
+        new_family_name = re.split("-|_", family_name)[0]  # in lower case
+        radiant_sim_map_dict = self.flow_options.get("family_radiant_map_sim_lib", dict())
+        v = radiant_sim_map_dict.get(new_family_name[0])
+        if v:
+            real_name = v
+        else:
+            keys = list(radiant_sim_map_dict.keys())
+            keys.sort(reverse=True)  # match as longer as possible
+            for k in keys:
+                if new_family_name.startswith(k):
+                    real_name = radiant_sim_map_dict.get(k)
+                    break
+            else:  # try to infer it
+                infer_name = new_family_name
+                infer_name = re.sub(r"\d+k$", "", infer_name)  # for device like iCE40UP5K
+                infer_name = re.sub(r"\d+$", "00", infer_name)  # for device like je5d30
+                print("Warning. use possible simulation lib name: {} for {}".format(infer_name, family_name))
+                real_name = infer_name
+        return real_name
 
     def add_black_box_args(self, dev_name):
         self.do_args["black_boxes_0"] = ""
@@ -536,15 +554,18 @@ class RunSimulationFlow:
     def run_rtl_simulation(self, sim_path):
         source_files = list()
         source_node = self.final_ldf_dict.get("source")
+        source_lib_dict = dict()
         for item in source_node:
             if item.get("excluded") == "TRUE":
                 continue
             if item.get("syn_sim") == "SimOnly":
                 continue
             type_short = item.get("type_short")
+            work_lib_name = item.get("work_lib")
             if type_short in ("Verilog", "VHDL"):
                 src_file = item.get("name")
                 source_files.append(src_file)
+                source_lib_dict[src_file] = work_lib_name
             elif type_short == "IPX":
                 ipx_file = item.get("name")
                 module_file = utils.get_module_file(ipx_file)
@@ -553,6 +574,7 @@ class RunSimulationFlow:
                         pass
                         # source_files.insert(0, self.this_pmi_file)
                     source_files.append(module_file)
+                    source_lib_dict[module_file] = work_lib_name
                 else:
                     xTools.say_it("Warning. Not found verilog file for %s" % ipx_file)
             elif type_short == "SBX":
@@ -560,13 +582,58 @@ class RunSimulationFlow:
                 module_file = utils.get_module_file_from_sbx(sbx_file)
                 if module_file:
                     source_files.append(module_file)
+                    source_lib_dict[module_file] = work_lib_name
         if len(source_files) == 1:
             if self.pmi:
                 src_file = source_files[0]
                 src_file = re.sub("_syn\.", ".", src_file)
                 if os.path.isfile(src_file):
                     source_files = [src_file]
-        return self._run_simulation(sim_path, source_files, "")
+                    source_lib_dict[src_file] = None
+        # comment next line to use the primary order
+        # source_files = self.compile_packages_first(source_files)
+        return self._run_simulation(sim_path, source_files, "", is_sim_rtl=True, lib_dict=source_lib_dict)
+
+    @staticmethod
+    def compile_packages_first(raw_files):
+        file_and_package_dict = OrderedDict()
+        p_using_package = re.compile(r"use work.(\w+)", re.I)
+        p_define_package = re.compile(r"package\s+(\w+)\s+is", re.I)
+        for foo in raw_files:
+            using_list = list()
+            define_list = list()
+            try:
+                with open(foo) as ob:
+                    i = 0
+                    for line in ob:
+                        i += 1
+                        if i == 400:
+                            break
+                        line = line.strip()
+                        m_using = p_using_package.search(line)
+                        m_define = p_define_package.search(line)
+                        if m_using:
+                            using_list.append(m_using.group(1))
+                        if m_define:
+                            define_list.append(m_define.group(1))
+            except:
+                pass
+            file_and_package_dict[foo] = (using_list, define_list)
+
+        new_files = list()
+        for k, (ul, dl) in list(file_and_package_dict.items()):
+            if dl:
+                if ul:
+                    print("Warning. TODO: Not support define a package with another package in {}".format(k))
+                    new_files.append(k)
+                else:
+                    new_files.insert(0, k)  # pure package file
+        for k, (ul, dl) in list(file_and_package_dict.items()):
+            if k in new_files:
+                continue
+            if not dl:
+                new_files.append(k)
+        return new_files
 
     def run_syn_vhd_simulation(self, sim_path):
         if self.synthesis == "lse":
@@ -810,7 +877,8 @@ class RunSimulationFlow:
             source_files = [xTools.get_relative_path(item, self.dst_design) for item in source_files]
         self.do_args["source_files"] = self.get_xrun_lines(source_files)
         self.do_args["tb_files"] = self.get_xrun_lines(self.final_tb_files)
-        self.do_args["dev_lib"] = os.path.join(os.path.dirname(self.dev_lib), re.sub("^ovi_", "", os.path.basename(self.dev_lib)))
+        self.do_args["dev_lib"] = os.path.join(os.path.dirname(self.dev_lib),
+                                               re.sub("^ovi_", "", os.path.basename(self.dev_lib)))
         self.do_args["pmi_lib"] = self.pmi_lib
         x = "do_{}".format(sim_path)
         y = "run_{}".format(sim_path)
@@ -825,7 +893,7 @@ class RunSimulationFlow:
                     print(line % self.do_args, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
 
-    def _run_simulation(self, sim_path, source_files, user_options):
+    def _run_simulation(self, sim_path, source_files, user_options, is_sim_rtl=False, lib_dict=dict()):
         if self.is_ng_flow:
             pass  # DO NOT INCLUDE PMI File
             # if self.this_pmi_file not in source_files:
@@ -893,9 +961,17 @@ class RunSimulationFlow:
                     continue
                 if start_source:
                     if self.p_src_end.search(line):
+                        new_lib_dict = dict()
                         if not user_options:  # RTL simulation
-                            source_files = [xTools.get_relative_path(item, self.dst_design) for item in source_files]
-                        v_v_line = self.add_vlog_vcom_lines(source_files)
+                            # source_files = [xTools.get_relative_path(item, self.dst_design) for item in source_files]
+                            x = source_files[:]
+                            source_files = list()
+                            new_lib_dict = dict()
+                            for foo in x:
+                                new_foo = xTools.get_relative_path(foo, self.dst_design)
+                                new_lib_dict[new_foo] = lib_dict.get(foo)
+                                source_files.append(new_foo)
+                        v_v_line = self.add_vlog_vcom_lines(source_files, custom_lib_dict=new_lib_dict)
 
                         if not v_v_line:
                             # Sometimes only has a test bench file, no source files found
@@ -964,7 +1040,11 @@ class RunSimulationFlow:
                     _ = "## {}".format(_)
             new_do_lines.append(_)
         xTools.write_file(do_file, new_do_lines)
-        utils.update_simulation_do_file(self.sim_vendor_name, do_file, self.lst_precision, self.sim_no_lst)
+        if is_sim_rtl:
+            x, y = self.flow_options.get("sim_coverage"), self.flow_options.get("sim_coverage_args")
+        else:
+            x, y = False, None
+        utils.update_simulation_do_file(self.sim_vendor_name, do_file, self.lst_precision, self.sim_no_lst, x, y)
 
         # sometimes the simulation libraries are not complete for temporary device, so try to find an exist one
         unique_one = self.get_lib_path_if_only_has_one(self.dev_lib)
@@ -1027,7 +1107,7 @@ class RunSimulationFlow:
             if sts:
                 if xTools.simple_parser(log_file, [re.compile("Unable to checkout a license")]):
                     xTools.say_it("Warning. No licence for running simulation. waiting ...")
-                    time.sleep(i*10)
+                    time.sleep(i * 10)
                 else:
                     break
             else:
@@ -1131,7 +1211,7 @@ class RunSimulationFlow:
                 xTools.wrap_cp_file(item, os.path.join(sim_path, os.path.basename(item)))
         self.final_tb_files = _tb_file[:]
 
-    def add_vlog_vcom_lines(self, src_files, add_tb=0):
+    def add_vlog_vcom_lines(self, src_files, add_tb=0, custom_lib_dict=dict()):
         p_for_pmi = re.compile(r"\Wip\Wpmi\Wpmi")
         self.use_vhd = 0
         if add_tb and not self.normal_tb:  # use them directly.
@@ -1161,7 +1241,13 @@ class RunSimulationFlow:
                             this_line += ' +incdir+{}'.format(os.path.dirname(item))
                         v_v_lines.append(this_line)
                 elif fext in (".vho", ".vhd", ".vhdl", ".vhm"):
-                    v_v_lines.append("vcom %s" % item)
+                    x = ""
+                    if custom_lib_dict:
+                        my_work_lib = custom_lib_dict.get(item)
+                        if my_work_lib:
+                            x = "-work {} ".format(my_work_lib)
+
+                    v_v_lines.append("vcom {}{}".format(x, item))
                     if not self.use_vhd:
                         self.use_vhd = 1
                 elif fext == ".lpf":
@@ -1184,7 +1270,8 @@ class RunSimulationFlow:
         else:
             if self.run_xrun:
                 sts, text = xTools.get_status_output("xrun -helpargs")
-                p = re.compile("xrun:\s+([^:]+):.+Cadence")  # xrun: 20.09-s004: (c) Copyright 1995-2020 Cadence Design Systems, Inc.
+                p = re.compile(
+                    "xrun:\s+([^:]+):.+Cadence")  # xrun: 20.09-s004: (c) Copyright 1995-2020 Cadence Design Systems, Inc.
                 for line in text:
                     m = p.search(line)
                     if m:
@@ -1218,7 +1305,7 @@ class RunSimulationFlow:
                 #
                 self.dev_lib = os.path.join(self.original_library_path, _name)
                 self.pmi_lib = os.path.join(self.original_library_path, "pmi_work")
-            return   # use it!
+            return  # use it!
         self.create_lock_file_folder()
 
         def try_to_compile_local_lib():

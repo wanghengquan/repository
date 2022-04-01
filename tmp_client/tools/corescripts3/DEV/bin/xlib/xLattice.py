@@ -161,6 +161,8 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
     for (process, task) in process_task:
         if (not is_ng_flow) and task == "SynTrace":
             task = ""
+        elif os.getenv("ENV_DEVICE_IS_APOLLO") and task == "SynTrace":
+            task = ""
         elif task:
             task = "-task %s" % task
         _line = "prj_run %s %s -forceOne" % (process, task)
@@ -337,6 +339,7 @@ class LatticeEnvironment:
         self.simrel_path = flow_options.get("simrel_path")
         self.debug = flow_options.get("debug")
         self.sim_vendor_name = ""
+        self.will_set_default_simulation_path = False
 
     def set_env_by_env_rtf(self):
         env_value = os.getenv("ENV", os.getenv("env"))
@@ -424,8 +427,20 @@ class LatticeEnvironment:
         sts = self.set_fe_env()
         if sts:
             return sts
+        self.change_path_env()
         # set environment for pre/post process
         self.set_pre_post_environment()
+
+    def change_path_env(self):
+        if self.will_set_default_simulation_path:
+            f_path = os.getenv("FOUNDRY")
+            f_root = os.path.dirname(f_path)
+            oem_path = "win32loem" if self.on_win else "linuxloem"
+            modelsim_path = os.path.join(f_root, "modeltech", oem_path)
+            if os.path.isdir(modelsim_path):
+                os.environ["PATH"] = os.pathsep.join([modelsim_path, os.getenv("PATH", "")])
+            else:
+                xTools.say_it("Waring. Not found default modelsim path: {}".format(modelsim_path))
 
     def set_pre_post_environment(self):
         """Will set environment for:
@@ -577,6 +592,7 @@ class LatticeEnvironment:
             self.questasim_path = ""
             self.riviera_path = ""
             self.activehdl_path = ""
+            self.will_set_default_simulation_path = True
             return
         self.modelsim_path = self.flow_options.get("modelsim_path")
         self.questasim_path = self.flow_options.get("questasim_path")
@@ -752,6 +768,18 @@ class UpdateLDF:
                 line = self.update_inc_path(line)
             line = line.rstrip()
             final_lines.append(line)
+        apb_flow = os.getenv("EXTERNAL_APB_FLOW")
+        if apb_flow:
+            p_change = re.compile(r'(device="ap6a00-\d+)-\d')
+            if str(apb_flow.strip()) in ("1", "yes"):
+                x = final_lines[:]
+                final_lines = list()
+                for foo in x:
+                    new_foo = p_change.sub(r"\g<1>-3", foo)
+                    if new_foo != foo:
+                        os.environ["PNMAIN_ENABLE_BITGEN"] = '1'   # for ng3_2apb apollo temporary flow
+                        os.environ["INNER_APB_FLOW"] = '1'
+                    final_lines.append(new_foo)
         xTools.write_file(self.final_ldf_file, final_lines)
 
     def copy_ngo_file_if_have(self):
@@ -1145,6 +1173,8 @@ class CreateDiamondProjectFile:
         my_update = UpdateLDF(real_ldf_file, self.final_ldf_file, self.empty_lpf, self.lpf_factor, self.copy_all)
         if my_update.process():
             return 1
+        if os.getenv("INNER_APB_FLOW"):
+            self.flow_options["run_export_bitstream"] = False  # Do NOT run
 
     def generate_ldf_file(self):
         if not self.is_ng_flow:
@@ -1414,7 +1444,10 @@ class CreateDiamondProjectFile:
                 if self.flow_options.get("gen_pdc"):
                     x_syn = "prj_run Synthesis {} -forceOne"
         if x_syn:
-            st = "-task SynTrace " if self.is_ng_flow else ""
+            if os.getenv("ENV_DEVICE_IS_APOLLO"):
+                st = ""
+            else:
+                st = "-task SynTrace " if self.is_ng_flow else ""
             add_lines.append(x_syn.format(st))
 
         add_lines.append('%s "%s"' % (self.tcl_cmd.get("save"), self.final_ldf_file))

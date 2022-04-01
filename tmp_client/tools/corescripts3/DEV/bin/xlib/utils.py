@@ -20,7 +20,7 @@ vendor_settings_dict = {"Active":  ["onbreak {resume}", "onerror {quit}"],
                         }
 
 
-def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst):
+def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst, todo_coverage, coverage_args):
     """ add resume/quit operation to the simulation do file.
     if do file version is < 2.2, the resume/quit line will be added
     into the file before the first uncomment line.
@@ -116,6 +116,8 @@ def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst):
         new_lines = combine_system_verilog_file_lines(t_lines)
         if new_lines:
             t_lines = new_lines[:]
+    if todo_coverage and vendor_name == "QuestaSim":
+        t_lines = update_do_lines_with_coverage(t_lines, coverage_args)
     # //////////////////// Write the do file
     new_ob = open(do_file, "w")
     for item in t_lines:
@@ -123,6 +125,44 @@ def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst):
     new_ob.close()
     if vendor_name == "Active":
         xTools.write_file('library.cfg', ['$INCLUDE = "$ACTIVEHDLLIBRARYCFG"'])
+
+
+def update_do_lines_with_coverage(now_lines, coverage_args):
+    new_lines = list()
+    p_vsim = re.compile("^vsim\s+-")   # vsim -voptargs=+acc -L
+    p_voptargs = re.compile("-voptargs=(.+)")
+    p_run_us = re.compile(r"^run\s+\d+")  # run 10 us
+    for foo in now_lines:
+        new_foo = foo.strip()
+        m_vsim = p_vsim.search(new_foo)
+        m_run_us = p_run_us.search(new_foo)
+        if m_run_us:
+            new_lines.append(foo)
+            new_lines.append("    coverage report -output cover_report.txt -srcfile=* -assert -directive -cvg -codeAll")
+        elif m_vsim:
+            foo_list = shlex.split(foo)
+            for i, item in enumerate(foo_list):
+                m_voptargs = p_voptargs.search(item)
+                if m_voptargs:  # vsim -voptargs=+acc -L work
+                    foo_list[i] = '-voptargs="{} +cover={} -covercells" -coverage'.format(m_voptargs.group(1), coverage_args)
+                    break
+                elif item == "-voptargs":  # vsim -voptargs xxx
+                    foo_list[i+1] = '"{} +cover={} -covercells" -coverage'.format(foo_list[i+1], coverage_args)
+                    break
+            # add a pair of " for item which has space
+            new_foo_list = list()
+            for item in foo_list:
+                if item.startswith("-"):
+                    new_foo_list.append(item)
+                    continue
+                if " " in item:
+                    if not item.startswith('"'):
+                        item = '"{}"'.format(item)
+                new_foo_list.append(item)
+            new_lines.append(" ".join(new_foo_list))
+        else:
+            new_lines.append(foo)
+    return new_lines
 
 
 def combine_system_verilog_file_lines(raw_lines):

@@ -41,7 +41,7 @@ def get_radiant_lib_file(family_path):
     if family == "iCE40UP":
         my_dirs = ("iCE40UP",)
     elif family == "ap6a00":
-        my_dirs = (family, "applatform")
+        my_dirs = ("applatform", family)
     else:
         my_dirs = ("uaplatform", family)
     cds_files = [glob.glob(os.path.join(hdl_path, item, "convertDeviceString*")) for item in my_dirs]
@@ -352,11 +352,78 @@ def compile_library(*args):
         if family != "pmi":
             xTools.say_it("Error. Cannot find HDL library files in {} for {}".format(cae_path, family))
         return 1
+    bat_lines = add_apollo_lines(bat_lines, family)
     xTools.write_file(compile_bat_file, bat_lines)
     if not on_win:
         compile_bat_file = "sh %s" % compile_bat_file
     sts = xTools.run_command(compile_bat_file, "%s.log" % sim_name, "%s.time" % sim_name)
     return sts
+
+
+def set_apollo_sim_flow_env(apollo_f_file):
+    """
+    ###################### ATM ################################
+
+    ## Notes for ATM compile : env variables must be set up.(used by Moortec)
+
+    ## setenv  ATM_ROOT      $FOUNDRY/../cae_library/simulation/verilog/ap6a00/ATM
+    ## setenv  MOORTEC_ROOT  $ATM_ROOT/MR75514_PVT_controller_series_3plus/moortec_ip
+    ##
+    ## setenv  ATM_SW_MODEL   $ATM_ROOT/sw_model
+    ## setenv  MR76003        $ATM_ROOT/MR76003_voltage_monitor_prescaler
+    ## setenv DIR_DIGI_BLK    $MOORTEC_ROOT
+    ## setenv DIR_DIGI_SLV    $MOORTEC_ROOT
+    ## setenv DIR_DIGI_IP     $MOORTEC_ROOT
+    ## setenv DIR_DIGI_WRAP   $MOORTEC_ROOT
+    ## setenv DIR_DIGI_MODELS $MOORTEC_ROOT
+    ## setenv DIR_STD_DESIGN  $MOORTEC_ROOT
+    ## setenv DIR_STD_IP      $MOORTEC_ROOT
+
+    ###################### ATM ################################
+    """
+    root_a = os.path.dirname(apollo_f_file)
+    atm_path = os.path.join(root_a, "ATM")
+    if not os.path.isdir(atm_path):
+        xTools.say_it("Warning. Not found {} for ap6a00".format(atm_path))
+        return
+    atm_path = xTools.win2unix(atm_path)
+    os.environ["ATM_ROOT"] = atm_path
+    os.environ["MOORTEC_ROOT"] = tec_root = "{}/MR75514_PVT_controller_series_3plus/moortec_ip".format(atm_path)
+    os.environ["ATM_SW_MODEL"] = "{}/sw_model".format(atm_path)
+    os.environ["MR76003"] = "{}/MR76003_voltage_monitor_prescaler".format(atm_path)
+    other_keys = """DIR_DIGI_BLK   
+                    DIR_DIGI_SLV   
+                    DIR_DIGI_IP    
+                    DIR_DIGI_WRAP  
+                    DIR_DIGI_MODELS
+                    DIR_STD_DESIGN 
+                    DIR_STD_IP"""
+    for foo in other_keys.splitlines():
+        foo = foo.strip()
+        if foo:
+            os.environ[foo] = tec_root
+            
+
+def add_apollo_lines(bat_lines, family):
+    if family == "ap6a00":
+        p_f_file_path = re.compile(r"\s+-f\s+(\S+ap6a00\.f)")
+        new_lines = list()
+        p1 = re.compile("-work")
+        p2 = re.compile(r"\+incdir\+(\S+) ")
+        for foo in bat_lines:
+            m_f_file_path = p_f_file_path.search(foo)
+            if m_f_file_path:
+                # ####### More environments #######
+                set_apollo_sim_flow_env(m_f_file_path.group(1))
+                # --------------------------------
+                foo = p1.sub("-work -suppress 2388,2902 ", foo)   # old: 2583,2600,2388
+                m2 = p2.search(foo)
+                if m2:
+                    foo += " +incdir+{}".format(os.path.join(m2.group(1), "pulp"))
+            new_lines.append(foo)
+        return new_lines
+    else:
+        return bat_lines
 
 
 class GetSimulationLibrary:
