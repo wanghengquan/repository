@@ -309,8 +309,30 @@ public class system_call implements Callable<Object> {
 		return return_list;
 	}
 	
+	private Boolean built_in_core_script_check(
+			List<String> cmd_lst
+			){
+		Boolean status = Boolean.valueOf(false);
+		Pattern core2_patt = Pattern.compile("tools/corescripts2");
+		Pattern core3_patt = Pattern.compile("tools/corescripts3");
+		for(String args : cmd_lst) {
+			Matcher core2_match = core2_patt.matcher(args);
+			Matcher core3_match = core3_patt.matcher(args);
+			if(core2_match.find()) {
+				status = true;
+				break;
+			}
+			if(core3_match.find()) {
+				status = true;
+				break;
+			}
+		}
+		return status;
+	}
+	
 	public Object call() {
 		ArrayList<String> string_list = new ArrayList<String>();
+		String warn_msg = new String("Warning: Built-in Core Script used due to Python2 used or SVN link issue.");
 		CountDownLatch job_latch = new CountDownLatch(launch_cmds.size());
 		Iterator<String> job_it = launch_cmds.keySet().iterator();
 		Object parallel_lock = new Object();
@@ -359,7 +381,12 @@ public class system_call implements Callable<Object> {
 				new Thread() {
 					public void run() {
 						ArrayList<String> result_parallel = new ArrayList<>();
-						result_parallel.add(">>>LC:" + job_title);
+						String warn_msg = new String("");
+						if(built_in_core_script_check(cmd_lst)) {
+							result_parallel.add(">>>LC:" + job_title + ". " + warn_msg);
+						} else {
+							result_parallel.add(">>>LC:" + job_title);
+						}
 						//force_cmd_env=0 won't be happened here since we removed it during prepare
 						if (env_map.getOrDefault(force_cmd_env, "NA").equals("1")) {
 							result_parallel.add(">ENV command force on, skip exectrl check.");
@@ -406,7 +433,11 @@ public class system_call implements Callable<Object> {
 				}.start();
 			} else {
 				ArrayList<String> result_serial = new ArrayList<>();
-				result_serial.add(">>>LC:" + job_title);
+				if(built_in_core_script_check(cmd_lst)) {
+					result_serial.add(">>>LC:" + job_title + ". " + warn_msg);
+				} else {
+					result_serial.add(">>>LC:" + job_title);
+				}
 				//force_cmd_env=0 won't be happened here since we removed it during prepare
 				if (env_map.getOrDefault(force_cmd_env, "NA").equals("1")) {
 					result_serial.add(">ENV command force on, skip exectrl check.");
