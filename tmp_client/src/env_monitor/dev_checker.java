@@ -87,6 +87,9 @@ public class dev_checker extends TimerTask {
         String pattern = ".+?:\\s+(\\d+)$";
         Pattern r = Pattern.compile(pattern);
         for (String line: inputs){
+        	if (line == null) {
+        		continue;
+        	}
         	Matcher m = r.matcher(line);
         	if(m.find()){
         		version = m.group(1); 
