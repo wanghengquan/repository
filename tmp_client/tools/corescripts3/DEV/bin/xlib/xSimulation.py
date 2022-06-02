@@ -893,7 +893,19 @@ class RunSimulationFlow:
                     print(line % self.do_args, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
 
+    @staticmethod
+    def same_alike(a_file, b_file, tag):
+        if os.path.isfile(b_file):
+            a_size = os.path.getsize(a_file)
+            b_size = os.path.getsize(b_file)
+            if a_size != b_size:
+                print("Warning. <{}> {} is CHANGED.".format(tag, a_file))
+
     def _run_simulation(self, sim_path, source_files, user_options, is_sim_rtl=False, lib_dict=dict()):
+        file_1 = os.path.join(self.dev_lib, "_info")
+        file_2 = os.path.join(self.dev_lib, "_info_original")
+        self.same_alike(file_1, file_2, "first")
+
         if self.is_ng_flow:
             pass  # DO NOT INCLUDE PMI File
             # if self.this_pmi_file not in source_files:
@@ -1113,7 +1125,7 @@ class RunSimulationFlow:
             else:
                 break
         dump_vcd_file()
-
+        self.same_alike(file_1, file_2, "end")
         _recov.comeback()
         return sts
 
@@ -1224,7 +1236,7 @@ class RunSimulationFlow:
                 if not os.path.isfile(item):
                     xTools.say_it("Warning. Not found file {}".format(item))
                     continue
-                if fext in (".v", ".vo", ".sv", ".vm"):
+                if fext in (".v", ".vo", ".sv", ".vm", ".vh"):
                     if p_for_pmi.search(item):
                         v_v_lines.append("vlog %s +incdir+%s" % (item, os.path.dirname(item)))
                     else:
@@ -1237,7 +1249,7 @@ class RunSimulationFlow:
                                     if xTools.simple_parser(item, [re.compile(r"ifdef\s+SV_IO_UNFOLD")]):
                                         x = "+define+SV_IO_UNFOLD " + x
                         this_line = "vlog %s %s" % (x, item)
-                        if fext == ".v":
+                        if fext in (".v", ".vh"):
                             this_line += ' +incdir+{}'.format(os.path.dirname(item))
                         v_v_lines.append(this_line)
                 elif fext in (".vho", ".vhd", ".vhdl", ".vhm"):

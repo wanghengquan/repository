@@ -5,6 +5,7 @@ import glob
 import copy
 import random
 import argparse
+from collections import OrderedDict
 
 from . import xTools
 
@@ -100,8 +101,22 @@ class XOptions:
         opts = self.parser.parse_args()
         self.original_options = opts.__dict__
         xTools.dict_none_to_new(self.scripts_options, self.original_options)
+        self.merge_old_new_args()
         self.debug = self.scripts_options.get("debug")
         xTools.say_it(self.scripts_options, "Command Options", self.debug)
+
+    def merge_old_new_args(self):
+        args = ("run_map_trace", "run_par_trace", "run_export_vlg")
+        for my_arg in args:
+            old_value, new_value = self.scripts_options.get("{}_old".format(my_arg)), self.scripts_options.get(my_arg)
+            if old_value and new_value:
+                print("Warning. will use {} for inner option {}".format(new_value, my_arg))
+                self.scripts_options[my_arg] = new_value
+            else:
+                if new_value:
+                    continue
+                if old_value:
+                    self.scripts_options[my_arg] = old_value
 
     def add_public_options(self):
         _choice_scuba_type = ("vhdl", "verilog")
@@ -112,7 +127,7 @@ class XOptions:
         _hlp += ' example: --set-env=a=1 --set-env="b=2;9;x"'
         pub_group.add_argument("-E", "--set-env", action="append", help=_hlp)
         pub_group.add_argument("-D", "--dry-run", action="store_true",
-                             help="Dry run the test flow, generate the Lattice Diamond File(.ldf) only")
+                               help="Dry run the test flow, generate the Lattice Diamond File(.ldf) only")
         # - pub_group.add_argument("-q", "--quiet", action="store_true", help="print as little as possible")
         pub_group.add_argument("-R", "--scan-rpt", action="store_true", help="scan reports after flow done")
         pub_group.add_argument("--scan-pap-rpt", action="store_true", help="scan reports after flow done")
@@ -277,18 +292,35 @@ class XOptions:
         frontend_group.add_argument("--clean", action="store_true", help="clean the working path before running the flow")
         # self.parser.add_argument_group(frontend_group)
 
+    @staticmethod
+    def add_old_new_arg(group_name, dest_name, old_name, new_name, help_message, is_boolean=True):
+        base_dict = OrderedDict()
+        base_dict[old_name] = ("_old", "(OLD ARG)")
+        base_dict[new_name] = ("", "")
+        for args_string, v in list(base_dict.items()):
+            arg_dict = dict(dest="{}{}".format(dest_name, v[0]),
+                            help="{}{}".format(help_message, v[1])
+                            )
+            if is_boolean:
+                arg_dict["action"] = "store_true"
+            group_name.add_argument(args_string, **arg_dict)
+
     def add_impl_options(self):
         backend_group = self.parser.add_argument_group("Implementation Options")
-        backend_group.add_argument("--pushbutton", action="store_true", help="default pushbutton flow, run till the par trace")
+        hx = "default pushbutton flow, run till the par trace"
+        backend_group.add_argument("--pushbutton", action="store_true", help=hx)
         backend_group.add_argument("--run-synthesis", action="store_true", help="run synthesis flow")
+        hx = "Execute Post-Synthesis Simulation File flow"
+        backend_group.add_argument("--run-syn-backanno", action="store_true", help=hx)
         backend_group.add_argument("--run-translate", action="store_true", help="run Translate Design flow")
         backend_group.add_argument("--run-ncl", action="store_true", help="run NCD2NCL flow")
         backend_group.add_argument("--run-udb", action="store_true", help="run Radiant udb2sv/udb2txt flow")
         _choice_udb2sv = ("rtl", "syn", "map", "par")
-        backend_group.add_argument("--run-udb2sv", choices=_choice_udb2sv, nargs="+", help="execute udb2sv command with udb file(s)")
+        hx = "execute udb2sv command with udb file(s)"
+        backend_group.add_argument("--run-udb2sv", choices=_choice_udb2sv, nargs="+", help=hx)
         backend_group.add_argument("--map-done", action="store_true", help="map flow already done")
         backend_group.add_argument("--run-map", action="store_true", help="run Map flow")
-        backend_group.add_argument("--run-map-trce", dest="run_map_trace", action="store_true", help="run Map Trace trace flow")
+        self.add_old_new_arg(backend_group, "run_map_trace", "--run-map-trce", "--run-map-trace", "Run Map Trace flow")
         if not self.is_ng_flow:
             backend_group.add_argument("--run-map-vlg", action="store_true", help="generate Map Verilog Simulation File")
             backend_group.add_argument("--run-map-vhd", action="store_true", help="generate Map VHDL Simulation File")
@@ -296,12 +328,13 @@ class XOptions:
             backend_group.add_argument("--run-synthesis-trce", dest="run_synthesis_trace", action="store_true",
                                        help="run Radiant synthesis trace flow")
         backend_group.add_argument("--run-par", action="store_true", help="run PAR flow")
-        backend_group.add_argument("--run-par-trce", dest="run_par_trace", action="store_true", help="run Place & Route Trace flow")
+        self.add_old_new_arg(backend_group, "run_par_trace", "--run-par-trce", "--run-par-trace", "Run Par Trace flow")
         backend_group.add_argument("--run-par-iota", dest="run_par_ta", action="store_true", help="run I/O Timing Analysis flow")
         backend_group.add_argument("--run-par-power", action="store_true", help="run par powercal flow")
         backend_group.add_argument("--run-export-ibis", action="store_true", help="run Export IBIS Model flow")
         backend_group.add_argument("--run-export-ami", action="store_true", help="run Export IBIS AMI Model flow")
-        backend_group.add_argument("--run-export-vlg", action="store_true", help="generate Export Verilog Simulation File")
+        self.add_old_new_arg(backend_group, "run_export_vlg", "--run-export-vlg", "--run-par-backanno",
+                             "Execute Gate-Level Simulation File flow")
         backend_group.add_argument("--run-export-vhd", action="store_true", help="generate Export VHDL Simulation File")
         backend_group.add_argument("--run-export-jedec", action="store_true", help="generate Export JEDEC File")
         backend_group.add_argument("--run-export-bitstream", action="store_true", help="generate Export Bitstream File")

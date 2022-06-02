@@ -46,6 +46,7 @@ def add_scan():
     add_process(ScanCoverage())
     add_process(ScanMilestone())
     add_process(ScanSimulation())
+    add_process(ScanFileSize())
 
 
 def report(options):

@@ -5,6 +5,7 @@ import glob
 import time
 from . import xTools
 from . import xLattice
+from collections import OrderedDict
 import shutil
 
 __author__ = 'syan'
@@ -328,11 +329,10 @@ def compile_library(*args):
     compile_bat_file = "Compile_%s.bat" % sim_name
     bat_lines = list()
 
-    if on_win:
-        x = "rem set FOUNDRY="
-    else:
-        x = "# setenv FOUNDRY "
-    bat_lines.append('{}{}'.format(x, os.getenv("FOUNDRY")))
+    _set = "set {}={}" if on_win else "setenv {} {}"
+
+    bat_lines.append(_set.format('FOUNDRY'.rjust(15, ' '), os.getenv("FOUNDRY")))
+    bat_lines.append('')
 
     vlib_cmd = "%s/vlib" % sim_bin_path
     vcom_cmd = "%s/vcom" % sim_bin_path
@@ -352,10 +352,15 @@ def compile_library(*args):
         if family != "pmi":
             xTools.say_it("Error. Cannot find HDL library files in {} for {}".format(cae_path, family))
         return 1
-    bat_lines = add_apollo_lines(bat_lines, family)
-    xTools.write_file(compile_bat_file, bat_lines)
+    bat_lines, xx_apollo = add_apollo_lines(bat_lines, family)
+    more_lines = list()
+    if xx_apollo:
+        for k, v in list(xx_apollo.items()):
+            more_lines.append(_set.format(k.rjust(15, ' '), v))
+
+    xTools.write_file(compile_bat_file, more_lines + bat_lines)
     if not on_win:
-        compile_bat_file = "sh %s" % compile_bat_file
+        compile_bat_file = "csh %s" % compile_bat_file
     sts = xTools.run_command(compile_bat_file, "%s.log" % sim_name, "%s.time" % sim_name)
     return sts
 
@@ -387,10 +392,11 @@ def set_apollo_sim_flow_env(apollo_f_file):
         xTools.say_it("Warning. Not found {} for ap6a00".format(atm_path))
         return
     atm_path = xTools.win2unix(atm_path)
-    os.environ["ATM_ROOT"] = atm_path
-    os.environ["MOORTEC_ROOT"] = tec_root = "{}/MR75514_PVT_controller_series_3plus/moortec_ip".format(atm_path)
-    os.environ["ATM_SW_MODEL"] = "{}/sw_model".format(atm_path)
-    os.environ["MR76003"] = "{}/MR76003_voltage_monitor_prescaler".format(atm_path)
+    apollo_environments = OrderedDict()
+    apollo_environments["ATM_ROOT"] = atm_path
+    apollo_environments["MOORTEC_ROOT"] = tec_root = "{}/MR75514_PVT_controller_series_3plus/moortec_ip".format(atm_path)
+    apollo_environments["ATM_SW_MODEL"] = "{}/sw_model".format(atm_path)
+    apollo_environments["MR76003"] = "{}/MR76003_voltage_monitor_prescaler".format(atm_path)
     other_keys = """DIR_DIGI_BLK   
                     DIR_DIGI_SLV   
                     DIR_DIGI_IP    
@@ -401,12 +407,14 @@ def set_apollo_sim_flow_env(apollo_f_file):
     for foo in other_keys.splitlines():
         foo = foo.strip()
         if foo:
-            os.environ[foo] = tec_root
+            apollo_environments[foo] = tec_root
+    return apollo_environments
             
 
 def add_apollo_lines(bat_lines, family):
-    if family == "ap6a00":
-        p_f_file_path = re.compile(r"\s+-f\s+(\S+ap6a00\.f)")
+    apollo_xx_environment = OrderedDict()
+    if family in ("ap6a00", "latg1"):
+        p_f_file_path = re.compile(r"\s+-f\s+(\S+{}\.f)".format(family))
         new_lines = list()
         p1 = re.compile("-work")
         p2 = re.compile(r"\+incdir\+(\S+) ")
@@ -414,16 +422,17 @@ def add_apollo_lines(bat_lines, family):
             m_f_file_path = p_f_file_path.search(foo)
             if m_f_file_path:
                 # ####### More environments #######
-                set_apollo_sim_flow_env(m_f_file_path.group(1))
+                apollo_xx_environment = set_apollo_sim_flow_env(m_f_file_path.group(1))
                 # --------------------------------
                 foo = p1.sub("-work -suppress 2388,2902 ", foo)   # old: 2583,2600,2388
                 m2 = p2.search(foo)
                 if m2:
                     foo += " +incdir+{}".format(os.path.join(m2.group(1), "pulp"))
+                    foo += " +incdir+{}".format(os.path.join(m2.group(1), "crea", "security_rtl"))
             new_lines.append(foo)
-        return new_lines
+        return new_lines, apollo_xx_environment
     else:
-        return bat_lines
+        return bat_lines, apollo_xx_environment
 
 
 class GetSimulationLibrary:

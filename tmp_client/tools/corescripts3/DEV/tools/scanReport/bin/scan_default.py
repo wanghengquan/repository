@@ -129,6 +129,7 @@ class Default:
                     'memory_postsyn_peak_Memory_file': radiant_sweep_run_pb_log,
                     'memory_map_peak_Memory_file': radiant_sweep_mrp_file,
                     'memory_ParPeakMem_file': radiant_sweep_par_file,
+                    'memory_ParPeakMem_usage_file': radiant_sweep_par_file,
 
                     'comments_mapComments_file': radiant_sweep_mrp_file,
                     'comments_parComments_file': radiant_sweep_par_file,
@@ -179,9 +180,9 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_LRAM_pattern': 'Number of Large RAMs:\s+(\d+)',
-                    'resource_DSP_pattern': 'Number of DSPs:\s+(\d+)',
+                    'resource_DSP_pattern': 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)',
                     'resource_DSP_PREADD9_pattern': 'Number of PREADD9:\s+(\d+)',
                     'resource_DSP_MULT9_pattern': 'Number of MULT9:\s+(\d+)',
                     'resource_DSP_MULT18_pattern': 'Number of MULT18:\s+(\d+)',
@@ -255,6 +256,7 @@ class Default:
                     'memory_postsyn_peak_Memory_start_pattern': 'Command Line: postsyn',
                     'memory_map_peak_Memory_pattern': 'Peak Memory Usage:\s+(\d+)',
                     'memory_ParPeakMem_pattern': 'after\s+PAR.+memory\s+([\d\.]+)\s+\S+$',
+                    'memory_ParPeakMem_usage_pattern': 'Peak Memory Usage:\s+(\d+)',
 
                     'comments_mapComments_pattern': '(ERROR\s+-\s+.{1,135})',
                     'comments_parComments_pattern': '(ERROR\s+-\s+.{1,135})',
@@ -353,6 +355,7 @@ class Default:
                     'memory_postsyn_peak_Memory_file': radiant_no_sweep_run_pb_log,
                     'memory_map_peak_Memory_file': radiant_no_sweep_mrp_file,
                     'memory_ParPeakMem_file': radiant_no_sweep_par_file,
+                    'memory_ParPeakMem_usage_file': radiant_no_sweep_par_file,
 
                     'comments_mapComments_file': radiant_no_sweep_mrp_file,
                     'comments_parComments_file': radiant_no_sweep_par_file,
@@ -402,9 +405,9 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_LRAM_pattern': 'Number of Large RAMs:\s+(\d+)',
-                    'resource_DSP_pattern': 'Number of DSPs:\s+(\d+)',
+                    'resource_DSP_pattern': 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)',
                     'resource_DSP_PREADD9_pattern': 'Number of PREADD9:\s+(\d+)',
                     'resource_DSP_MULT9_pattern': 'Number of MULT9:\s+(\d+)',
                     'resource_DSP_MULT18_pattern': 'Number of MULT18:\s+(\d+)',
@@ -478,6 +481,7 @@ class Default:
                     'memory_postsyn_peak_Memory_start_pattern': 'Command Line: postsyn',
                     'memory_map_peak_Memory_pattern': 'Peak Memory Usage:\s+(\d+)',
                     'memory_ParPeakMem_pattern': 'after\s+PAR.+memory\s+([\d\.]+)\s+\S+$',
+                    'memory_ParPeakMem_usage_pattern': 'Peak Memory Usage:\s+(\d+)',
 
                     'comments_mapComments_pattern': '(ERROR\s+-\s+.{1,135})',
                     'comments_parComments_pattern': '(ERROR\s+-\s+.{1,135})',
@@ -636,7 +640,7 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_CARRY_pattern': [
                         "Number\s+of\s+ripple\s+logic:\s+(?P<CARRY>\d+)",
                         "Number\s+used\s+as\s+ripple\s+logic:\s+(?P<CARRY>\d+)"
@@ -877,7 +881,7 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_CARRY_pattern': [
                         "Number\s+of\s+ripple\s+logic:\s+(?P<CARRY>\d+)",
                         "Number\s+used\s+as\s+ripple\s+logic:\s+(?P<CARRY>\d+)"

@@ -225,8 +225,15 @@ def get_module_file(ipx_file):
         if m_name_type:
             _name, _type = m_name_type.group(1), m_name_type.group(2)
             _t[_type] = _name
-
-    real_name = _t.get("vhdl", "xxxx.vhd") if is_vhdl else _t.get("verilog", "xxxx.v")
+    if is_vhdl:
+        real_name = _t.get("vhdl", "not_found_vhd_file_in_ipx.vhd")
+    else:
+        for perhaps_name in ("verilog", "system_verilog"):
+            real_name = _t.get(perhaps_name)
+            if real_name:
+                break
+        else:
+            real_name = "not_found_v_or_sv_file_in_ipx.v"
     return xTools.get_relative_path(real_name, xTools.get_file_dir(ipx_file))
 
 

@@ -26,6 +26,18 @@ from capuchin import xConfigparser
 
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 BIN_DIR = os.path.abspath(os.path.join(TESTS_DIR, "..", "bin"))
+ORIGIANL_CONF = """[configuration information]
+area = active-hdl
+type = simulation
+
+[method]
+check_lines_1 = 1
+
+[check_lines_1]
+title = sim_check
+file = ./*tag*/sim_par_vlg/run_sim_par_vlg.log
+check_1  = sim_pass
+"""
 
 
 def _remove_temp_sub_folder(sub_folders):
@@ -60,13 +72,7 @@ def _find_error(command_console_log):
                 return foo
 
 
-def _execute_test(design, synthesis, devkit, py, others):
-    build_env_name = "EXTERNAL_RADIANT_PATH" if py == "run_radiant.py" else "EXTERNAL_DIAMOND_PATH"
-    build_env = os.getenv(build_env_name)
-    assert build_env, "Error. Not specified {}".format(build_env_name)
-    cmd_line = "{} {}/{} --top-dir {}/cases --synthesis {}".format(sys.executable, BIN_DIR, py, TESTS_DIR, synthesis)
-    cmd_line += " --devkit {} --design {} --tag flow_{} {}".format(devkit, design, synthesis, others)
-    cmd_line = xTools.win2unix(cmd_line)
+def _wrap_run_command(design, cmd_line):
     print(cmd_line)
     sts, text = xTools.get_status_output(cmd_line)
     error_message = _find_error(text)
@@ -74,47 +80,14 @@ def _execute_test(design, synthesis, devkit, py, others):
         assert 0, "Failed to {}, {}".format(design, error_message)
 
 
-"""
-import random
-
-radiant_devices = ("ap6a00-65-9FBG484C", "iCE40UP5K-FWG49ITR", "LFCPNX-100-9LFG672C",
-                   "LIFCL-40-8BG400C", "LFMXO5-25-9BBG400C")
-radiant_lines = list()
-radiant_lines.append(dict(design="radiant_vhdl_a", synthesis="lse", others="--sim-all -lyes"))
-radiant_lines.append(dict(design="radiant_vhdl_b", synthesis="synplify", others="--sim-all -lno"))
-radiant_lines.append(dict(design="radiant_verilog_a", synthesis="lse", others="--sim-all -lno"))
-radiant_lines.append(dict(design="radiant_verilog_b", synthesis="synplify", others="--sim-all -lyes"))
-
-diamond_devices = ("LFE5U-85F-7BG554C", "LCMXO3D-9400HE-6BG484C", "LCMXO3LF-9400E-6BG400C", "LFE3-70E-7FN1156C",
-                   "LFSC3GA80E-6FF1704C", "LFXP2-8E-7FT256C")
-diamond_lines = list()
-diamond_lines.append(dict(design="diamond_vhdl_a", synthesis="lse", others="--sim-all -lyes"))
-diamond_lines.append(dict(design="diamond_vhdl_b", synthesis="synplify", others="--sim-all -lno"))
-diamond_lines.append(dict(design="diamond_verilog_a", synthesis="lse", others="--sim-all -lno"))
-diamond_lines.append(dict(design="diamond_verilog_b", synthesis="synplify", others="--sim-all -lyes"))
-
-template = '''def test_{design}():
-    print()
-    _execute_test("{design}", "{synthesis}", "{devkit}", "{py}", "{others}")   
-    
-'''
-
-
-def generate_py_lines(vendor, raw_lines, raw_devices):
-    my_devices = random.sample(raw_devices, len(raw_lines))
-    for i, foo in enumerate(raw_lines):
-        foo["devkit"] = my_devices[i]
-        print("@pytest.mark.{}".format(vendor))
-        print("@pytest.mark.{}".format(foo.get("design")[:-2]))
-        foo["py"] = "run_diamond.py" if vendor == "diamond" else "run_radiant.py"
-        if "-lno" in foo.get("others"):
-            print("@pytest.mark.sim_lib")
-        print(template.format(**foo))
-
-
-generate_py_lines("diamond", diamond_lines, diamond_devices)
-generate_py_lines("radiant", radiant_lines, radiant_devices)
-"""
+def _execute_test(design, synthesis, devkit, py, others):
+    build_env_name = "EXTERNAL_RADIANT_PATH" if py == "run_radiant.py" else "EXTERNAL_DIAMOND_PATH"
+    build_env = os.getenv(build_env_name)
+    assert build_env, "Error. Not specified {}".format(build_env_name)
+    cmd_line = "{} {}/{} --top-dir {}/cases --synthesis {}".format(sys.executable, BIN_DIR, py, TESTS_DIR, synthesis)
+    cmd_line += " --devkit {} --design {} --tag flow_{} {}".format(devkit, design, synthesis, others)
+    cmd_line = xTools.win2unix(cmd_line)
+    _wrap_run_command(design, cmd_line)
 
 
 @pytest.mark.diamond
@@ -176,3 +149,52 @@ def test_radiant_verilog_b():
     print()
     _execute_test("radiant_verilog_b", "synplify", "LIFCL-40-8BG400C", "run_radiant.py", "--sim-all -lyes")
 
+
+def _test_radiant_simulation_library(oem_sim_library=False):
+    """
+    set EXTERNAL_RADIANT_PATH=C:\radiant_auto\ng3_2.383
+    pytest -vs -m "radiant_simulation"
+    """
+    print()
+    design_name = "radiant_oem_simulation" if oem_sim_library else "radiant_custom_simulation"
+    design_dir = os.path.join(TESTS_DIR, "cases", design_name)
+    recov = xTools.ChangeDir(design_dir)
+    sds_files_dir = os.path.abspath("sds_files")
+    xTools.wrap_rm_rf(sds_files_dir, 'sds folder')
+    xTools.wrap_md(sds_files_dir)
+    _rtf = xTools.win2unix(os.path.join(os.getenv("EXTERNAL_RADIANT_PATH", "SHOULD_SET_FOUNDRY_ENV"), "ispfpga"))
+    sds_cmd = "{0}/bin/nt64/sdsgen.exe -o {1} -rtf {0}".format(_rtf, sds_files_dir)
+    _wrap_run_command(design_name, sds_cmd)
+    devices = list()
+    for foo in os.listdir(sds_files_dir):
+        abs_foo = os.path.join(sds_files_dir, foo)
+        sts, options = xTools.get_options(abs_foo, key_is_lower=False)
+        if options:
+            x = options.get("Generic Devices")
+            x_keys = list(x.keys())
+            x_keys.sort()
+            devices.append(x_keys[-1])
+    recov.comeback()
+
+    for d in devices:
+        d = re.sub(r"\$.+$", "", d)
+        t_n = re.sub(r"\W", "_", d)
+        if oem_sim_library:
+            _a = "--tag oem_{}".format(t_n)
+        else:
+            _a = "--tag custom_{} -lno".format(t_n)
+        _execute_test(design_name, "synplify", d, "run_radiant.py", "--sim-all {}".format(_a))
+        with open(os.path.join(design_dir, "bqs.conf"), "w") as ob:
+            print(ORIGIANL_CONF, file=ob)
+
+
+@pytest.mark.radiant_simulation
+@pytest.mark.radiant_oem_simulation
+def test_radiant_oem_simulation_library():
+    _test_radiant_simulation_library(oem_sim_library=True)
+
+
+@pytest.mark.radiant_simulation
+@pytest.mark.radiant_custom_simulation
+def test_radiant_custom_simulation_library():
+    _test_radiant_simulation_library(oem_sim_library=False)
