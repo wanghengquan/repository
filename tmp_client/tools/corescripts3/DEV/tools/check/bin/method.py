@@ -338,7 +338,7 @@ class CheckLines(Method):
             self.log_error('check_1: ' + first_match + ' not found!')
             return
         self.log_info('check_1: ' + first_match + ' found!')
-        if matchs:
+        if matchs or times:
             if times:
                 for _ in range(int(times)-1):
                     _offset = find_str_in_file(first_match, filename, start=anchor, grep=use_grep)
@@ -348,7 +348,14 @@ class CheckLines(Method):
                         return
                     anchor = anchor + _offset + 1
                 self.log_info('check_1 has been found ' + times + ' times')
+            if times:
+                bingo_point = int(times) - 1
+            else:
+                bingo_point = 0
             for ka, a in enumerate(anchor_list):
+                if times:
+                    if ka != bingo_point:  # not greedy match
+                        continue
                 if len(anchor_list) > 1:
                     self.log_info("Check the following lines after line number {}".format(a))
                 got_it = 1

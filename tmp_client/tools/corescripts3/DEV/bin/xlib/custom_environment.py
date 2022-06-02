@@ -14,6 +14,9 @@ import os
 def env_device_is_apollo(raw_device):
     """SynTrace not support for Apollo device
     """
+    raw_device = raw_device.lower()
     env_key = "ENV_DEVICE_IS_APOLLO"
     if "ap6a00" in raw_device:
+        os.environ[env_key] = "yes"
+    elif "latg1" in raw_device:
         os.environ[env_key] = "yes"

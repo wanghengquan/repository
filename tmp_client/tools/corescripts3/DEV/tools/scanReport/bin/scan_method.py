@@ -667,6 +667,18 @@ class ScanCPU(ScanBasic):
         patterns_1['postsyn_real_Time']['stop_pattern'] = self.patterns['cpu_postsyn_stop_pattern']
         patterns_1['postsyn_cpu_Time']['start_pattern'] = self.patterns['cpu_postsyn_start_pattern']
         patterns_1['postsyn_cpu_Time']['stop_pattern'] = self.patterns['cpu_postsyn_stop_pattern']
+        #
+        run_pb_log = patterns_1["postsyn_cpu_Time"].get("file")
+        log2sim_log = os.path.join(os.path.dirname(run_pb_log), "log2sim.log")
+        patterns_1["log2sim_cpu_Time"] = dict(file=log2sim_log,
+                                              pattern=r'Elapsed Time: ([\d\.]+)', keyword='log2sim_cpu_Time')
+        patterns_1["backanno_cpu_Time"] = dict(file=run_pb_log, pattern=r'Total CPU Time:\s+(.+)',
+                                               keyword='backanno_cpu_Time',
+                                               start_pattern=r'backanno:\s+version')
+        patterns_1["bitgen_cpu_Time"] = dict(file=run_pb_log, pattern=r'Total CPU Time:\s+(.+)',
+                                             keyword='bitgen_cpu_Time',
+                                             start_pattern='Bitstream generation complete')
+        #
 
         self.call_lower_method(ScanPattern, options, patterns_1.values(), handle_number=self.handle_number)
 
@@ -922,3 +934,34 @@ class ScanSimulation(ScanBasic):
 
         self.call_lower_method(ScanPattern, options, pattern1)
         self.call_lower_method(ScanStrings, options, pattern2)
+
+
+class ScanFileSize(ScanBasic):
+    def __init__(self):
+        super(ScanFileSize, self).__init__(name="scan_file_size")
+        self.descriptor = 'File Size'
+
+    def handle(self, options, args):
+        eval('self.handle_' + options['software'])(options, args)
+
+    def handle_diamond(self, options, args):
+        self.handle_radiant(options, args)
+
+    def handle_radiant(self, options, args):
+        patterns = dict()
+        patterns["syn_vm_size"] = ".vm"
+        patterns["map_udb_size"] = "_map.udb"
+        patterns["syn_vo_size"] = "_syn.vo"
+        patterns["par_udb_size"] = ".udb"
+        patterns["par_vo_size"] = "_vo.vo"
+        patterns["export_bit_size"] = (".bin", ".bit")
+
+        file_root_path = os.path.join(options['tag_path'], "*")
+        design = options['design']
+        for k, v in list(patterns.items()):
+            if isinstance(v, str):
+                v = [v]
+            for foo in v:
+                my_file = get_file(os.path.join(design, file_root_path, "*" + foo))
+                if my_file:
+                    self.out({k: str(round(os.path.getsize(my_file)/1024, 1))})   # KB

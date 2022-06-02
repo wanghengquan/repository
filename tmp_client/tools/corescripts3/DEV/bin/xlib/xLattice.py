@@ -144,6 +144,11 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
 
     @2016/10/18 ignore the failed export flow
     """
+    ldf_dict = parse_ldf_file(ldf_file, is_ng_flow)
+    impl_node = ldf_dict.get("impl")
+    bali_node = ldf_dict.get("bali")
+    name_list = (impl_node.get("title"), bali_node.get("title"))
+
     if is_ng_flow:
         tcl_cmd = {key: value[1] for key, value in list(TCL_COMMAND.items())}
     else:
@@ -159,6 +164,11 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
         tcl_lines.append(tcl_cmd.get("save"))
     tcl_lines.append('set r 0')
     for (process, task) in process_task:
+        if is_ng_flow and process == "COMMAND":
+            for raw_cmd in task:
+                raw_cmd = raw_cmd.format(*name_list)
+                tcl_lines.append(raw_cmd)
+            continue
         if (not is_ng_flow) and task == "SynTrace":
             task = ""
         elif os.getenv("ENV_DEVICE_IS_APOLLO") and task == "SynTrace":
@@ -1474,8 +1484,22 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
         if flow_options.get(x) or user_options.get(x):
             user_options["run_map_trace"] = 1
             user_options["run_synthesis"] = 1
+    special_command_lines = list()
+    special_command_lines.append("# ----- Radiant Post-Synthesis Simulation File")
+    special_command_lines.append("set TIME_start [clock clicks -milliseconds]")
+    x = 'log2sim -w -o ./{0}/{1}_{0}_syn.vo ./{0}/{1}_{0}_syn.udb'
+    special_command_lines.append('exec %s' % x)
+    special_command_lines.append("after 1000")  # avoid 0
+    special_command_lines.append("set TIME_taken [expr ([clock clicks -milliseconds] - $TIME_start)/1000]")
+    special_command_lines.append('set LOG [open "log2sim.log" "w"];')
+    special_command_lines.append('puts $LOG "%s"' % x)
+    special_command_lines.append('puts $LOG "Elapsed Time: $TIME_taken seconds"')
+    special_command_lines.append('close $LOG;')
+    special_command_lines.append("# -----")
+
     for (task_name, task_cmd) in [
         ["synthesis",       ["Synthesis", "SynTrace"]],
+        ["syn_backanno",    ["COMMAND", special_command_lines]],
         ["translate",       ["Translate", ""]],
         ["map",             ["Map", ""]],
         ["map_trace",       ["Map", "MapTrace"]],
@@ -1507,7 +1531,8 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
 
 
 def no_space(a_string):
-    return re.sub("\s+", "", a_string)
+    return re.sub(r"\s+", "", a_string)
+
 
 flow_support_dict = dict()
                   # Family                            # Jedec  # Bitstream

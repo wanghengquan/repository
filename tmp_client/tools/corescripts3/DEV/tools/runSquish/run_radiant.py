@@ -223,22 +223,21 @@ class RunSquishCase:
             bin_a = os.path.join(self.radiant, "bin", self.nt_lin)
             bin_b = os.path.join(self.radiant, "ispfpga", "bin", self.nt_lin)
             bin_c = os.path.join(self.radiant, "programmer", "bin", self.nt_lin)
-            perhaps_aut = [self.aut,
-                           self.aut+".exe",
-                           xTools.get_abs_path(self.aut, bin_a),
-                           xTools.get_abs_path(self.aut+".exe", bin_a),
-                           xTools.get_abs_path(self.aut, bin_b),
-                           xTools.get_abs_path(self.aut+".exe", bin_b),
-                           xTools.get_abs_path(self.aut, bin_c),
-                           xTools.get_abs_path(self.aut+".exe", bin_c),
-
-                           ]
-            for item in perhaps_aut:
-                if os.path.isfile(item):
-                    name_of_aut = xTools.get_fname(item)   # use name only for Windows and Linux
-                    batch_kwargs["path_to_aut"] = os.path.dirname(item)
+            maybe_one = (self.aut, self.aut + ".exe", self.aut + ".sh")
+            maybe_two = (os.getcwd(), bin_a, bin_b, bin_c)
+            name_of_aut = ""
+            for one in maybe_one:
+                for two in maybe_two:
+                    new_path = xTools.get_abs_path(one, two)
+                    if os.path.isfile(new_path):
+                        name_of_aut = os.path.basename(new_path)  # use name only for Windows and Linux
+                        if self.aut != name_of_aut:
+                            name_of_aut = re.sub(r"\.exe", "", name_of_aut)
+                        batch_kwargs["path_to_aut"] = os.path.dirname(new_path)
+                        break
+                if name_of_aut:
                     break
-            else:
+            if not name_of_aut:
                 xTools.say_it("Error. Cannot find aut: %s" % self.aut)
                 return 1
         batch_kwargs["set_path"] = xTools.get_environment(self.radiant, self.nt_lin, self.squish)

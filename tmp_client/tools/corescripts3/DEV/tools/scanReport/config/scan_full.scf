@@ -16,6 +16,7 @@ scan_errors = 1
 scan_coverage = 1
 scan_milestone = 1
 scan_simulation = 1
+scan_file_size = 1
 
 [scan_pattern_1]
 file = ./_scratch/*/synthesis.log
@@ -62,3 +63,5 @@ keyword = loads
 [scan_milestone]
 
 [scan_simulation]
+
+[scan_file_size]

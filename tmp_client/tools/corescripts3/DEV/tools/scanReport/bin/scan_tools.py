@@ -82,13 +82,20 @@ def get_file(filename):
         is_yes = re.compile("Command Line:", re.I)
         if len(files) > 1:
             for foo in files:
-                with open(foo) as ob:
-                    i = 0
-                    for line in ob:
-                        i += 1
-                        if i > 100:
-                            break
-                        if is_yes.search(line):
+                try:
+                    with open(foo) as ob:
+                        i = 0
+                        for line in ob:
+                            i += 1
+                            if i > 100:
+                                break
+                            if is_yes.search(line):
+                                return foo
+                except:   # search udb file, not _syn|rtl|map.udb
+                    for k in ("_syn.udb", "_rtl.udb", "_map.udb"):
+                        if foo.endswith(k):
+                            continue
+                        if foo.endswith(".udb"):
                             return foo
         return files[0]  # update later if needed
 

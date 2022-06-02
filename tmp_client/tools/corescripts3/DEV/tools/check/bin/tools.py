@@ -14,6 +14,8 @@ import glob
 from jira import JIRA
 import shutil
 from .pattern import FILE_PATTERNS
+from . import filelock
+import csv
 
 
 def get_valid_crs(cr_note):
@@ -485,7 +487,7 @@ def get_final_status(check_data_designs, args):
     return final_status
 
 
-def create_check_report(check_data_design, args):
+def create_check_report_old(check_data_design, args):
     report_lines = ['Area,Type,Case, Device_syn,Result,Reason,Comments\n']
     status = get_status_from_check_data(check_data_design)
     for design_config, details in list(status.items()):
@@ -506,6 +508,126 @@ def create_check_report(check_data_design, args):
     with open(os.path.abspath(args.top_dir) + '/check_' +
               '_'.join(time.ctime().split()).replace(':', '_') + '.csv', 'w') as f:
         f.writelines(report_lines)
+
+
+def create_check_report(check_data_design, args):
+    wfr = WriteFinalReport(check_data_design, args)
+    filelock.safe_run_function(wfr.try_to_write_report, args=None)
+
+
+def get_device_from_project_file(design_dir, tag_name):
+    tag_dir = os.path.join(design_dir, tag_name)
+    _dev = "Not Found"
+    p_device = re.compile(r'\sdevice="([^"]+)"\s+')
+    if os.path.isdir(tag_dir):
+        for foo in os.listdir(tag_dir):
+            abs_foo = os.path.join(tag_dir, foo)
+            if re.search(r"\.[rl]df$", foo, re.I):
+                with open(abs_foo) as ob:
+                    for line in ob:
+                        m = p_device.search(line)
+                        if m:
+                            return m.group(1)
+    return _dev
+
+
+class WriteFinalReport(object):
+    def __init__(self, check_data_design, args):
+        self.args = args
+        self.report_path = args.report_path
+        self.report_filename = args.report
+        self.status_dict = get_status_from_check_data(check_data_design)
+        self.titles = ("Area", "Type", "Case", "Device_syn", "Result", "Message", "Comments")
+        self.sum_titles = ("SUM:", "Run No.", "TYPE", "TOTAL", "PASS", "FAIL", "TIME")
+
+    def try_to_write_report(self):
+        if self.prepare_report_file():
+            return 1
+        self.get_old_data()
+        self.get_new_data()
+        self.write_old_and_new_data()
+
+    def get_old_data(self):
+        self.old_data = list()
+        if not os.path.isfile(self.report_file):
+            return
+        xx = csv.DictReader(open(self.report_file))
+        for foo in xx:
+            chk_area_name = foo.get("Area")
+            if chk_area_name in ("SUM:", ''):
+                continue
+            new_foo = dict()
+            for k, v in list(foo.items()):
+                if v == '':
+                    v = '""'
+                new_foo[k] = v
+            self.old_data.append(new_foo)
+
+    def get_new_data(self):
+        self.new_data = list()
+        for design_config, details in list(self.status_dict.items()):
+            xx = dict()
+            design, config = design_config.split('&&')
+            case = os.path.basename(design.rstrip('/'))
+            case_info = details[-1]
+            result = str(details[0])
+            if not details[0]:
+                reason = get_message(design)
+                comments = find_a_error(config, self.args)
+            else:
+                reason = '""'
+                comments = os.path.basename(config)
+            xx["Area"] = case_info.get("area")
+            xx["Type"] = case_info.get("type")
+            xx["Case"] = case
+            xx["Device_syn"] = get_device_from_project_file(design, self.args.tag)
+            xx["Result"] = result
+            xx["Message"] = reason
+            xx["Comments"] = comments
+            self.new_data.append(xx)
+
+    def write_old_and_new_data(self):
+        case_lines = list()
+        for_summary = list()
+        for x in (self.old_data, self.new_data):
+            for _d in x:
+                one_status = ",".join([_d.get(item, '""') for item in self.titles])
+                if one_status not in case_lines:
+                    case_lines.append(one_status)
+                    for_summary.append(_d)
+        case_lines.sort(key=str.lower)
+        with open(self.report_file, "w") as wob:
+            print(",".join(self.titles), file=wob)
+            for foo in case_lines:
+                print(foo, file=wob)
+            if len(case_lines) > 1:
+                print('', file=wob)
+                print(",".join(self.sum_titles), file=wob)
+                total_number = len(for_summary)
+                p_number = [d.get("Result") for d in for_summary].count("True")
+                f_number = total_number - p_number
+                x = ',{0},Regression,{0},{1},{2},{3}'.format(total_number, p_number, f_number, time.asctime())
+                print(x, file=wob)
+                
+    @staticmethod
+    def _wrap_md(used_path, error_code):
+        if not os.path.isdir(used_path):
+            try:
+                os.makedirs(used_path)
+            except:
+                log("Error. Failed to create {}. Error {}".format(used_path, error_code))
+                return 1
+
+    def prepare_report_file(self):
+        self.report_path = os.path.abspath(self.report_path)
+        if self._wrap_md(self.report_path, "91293244"):
+            return 1
+        current_dir = os.getcwd()
+        os.chdir(self.report_path)
+        self.report_file = os.path.abspath(self.report_filename)
+        os.chdir(current_dir)
+        if self._wrap_md(os.path.dirname(self.report_file), "88382084"):
+            return 1
 
 
 def find_a_error(config, args):
