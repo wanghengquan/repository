@@ -15,6 +15,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -210,6 +212,24 @@ class value_pane extends JPanel implements ActionListener{
 		return south_panel;
 	}
 
+	private ArrayList<String> get_scan_dir_list(
+			String scan_paths
+			){
+		ArrayList<String> path_list = new ArrayList<String>();
+		if (scan_paths == null || scan_paths.equals("")) {
+			return path_list;
+		}
+		if (scan_paths.contains(",")){
+			path_list.addAll(Arrays.asList(scan_paths.split("\\s*,\\s*")));
+		} else if (scan_paths.contains(";")){
+			path_list.addAll(Arrays.asList(scan_paths.split("\\s*;\\s*")));
+		} else{
+			path_list.add(scan_paths);
+		}
+		return path_list;
+	}
+
+	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// TODO Auto-generated method stub
@@ -262,23 +282,25 @@ class value_pane extends JPanel implements ActionListener{
 			}
 			//client_hash.putAll(client_info.get_client_data());
 			ori_data.putAll(deep_clone.clone(client_info.get_client_data().get(tab_name)));
-			
-			
-			String new_scan_dir = new String(jt_scan_dir.getText().replaceAll("\\\\", "/"));
-			File new_dir_dobj = new File(new_scan_dir);
-			String new_max_insts = new String(jt_max_insts.getText());
-			if (new_scan_dir.length() > 0  &&  !new_dir_dobj.exists()){
-				String message = new String("Wrong 'scan_dir' found, please update it before 'Apply' again.");
-				JOptionPane.showMessageDialog(this, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
-				return;
+			String new_scan_dirs = new String(jt_scan_dir.getText().replaceAll("\\\\", "/").replaceAll("\\s", ""));
+			ArrayList<String> path_list = new ArrayList<String>();
+			path_list.addAll(get_scan_dir_list(new_scan_dirs));
+			for (String scan_path: path_list) {
+				File dir_obj = new File(scan_path);
+				if (!dir_obj.exists()){
+					String message = new String("Wrong 'scan_dir' found, please update it before 'Apply' again:" + scan_path);
+					JOptionPane.showMessageDialog(this, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
 			}
 			//software external max instances should match thread pool size
+			String new_max_insts = new String(jt_max_insts.getText());
 			if (!data_check.num_scope_check(new_max_insts, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
 				String message = new String("Valid 'max_insts' values:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE +", please update it before 'Apply' again.");
 				JOptionPane.showMessageDialog(this, message, "Wrong import value:", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			new_data.put("scan_dir", new_scan_dir);
+			new_data.put("scan_dir", new_scan_dirs);
 			new_data.put("max_insts", new_max_insts);
 			if(ori_data.containsKey("scan_cmd")){
 				new_data.put("scan_cmd", ori_data.get("scan_cmd"));
