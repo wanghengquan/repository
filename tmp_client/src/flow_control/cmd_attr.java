@@ -12,7 +12,8 @@ package flow_control;
 public enum cmd_attr {
 	command(0, "Command line string"),
 	environ(1, "Command run environment"),
-    exectrl(2, "Command run condision");
+    exectrl(2, "Command run condision"),
+    deptool(3, "Command run tool depends");
 	private int index;
 	private String description;
 	

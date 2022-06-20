@@ -127,7 +127,7 @@ public class local_tube {
 			return false;
 		}
 		String suite_name = suite_map.get("suite_name");
-		if (suite_name == null || suite_name == "") {
+		if (suite_name == null || suite_name.equals("")) {
 			suite_file_error_msg = "Error: Suite name missing.";
 			System.out.println(">>>Error: Suite name missing.");
 			return false;

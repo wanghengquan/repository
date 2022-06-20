@@ -427,7 +427,7 @@ public class task_waiter extends Thread {
 			float available_memory = memory_free * public_data.PERF_GOOD_MEM_USAGE_RATE;
 			if (available_memory >= estimate_total) {
 				status = true;
-				client_info.add_registered_memory(est_mem);
+				client_info.increase_registered_memory(est_mem);
 			} else {
 				status = false;
 			}
@@ -441,8 +441,8 @@ public class task_waiter extends Thread {
 	
 	private Boolean system_resource_booking(
 			String queue_name,
-			Boolean cmds_parallel,
 			float est_mem,
+			Boolean cmds_parallel,
 			HashMap<String, HashMap<String, String>> admin_data
 			){
 		Boolean book_status = Boolean.valueOf(true);		
@@ -459,24 +459,23 @@ public class task_waiter extends Thread {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":System Space not available, skipping:" + queue_name);
 			return false;
 		}
+		//software available check(do not reserve any quota)
+		Boolean software_available = client_info.software_available_check(admin_data.get("Software"), cmds_parallel);
+		if (!software_available) {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
+			return false;
+		}
+		//=======booking=======
 		//system ready for launch another thread
 		if (!system_memory_booking(est_mem)) {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":System MEM not available for task launch, skipping:" + queue_name);
-			return false;
-		}		
-		//software booking
-		Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-		if (!software_booking) {
-			TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
-			client_info.sub_registered_memory(est_mem);
 			return false;
 		}
 		//thread booking
 		Boolean thread_booking = pool_info.booking_reserved_threads(1);
 		if (!thread_booking) {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":No Thread available, skipping:" + queue_name);
-			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-			client_info.sub_registered_memory(est_mem);
+			client_info.decrease_registered_memory(est_mem);
 			return false;
 		}
 		return book_status;
@@ -1262,7 +1261,7 @@ public class task_waiter extends Thread {
 		try {
 			usr_est_mem = Float.valueOf(usr_est_mem_str);
 		} catch (NumberFormatException e) {
-			TASK_WAITER_LOGGER.debug(usr_est_mem_str + ", not a number");
+			TASK_WAITER_LOGGER.debug(usr_est_mem_str + ", wrong number format");
 		}
 		if (usr_est_mem < 0) {
 			TASK_WAITER_LOGGER.debug("Task estimate memory usage out of range, 0.0(G) will be used");
@@ -1354,7 +1353,7 @@ public class task_waiter extends Thread {
 			float est_mem = get_task_estimated_memory(queue_name, admin_data);
 			Boolean cmds_parallel = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL).trim());
 			// task 4 : resource booking (thread, software) =>Resource booking finished, release if not launched
-			if (!system_resource_booking(queue_name, cmds_parallel, est_mem, admin_data)) {
+			if (!system_resource_booking(queue_name, est_mem, cmds_parallel, admin_data)) {
 				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
 					TASK_WAITER_LOGGER.info(waiter_name + ":System resource limitation, Skipping:" + queue_name);
 				} else {
@@ -1384,17 +1383,15 @@ public class task_waiter extends Thread {
 				task_info.decrease_processing_admin_queue_list(queue_name);				
 				task_info.increase_emptied_admin_queue_list(queue_name);
 				// release booking info
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(est_mem);
+				client_info.decrease_registered_memory(est_mem);
 				pool_info.release_reserved_threads(1);			
 				continue;
 			}
 			// task 6 : get case_id, variable 4: case_id OK now
 			String case_id = new String(task_data.get("ID").get("id"));
-			if (case_id == "" || case_id == null){
+			if (case_id.equals("") || case_id == null){
 				TASK_WAITER_LOGGER.info(waiter_name + ":No Task id find, skip launching:" + task_data.toString());
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(est_mem);
+				client_info.decrease_registered_memory(est_mem);
 				pool_info.release_reserved_threads(1);
 				continue;				
 			}
@@ -1412,8 +1409,7 @@ public class task_waiter extends Thread {
 				} else {
 					TASK_WAITER_LOGGER.info(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
 				}
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(est_mem);
+				client_info.decrease_registered_memory(est_mem);
 				pool_info.release_reserved_threads(1);
 				continue;// register false, someone register this case already.
 			}
@@ -1433,17 +1429,16 @@ public class task_waiter extends Thread {
 			// task 10 : launch reporting
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(est_mem);
+				client_info.decrease_registered_memory(est_mem);
 				pool_info.release_reserved_threads(1);
 				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.BLOCKED, 1);
 				TASK_WAITER_LOGGER.info("Task launch failed:" + queue_name + "," + case_id);
 				continue;
 			} 
 			// task 11 : launch
-			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, client_info.get_client_tools_data());
+			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, client_info);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout);
-			client_info.sub_registered_memory(est_mem);
+			client_info.decrease_registered_memory(est_mem);
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
 		}
 	}
