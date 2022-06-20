@@ -85,7 +85,7 @@ public class env_checker extends TimerTask {
 		}
 		Pattern ok_patt = Pattern.compile("python\\s*ok", Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
-            if(line == null || line == "")
+            if(line == null || line.equals(""))
                 continue;
 			Matcher ok_match = ok_patt.matcher(line);
 			if (ok_match.find()) {

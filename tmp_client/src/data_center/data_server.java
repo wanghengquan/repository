@@ -138,7 +138,7 @@ public class data_server extends Thread {
 		}
 		Pattern path_patt = Pattern.compile(tool, Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
-		    if(line == null || line == "")
+		    if(line == null || line.equals(""))
 		        continue;
 		    if(line.contains("which")){
 		    	continue;

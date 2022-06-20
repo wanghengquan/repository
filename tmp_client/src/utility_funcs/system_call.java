@@ -20,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import data_center.client_data;
 import data_center.public_data;
 import flow_control.cmd_attr;
 import flow_control.cmd_enum;
@@ -31,7 +32,7 @@ public class system_call implements Callable<Object> {
 	private TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds;
 	private Boolean cmds_parallel;
 	private String cmds_decision;
-	private HashMap<String, String> tools_data;
+	private client_data client_info;
 	private int timeout = 0;
 	private String last_cmd = new String("");
 	private HashMap<String, cmd_enum> cmd_status = new HashMap<String, cmd_enum>();
@@ -44,14 +45,14 @@ public class system_call implements Callable<Object> {
 			String cmds_decision,
 			String case_dir, 
 			int timeout,
-			HashMap<String, String> tools_data
+			client_data client_info
 			) {
 		this.launch_cmds = launch_cmds;
 		this.cmds_parallel = cmds_parallel;
 		this.cmds_decision = cmds_decision;
 		this.case_dir = case_dir;
 		this.timeout = timeout;
-		this.tools_data = tools_data;
+		this.client_info = client_info;
 	}
 	
 	private ArrayList<String> get_exectrl_items(
@@ -123,7 +124,7 @@ public class system_call implements Callable<Object> {
 			List<String> ctl_lst
 			) {
 		Boolean check_result = Boolean.valueOf(true);
-		String python = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String python = new String(client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH));
 		for(String eval_item: ctl_lst) {
 			String eval_str = new String(exectrl_result_update(eval_item));
 			if(!exp_eval.python_eval_bol(python, eval_str)) {
@@ -305,6 +306,7 @@ public class system_call implements Callable<Object> {
 		} else {
 			final_status = get_individul_cmd_status(cmds_decision, cmd_status);
 		}
+		return_list.add(">>>======Final Task Status======");
 		return_list.add("<status>"+ final_status.get_description() +"</status>");
 		return return_list;
 	}
@@ -332,7 +334,7 @@ public class system_call implements Callable<Object> {
 	
 	public Object call() {
 		ArrayList<String> string_list = new ArrayList<String>();
-		String warn_msg = new String("Warning: Built-in Core Script used due to Python2 used or SVN link issue.");
+		String warn_msg = new String("======Built-in Core Script used due to Python2 used or SVN link issue======");
 		CountDownLatch job_latch = new CountDownLatch(launch_cmds.size());
 		Iterator<String> job_it = launch_cmds.keySet().iterator();
 		Object parallel_lock = new Object();
@@ -342,6 +344,7 @@ public class system_call implements Callable<Object> {
 			List<String> cmd_lst = launch_cmds.get(job_title).get(cmd_attr.command);
 			List<String> env_lst = launch_cmds.get(job_title).get(cmd_attr.environ);
 			List<String> ctl_lst = launch_cmds.get(job_title).get(cmd_attr.exectrl);
+			List<String> sws_lst = launch_cmds.get(job_title).get(cmd_attr.deptool);
 			//Environment prepare
 			HashMap<String, String> env_map = new HashMap<String, String>();
 			for(String item : env_lst) {
@@ -381,7 +384,6 @@ public class system_call implements Callable<Object> {
 				new Thread() {
 					public void run() {
 						ArrayList<String> result_parallel = new ArrayList<>();
-						String warn_msg = new String("");
 						if(built_in_core_script_check(cmd_lst)) {
 							result_parallel.add(">>>LC:" + job_title + ". " + warn_msg);
 						} else {
@@ -414,6 +416,18 @@ public class system_call implements Callable<Object> {
 								}
 							}
 						}
+						//dependent SW booking
+						int counter = 0;
+						while (!client_info.booking_used_soft_insts(sws_lst)) {
+							try {
+								Thread.sleep(1000 * 10);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							counter += 1;
+						}
+						result_parallel.add(">Warning:Dependent SW preparation time(s):" + String.valueOf(10 * counter));
 						//run command
 						last_cmd = job_title;
 						try {
@@ -422,6 +436,7 @@ public class system_call implements Callable<Object> {
 							// TODO Auto-generated catch block
 							result_parallel.add(">Run Command failed:" + job_title);
 						}
+						client_info.release_used_soft_insts(sws_lst);
 						result_parallel.add("");
 						job_latch.countDown();
 						synchronized (parallel_lock) {
@@ -462,6 +477,18 @@ public class system_call implements Callable<Object> {
 						continue;
 					}
 				}
+				//dependent SW booking
+				int counter = 0;
+				while (!client_info.booking_used_soft_insts(sws_lst)) {
+					try {
+						Thread.sleep(1000 * 10);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					counter += 1;
+				}
+				result_serial.add(">Warning:Dependent SW preparation time(s):" + String.valueOf(10 * counter));
 				//run command
 				last_cmd = job_title;
 				try {
@@ -470,6 +497,7 @@ public class system_call implements Callable<Object> {
 					// TODO Auto-generated catch block
 					result_serial.add(">Run command failed:" + job_title);
 				}
+				client_info.release_used_soft_insts(sws_lst);
 				result_serial.add("");
 				cmd_status.put(job_title, get_cmd_status(result_serial));
 				string_list.addAll(result_serial);
@@ -480,7 +508,7 @@ public class system_call implements Callable<Object> {
 				job_latch.await();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				string_list.add(">InterruptedException for wait all parallel jobs.");
+				string_list.add(">InterruptedException for waiting all parallel jobs.");
 			}
 		}
 		string_list.addAll(generate_final_cmd_result(cmds_decision, cmd_status, last_cmd));

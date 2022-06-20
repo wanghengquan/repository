@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -458,6 +459,36 @@ public class client_data {
 
 	// release usage for every software
 	public Boolean release_used_soft_insts(
+			List<String> sw_list
+			) {
+		rw_lock.writeLock().lock();
+		Boolean release_result = Boolean.valueOf(true);
+		try {
+			if(sw_list != null && !sw_list.isEmpty()){
+				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
+				future_soft_insts.putAll(use_soft_insts);
+				Iterator<String> sw_it = sw_list.iterator();
+				while (sw_it.hasNext()) {
+					String sw_name = sw_it.next();
+					Integer sw_insts = future_soft_insts.get(sw_name);
+					sw_insts = sw_insts - 1;
+					if (sw_insts < 0) {
+						sw_insts = 0;
+						release_result = false;
+						CLIENT_DATA_LOGGER.warn("Release warnning found for " + sw_name);
+					}
+					future_soft_insts.put(sw_name, sw_insts);
+				}
+				use_soft_insts.putAll(future_soft_insts);				
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return release_result;
+	}
+	
+	// release usage for every software
+	public Boolean release_used_soft_insts(
 			HashMap<String, String> release_data,
 			Boolean cmds_parallel
 			) {
@@ -528,6 +559,85 @@ public class client_data {
 		return release_result;
 	}
 
+	public Boolean software_available_check(
+			HashMap<String, String> request_data,
+			Boolean cmds_parallel
+			) {
+		rw_lock.writeLock().lock();
+		Boolean check_result = Boolean.valueOf(true);
+		try {
+			if(request_data != null && !request_data.isEmpty()){
+				HashMap<String, Integer> current_soft_insts = new HashMap<String, Integer>();
+				current_soft_insts.putAll(use_soft_insts);
+				Iterator<String> request_data_it = request_data.keySet().iterator();
+				while (request_data_it.hasNext()) {
+					String sw_name = request_data_it.next();
+					String sw_builds = request_data.get(sw_name);
+					ArrayList<String> sw_build_list = new ArrayList<String>();		
+					if (sw_builds.contains(",")){
+						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*,\\s*")));
+					} else if (sw_builds.contains(";")){
+						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*;\\s*")));
+					} else{
+						sw_build_list.add(sw_builds);
+					}
+					Integer sw_insts = Integer.valueOf(0);
+					if (current_soft_insts.containsKey(sw_name)) {
+						sw_insts = current_soft_insts.get(sw_name);
+					}
+					Integer sw_max_insts = max_soft_insts.get(sw_name);
+					if (cmds_parallel) {
+						sw_insts = sw_insts + sw_build_list.size();
+					} else {
+						sw_insts = sw_insts + 1;
+					}
+					if (sw_insts > sw_max_insts) {
+						check_result = false;
+						break;
+					}
+				}				
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return check_result;
+	}
+	
+	public Boolean booking_used_soft_insts(
+			List<String> sw_list
+			) {
+		rw_lock.writeLock().lock();
+		Boolean booking_result = Boolean.valueOf(true);
+		try {
+			if(sw_list != null && !sw_list.isEmpty()){
+				HashMap<String, Integer> future_soft_insts = new HashMap<String, Integer>();
+				future_soft_insts.putAll(use_soft_insts);
+				Iterator<String> sw_it = sw_list.iterator();
+				while (sw_it.hasNext()) {
+					String sw_name = sw_it.next();
+					Integer sw_insts = Integer.valueOf(0);
+					if (future_soft_insts.containsKey(sw_name)) {
+						sw_insts = future_soft_insts.get(sw_name);
+					}
+					sw_insts = sw_insts + 1;
+					Integer sw_max_insts = max_soft_insts.get(sw_name);
+					if (sw_insts > sw_max_insts) {
+						booking_result = false;
+						break;
+					} else {
+						future_soft_insts.put(sw_name, sw_insts);
+					}
+				}
+				if (booking_result) {
+					use_soft_insts.putAll(future_soft_insts);
+				}				
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return booking_result;
+	}
+	
 	public Boolean booking_used_soft_insts(
 			HashMap<String, String> booking_data,
 			Boolean cmds_parallel
@@ -662,7 +772,7 @@ public class client_data {
 		return temp;
 	}
 	
-	public void sub_registered_memory(
+	public void decrease_registered_memory(
 			float value
 			) {
 		rw_lock.writeLock().lock();
@@ -679,7 +789,7 @@ public class client_data {
 		}
 	}
 	
-	public void add_registered_memory(
+	public void increase_registered_memory(
 			float value
 			) {
 		rw_lock.writeLock().lock();
