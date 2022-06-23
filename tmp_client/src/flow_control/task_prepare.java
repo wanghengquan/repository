@@ -1063,7 +1063,7 @@ public class task_prepare {
 			task_prepare_info.add(">LC" + ":" + cmd_index);
 			task_prepare_info.add("exectrl:" + launch_cmds.get(cmd_index).get(cmd_attr.exectrl).toString());
 			task_prepare_info.add("environ:" + launch_cmds.get(cmd_index).get(cmd_attr.environ).toString());
-			task_prepare_info.add("command:" + launch_cmds.get(cmd_index).get(cmd_attr.command).toString());
+			task_prepare_info.add("command:" + String.join(" ", launch_cmds.get(cmd_index).get(cmd_attr.command)));
 			task_prepare_info.add("deptool:" + launch_cmds.get(cmd_index).get(cmd_attr.deptool).toString());
 			task_prepare_info.add("");
 		}
