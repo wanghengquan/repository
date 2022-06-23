@@ -254,7 +254,7 @@ class UploadSuites(object):
                             continue
                         this_value = foo[2]
                         this_value = this_value.strip("= ")
-                        now_value_list = tools.comma_split(now_value, sep_mark=";")
+                        now_value_list = tools.comma_split(now_value, sep_mark=";", keep_original=True)
                         if this_value in now_value_list:
                             _matched = 1
                         matched_list.append(_matched)
@@ -275,8 +275,8 @@ class UploadSuites(object):
                     if foo[1] == "Section":
                         new_case[foo[1]] = foo[2]
                         continue
-                    macro_settings = tools.comma_split(foo[2].strip(), sep_mark=";")   # ["aa=1", "bb=2]
-                    original_settings = tools.comma_split(new_case.get(foo[1], ""), sep_mark=";")
+                    macro_settings = tools.comma_split(foo[2].strip(), sep_mark=";", keep_original=True)
+                    original_settings = tools.comma_split(new_case.get(foo[1], ""), sep_mark=";", keep_original=True)
                     if not original_settings:
                         new_case[foo[1]] = foo[2]
                     else:

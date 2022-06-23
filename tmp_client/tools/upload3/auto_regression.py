@@ -281,6 +281,7 @@ class AutoRegression(object):
             case_data["TestScenarios"] = get_value("testscenarios", general_dict, "")
             case_data["Description"] = get_value("description", general_dict, "")
             case_data["Type"] = get_value("type", general_dict, "")
+            case_data["Family"] = get_value("family", general_dict, "")
             case_data["Priority"] = get_value("priority", general_dict, "")
             case_data["Automated"] = get_value("automated", general_dict, "")
             case_data["CaseInfo"] = get_value_with_comma(case_info_dict)
