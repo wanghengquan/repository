@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-17.0.1">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
@@ -101,17 +101,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="D:/java_dev/lib/javax.activation/javax.activation-1.2.0.jar"/>
-	<classpathentry kind="lib" path="D:/java_dev/lib/jna-5.7.0/jna-5.7.0.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://java-native-access.github.io/jna/5.7.0/javadoc/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="D:/java_dev/lib/jna-5.7.0/jna-platform-5.7.0.jar"/>
-	<classpathentry kind="lib" path="D:/java_dev/lib/oshi-core-5.6.0/oshi-core-5.6.0.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://oshi.github.io/oshi/apidocs/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="D:/java_dev/lib/slf4j-api-1.7.30/slf4j-api-1.7.30.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/slf4j-api-1.7.30/slf4j-api-1.7.30-javadoc.jar!/"/>
@@ -122,5 +111,12 @@
 			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/slf4j-api-1.7.30/slf4j-log4j12-1.7.30-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="D:/java_dev/lib/oshi-core/oshi-core-6.2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/java_dev/lib/oshi-core/oshi-core-6.2.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/java_dev/lib/jna/jna-5.12.1.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/jna/jna-platform-5.12.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
