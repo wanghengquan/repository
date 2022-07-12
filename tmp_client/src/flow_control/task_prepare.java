@@ -1227,8 +1227,11 @@ public class task_prepare {
 		String python_path = new String();
 		python_path = client_data.get("tools").getOrDefault("python", public_data.DEF_PYTHON_PATH);
 		File python_fobj = new File(python_path);
-		python_fobj.getParent().replaceAll("\\\\", "/");
-		run_env.put("EXTERNAL_PYTHON_PATH", python_fobj.getParent().replaceAll("\\\\", "/"));
+		if(python_fobj.isDirectory()) {
+			run_env.put("EXTERNAL_PYTHON_PATH", python_fobj.getParent().replaceAll("\\\\", "/"));
+		} else {
+			run_env.put("EXTERNAL_PYTHON_PATH",  python_path);
+		}
 		// put external core script path
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String core_path = new String(public_data.CORE_SCRIPT_NAME);
