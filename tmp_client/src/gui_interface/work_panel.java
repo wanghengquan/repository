@@ -195,10 +195,7 @@ public class work_panel extends JSplitPane implements Runnable{
 	
 	private Boolean update_working_queue_data() {
 		Boolean show_update = Boolean.valueOf(true);
-		String watching_queue = view_info.get_current_watching_queue();
-		if (watching_queue.equals("")) {
-			return show_update; // no watching queue selected
-		}
+		//String watching_queue = view_info.get_current_watching_queue();
 		work_data.clear();
 		work_data.addAll(view_info.get_watching_queue_data());
 		return show_update;

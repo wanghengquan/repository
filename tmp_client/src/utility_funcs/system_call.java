@@ -32,6 +32,7 @@ public class system_call implements Callable<Object> {
 	private TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds;
 	private Boolean cmds_parallel;
 	private String cmds_decision;
+	private String greed_mode;
 	private client_data client_info;
 	private int timeout = 0;
 	private String last_cmd = new String("");
@@ -45,6 +46,7 @@ public class system_call implements Callable<Object> {
 			String cmds_decision,
 			String case_dir, 
 			int timeout,
+			String greed_mode,
 			client_data client_info
 			) {
 		this.launch_cmds = launch_cmds;
@@ -52,6 +54,7 @@ public class system_call implements Callable<Object> {
 		this.cmds_decision = cmds_decision;
 		this.case_dir = case_dir;
 		this.timeout = timeout;
+		this.greed_mode = greed_mode;
 		this.client_info = client_info;
 	}
 	
@@ -416,18 +419,20 @@ public class system_call implements Callable<Object> {
 								}
 							}
 						}
-						//dependent SW booking
-						int counter = 0;
-						while (!client_info.booking_used_soft_insts(sws_lst)) {
-							try {
-								Thread.sleep(1000 * 10);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+						//dependent SW booking for greed_mode
+						if (greed_mode.equals("true")) {
+							int counter = 0;
+							while (!client_info.booking_used_soft_insts(sws_lst)) {
+								try {
+									Thread.sleep(1000 * 10);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								counter += 1;
 							}
-							counter += 1;
+							result_parallel.add(">Warning:Dependent SW preparation time(s):" + String.valueOf(10 * counter));
 						}
-						result_parallel.add(">Warning:Dependent SW preparation time(s):" + String.valueOf(10 * counter));
 						//run command
 						last_cmd = job_title;
 						try {
@@ -436,7 +441,9 @@ public class system_call implements Callable<Object> {
 							// TODO Auto-generated catch block
 							result_parallel.add(">Run Command failed:" + job_title);
 						}
-						client_info.release_used_soft_insts(sws_lst);
+						if (greed_mode.equals("true")) {
+							client_info.release_used_soft_insts(sws_lst);
+						}
 						result_parallel.add("");
 						job_latch.countDown();
 						synchronized (parallel_lock) {
@@ -478,17 +485,19 @@ public class system_call implements Callable<Object> {
 					}
 				}
 				//dependent SW booking
-				int counter = 0;
-				while (!client_info.booking_used_soft_insts(sws_lst)) {
-					try {
-						Thread.sleep(1000 * 10);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				if (greed_mode.equals("true")) {
+					int counter = 0;
+					while (!client_info.booking_used_soft_insts(sws_lst)) {
+						try {
+							Thread.sleep(1000 * 10);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						counter += 1;
 					}
-					counter += 1;
+					result_serial.add(">Warning:Dependent SW preparation time(s):" + String.valueOf(10 * counter));
 				}
-				result_serial.add(">Warning:Dependent SW preparation time(s):" + String.valueOf(10 * counter));
 				//run command
 				last_cmd = job_title;
 				try {
@@ -497,7 +506,9 @@ public class system_call implements Callable<Object> {
 					// TODO Auto-generated catch block
 					result_serial.add(">Run command failed:" + job_title);
 				}
-				client_info.release_used_soft_insts(sws_lst);
+				if (greed_mode.equals("true")) {
+					client_info.release_used_soft_insts(sws_lst);
+				}
 				result_serial.add("");
 				cmd_status.put(job_title, get_cmd_status(result_serial));
 				string_list.addAll(result_serial);

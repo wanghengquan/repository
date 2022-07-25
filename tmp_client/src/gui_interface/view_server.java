@@ -322,6 +322,11 @@ public class view_server extends Thread {
 		// get delete list
 		List<String> delete_list = new ArrayList<String>();
 		delete_list.addAll(view_info.impl_request_delete_queue());
+		// clean watching queue before delete
+		if (delete_list.contains(view_info.get_current_watching_queue())) {
+			view_info.set_current_watching_queue("");
+		}
+		// delete data and files
 		for (String queue_name : delete_list) {
 			// public info for implementation
 			String work_space = new String();
@@ -690,6 +695,7 @@ public class view_server extends Thread {
 		String request_queue = view_info.get_request_watching_queue();
 		watch_enum request_area = view_info.get_request_watching_area();		
 		if (request_queue.equals("")) {
+			view_info.set_watching_queue_data_default();
 			return show_update; // no watching queue selected
 		}
 		Vector<Vector<String>> new_data = new Vector<Vector<String>>();
@@ -700,14 +706,14 @@ public class view_server extends Thread {
 			Boolean task_import_status = import_disk_task_data_to_processed_data(request_queue);
 			if (!task_import_status){
 				VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
-				view_info.set_watching_queue_data(get_blank_data());
+				view_info.set_watching_queue_data_default();
 				//view_info.set_request_watching_queue("");
 				return show_update; // no data show
 			}
 		}
 		if (!task_info.get_processed_task_queues_map().containsKey(request_queue)) {
 			VIEW_SERVER_LOGGER.warn("Import queue data failed:" + request_queue + ", " + request_area.get_description());
-			view_info.set_watching_queue_data(get_blank_data());
+			view_info.set_watching_queue_data_default();
 			//view_info.set_request_watching_queue("");
 			return show_update;
 		}
@@ -715,7 +721,7 @@ public class view_server extends Thread {
 		queue_data.putAll(deep_clone.clone(task_info.get_queue_data_from_processed_task_queues_map(request_queue)));
 		if (queue_data.size() < 1) {
 			VIEW_SERVER_LOGGER.warn("Empty Queue found:" + request_queue + ", " + request_area.get_description());
-			view_info.set_watching_queue_data(get_blank_data());
+			view_info.set_watching_queue_data_default();
 			//view_info.set_request_watching_queue("");
 			return show_update;
 		}
@@ -815,19 +821,6 @@ public class view_server extends Thread {
 			add_line.add("NA");
 		}
 		return add_line;
-	}
-
-	private Vector<Vector<String>> get_blank_data(){
-		Vector<Vector<String>> blank_data = new Vector<Vector<String>>();
-		Vector<String> add_line = new Vector<String>();
-		add_line.add("No data found.");
-		add_line.add("..");
-		add_line.add("..");
-		add_line.add("..");
-		add_line.add("..");
-		add_line.add("..");
-		blank_data.add(add_line);
-		return blank_data;
 	}
 	
 	public void run() {

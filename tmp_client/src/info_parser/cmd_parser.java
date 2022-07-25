@@ -59,7 +59,7 @@ public class cmd_parser {
 		try {
 			commandline_obj = parser.parse(options_obj, args);
 		} catch (ParseException e1) {
-			// TODO Auto-generated catch block
+		    // TODO Auto-generated catch block
 			// e1.printStackTrace();
 			CMD_PARSER_LOGGER.error("Command line parse Failed.");
 			get_help(options_obj);
@@ -198,7 +198,12 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('R')) {
 			cmd_hash.put("result_keep", commandline_obj.getOptionValue('R'));
 		}
-		// 3.23 Script path
+		// 3.23 test case sorting
+		if (commandline_obj.hasOption('G')) {
+			String greed_mode = new String(commandline_obj.getOptionValue('G'));
+			cmd_hash.put("greed_mode", greed_mode);
+		}	
+		// 3.24 Script path
 		if (commandline_obj.hasOption("python")) {
 			String python = new String(commandline_obj.getOptionValue("python"));
 			cmd_hash.put("python", file_action.get_absolute_paths(python));
@@ -219,11 +224,11 @@ public class cmd_parser {
 			String git = new String(commandline_obj.getOptionValue("git"));
 			cmd_hash.put("git", file_action.get_absolute_paths(git));
 		}
-		// 3.24 help definition
+		// 3.25 help definition
 		if (commandline_obj.hasOption('h')) {
 			get_help(options_obj);
 		}
-		// 3.25 run sanity check
+		// 3.26 run sanity check
 		if (!run_input_data_check(cmd_hash)){
 			get_help(options_obj);
 		}
@@ -245,6 +250,12 @@ public class cmd_parser {
 					check_satus = false;
 				}
 				break;
+			case "greed_mode":
+				if(!data_check.str_choice_check(option_value, new String [] {"", "auto", "true", "false"} )){
+					CMD_PARSER_LOGGER.error("Command line: Invalid ignore_request setting");
+					check_satus = false;
+				}
+				break;				
 			case "max_threads":
 				if (!data_check.num_scope_check(option_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE)){
 					CMD_PARSER_LOGGER.warn("Command line: Invalid max_threads setting");
@@ -324,7 +335,11 @@ public class cmd_parser {
 				.desc("Keep the hierarchy of original directory tree structure(which will have a potential issue about overwite results)")
 				.build());
 		options_obj.addOption(Option.builder("R").longOpt("result-keep").hasArg()
-				.desc("How to save the run results, available value: auto, zipped, unzipped").build());		
+				.desc("How to save the run results, available value: auto, zipped, unzipped")
+				.build());	
+		options_obj.addOption(Option.builder("G").longOpt("greed-mode").hasArg()
+				.desc("Greed mode:Client take task wi/o check self system resource, available value: auto, true, false")
+				.build());
 		options_obj.addOption(Option.builder("x").longOpt("exe-file").hasArg()
 				.desc("The execute file for test case run, Work with -p(suite path), default value:" + public_data.CASE_EXEC_FILE).build());
 		options_obj.addOption(Option.builder("a").longOpt("arguments").hasArg()
@@ -339,9 +354,9 @@ public class cmd_parser {
 				.desc("Storage place for case remote store, if not present will use current work_space").build());
 		options_obj.addOption(Option.builder("S").longOpt("sort").hasArg()
 				.desc("Sorting conditions for case input, option1=value1;option2=value1,value2").build());
-		options_obj.addOption(
-				Option.builder("A").longOpt("auto-threads")
-				.desc("Client will run in auto threads mode, client will automatically +/- threads based on target CPU usage:" + public_data.PERF_AUTO_MAXIMUM_CPU).build());
+		options_obj.addOption(Option.builder("A").longOpt("auto-threads")
+				.desc("Client will run in auto threads mode, client will automatically +/- threads based on target CPU usage:" + public_data.PERF_AUTO_MAXIMUM_CPU)
+				.build());
 		options_obj.addOption(
 				Option.builder("t").longOpt("max-threads").hasArg()
 				.desc("Client will launch $t threads, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
@@ -373,9 +388,9 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>][--python <python path> | --perl <perl path> | --ruby <ruby path>] [--svn <svn path> | --git <git path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-G <auto, true, false>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>][--python <python path> | --perl <perl path> | --ruby <ruby path>] [--svn <svn path> | --git <git path>]";
 		String header = "Here is the details:\n\n";
-		String footer = "\nPlease report issues at Jason.Wang@latticesemi.com";
+		String footer = "\nIssue report : Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp(usage, header, options_obj, footer);
 		System.exit(exit_enum.NORMAL.get_index());

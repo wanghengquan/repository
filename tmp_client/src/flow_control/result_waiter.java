@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.queue_attr;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
@@ -365,13 +366,45 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean release_resource_usage(){
-		//release software usage(Software already released after system cmd run)
+		//release software usage 
+		Boolean software_release = release_software_usage();
 		//release thread usage
 		Boolean thread_release = Boolean.valueOf(true);
 		thread_release = release_thread_usage();
-		return thread_release;
+		if (software_release && thread_release){
+			return true;
+		} else 
+			return false;
 	}
 
+	private Boolean release_software_usage() {
+		Boolean release_status = Boolean.valueOf(true);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
+			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);
+			// only done call will be release. timeout call will be get in
+			// the next cycle(at that time status will be done)
+			if (!call_status.equals(call_state.DONE)) {
+				continue;
+			}
+			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
+			String case_id = (String) one_call_data.get(pool_attr.call_case);
+			String greed_mode = task_info.get_admin_queue_attribute_value(queue_name, queue_attr.GREED_MODE);
+			HashMap<String, HashMap<String, String>> case_data = task_info
+					.get_case_from_processed_task_queues_map(queue_name, case_id);
+			Boolean parallel_cmd = Boolean.valueOf(case_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL));
+			//release non-greed mode only (greed mode released after system cmd run)
+			if(!greed_mode.equals("true")) {
+				release_status = client_info.release_used_soft_insts(case_data.get("Software"), parallel_cmd);
+			}
+		}
+		return release_status;
+	}
+	
 	private Boolean release_thread_usage() {
 		Boolean release_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();

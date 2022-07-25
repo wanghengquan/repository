@@ -28,10 +28,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.22"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21422; //version for code use
-	public final static String BASE_BUILDDATE = "2022/07/08";
-	public final static String BASE_SUITEFILEVERSION = "1.24";
+	public final static String BASE_CURRENTVERSION = "2.14.23"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21423; //version for code use
+	public final static String BASE_BUILDDATE = "2022/07/25";
+	public final static String BASE_SUITEFILEVERSION = "1.25";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -280,7 +280,8 @@ public class public_data {
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial", parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
 	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local","remote","both"
-	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","hold_case" 
+	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","hold_case"
+	public final static String DEF_CLIENT_GREED_MODE = "auto"; // "auto","true","false"
 	public final static String DEF_COPY_KEEP_PATH = "false";  //flatten copied case
 	public final static String DEF_COPY_LAZY_COPY = "false";
 	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"all", "software", "system", "machine"
