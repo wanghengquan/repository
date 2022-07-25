@@ -1269,6 +1269,10 @@ public class task_prepare {
 		while (env_request_it.hasNext()) {
 			String env_name = env_request_it.next();
 			String env_value = task_data.get("Environment").get(env_name);
+			//ignore control option
+			if(env_name.equalsIgnoreCase("override")) {
+				continue;
+			}
 			if(env_value.contains("@cmd")) {
 				if(env_value.endsWith(cmd_index)) {
 					env_value = env_value.replaceAll("@.*$", "");
