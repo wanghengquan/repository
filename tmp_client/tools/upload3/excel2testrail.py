@@ -299,11 +299,16 @@ class UploadSuites(object):
                         else:
                             new_dict.update(_macro_dict)
                             for ik, iv in list(_original_dict.items()):
+                                if ik == "override":  # not dumping to Testrail
+                                    continue
                                 if ik not in _macro_dict:
                                     new_dict[ik] = iv
+                                else:
+                                    if _original_dict.get("override") == "local":   # use local settings
+                                        new_dict[ik] = iv
                         _now_keys = list(new_dict.keys())
                         _now_keys.sort()
-                        _show = ["{} = {}".format(k, new_dict.get(k, "")) for k in _now_keys]
+                        _show = ["{}={}".format(k, new_dict.get(k, "")) for k in _now_keys]
                         new_case[foo[1]] = "\n".join(_show)
                 self.final_cases.append(new_case)
             if never_matched:
