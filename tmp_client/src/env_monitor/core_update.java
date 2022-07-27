@@ -66,7 +66,9 @@ public class core_update {
 		return update_status;
 	}
 	
-	private Boolean is_remote_local_version_same(String work_space){		
+	private Boolean is_remote_local_version_same(
+			String work_space
+			){		
 		//remote version
     	String remote_version = new String("NA");
         try {
@@ -93,7 +95,8 @@ public class core_update {
 	}
 	
 	public Boolean update_core_script(
-			String work_space) throws Exception {
+			String work_space
+			) throws Exception {
 		Boolean update_status = Boolean.valueOf(false);
 		ArrayList<String> info_return = new ArrayList<String>();
 		ArrayList<String> update_return = new ArrayList<String>();
@@ -108,7 +111,8 @@ public class core_update {
 			info_return.addAll(system_cmd.run(svn_cmd + " info " + core_name + " " + usr_cmd, work_space));
 			url_addr = get_url_addr(info_return);
 			if (url_addr.equalsIgnoreCase(public_data.CORE_SCRIPT_REMOTE_URL)){
-				update_return.addAll(system_cmd.run(svn_cmd + " update " + core_name + " " + usr_cmd, work_space));
+				system_cmd.run(svn_cmd + " cleanup " + core_name + " " + usr_cmd, work_space);
+				update_return.addAll(system_cmd.run(svn_cmd + " update --accept theirs-full --force " + core_name + " " + usr_cmd, work_space));
 				CORE_LOGGER.debug(update_return.toString());
 			} else {
 				//remove current core script
@@ -126,7 +130,9 @@ public class core_update {
 		return update_status;
 	}
 	
-    private void update_core_script_info(String work_space){
+    private void update_core_script_info(
+    		String work_space
+    		){
 		String version = new String("NA");
 		String time = new String("NA");
 		ArrayList<String> info_return = new ArrayList<String>();
@@ -141,7 +147,9 @@ public class core_update {
         client_info.update_client_corescript_data("time", time);        
     }
 
-    private String get_version_num(ArrayList<String> inputs){
+    private String get_version_num(
+    		ArrayList<String> inputs
+    		){
     	String version = new String("NA");
     	if (inputs == null || inputs.isEmpty()) {
     		return version;
@@ -157,7 +165,9 @@ public class core_update {
         return version;
     }
     
-    private String get_update_time(ArrayList<String> inputs){
+    private String get_update_time(
+    		ArrayList<String> inputs
+    		){
     	String update_time = new String("NA");
     	if (inputs == null || inputs.isEmpty()) {
     		return update_time;
@@ -173,7 +183,9 @@ public class core_update {
         return update_time;
     }    
     
-    private String get_url_addr(ArrayList<String> inputs){
+    private String get_url_addr(
+    		ArrayList<String> inputs
+    		){
     	String url_addr = new String("NA");
     	if (inputs == null || inputs.isEmpty()) {
     		return url_addr;
