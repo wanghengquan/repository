@@ -557,7 +557,7 @@ public class hall_manager extends Thread {
 		String default_max_threads = client_info.get_client_preference_data().get("max_threads");
 		int def_thread = Integer.parseInt(default_max_threads);
 		if (used_thread > 0){
-			return;
+			//return;
 		}
 		if (max_thread == def_thread){
 			return;//already reseted
@@ -802,7 +802,7 @@ public class hall_manager extends Thread {
 			max_threads = public_data.TASK_DEF_MAX_THREADS;
 		} else {
 			max_threads = admin_data.get("Preference").get("max_threads");
-			Pattern p = Pattern.compile("^\\d$");
+			Pattern p = Pattern.compile("^\\d+$");
 			Matcher m = p.matcher(max_threads);
 			if (!m.find()) {
 				max_threads = public_data.TASK_DEF_MAX_THREADS;
