@@ -1722,8 +1722,6 @@ public class task_waiter extends Thread {
 			String cmds_decision = task_data.get("LaunchCommand").getOrDefault("decision", public_data.TASK_DEF_CMD_DECISION).trim(); 
 			Boolean corescript_link_status = switch_info.get_remote_corescript_linked();
 			int case_timeout = get_time_out(task_data.get("CaseInfo").get("timeout"));
-			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
-			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
 			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
 			// task 9 : launch reporting
 			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
@@ -1732,6 +1730,8 @@ public class task_waiter extends Thread {
 				continue;
 			} 
 			// task 10 : launch
+			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
+			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
 			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, greed_mode, client_info);
 			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout);
 			client_info.decrease_registered_memory(est_mem);
