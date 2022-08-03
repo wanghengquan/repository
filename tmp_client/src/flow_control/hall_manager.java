@@ -411,7 +411,7 @@ public class hall_manager extends Thread {
 		return dump_status;
 	}
 	
-	private void thread_auto_adjustment_start_check() {
+	private void thread_auto_adjustment_str_check() {
 		if (auto_adjust) {
 			return;//already in auto adjustment status
 		}
@@ -472,7 +472,7 @@ public class hall_manager extends Thread {
 			return;
 		}
 		//step 3. do start end check
-		thread_auto_adjustment_start_check();
+		thread_auto_adjustment_str_check();
 		thread_auto_adjustment_end_check();
 	}
 	
@@ -867,8 +867,13 @@ public class hall_manager extends Thread {
 		if (pool_info.get_pool_current_size() != limit_threads) {
 			if (limit_threads > 0 && limit_threads <= pool_info.get_pool_maximum_size()) {
 				pool_info.set_pool_current_size(limit_threads);
+				auto_adjust = false;
+				auto_adjust_thread_match = false;
+				auto_adjust_prvious_finish = 0;
 			} else {
-				reset_default_max_thread();
+				if (!auto_adjust) {
+					reset_default_max_thread();
+				}
 			}
 		} else {
 			HALL_MANAGER_LOGGER.debug("Required Thread Num already finished.");
