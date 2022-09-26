@@ -175,7 +175,7 @@ public class task_prepare {
 		String tool_path = public_data.TOOLS_ROOT_PATH;
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
 		String keep_path = task_data.get("Preference").get("keep_path").trim();
-		if (script_url.equals("") || script_url == null) {
+		if (script_url == null || script_url.equals("")) {
 			CASE_PREPARE_LOGGER.debug("Internal script used, no export needed.");
 			task_prepare_info.add("Info : Internal script used, no export needed.");
 			return true;
@@ -1257,7 +1257,7 @@ public class task_prepare {
 				String request_build = task_data.get("Software").get(software_name);
 				String software_path = new String("");
 				software_path = get_correct_build_path(software_name, request_build, cmd_index, client_data);
-				if(software_path.equals("") ||software_path == null) {
+				if(software_path == null || software_path.equals("")) {
 					continue;
 				}
 				String software_env_name = "EXTERNAL_" + software_name.toUpperCase() + "_PATH";
