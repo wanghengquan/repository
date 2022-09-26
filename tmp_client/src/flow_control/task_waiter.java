@@ -1217,7 +1217,7 @@ public class task_waiter extends Thread {
 		script_url = script_url.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
 		paths_hash.put("script_url", script_url);
 		//get script_name
-		if (script_url.equals("") || script_url == null) {
+		if (script_url == null || script_url.equals("")) {
 			script_base = "";
 		} else {
 			script_base = script_url.substring(script_url.lastIndexOf("/") + 1);
@@ -1225,7 +1225,7 @@ public class task_waiter extends Thread {
 		paths_hash.put("script_base", script_base);
 		paths_hash.put("script_name", get_source_unzip_name(script_base));
 		//get script_path
-		if (script_url.equals("") || script_url == null) {
+		if (script_url == null || script_url.equals("")) {
 			script_path = "";
 		} else if(script_url.startsWith(work_space) || script_url.startsWith(case_path) || script_url.startsWith(public_data.TOOLS_ROOT_PATH)) {
 			script_path = script_url;
@@ -1701,7 +1701,7 @@ public class task_waiter extends Thread {
 			}
 			// task 6 : get case_id, variable 4: case_id OK now
 			String case_id = new String(task_data.get("ID").get("id"));
-			if (case_id.equals("") || case_id == null){
+			if (case_id == null || case_id.equals("")){
 				run_invalid_case_id_jobs(queue_name, est_mem, cmds_parallel, greed_mode, admin_data, task_data);
 				continue;				
 			}

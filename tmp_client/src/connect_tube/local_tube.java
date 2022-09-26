@@ -732,19 +732,19 @@ public class local_tube {
 		String suite_id = suite_data.get("suite_name").trim();
 		String case_id = case_data.get("Order").trim();
 		HashMap<String, String> id_map = new HashMap<String, String>();
-		if (project_id.equals("") || project_id == null) {
+		if (project_id == null || project_id.equals("")) {
 			id_map.put("project", "0");
 		} else {
 			id_map.put("project", project_id);
 		}
-		if (suite_id.equals("") || suite_id == null) {
+		if (suite_id == null || suite_id.equals("")) {
 			id_map.put("suite", "suite000");
 			id_map.put("run", "run000");
 		} else {
 			id_map.put("suite", suite_id);
 			id_map.put("run", suite_id);
 		}
-		if (case_id.equals("") || case_id == null) {
+		if (case_id == null || case_id.equals("")) {
 			id_map.put("id", "case");
 		} else {
 			id_map.put("id", case_id);
