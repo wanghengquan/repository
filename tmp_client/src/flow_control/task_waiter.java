@@ -177,10 +177,16 @@ public class task_waiter extends Thread {
 		}
 		//DEV ready ?
 		if (switch_info.get_core_script_update_request()){
-			if (waiter_name.equalsIgnoreCase("tw_0")){
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for core script update...");
-			}			
-			return false;
+			if (client_info.get_client_preference_data().get("realtime_dev").equalsIgnoreCase("1")) {
+				if (waiter_name.equalsIgnoreCase("tw_0")){
+					TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for core script update...");
+				}
+				return false;
+			} else {
+				if (waiter_name.equalsIgnoreCase("tw_0")){
+					TASK_WAITER_LOGGER.warn(waiter_name + ":realtime_dev == 0, Core script update will be delayed.");
+				}
+			}
 		}
 		//thread available ?
 		if (pool_info.get_available_thread_for_reserve() < 1){
