@@ -349,6 +349,7 @@ class title_pane extends JPanel implements ActionListener{
 		title_items.add("Status");
 		title_items.add("Reason");
 		title_items.add("RunTime");
+		title_items.add("UsedMEM");
 		int show_id = 1;
 		for (String item : title_items){
 			Vector<Object> initial_line = new Vector<Object>();
@@ -529,6 +530,9 @@ class preview_pane extends JPanel implements ActionListener, Runnable{
 					case "RunTime":
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("run_time", "NA"));
 						break;
+					case "UsedMEM":
+						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("used_mem", "NA"));
+						break;						
 					default:
 						initial_line.add("NA");
 					}
@@ -827,11 +831,14 @@ class generate_pane extends JPanel implements ActionListener{
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("cmd_status", "NA"));
 						break;	
 					case "Reason":
-						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("cmd_reason", "NA"));
+						initial_line.add("\"" + queue_data.get(case_id).get("Status").getOrDefault("cmd_reason", "NA") + "\"");
 						break;
 					case "RunTime":
 						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("run_time", "NA"));
 						break;
+					case "UsedMEM":
+						initial_line.add(queue_data.get(case_id).get("Status").getOrDefault("used_mem", "NA"));
+						break;							
 					default:
 						initial_line.add("NA");
 					}
