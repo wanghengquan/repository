@@ -283,48 +283,49 @@ public class hall_manager extends Thread {
 		int show_queue_number = 6;
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
-		HALL_MANAGER_LOGGER.info(">>>Run  time:" + get_client_runtime());		
+		HALL_MANAGER_LOGGER.info(">>>Current Time:" + time_info.get_date_time());
+		HALL_MANAGER_LOGGER.info(">>>Run Time:" + get_client_runtime());		
 		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		//HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
 		// report Captured queue list
 		ArrayList<String> captured_queue_list = new ArrayList<String>();
 		captured_queue_list.addAll(task_info.get_captured_admin_queues_treemap().keySet());
 		if (captured_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Captured queue:" + captured_queue_list.subList(0, 3).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Captured Queue:" + captured_queue_list.subList(0, 3).toString() + "...");
 		} else {
-			HALL_MANAGER_LOGGER.info(">>>Captured queue:" + captured_queue_list.toString());
+			HALL_MANAGER_LOGGER.info(">>>Captured Queue:" + captured_queue_list.toString());
 		}
 		// report processing queue list
 		ArrayList<String> processing_queue_list = new ArrayList<String>();
 		processing_queue_list.addAll(task_info.get_processing_admin_queue_list());
 		if (processing_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Processing queue:" + processing_queue_list.subList(0, 3).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Processing Queue:" + processing_queue_list.subList(0, 3).toString() + "...");
 		} else {
-			HALL_MANAGER_LOGGER.info(">>>Processing queue:" + processing_queue_list.toString());
+			HALL_MANAGER_LOGGER.info(">>>Processing Queue:" + processing_queue_list.toString());
 		}
 		// report executing queue list
 		ArrayList<String> executing_queue_list = new ArrayList<String>();
 		executing_queue_list.addAll(task_info.get_executing_admin_queue_list());
 		if (executing_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Executing queue:" + executing_queue_list.subList(0, 3).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Executing Queue:" + executing_queue_list.subList(0, 3).toString() + "...");
 		} else {
-			HALL_MANAGER_LOGGER.info(">>>Executing queue:" + executing_queue_list.toString());
+			HALL_MANAGER_LOGGER.info(">>>Executing Queue:" + executing_queue_list.toString());
 		}		
 		// report running queue list
 		ArrayList<String> running_queue_list = new ArrayList<String>();
 		running_queue_list.addAll(task_info.get_running_admin_queue_list());
 		if (running_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Running queue:" + running_queue_list.subList(0, 3).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Running Queue:" + running_queue_list.subList(0, 3).toString() + "...");
 		} else {
-			HALL_MANAGER_LOGGER.info(">>>Running queue:" + running_queue_list.toString());
+			HALL_MANAGER_LOGGER.info(">>>Running Queue:" + running_queue_list.toString());
 		}
 		// report finished queue list
 		ArrayList<String> finished_queue_list = new ArrayList<String>();
 		finished_queue_list.addAll(task_info.get_finished_admin_queue_list());
 		if (finished_queue_list.size() > show_queue_number){
-			HALL_MANAGER_LOGGER.info(">>>Finished queue:" + finished_queue_list.subList(0, 3).toString() + "...");
+			HALL_MANAGER_LOGGER.info(">>>Finished Queue:" + finished_queue_list.subList(0, 3).toString() + "...");
 		} else {
-			HALL_MANAGER_LOGGER.info(">>>Finished queue:" + finished_queue_list.toString());
+			HALL_MANAGER_LOGGER.info(">>>Finished Queue:" + finished_queue_list.toString());
 		}
 		// report thread using
 		String max_thread = String.valueOf(pool_info.get_pool_current_size());
