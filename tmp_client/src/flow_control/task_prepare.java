@@ -677,7 +677,7 @@ public class task_prepare {
 			break;
 		} 
 		task_prepare_info.add(">Export Task case with CMD(s):");
-		task_prepare_info.addAll(cmd_array);		
+		task_prepare_info.addAll(cmd_array);
 		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
 		return export_ok;
 	}
