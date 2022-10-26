@@ -553,6 +553,7 @@ p_error_msg = [re.compile("^\s*error", re.I),
                re.compile("\*+\s+error:", re.I),
                re.compile("Errno"),
                re.compile("child killed", re.I),
+               re.compile("UnicodeDecodeError"),
                # # add more Exception here.
                ]
 
@@ -613,7 +614,7 @@ def run_command(cmd, log_file, time_file):
             error_msg_line = simple_parser(log_file, ps, 200)
             if error_msg_line:
                 # use standard message for showing in TMP
-                raw_error = error_msg_line[0]
+                raw_error = error_msg_line[0][:70]
                 raw_error = re.sub("@E:", "", raw_error)
                 say_it('@E: {}'.format(raw_error))
                 break
@@ -886,16 +887,21 @@ def run_safety(func, lock_file, *args, **kwargs):
 
 
 def remove_license_setting(phase="removing LICENSE_FILE"):
+    sts = 0
     if sys.platform.startswith("win"):
         import winreg
         try:
             _key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\FLEXlm License Manager')
             _value, _type = winreg.QueryValueEx(_key, 'LATTICE_LICENSE_FILE')
-            reg_cmd = 'reg delete "hkcu\software\FLEXlm License Manager" /f /v LATTICE_LICENSE_FILE'
-            sts, text = get_status_output(reg_cmd)
-            if sts:
-                text.insert(0, phase)
-                say_it(text)
+            reg_license_list = re.split(";", _value)
+            env_license_list = re.split(";", os.getenv("LM_LICENSE_FILE"))
+            has_diff_license = set(reg_license_list) - set(env_license_list)
+            if has_diff_license:
+                reg_cmd = r'reg delete "hkcu\software\FLEXlm License Manager" /f /v LATTICE_LICENSE_FILE'
+                sts, text = get_status_output(reg_cmd)
+                if sts:
+                    text.insert(0, phase)
+                    say_it(text)
         except:
             sts = 1   # no LATTICE_LICENSE_FILE in register
     else:
@@ -903,6 +909,16 @@ def remove_license_setting(phase="removing LICENSE_FILE"):
         if not os.path.isfile(_flex_file):
             sts = 1
         else:
-            sts = rm_with_error(_flex_file)
+            p_value = re.compile("LATTICE_LICENSE_FILE=(.+)")
+            env_license_set = set(re.split(":", os.getenv("LM_LICENSE_FILE")))
+            with open(_flex_file) as ob:
+                for line in ob:
+                    line = line.strip()
+                    m_value = p_value.search(line)
+                    if m_value:
+                        reg_licence_set = set(re.split(":", m_value.group(1)))
+                        has_diff_license = reg_licence_set - env_license_set
+                        if has_diff_license:
+                            sts = rm_with_error(_flex_file)
     if not sts:
         say_it("Remove {} successfully.".format(phase))

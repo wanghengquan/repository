@@ -58,7 +58,7 @@ radix -hex
 vsim -voptargs=+acc -L work %(sim_top)s  -L %(lib_name)s -L black_box %(pmi_work)s %(resolution)s %(suppress)s
 
 if {$gui_cmd == "cmd"} {
-    add list -nodelta -hex -notrigger * 
+    add list -nodelta -hex -notrigger /%(sim_top)s/%(uut_name)s/*
     configure list -usestrobe 1
     configure list -strobestart {50000 ps} -strobeperiod {5 ns}
     run %(sim_time)s

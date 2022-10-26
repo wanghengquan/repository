@@ -1,5 +1,8 @@
+import os
+import glob
 from xml.etree import ElementTree
 from . import custom_environment
+from .xTools import win2unix
 
 __author__ = 'Shawn'
 
@@ -106,4 +109,22 @@ def parse_ldf_file(ldf_file="", ldf_lines="", for_radiant=False):
     check_apollo_device = ldf_dict.get("bali", dict()).get("device")
     if check_apollo_device:
         custom_environment.env_device_is_apollo(check_apollo_device)
+    # get log2sim option string
+    macro_vo_files = list()
+    for foo in src_list:
+        if foo.get("type_short") != "IPM":
+            continue
+        if foo.get("excluded") == "TRUE":
+            continue
+        ipm_file = foo.get("name")
+        imp_folder = os.path.splitext(ipm_file)[0]
+        vo_files = glob.glob(os.path.join(imp_folder, "*_test_sim.vo"))
+        if vo_files:
+            macro_vo_files.extend(vo_files)
+    macro_string = ""
+    if macro_vo_files:
+        macro_string = [" -macro {} ".format(bar) for bar in macro_vo_files]
+        macro_string = " ".join(macro_string)
+        macro_string = win2unix(macro_string, 0)
+    ldf_dict["macro_string"] = macro_string
     return ldf_dict

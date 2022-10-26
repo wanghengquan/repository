@@ -16,7 +16,11 @@ def env_device_is_apollo(raw_device):
     """
     raw_device = raw_device.lower()
     env_key = "ENV_DEVICE_IS_APOLLO"
-    if "ap6a00" in raw_device:
-        os.environ[env_key] = "yes"
-    elif "latg1" in raw_device:
-        os.environ[env_key] = "yes"
+    apollo_names = ("ap6a00", "latg1", "lav-at")
+    for foo in apollo_names:
+        if foo in raw_device:
+            os.environ[env_key] = "yes"
+
+
+def env_use_front_back_end_vendor():
+    os.environ["USE_FE_BE_VENDOR"] = "yes"

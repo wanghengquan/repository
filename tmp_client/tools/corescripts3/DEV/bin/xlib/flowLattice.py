@@ -16,6 +16,7 @@ from . import xCommandFlow
 from . import xiCEcube2
 from . import xDMSsta
 from . import qas
+from . import utils
 
 __author__ = 'syan'
 
@@ -41,10 +42,8 @@ class FlowLattice(XOptions):
         xTools.add_cmd_line_history(log_file)
         xTools.append_file(log_file, head_lines + play_lines)
         os.environ["BQS_L_O_G"] = log_file
-        xTools.remove_license_setting(phase="LATTICE_LICENSE")
         _recov = xTools.ChangeDir(self.dst_design)
         sts = 0
-
         if self.scan_only:
             self.scan_report()
             self.check_only = True
@@ -59,6 +58,11 @@ class FlowLattice(XOptions):
                 pass
             else:
                 sts = self.create_env_setter()
+        try:
+            xTools.remove_license_setting(phase="LATTICE_LICENSE_WINREG_OR_FLEXLMRC")
+        except:
+            pass  # DO not care
+        utils.add_license_control()
         if not sts:
             sts = self.merge_local_options()
 

@@ -14,7 +14,7 @@ MUST_HAVE = (
 LOCAL_URL = 'mysql+pymysql://root:1234@localhost:3306/test'
 
 SCAN_FMAX_START_PRE = r'4\.1  Setup Detailed Report'
-SCAN_FMAX_START_CONSTRAINT = r'4\.1\.\d+.+?constraint\:\s+(?P<Constraint>.+?\-name\s+\{(?P<clkname>.+?)\}\s+-.+?$)'
+SCAN_FMAX_START_CONSTRAINT = r'Setup\s+path\s+details\s+for\s+constraint:\s+(?P<Constraint>.+?\-name\s+\{(?P<clkname>.+?)\}\s+-.+?$)'
 SCAN_FMAX_END_CONSTRAINT = r'(End of Detailed Report for timing paths|End-of-path required time)'
 MAX_FMAX = 500
 

@@ -1,7 +1,9 @@
 import os
 import re
+import sys
 import time
 import string
+import getpass
 from . import xTools
 import glob
 import shlex
@@ -11,6 +13,7 @@ from collections import OrderedDict
 __author__ = 'syan'
 
 
+VHDL_FEXT_LIST = (".vho", ".vhd", ".vhdl", ".vhm", ".vhc")
 vendor_settings_dict = {"Active":  ["onbreak {resume}", "onerror {quit}"],
                         "Modelsim":  ["onbreak {resume}", "onerror {quit -f}"],
                         "QuestaSim": ["onbreak {resume}", "onerror {quit -f}"],
@@ -20,7 +23,7 @@ vendor_settings_dict = {"Active":  ["onbreak {resume}", "onerror {quit}"],
                         }
 
 
-def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst, todo_coverage, coverage_args):
+def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst, todo_coverage, coverage_args, is_bit2sim):
     """ add resume/quit operation to the simulation do file.
     if do file version is < 2.2, the resume/quit line will be added
     into the file before the first uncomment line.
@@ -82,10 +85,13 @@ def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst, todo_
         in_ns = "%dps" % (ff * 1000)
     if will_generate_lst:  # change the lst_precision
         p1 = re.compile("configure list -strobestart")
+        p11 = re.compile("configure\s+list\s+-strobeperiod")
         p2 = re.compile("asdb2.+(-time\s+\S+)")
         for i, item in enumerate(t_lines):
             if p1.search(item):
                 t_lines[i] = "    configure list -strobestart {%s} -strobeperiod {%s}" % (in_blank_ps, in_blank_ns)
+            elif p11.search(item):
+                t_lines[i] = "    configure list -strobeperiod {%s}" % in_blank_ns
             else:
                 m2 = p2.search(item)
                 if m2:
@@ -119,8 +125,15 @@ def update_simulation_do_file(vendor_name, do_file, lst_precision, no_lst, todo_
     if todo_coverage and vendor_name == "QuestaSim":
         t_lines = update_do_lines_with_coverage(t_lines, coverage_args)
     # //////////////////// Write the do file
+    # vsim -L work %(sim_top)s  -L %(lib_name)s
+    p_lib_order = re.compile(r"""(vsim\s+-L\s+)
+                                 (work)
+                                 (\s+\S+\s+-L\s+)
+                                 (\S+)""", re.X)
     new_ob = open(do_file, "w")
     for item in t_lines:
+        if is_bit2sim:
+            item = p_lib_order.sub(r"\1\4\3\2", item)
         print(item, file=new_ob)
     new_ob.close()
     if vendor_name == "Active":
@@ -250,12 +263,20 @@ def get_module_file_from_sbx(sbx_file):
                 return xTools.get_relative_path(m2.group(1), os.path.dirname(sbx_file), os.getcwd())
 
 
+def get_ipm_vo_file(ipm_file):
+    ipm_file_root_path = os.path.dirname(ipm_file)
+    ipm_filename = os.path.splitext(os.path.basename(ipm_file))[0]
+    vo_files = glob.glob(os.path.join(ipm_file_root_path, "ipm", ipm_filename, "*.vo"))
+    if vo_files:
+        return vo_files[0]
+
+
 def disable_sdc_ldc_file(project_dict):
     source_list = project_dict.get("source", list())
     flow_settings = list()
     for item in source_list:
-        short_type_name = item.get("type_short")
-        if short_type_name in ("LDC", "SDC", "PDC"):
+        type_name = item.get("type")
+        if "Constraints File" in type_name:
             flow_settings.append('prj_disable_source "%s"' % item.get("name", "NoFileName"))
     return flow_settings
 
@@ -715,24 +736,26 @@ def prepare_ipx_testbench_files(ipx_file, working_directory):
                 file_dict[k_and_v[0]] = re.sub("/>", "", k_and_v[1])
             if file_dict:
                 file_dict_list.append(file_dict)
-    this_tb_file = ""
+    this_tb_files = list()
     for x in file_dict_list:
         _t_y_p_e = x.get("type")
-        if "testbench_" not in _t_y_p_e:
+        if not _t_y_p_e.startswith("testbench_"):
             continue
         _n_a_m_e = x.get("name")
-        if "tb_top.v" in _n_a_m_e:
-            raw_tb_file = xTools.get_abs_path(_n_a_m_e, os.path.dirname(ipx_file))
-            if os.path.exists(raw_tb_file):
-                src_path = os.path.dirname(raw_tb_file)
-                dst_path = os.path.join(working_directory, "testbench")
-                if os.path.isdir(dst_path):
-                    shutil.rmtree(dst_path)
-                shutil.copytree(src_path, dst_path)
-                dst_file = os.path.join(dst_path, os.path.basename(_n_a_m_e))
-                this_tb_file = os.path.relpath(dst_file, working_directory)
-                break
-    return xTools.win2unix(this_tb_file, use_abs=0)
+        raw_tb_file = xTools.get_abs_path(_n_a_m_e, os.path.dirname(ipx_file))
+        if os.path.exists(raw_tb_file):
+            src_path = os.path.dirname(raw_tb_file)
+            dst_path = os.path.join(working_directory, "testbench")
+            if os.path.isdir(dst_path):
+                shutil.rmtree(dst_path)
+            shutil.copytree(src_path, dst_path)
+            dst_file = os.path.join(dst_path, os.path.basename(_n_a_m_e))
+            this_tb_file = os.path.relpath(dst_file, working_directory)
+            if "tb_top" in this_tb_file:
+                this_tb_files.append(this_tb_file)
+            else:
+                this_tb_files.insert(len(this_tb_files)-1, this_tb_file)
+    return this_tb_files
 
 
 def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
@@ -741,15 +764,22 @@ def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
 
     verific_lib = "/tools/dist/verific/sv/Jul21/pythonmain/install"
     python27 = "/lsh/sw/qa/lshqa/qa_home/qa_tools/python27_x64/bin/python"
-    build_name = os.path.basename(os.path.dirname(foundry_path))
+    is_using_env = os.getenv("ENV") or os.getenv("env")
+    if is_using_env:   # FOUNDRY : /home/rel/ng2022_1.236/rtf/ispfpga
+        build_name = os.path.basename(os.path.abspath(os.path.join(foundry_path, "..", "..")))
+    else:
+        build_name = os.path.basename(os.path.dirname(foundry_path))
     new_values = dict()
     _env = new_values["ENV"] = "/home/rel/{}/env/fpga".format(build_name)
     bin_lin = "{}/bin/lin64".format(_env)
     new_values["LD_LIBRARY_PATH"] = "{}:{}:{}".format(verific_lib, bin_lin, os.getenv("LD_LIBRARY_PATH"))
     new_values["PATH"] = "{}:{}".format(bin_lin, os.getenv("PATH"))
     new_values["FOUNDRY"] = foundry_path
-    args = dict(py27=python27, impl=impl_path, udb=udb_file, vo="test_bit2sim", env=_env)
-    cmd_line = "{py27} {env}/bin/lin64/bit2sim/bit2sim.py -w -i {impl}/{udb} -o {vo}".format(**args)
+    args = dict(py27=python27, impl=impl_path, udb=udb_file, vo="bit2sim_netlist", env=_env)
+    if is_using_env:
+        cmd_line = "{py27} {env}/base/database/basdn/tools/bit2sim/bit2sim.py -w -i {impl}/{udb}".format(**args)
+    else:
+        cmd_line = "{py27} {env}/bin/lin64/bit2sim/bit2sim.py -w -i {impl}/{udb}".format(**args)
     lines = list()
     for k, v in list(new_values.items()):
         os.environ[k] = v
@@ -767,3 +797,46 @@ def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
         return vo_file
     print("Warning. cannot generate bit2sim.vo file")
 
+
+def update_bit2sim_vo_file(source_files, dev_lib_path, foundry_path):
+    dd = os.path.basename(dev_lib_path)
+    dd = re.sub("ovi_", "", dd)
+    new_path = os.path.join(foundry_path, "..", "cae_library", "simulation", "verilog", dd, "ebr_package.sv")
+    new_path = xTools.win2unix(new_path, 1)
+    p_ebr = re.compile('"ebr_package.sv"')
+    for foo in source_files:
+        foo_lines = open(foo).readlines()
+        with open(foo, "w") as wob:
+            for line in foo_lines:
+                m_ebr = p_ebr.search(line)
+                if m_ebr:
+                    line = p_ebr.sub('"{}"'.format(new_path), line)
+                print(line, file=wob, end="")
+
+
+def add_license_control():
+    return
+    try:
+        user = getpass.getuser()
+        if sys.platform.startswith("win"):
+            layout_path = os.path.join(r"C:\Users\%s\AppData\Roaming\LatticeSemi\DiamondNG" % user)
+        else:
+            layout_path = "/users/%s/.config/LatticeSemi/DiamondNG" % user
+        ini_file = os.path.join(layout_path, ".setting.ini")
+        p = re.compile("AllowLicenseControl=(.+)")
+        with open(ini_file) as ob:
+            for line in ob:
+                m = p.search(line)
+                if m:
+                    if m.group(1) == "true":
+                        return  # do not change
+        ini_lines = open(ini_file).readlines()
+        with open(ini_file, "w") as ob:
+            for line in ini_lines:
+                if p.search(line):
+                    continue
+                print(line, file=ob, end="")
+                if "[General]" in line:
+                    print("AllowLicenseControl=true", file=ob)
+    except:
+        pass

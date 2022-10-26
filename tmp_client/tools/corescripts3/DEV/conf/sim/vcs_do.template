@@ -17,5 +17,5 @@ $PMI_READY
 #testbench files
 %(tb_files)s
 
-vcs %(sim_top)s
+vcs %(sim_top)s +vcs+lic+wait
 ./simv -l sim.log +vcs+lic+wait -ucli -i ucli.cmd

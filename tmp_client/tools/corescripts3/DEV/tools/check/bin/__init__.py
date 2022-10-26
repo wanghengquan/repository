@@ -79,3 +79,5 @@ CheckSdfSimulation().plugin()
 CheckSimulationFlow().plugin()
 
 CheckValue().plugin()
+
+CheckClockSkew().plugin()

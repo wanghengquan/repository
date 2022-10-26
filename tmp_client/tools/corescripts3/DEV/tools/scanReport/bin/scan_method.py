@@ -55,6 +55,15 @@ class ScanBasic(Process):
             return False
 
 
+def change_to_seconds(key_name, raw_value):
+    if key_name.endswith("_cpu_time"):
+        x_list = re.split(":", raw_value)
+        if len(x_list) == 3:
+            x_list = [int(item) for item in x_list]
+            raw_value = str(3600 * x_list[0] + 60 * x_list[1] + x_list[2])
+    return raw_value
+
+
 class ScanPattern(ScanBasic):
     def __init__(self):
         ScanBasic.__init__(self, name='scan_pattern')
@@ -80,6 +89,8 @@ class ScanPattern(ScanBasic):
                         ret = self.handle_number(m.group(args['keyword']))
                     else:
                         ret = self.handle_number(m.group(1))
+                        # sim_rtl_cpu_time 0:02:01 to 121
+                        ret = change_to_seconds(args['keyword'], ret)
                     self.out({args['keyword']: ret})
                     return
 
@@ -885,6 +896,8 @@ class ScanSimulation(ScanBasic):
         self.handle_radiant(options, args)
 
     def handle_radiant(self, options, args):
+        old_file = self.files['simulation_sim_time_file']
+        root_folder = os.path.dirname(old_file)
         pattern1 = [
             {
                 'file': self.files['simulation_sim_time_file'],
@@ -914,8 +927,40 @@ class ScanSimulation(ScanBasic):
                 'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_par_time',
             },
-        ]
 
+            {
+                'file': os.path.join(root_folder, "sim_rtl", "run_sim_rtl.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_rtl_cpu_time',
+            },
+            {
+                'file': os.path.join(root_folder, "sim_syn_vlg", "run_sim_syn_vlg.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_syn_vlg_cpu_time',
+            },
+            {
+                'file': os.path.join(root_folder, "sim_map_vlg", "run_sim_map_vlg.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_map_vlg_cpu_time',
+            },
+            {
+                'file': os.path.join(root_folder, "sim_par_vlg", "run_sim_par_vlg.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_par_vlg_cpu_time',
+            },
+            #
+        ]
+        # parse 'simstats' data
+        _p = r"mem:\s+size\s+during\s+sim.+\s+([\d\.]+\s+\w+)"
+        _sp = r"Loading\s+work\."
+        _file = os.path.join(root_folder, "{0}", "run_{0}.log")
+        for k in ("sim_rtl", "sim_syn_vlg", "sim_map_vlg", "sim_par_vlg"):
+            pattern1.append(dict(file=_file.format(k), pattern=_p, start_pattern=_sp, keyword='{}_Memory'.format(k)))
+        #
         pattern2 = [
             {
                 'file': self.files['simulation_sim_tool_file'],
