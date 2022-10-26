@@ -933,3 +933,110 @@ def run_get_value_function(conf_parser, conf_file):
         my_parser.process()
         value_dict[value_name] = my_parser.this_string
     return value_dict
+
+
+class GetAllValue(object):
+    r"""
+    p_and_s: {"check_one.0.string": "a    one",
+              "check_one.1.string": "b   two",
+              "check_one.2~3.string": "three",
+              "check_one.3~4.grep": r"d\s+=\s+(\d+)"}
+    """
+    def __init__(self, p_and_s, report_file, head=0, tail=0, greedy=False):
+        self.p_dot = re.compile(r"\.")
+        self.p_to = re.compile("~")
+        self.p_space = re.compile(r"\s+")
+        self.p_and_s = p_and_s
+        self.report_file = report_file
+        self.head = head
+        self.tail = tail
+        self.greedy = greedy   # use the last one
+        self.values = OrderedDict()
+
+    def get_values(self):
+        return self.values
+
+    def process(self):
+        self.build_real_pattern_and_string()
+        for lines in self.yield_group_lines():
+            self.values = OrderedDict()
+            for idx, xy in list(lines.items()):
+                for k, v in list(self.real_ps_dict.items()):
+                    if k in self.values:
+                        continue
+                    if v.get("end_number") >= idx >= v.get("start_number"):
+                        s_m = self.get_string_or_match(v.get("pattern_or_string"), xy.get("raw_line"))
+                        if s_m:
+                            self.values[k] = s_m
+            if not self.greedy:
+                if len(self.values) == len(self.real_ps_dict):
+                    return
+
+    def build_real_pattern_and_string(self):
+        real_ps_list = list()
+        for k, v in list(self.p_and_s.items()):
+            list_by_dot = self.p_dot.split(k)
+            list_by_to = [int(item) for item in self.p_to.split(list_by_dot[1])]
+            if len(list_by_to) == 1:
+                list_by_to = [list_by_to[0]] * 2
+            list_by_to.sort()
+            if list_by_dot[-1] == "regexp":
+                v = self.p_space.sub(r"\\s+", v)
+                v = re.compile(v)
+            else:
+                v = self.p_space.sub("", v)
+            real_ps_list.append([list_by_to, v])
+        real_ps_list.sort()
+
+        self.real_ps_dict = OrderedDict()
+        for (start_end, ps) in real_ps_list:
+            key = "{0}:{1}".format(*start_end)
+            value = dict(start_number=start_end[0], end_number=start_end[1], pattern_or_string=ps)
+            self.real_ps_dict[key] = value
+        keys = list(self.real_ps_dict.keys())
+        self.top_number = self.real_ps_dict[keys[0]].get("start_number")
+        self.bottom_number = self.real_ps_dict[keys[-1]].get("end_number")
+
+    def get_string_or_match(self, pattern_or_string, raw_string):
+        raw_string = raw_string.strip()
+        if isinstance(pattern_or_string, str):
+            new_string = self.p_space.sub("", raw_string)
+            if pattern_or_string in new_string:
+                return raw_string
+        else:
+            m = pattern_or_string.search(raw_string)
+            if m:
+                return m
+
+    def yield_group_lines(self):
+        zero_ps = self.real_ps_dict["0:0"].get("pattern_or_string")
+        file_line_count = -1
+        with open(self.report_file, "r") as rob:
+            for file_line_count, line in enumerate(rob):
+                pass
+        file_line_count += 1
+
+        with open(self.report_file, "r") as rob:
+            for count, line in enumerate(rob):
+                if self.head:
+                    if count > self.head:
+                        break
+                elif self.tail:
+                    if count < file_line_count - self.tail:
+                        continue
+                yes_it_is = self.get_string_or_match(zero_ps, line)
+                if yes_it_is:
+                    target_lines = self.get_target_lines(count)
+                    yield target_lines
+
+    def get_target_lines(self, zero_index):
+        lines_with_index = OrderedDict()
+        for i in range(self.top_number, self.bottom_number + 1):
+            lines_with_index[i] = dict(real_index=zero_index + i)
+        with open(self.report_file, "r") as read_ob:
+            for count, line in enumerate(read_ob):
+                for k, v in list(lines_with_index.items()):
+                    if v.get("real_index") == count:
+                        v["raw_line"] = line
+                        break
+        return lines_with_index

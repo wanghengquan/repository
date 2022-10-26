@@ -31,6 +31,8 @@ def get_seed_folder(options):
             pass
     if max_target:
         return seeds.get(max_target), max_target
+    else:
+        return "", ""
 
 
 def get_config(args):
@@ -209,7 +211,7 @@ def get_twr_value_one_constraint(block, clk_info):
     patterns = {
         'SDC Constraint': re.compile(SCAN_FMAX_START_CONSTRAINT),
         'Original_period': re.compile(SCAN_FMAX_START_CONSTRAINT),
-        'Timing Error': re.compile(r'^(?P<score>[^0]\d*).+?(?P<Timing_error>\d+).+?$'),
+        'Timing Error': re.compile(r'^(?P<score>\d*).+?(?P<Timing_error>\d+).+?$'),
         'logic_level': re.compile(r'Logic Level\s+:\s+(?P<level>\d+)'),
         'mpw_cell': re.compile(r'MPW Cell\s+:\s+(?P<mpw_cell>.+?)$'),
         'mpw_period': re.compile(r'MPW Period\s+:\s+(?P<mpw_period>[.\-\d]+)\s*ns'),
@@ -245,6 +247,8 @@ def get_twr_value_one_constraint(block, clk_info):
             tmp['Target'] = float(Target.group('setup_constraint'))
         if Slack:
             tmp['Slack'] = float(Slack.group('slack'))
+    if 'Target' not in tmp:
+        return dict()
     if Original_period == tmp['Target']:
         freq_t = 1000 / (Original_period - tmp['Slack'])
     else:

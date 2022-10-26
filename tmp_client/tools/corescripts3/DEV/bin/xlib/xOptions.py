@@ -8,6 +8,7 @@ import argparse
 from collections import OrderedDict
 
 from . import xTools
+from . import custom_environment
 
 __author__ = 'syan'
 
@@ -413,6 +414,7 @@ class XOptions:
             for b in ("be", "fe"):
                 if self.scripts_options.get("{}_{}".format(a, b)):
                     self.scripts_options["run_synthesis"] = True
+                    custom_environment.env_use_front_back_end_vendor()
 
         if not self.devkit:
             if self.random_devkit:

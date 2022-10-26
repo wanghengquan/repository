@@ -63,7 +63,8 @@ class ParserIP(object):
                 list_string = v
                 break
         else:
-            list_string = ip_paths.get("default")
+            xTools.say_it("Error. not found ip search path list for {}".format(_device))
+            return
         list_string = re.sub(r"\s", "", list_string)
         dirs = re.split(",", list_string)
         not_found_ip_dir = 1

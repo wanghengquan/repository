@@ -140,6 +140,10 @@ maps = OrderedDict(sorted(list({
     'sim_syn_time': (99, [10]),
     'sim_map_time': (100, [10]),
     'sim_par_time': (101, [10]),
+    'sim_rtl_cpu_time': (98, [10]),
+    'sim_syn_cpu_time': (99, [10]),
+    'sim_map_cpu_time': (100, [10]),
+    'sim_par_cpu_time': (101, [10]),
     'rtl_sim_coverage': (117, [11]),
     'fmax_type': (110, [3]),
     #

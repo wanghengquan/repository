@@ -217,7 +217,8 @@ class RunSimulationFlow:
             syn_udb_file = os.path.basename(udb_files[0])
             syn_vo_file = os.path.splitext(syn_udb_file)[0] + ".vo"
             # log2sim -w -o "vhdl_DmTest_syn.vo" "vhdl_DmTest.udb"
-            cmd = 'log2sim -w -o "{0}/{1}" "{0}/{2}"'.format(self.impl_dir, syn_vo_file, syn_udb_file)
+            macro_opt = self.final_ldf_dict.get("macro_string")
+            cmd = 'log2sim -w -o "{0}/{1}"{3} "{0}/{2}"'.format(self.impl_dir, syn_vo_file, syn_udb_file, macro_opt)
             xTools.run_command(cmd, "log2sim.log", "log2sim.time")
 
     def run_simrel_flow(self):
@@ -342,12 +343,11 @@ class RunSimulationFlow:
 
         _conf = self.flow_options.get("conf")
         if not self.do_msim:
-            if self.run_simrel:
-                self.do_msim = os.path.join(_conf, "sim", "msim_do_simrel.template")
-            else:
-                self.do_msim = os.path.join(_conf, "sim", "msim_do.template")
+            x = "msim_do_simrel.template" if self.run_simrel else "msim_do.template"
+            self.do_msim = os.path.join(_conf, "sim", x)
         if not self.do_qsim:
-            self.do_qsim = os.path.join(_conf, "sim", "qsim_do.template")
+            x = "qsim_do_simrel.template" if self.run_simrel else "qsim_do.template"
+            self.do_qsim = os.path.join(_conf, "sim", x)
         if not self.do_riviera:
             self.do_riviera = os.path.join(_conf, "sim", "rsim_do.template")
         if not self.do_ahdl:
@@ -473,14 +473,19 @@ class RunSimulationFlow:
         UT24CP-100-8BBG484I--> lfcpnx
         LFD2NX-17-7MG121I  --> lfd2nx
         """
-        new_family_name = re.split("-|_", family_name)[0]  # in lower case
+        new_family_name = re.split("-|_", family_name)  # in lower case
         radiant_sim_map_dict = self.flow_options.get("family_radiant_map_sim_lib", dict())
-        v = radiant_sim_map_dict.get(new_family_name[0])
+        perhaps_keys = ("{0}-{1}".format(*new_family_name), new_family_name[0])
+        for pk in perhaps_keys:
+            v = radiant_sim_map_dict.get(pk)
+            if v:
+                break
         if v:
             real_name = v
         else:
+            new_family_name = new_family_name[0]
             keys = list(radiant_sim_map_dict.keys())
-            keys.sort(reverse=True)  # match as longer as possible
+            keys.sort(reverse=True)  # match as long as possible
             for k in keys:
                 if new_family_name.startswith(k):
                     real_name = radiant_sim_map_dict.get(k)
@@ -577,6 +582,12 @@ class RunSimulationFlow:
                     source_lib_dict[module_file] = work_lib_name
                 else:
                     xTools.say_it("Warning. Not found verilog file for %s" % ipx_file)
+            elif type_short == "IPM":
+                ipm_file = item.get("name")
+                ipm_vo_file = utils.get_ipm_vo_file(ipm_file)
+                if ipm_vo_file:
+                    source_files.append(ipm_vo_file)
+                    source_lib_dict[ipm_vo_file] = work_lib_name
             elif type_short == "SBX":
                 sbx_file = item.get("name")
                 module_file = utils.get_module_file_from_sbx(sbx_file)
@@ -729,7 +740,7 @@ class RunSimulationFlow:
         source_files = [os.path.join("..", source_file)]
         self.sdf_file = os.path.splitext(source_file)[0] + ".sdf"
         user_options = dict(run_export_vlg=1)
-        return self._run_simulation(sim_path, source_files, user_options)
+        return self._run_simulation(sim_path, source_files, user_options, is_bit2sim=1)
 
     def copy_other_files(self):
         if self.others_path:
@@ -784,7 +795,7 @@ class RunSimulationFlow:
                 else:
                     new_line_list.append(foo)
                 if not ovi_tag:
-                    if cur_fext in (".vho", ".vhd", ".vhdl"):
+                    if cur_fext in utils.VHDL_FEXT_LIST:
                         ovi_tag = 1
             else:
                 new_line_list.append(foo)
@@ -816,7 +827,7 @@ class RunSimulationFlow:
         for foo in group_hdl_files:
             fext = os.path.splitext(foo[0])[1]
             all_files = " ".join(foo)
-            if fext.lower() in (".vho", ".vhd", ".vhdl", ".vhm"):
+            if fext.lower() in utils.VHDL_FEXT_LIST:
                 lines.append("vhdlan %s" % all_files)
             else:
                 if self.is_thunder_plus:
@@ -832,7 +843,7 @@ class RunSimulationFlow:
         lines = list()
         for foo in hdl_files:
             fext = xTools.get_fext_lower(foo)
-            if fext in (".vho", ".vhd", ".vhdl", ".vhm"):
+            if fext in utils.VHDL_FEXT_LIST:
                 lines.append("xrun -v200x -compile {}".format(foo))
             elif fext == ".v":
                 lines.append("xrun -compile {}".format(foo))
@@ -890,7 +901,9 @@ class RunSimulationFlow:
                     real_line = line % self.do_args
                     if re.search(r"xrun\s+-(compile|batch)", real_line):
                         line += " -timescale '1ns/1ps'"
-                    print(line % self.do_args, file=wob)
+                    my_line = line % self.do_args
+                    my_line = simLibrary.make_line_has_opt_for_xun(my_line)
+                    print(my_line, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
 
     @staticmethod
@@ -901,19 +914,16 @@ class RunSimulationFlow:
             if a_size != b_size:
                 print("Warning. <{}> {} is CHANGED.".format(tag, a_file))
 
-    def _run_simulation(self, sim_path, source_files, user_options, is_sim_rtl=False, lib_dict=dict()):
-        file_1 = os.path.join(self.dev_lib, "_info")
-        file_2 = os.path.join(self.dev_lib, "_info_original")
-        self.same_alike(file_1, file_2, "first")
-
+    def _run_simulation(self, sim_path, source_files, user_options, is_sim_rtl=False, lib_dict=dict(), is_bit2sim=0):
         if self.is_ng_flow:
             pass  # DO NOT INCLUDE PMI File
             # if self.this_pmi_file not in source_files:
             #     source_files.insert(0, self.this_pmi_file)
         if xTools.wrap_md(sim_path, "Simulation Path"):
             return 1
-
         _recov = xTools.ChangeDir(sim_path)
+        if is_bit2sim:
+            utils.update_bit2sim_vo_file(source_files, self.dev_lib, os.getenv("FOUNDRY"))
         if self.copy_tb_files(""):
             _recov.comeback()
             return 1
@@ -983,7 +993,7 @@ class RunSimulationFlow:
                                 new_foo = xTools.get_relative_path(foo, self.dst_design)
                                 new_lib_dict[new_foo] = lib_dict.get(foo)
                                 source_files.append(new_foo)
-                        v_v_line = self.add_vlog_vcom_lines(source_files, custom_lib_dict=new_lib_dict)
+                        v_v_line = self.add_vlog_vcom_lines(source_files, custom_lib_dict=new_lib_dict, is_bit2sim=is_bit2sim)
 
                         if not v_v_line:
                             # Sometimes only has a test bench file, no source files found
@@ -1056,7 +1066,7 @@ class RunSimulationFlow:
             x, y = self.flow_options.get("sim_coverage"), self.flow_options.get("sim_coverage_args")
         else:
             x, y = False, None
-        utils.update_simulation_do_file(self.sim_vendor_name, do_file, self.lst_precision, self.sim_no_lst, x, y)
+        utils.update_simulation_do_file(self.sim_vendor_name, do_file, self.lst_precision, self.sim_no_lst, x, y, is_bit2sim)
 
         # sometimes the simulation libraries are not complete for temporary device, so try to find an exist one
         unique_one = self.get_lib_path_if_only_has_one(self.dev_lib)
@@ -1084,6 +1094,8 @@ class RunSimulationFlow:
                 self.local_lib.append(local_lib)
         else:
             sim_cmd = "%s/vsimsa -l sim_log.txt -do %s" % (self.sim_vendor_bin, args)
+        if self.run_modelsim or self.run_questasim:
+            sim_cmd += " -printsimstats=1v"
         sim_cmd = xTools.win2unix(sim_cmd, 0)
         if need_remove_ovi:
             sim_cmd = re.sub("ovi_", "", sim_cmd)
@@ -1125,7 +1137,6 @@ class RunSimulationFlow:
             else:
                 break
         dump_vcd_file()
-        self.same_alike(file_1, file_2, "end")
         _recov.comeback()
         return sts
 
@@ -1211,7 +1222,7 @@ class RunSimulationFlow:
                     elif item.get("type_short") == "IPX":
                         ipx_tb = utils.prepare_ipx_testbench_files(os.path.abspath(_n_a_m_e), os.getcwd())
                 if ipx_tb and not got_sim_only:  # SinOnly File has higher priority
-                    _tb_file.append(ipx_tb)
+                    _tb_file.extend(ipx_tb)
                 if not _tb_file:
                     xTools.say_it("Warning. Not found any testbench file")
         if not _tb_file:
@@ -1223,7 +1234,7 @@ class RunSimulationFlow:
                 xTools.wrap_cp_file(item, os.path.join(sim_path, os.path.basename(item)))
         self.final_tb_files = _tb_file[:]
 
-    def add_vlog_vcom_lines(self, src_files, add_tb=0, custom_lib_dict=dict()):
+    def add_vlog_vcom_lines(self, src_files, add_tb=0, custom_lib_dict=dict(), is_bit2sim=0):
         p_for_pmi = re.compile(r"\Wip\Wpmi\Wpmi")
         self.use_vhd = 0
         if add_tb and not self.normal_tb:  # use them directly.
@@ -1251,8 +1262,10 @@ class RunSimulationFlow:
                         this_line = "vlog %s %s" % (x, item)
                         if fext in (".v", ".vh"):
                             this_line += ' +incdir+{}'.format(os.path.dirname(item))
+                        if is_bit2sim and fext == ".vo":
+                            this_line = re.sub("vlog", "vlog -sv", this_line)
                         v_v_lines.append(this_line)
-                elif fext in (".vho", ".vhd", ".vhdl", ".vhm"):
+                elif fext in utils.VHDL_FEXT_LIST:
                     x = ""
                     if custom_lib_dict:
                         my_work_lib = custom_lib_dict.get(item)

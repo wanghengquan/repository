@@ -77,6 +77,25 @@ run
 exit 
 """
 
+TCL_NCV_APOLLO = """alias . run
+alias quit exit
+
+database -open -shm -into outwaves waves -default -incsize 2G
+probe -create -database waves  hdl_top               -depth 1   -waveform
+probe -create -database waves  hdl_top.xfc           -depth 1   -waveform
+
+#probe -create -packed 0 -database waves hdl_top.xfc.misc_sector -depth all -waveform
+#indago_database -open -name=indago_db.db
+#indago_probe -log -wave_probe_args="hdl_top -all -depth 1"
+#indago_probe -log -wave_probe_args="hdl_top.xfc -all -depth 1"
+#indago_probe -log -wave_probe_args="hdl_top.xfc.misc_sector -depth all -packed 0"
+#indago_probe -log -wave_probe_args="hdl_top.xfc.wrio_sector -depth all -packed 0"
+
+run
+
+exit
+"""
+
 FC_CTL = """
 # Control file for running full chip simulation (use by the pli)
 # Commands available:
@@ -321,7 +340,12 @@ class GetActiveInput(object):
     raw_settings = dict(active_output="n_sel_2")
     raw_settings = dict(active_input_1="sel_2 : bidi_1, bidi_3[4:0]",
                         active_output_1="sel_1 : bidi_2",
-                        active_output_2="sel_3 : bidi_3[9:5]")
+                        active_output_2="sel_3 : bidi_3[9:5]",
+                        active_input_999=LED[9])
+
+    using basename of ports/nets: /tb_top/u_eval_top/ddr_cke_o -> ddr_cke_o for selector
+    bidi can use + or - as the signal type.
+    if no selector, will treat as 1
     """
     def __init__(self, raw_settings):
         self.raw_settings = raw_settings
@@ -370,12 +394,18 @@ class GetActiveInput(object):
             self.input_output.setdefault(new_key, dict())
             m_s_p = self.p_select_ports.search(v)
             if not m_s_p:
-                self.input_output[new_key][v] = None
+                x = self.input_output[new_key]
+                x.setdefault(1, list())
+                x[1].append(v)
             else:
                 select_signal = m_s_p.group(1)
                 select_signal = select_signal.strip()
                 ports = m_s_p.group(2)
-                self.input_output[new_key][select_signal] = self.port_to_list(ports)
+                x = self.input_output[new_key]
+                x.setdefault(select_signal, list())
+                y = x.get(select_signal)
+                y.extend(self.port_to_list(ports))
+                # self.input_output[new_key][select_signal] = self.port_to_list(ports)
         return self.check_define_port_one_time_only()
 
     def define_input(self, inner_name, lst_data):
@@ -384,7 +414,10 @@ class GetActiveInput(object):
                 continue
             got_it = None
             for s, p in list(sp_dict.items()):
-                select_01 = lst_data.get(s)
+                if s == 1:
+                    select_01 = '1'
+                else:
+                    select_01 = lst_data.get(s)
                 if select_01 is None:
                     xTools.say_it("Error. Not found select_signal {} value".format(s))
                     return
@@ -435,6 +468,7 @@ p_name_index = re.compile(r"^(_*)([^[]+)\[(\d+)\](\W*)")
 def get_avc_bin_code(lst_data, ports_in, ports_bidi, ports_vref, ports_plus, ports_minus,
                      sim_vendor_name, active_class):
     bin_code = ""
+    error_messages = dict()
     one_time_dict = dict()
     for (_ports, is_minus) in ((ports_plus, False), (ports_minus, True)):
         for show_name, inner_name in list(_ports.items()):
@@ -460,7 +494,9 @@ def get_avc_bin_code(lst_data, ports_in, ports_bidi, ports_vref, ports_plus, por
                     except Exception:
                         raw_value = "0"
                 except Exception:
-                    print(("Error. Cannot get value for port: {}".format(port_name)))
+                    err_key = "Error. Cannot get value for port: {}".format(port_name)
+                    error_messages.setdefault(err_key, 0)
+                    error_messages[err_key] += 1
                     raw_value = "0"
                 is_input = False  # only define True conditions later
                 if inner_name in ports_in:
@@ -491,7 +527,7 @@ def get_avc_bin_code(lst_data, ports_in, ports_bidi, ports_vref, ports_plus, por
                     new_value = re.sub("0", "L", raw_value)
                     new_value = re.sub("1", "H", new_value)
                 bin_code += new_value
-    return bin_code
+    return bin_code, error_messages
 
 
 def get_avc_bin_code_old(lst_data, ports_in, ports_out, sim_vendor_name):
@@ -589,11 +625,13 @@ def generate_avc_file(avc_file, lst_file, pad_file, sim_vendor_name, simrel_opti
     sorted_ports = get_sorted_ports(list(pad_dict.keys()))
     ports_in, ports_out, ports_bidi, ports_vref = get_in_out_bidi_vref(sorted_ports, pad_dict, simrel_options)
     if not ports_in:
+        print("Error. Not found any IN ports in {}".format(pad_file))
         return 1
     tcl_file = os.path.join(os.path.dirname(avc_file), "run_simvision.tcl")
     generate_simvision_tcl_file(tcl_file, ports_in, ports_out, ports_bidi, pad_dict)
     avc_ob = open(avc_file, "w")
-    print("#  port name in design", file=avc_ob)
+    # print("#  port name in design", file=avc_ob)
+    # comment this comment for running Apollo simrel flow
     lst_dict = get_lst_dict(lst_file)
     ports_all = ports_vref + ports_in + ports_out + ports_bidi
     ports_plus, ports_minus = OrderedDict(), OrderedDict()
@@ -634,19 +672,58 @@ def generate_avc_file(avc_file, lst_file, pad_file, sim_vendor_name, simrel_opti
     if sts:
         xTools.say_it("Error. Failed to read active_input/active_output settings")
         return 1
+    whole_error_messages = dict()
     for item in lst_dict:
         ps = item.get("ps")
         if not ps:
             fs = item.get("fs")
             if not fs:
                 continue
-        avc_bin_code = get_avc_bin_code(item, ports_in, ports_bidi, ports_vref, ports_plus,
-                                        ports_minus, sim_vendor_name, get_active)
+        avc_bin_code, error_msg_dict = get_avc_bin_code(item, ports_in, ports_bidi, ports_vref, ports_plus,
+                                                        ports_minus, sim_vendor_name, get_active)
+        for k, v in list(error_msg_dict.items()):
+            whole_error_messages.setdefault(k, 0)
+            whole_error_messages[k] += v
         print("r1 name  %s;" % avc_bin_code, file=avc_ob)
     avc_ob.close()
+    if whole_error_messages:
+        error_log_file = os.path.join(os.path.dirname(avc_file), "transfer_error.log")
+        with open(error_log_file, "w") as ob:
+            for k, v in list(whole_error_messages.items()):
+                print("ERROR TIMES: {}, DETAIL: {}".format(v, k), file=ob)
 # --------------------------
 # END OF PUBLIC FUNCTIONS
 # --------------------------
+
+
+def make_sure_make_flow_done():
+    """ check ./sim/test_top.log
+        tail lines xcelium> exit
+    """
+    log_file = os.path.join(".", "sim", "test_top.log")
+    end_string_2 = re.compile(r"TOOL:.+Exiting\s+on")
+    print(" Parsing 'TOOL...Exiting' in {} ...".format(log_file))
+    while True:
+        log_lines_number = xTools.get_file_line_count(log_file)
+        if log_lines_number > 10:
+            start_line_number = log_lines_number - 20
+            with open(log_file) as ob:
+                for line_number, line in enumerate(ob):
+                    if line_number > start_line_number:
+                        if end_string_2.search(line):
+                            return
+        time.sleep(30)
+
+
+def create_simrel_run_shell(wrap_simrel_file):
+    with open(wrap_simrel_file, "w") as wob:
+        try:
+            with open("simenv.cshrc") as rob:
+                for line in rob:
+                    print(line.rstrip(), file=wob)
+        except:
+            print("#!/usr//bin/csh -f", file=wob)
+        print("/usr/bin/make x_sim", file=wob)
 
 
 def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use_original_ctl):
@@ -676,7 +753,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     temp_sh_file = "temp.sh"
     dst_files = ("fc.log", "fc.out", "fc.err", "irun.log", "xirun.log", "xrun.log",
                  "fc.ctl", "tcl_ncv",
-                 "x_simrel_flow.log", "x_simrel_flow.time", temp_sh_file)
+                 "x_simrel_flow.log", "x_simrel_flow.time", "sim/test_top.log", temp_sh_file)
     temp_sh = open(temp_sh_file, "w")
     # /////////////////
     # check source file, then run remove flow
@@ -709,26 +786,35 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     os.system("sh {}".format(temp_sh_file))
     real_ncv = "xsim_ncv" if re.search(r"\Wxncv", simrel_dir) else "sim_ncv"
     real_ncv = os.path.abspath(real_ncv)
+    use_make_for_simrel = False
+    if not os.path.isfile(real_ncv):
+        wrap_simrel_file = "simrel_wrapper.csh"
+        create_simrel_run_shell(wrap_simrel_file)
+        real_ncv = "/usr/bin/csh {}".format(wrap_simrel_file)
+        use_make_for_simrel = True
     xTools.say_it("Running {}".format(real_ncv))
     sts = os.system("{} > x_simrel_flow.log".format(real_ncv))
     if sts:
         xTools.say_it("Failed to run simrel flow...")
         return sts
+    if use_make_for_simrel:
+        make_sure_make_flow_done()
     xTools.say_it("Try to copy back results ...")
     # copy files
     t_copy = open("copy_files", "w")
     for _file in dst_files:
-        print("cp -f %s %s/." % (_file, rbt_avc_folder), file=t_copy)
+        print("cp -f %s %s/%s" % (_file, rbt_avc_folder, os.path.basename(_file)), file=t_copy)
     _copy_wave = simrel_options.get("copy_wave")
     will_copy = 0
     if _copy_wave is None:
-        results = xTools.simple_parser("fc.err", [re.compile("Inputs"), ])
-        if results:
-            will_copy = 1
-        if not will_copy:
-            results = xTools.simple_parser("fc.log",  [re.compile("Inputs"), ])
+        check_patterns = [("fc.err", re.compile("Inputs"), 0),
+                          ("fc.log", re.compile("Inputs"), 0),
+                          ("fc.log", re.compile("Simulation::FAILED"), 15)]
+        for (chk_file, chk_pattern, but_lines_number) in check_patterns:
+            results = xTools.simple_parser(chk_file, [chk_pattern], but_lines=but_lines_number)
             if results:
                 will_copy = 1
+                break
     else:
         _bool_copy_wave = xTools.get_true(simrel_options, "copy_wave")
         if _bool_copy_wave:
@@ -828,8 +914,41 @@ def get_simrel_id(timeout_py_file):
     if not job_id:
         new_line = "# abnormal results. cannot find Simrel job id"
     else:
-        new_line = 'os.system("nc stop {}")'.format(job_id)
+        new_line = ['print("try to kill simrel id: {}")'.format(job_id),
+                    'os.system("nc stop {}")'.format(job_id),
+                    'os.system("nc list | grep {}")'.format(job_id)
+                    ]
     xTools.append_file(timeout_py_file, new_line)
+
+
+def update_avc_for_apollo(raw_avc_file):
+    raw_lines = open(raw_avc_file).readlines()
+    with open(raw_avc_file, "w") as ob:
+        comments = list()
+        deal_comment_done = False
+        for line in raw_lines:
+            line = line.rstrip()
+            if deal_comment_done:
+                line = re.sub("name", "ts1", line)
+                print(line, file=ob)
+            else:
+                if line.startswith("#"):
+                    comments.append(line)
+                else:
+                    print(line, file=ob)
+                    for foo in comments:
+                        print(foo, file=ob)
+                    deal_comment_done = True
+
+
+def update_svwf_for_apollo(svwf_file):
+    raw_lines = open(svwf_file).readlines()
+    p = re.compile(r"fc_tb\.")
+    with open(svwf_file, "w") as ob:
+        for line in raw_lines:
+            line = line.rstrip()
+            new_line = p.sub("hdl_top.", line)
+            print(new_line, file=ob)
 
 
 def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel_options, fixed_avc_file, lst_precision,
@@ -914,11 +1033,14 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
     this_args = (general_options, simrel_dirname, my_device[1].group(1))
     temp_recov = xTools.ChangeDir(simrel_dirname)
     simrel_root, branch_name, simrel_family = None, None, None
-    try:
-        simrel_root, branch_name, simrel_family = filelock.safe_run_function(get_simrel_path, args=this_args)
-    except:
-        xTools.say_tb_msg()
-        xTools.say_it("Failed to get simrel path")
+    for i in range(3):
+        try:
+            simrel_root, branch_name, simrel_family = filelock.safe_run_function(get_simrel_path, args=this_args)
+            break
+        except:
+            xTools.say_tb_msg()
+            xTools.say_it("Failed to get simrel path")
+        time.sleep(15)
     temp_recov.comeback()
     if not simrel_root:
         return 1
@@ -942,11 +1064,16 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
             xTools.write_file(dst_file, TCL_NCV_JEDI_D1)
         elif "jedi" in simrel_family:
             xTools.write_file(dst_file, TCL_NCV_JEDI)
+        elif "apollo" in simrel_family:
+            xTools.write_file(dst_file, TCL_NCV_APOLLO)
     else:
         xTools.wrap_cp_file(src_file, dst_file)
 
     # -------------------
     # --------- generate files
+    if "apollo/apollo" in simrel_family:
+        update_avc_for_apollo(avc_file)
+        update_svwf_for_apollo(svwf_file)
     _is_jedi_d1 = "jedi_d1_80k" in simrel_family
     _avc_dict = CHANGE_AVC_DICT_JEDI_D1 if _is_jedi_d1 else CHANGE_AVC_DICT
     _avc_template = AVC_CHANGE_FREQ_AVC_JEDI_D1 if _is_jedi_d1 else AVC_CHANGE_FREQ_AVC
@@ -972,8 +1099,15 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
             use_original_ctl = 0
 
     check_log = os.path.join(simrel_root, branch_name, "check_running.log")
+    x = xTools.win2unix(check_log)
     timeout_py = xTools.win2unix(os.path.join(tag_path, "..", "_timeout.py"))
-    xTools.append_file(timeout_py, ['os.remove("%s")' % xTools.win2unix(check_log), ""])
+    y = 'print("removing {}")'.format(x)
+    xTools.append_file(timeout_py, [y,
+                                    'try:',
+                                    '    os.remove("%s")' % x,
+                                    'except:',
+                                    '    pass',
+                                    ""])
 
     my_simrel_path = os.path.join(simrel_root, branch_name, simrel_family)
     if not os.path.isdir(my_simrel_path):

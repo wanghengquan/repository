@@ -72,18 +72,20 @@ class GenerateFileSVWF(object):
             print(("Not found {}".format(self.avc_file)))
             return 1
         self.port_site_zipped = None
+        one = list()
+        two = list()
         with open(self.avc_file) as ob:
             last_list = list()
             for line in ob:
                 line = line.strip()
                 line_list = line.split()
-                if not last_list:
-                    last_list = line_list
-                elif line_list[0] == "format":
-                    self.port_site_zipped = list(zip(last_list, line_list))
+                if line_list[0] == "format":
+                    two = line_list
+                elif line_list[0] == "#":
+                    one = line_list
+                if one and two:
+                    self.port_site_zipped = list(zip(one, two))
                     break
-                else:
-                    last_list = line_list
         if not self.port_site_zipped:
             print(("Error. not found port/site in {}".format(self.avc_file)))
             return 1

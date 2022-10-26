@@ -1,9 +1,11 @@
 import os
 from . import filelock
 import re
+import hashlib
 import sys
 import time
 import shlex
+import stat
 import shutil
 import configparser
 from collections import OrderedDict
@@ -124,8 +126,8 @@ def get_conf_options(conf_files, key_lower=True):
             conf_options[section] = t_section
         return 0, conf_options
     except Exception as e:
-        print(("Error. Can not parse configuration file(s) %s" % conf_files))
-        print(e)
+        # print(("Error. Can not parse configuration file(s) %s" % conf_files))
+        # print(e)
         return 1, ""
 
 def get_fname(a_file):
@@ -242,6 +244,25 @@ def generate_file(a_file, template_file, kwargs):
     new_ob.close()
 
 
+def add_license_control(ini_file):
+    return
+    p = re.compile("AllowLicenseControl=(.+)")
+    with open(ini_file) as ob:
+        for line in ob:
+            m = p.search(line)
+            if m:
+                if m.group(1) == "true":
+                    return  # do not change
+    ini_lines = open(ini_file).readlines()
+    with open(ini_file, "w") as ob:
+        for line in ini_lines:
+            if p.search(line):
+                continue
+            print(line, file=ob, end="")
+            if "[General]" in line:
+                print("AllowLicenseControl=true", file=ob)
+
+
 def safe_copy_file(_src, _dst, _force):
     if os.path.isfile(_dst):
         if _force:
@@ -253,9 +274,39 @@ def safe_copy_file(_src, _dst, _force):
             return
     try:
         shutil.copy2(_src, _dst)
+        os.chmod(_dst, stat.S_IRWXU)
     except:
         print("Failed to copy {} to {}".format(_src, _dst))
-        pass
+
+    if _dst.endswith(".setting.ini"):
+        add_license_control(_dst)
+
+
+def file_sha1(file_name, ignore_format=False, max_call_times=None):
+    """
+    get sha1 code for a file.
+    if ignore_format is True, will not calculate sha1 code for newline tag.
+    if the file is huge, will calculate sha1 core max_call_times at most to save time.
+    """
+    _FILE_SLIM = 65536  # read stuff in 64kb chunks!
+    call_times = 0
+    my_sha1 = hashlib.sha1()
+    with open(file_name, "rb") as ob:
+        while True:
+            data = ob.read(_FILE_SLIM)
+            if not data:
+                break
+            if ignore_format:
+                data = data.decode(encoding="utf-8")
+                data = data.replace("\r", '')
+                data = data.replace("\n", '')
+                data = data.encode(encoding="utf-8")
+            if max_call_times:
+                call_times += 1
+                if call_times > max_call_times:
+                    break
+            my_sha1.update(data)
+    return my_sha1.hexdigest()
 
 
 def wrap_cp_file(src, dst, force=True):
@@ -266,10 +317,43 @@ def wrap_cp_file(src, dst, force=True):
     abs_dst = os.path.abspath(dst)
     if abs_src == abs_dst:
         return
+    if os.path.isfile(abs_src) and os.path.isfile(abs_dst):
+        # change mode when OSError or PermissionError
+        for foo in (abs_src, abs_dst):
+            try:
+                with open(foo) as ob:
+                    pass
+            except:
+                os.chmod(foo, stat.S_IRWXU)
+        code_a, code_b = file_sha1(abs_src), file_sha1(abs_dst)
+        if code_a == code_b:
+            print("Message: same file for {}".format(abs_dst))
+            return
+        else:
+            sts_a, options_a = get_conf_options(abs_src, key_lower=False)
+            sts_b, options_b = get_conf_options(abs_dst, key_lower=False)
+            if sts_a or sts_b:  # cannot parse options
+                pass
+            else:
+                will_copy = 0
+                for section_name, option_a_dict in list(options_a.items()):
+                    if will_copy:
+                        break
+                    option_b_dict = options_b.get(section_name, dict())
+                    for key, value_a in list(option_a_dict.items()):
+                        if key in ("RecentProjList", "LastProjPath", "LastFilePath", "RecentFileList"):
+                            continue
+                        value_b = option_b_dict.get(key)
+                        if value_a != value_b:
+                            will_copy = 1
+                            break
+                if not will_copy:
+                    return
     copy_lock_file = os.path.splitext(abs_dst)[0] + ".lock"
     dir_name = os.path.dirname(abs_dst)
     if not os.path.isdir(dir_name):
         wrap_md(dir_name, "layout_path")
+    print("[MSG] try to update {}".format(abs_dst))
     filelock.safe_run_function(safe_copy_file, args=(abs_src, abs_dst, force), func_lock_file=copy_lock_file)
 
 
@@ -760,7 +844,6 @@ def get_environment(radiant_diamond, nt_lin, squish):
 
 
 def set_lm_license_environment(root_file):
-    env_key = "LM_LICENSE_FILE"
     # DO NOt use .. to get the DEV path
     root_file = os.path.abspath(root_file)
     root_path = os.path.dirname(root_file)
@@ -772,7 +855,12 @@ def set_lm_license_environment(root_file):
         print("Warning. Not found {}".format(conf_file))
         return 1
     sts, options = get_conf_options(conf_file, key_lower=False)
-    my_env = options.get("environment", dict()).get(env_key)
+    d_env = options.get("environment", dict())
+    x = "AllowLicenseControl"
+    if d_env.get(x) in ("1", "yes", "true", "True"):
+        os.environ[x] = "1"
+    env_key = "LM_LICENSE_FILE"
+    my_env = d_env.get(env_key)
     if my_env:
         os.environ[env_key] = os.pathsep.join(my_env)
     else:

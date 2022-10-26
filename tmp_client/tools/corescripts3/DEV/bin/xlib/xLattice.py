@@ -147,7 +147,7 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
     ldf_dict = parse_ldf_file(ldf_file, is_ng_flow)
     impl_node = ldf_dict.get("impl")
     bali_node = ldf_dict.get("bali")
-    name_list = (impl_node.get("title"), bali_node.get("title"))
+    name_list = (impl_node.get("title"), bali_node.get("title"), ldf_dict.get("macro_string"))
 
     if is_ng_flow:
         tcl_cmd = {key: value[1] for key, value in list(TCL_COMMAND.items())}
@@ -179,7 +179,7 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
         if process in ("Map", "Export", "PAR"):
             _line = "set r [catch {%s} msg]" % _line
             tcl_lines.append(_line)
-            tcl_lines.append('puts "$msg"')
+            # tcl_lines.append('puts "$msg"')
         else:
             tcl_lines.append(_line)
     tcl_lines.append('%s "%s"' % (tcl_cmd.get("save"), ldf_file))
@@ -478,6 +478,8 @@ class LatticeEnvironment:
         if self.environment:
             for key, value in list(self.environment.items()):
                 env_key = key.upper()
+                if env_key == "ALLOWLICENSECONTROL":
+                    env_key = "AllowLicenseControl"
                 if type(value) is list:
                     value = os.pathsep.join(value)
                 if env_key in ("PATH", "LD_LIBRARY_PATH"):
@@ -1107,6 +1109,9 @@ class CreateDiamondProjectFile:
             if self.change_names:
                 changeNames.change_names(self.ldf_dict.get("top"), self.ldf_dict.get("source"))
             sts = self.add_strategy_and_synthesis()
+            if os.getenv("USE_FE_BE_VENDOR") == "yes":
+                self.run_synthesis = False
+                self.flow_options["run_synthesis"] = False
             return sts
         else:
             if self.is_ng_flow:
@@ -1483,11 +1488,12 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
     else:
         if flow_options.get(x) or user_options.get(x):
             user_options["run_map_trace"] = 1
-            user_options["run_synthesis"] = 1
+            if os.getenv("USE_FE_BE_VENDOR") != "yes":
+                user_options["run_synthesis"] = 1
     special_command_lines = list()
     special_command_lines.append("# ----- Radiant Post-Synthesis Simulation File")
     special_command_lines.append("set TIME_start [clock clicks -milliseconds]")
-    x = 'log2sim -w -o ./{0}/{1}_{0}_syn.vo ./{0}/{1}_{0}_syn.udb'
+    x = 'log2sim -w -o ./{0}/{1}_{0}_syn.vo {2} ./{0}/{1}_{0}_syn.udb'
     special_command_lines.append('exec %s' % x)
     special_command_lines.append("after 1000")  # avoid 0
     special_command_lines.append("set TIME_taken [expr ([clock clicks -milliseconds] - $TIME_start)/1000]")
@@ -1520,6 +1526,9 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
     ]:
         if till_map and task_name == "par":
             break
+        if task_name == "synthesis":
+            if os.getenv("USE_FE_BE_VENDOR") == "yes":
+                continue
         option_name = "run_%s" % task_name
         if flow_options.get(option_name) or user_options.get(option_name):
             task_list.append(task_cmd)
@@ -1925,7 +1934,7 @@ class RunTclFlow:
             if self.skip(ii): continue
             run_mark = "Target_seed_%02d" % seed
             xTools.say_it("--Launch Test flow: %s" % run_mark)
-            process_task = get_task_list(self.flow_options, dict(run_par_trace=1))
+            process_task = get_task_list(self.flow_options, dict(run_par=1, run_par_trace=1))
 
             pre_set = "%s -strategy %s" % (self.tcl_cmd.get("set_sty_val"), self.sty_name)
             flow_settings = ["%s par_place_iterator_start_pt=%d par_save_best_result=1" % (pre_set, seed)]

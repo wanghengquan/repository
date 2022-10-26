@@ -40,6 +40,8 @@ RUN_SQUISH = '''#!/bin/sh
 %(run_server)s
 %(sleep)s
 %(squishserver)s --config addAUT %(name_of_aut)s "%(path_to_aut)s"
+%(squishserver)s --config setHardExitTimeout 600
+%(squishserver)s --config setSoftExitTimeout 4000
 %(squishrunner)s --config setAUTTimeout 60
 %(squishrunner)s --config setResponseTimeout 60
 %(squishrunner)s --testcase %(testcase)s --lang %(language)s --wrapper %(wrapper)s --objectmap %(objectmap)s --cwd %(cwd)s --reportgen stdout,console.log
@@ -75,12 +77,14 @@ def get_real_value(my_string, env_key):
     if t:
         return os.path.abspath(t)
 
+
 def get_focus(a_file, pattern):
     foo = xTools.simple_parser(a_file, [pattern])
     if not foo:
         return ""
-    else: # foo = line, m
+    else:  # foo = line, m
         return foo[1].group(1)
+
 
 def get_squish_file(testdata_path):
     map_files, conf_files = list(), list()
@@ -93,6 +97,7 @@ def get_squish_file(testdata_path):
             conf_files.append(abs_foo)
     return map_files, conf_files
 
+
 class RunSquishCase:
     def __init__(self):
         _xlib = os.path.join(xTools.get_file_dir(sys.argv[0]), "xlib")
@@ -101,6 +106,7 @@ class RunSquishCase:
     def process(self):
         xTools.say_it("---- Start running Squish test case ...")
         os.environ["SKIP_UPLOAD_CHECK"] = "1"
+        os.environ["SKIP_UPDATE_CHECK"] = "1"
         xTools.set_lm_license_environment(__file__)
         sts = self._process()
         xTools.say_it("---- End of running Squish test case ...")
@@ -243,15 +249,17 @@ class RunSquishCase:
         batch_kwargs["set_path"] = xTools.get_environment(self.radiant, self.nt_lin, self.squish)
         if self.on_win:
             batch_kwargs["run_server"] = r'start "Squishserver Window" /B "%s" --verbose' % self.squish_server
-            batch_kwargs["sleep"] = "%s 5" % os.path.join(self.xlib, "sleep.exe")
+            batch_kwargs["sleep"] = "%s 12" % os.path.join(self.xlib, "sleep.exe")
         else:
             batch_kwargs["run_server"] = "%s &" % self.squish_server
-            batch_kwargs["sleep"] = "sleep 5"
+            batch_kwargs["sleep"] = "sleep 12"
         batch_kwargs["name_of_aut"] = name_of_aut
 
         batch_file = "run_squish.bat"
         batch_kwargs["given_dos_lines"] = GIVEN_DOS_LINES if self.on_win else ""
-        xTools.write_file("run_squish.bat", RUN_SQUISH % batch_kwargs)
+        original_string = RUN_SQUISH % batch_kwargs
+        new_string = self.add_comment_if_already_in_server_ini_file(original_string, batch_kwargs)
+        xTools.write_file("run_squish.bat", new_string)
         if self.on_win:
             sts, txt = xTools.get_status_output(batch_file)
         else:
@@ -263,6 +271,41 @@ class RunSquishCase:
         _recov.comeback()
         return check_sts
 
+    @staticmethod
+    def add_comment_if_already_in_server_ini_file(original_string, flow_dict):
+        if sys.platform.startswith("win"):
+            return original_string
+        user = getpass.getuser()
+        now_server_ini_file = "/home/{}/.squish/ver1/server.ini".format(user)
+        if not os.path.isfile(now_server_ini_file):
+            return original_string
+        new_string_list = list()
+        original_list = original_string.splitlines()
+        parser_sts, squish_settings = xTools.get_conf_options(now_server_ini_file, key_lower=False)
+        if parser_sts:
+            return original_string
+
+        general_settings = squish_settings.get("General")
+        aut_key, flow_aut_value = "AUT/{name_of_aut}".format(**flow_dict), flow_dict.get("path_to_aut")
+        server_aut_value = general_settings.get(aut_key)
+        if not server_aut_value:
+            return original_string
+        if flow_aut_value not in server_aut_value:
+            return original_string
+        comment_focus = ["--config addAUT",
+                         "--config setHardExitTimeout",
+                         "--config setSoftExitTimeout",
+                         "--config setAUTTimeout",
+                         "--config setResponseTimeout"]
+        for foo in original_list:
+            for k in comment_focus:
+                if k in foo:
+                    foo = "# " + foo
+                    break
+            new_string_list.append(foo)
+        return os.linesep.join(new_string_list)
+
+
 def get_final_status(a_list):
     p = re.compile("^Final check status:(.+)")
     for line in a_list:
@@ -272,13 +315,11 @@ def get_final_status(a_list):
             try:
                 return int(m.group(1))
             except ValueError:
-                return 0
-    return 0
+                return 201
+    return 201
+
 
 if __name__ == "__main__":
     my_tst = RunSquishCase()
-    sts = my_tst.process()
-    sys.exit(sts)
-
-
-
+    x_sts = my_tst.process()
+    sys.exit(x_sts)

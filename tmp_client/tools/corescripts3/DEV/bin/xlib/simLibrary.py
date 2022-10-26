@@ -28,6 +28,13 @@ endmodule
 """
 
 
+def make_line_has_opt_for_xun(raw_line):
+    v_x = "-v_XCELIUM20.09.012"
+    raw_line = raw_line.replace(v_x, "")
+    raw_line = re.sub("xrun ", "xrun {} ".format(v_x), raw_line)
+    return raw_line
+
+
 def get_radiant_lib_file(family_path):
     t = list()
     if os.path.basename(family_path) == "pmi":
@@ -317,7 +324,9 @@ def compile_library(*args):
             if xTools.get_fext_lower(foo) == ".f":  # compile .f ONLY
                 _header = "xrun" if re.search("(pmi|ice40up)", sim_name, re.I) else "xrun -sv"
                 names = [_header, sim_name, foo, os.path.dirname(foo)]
-                bat_lines.append("{} -compile -makelib ./{} -f {} -incdir {} -parallel -endlib".format(*names))
+                this_line = "{} -compile -makelib ./{} -f {} -incdir {} -parallel -endlib".format(*names)
+                this_line = make_line_has_opt_for_xun(this_line)
+                bat_lines.append(this_line)
         if bat_lines:
             xTools.write_file(compile_bat_file, bat_lines)
             if not on_win:

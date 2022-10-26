@@ -180,7 +180,7 @@ class DataReport(DeployOptions):
                 new_v = xUtils.get_real_list(self.y_general, self.arg_dict, sheet_data,
                                              v.get("keywords"), v.get("default"))
                 if k in ("src_titles", "dst_titles"):
-                    if "Design" not in v:
+                    if "Design" not in new_v:
                         new_v.insert(0, "Design")
                     if self.add_test_id:
                         if self.title_test_id in new_v:
