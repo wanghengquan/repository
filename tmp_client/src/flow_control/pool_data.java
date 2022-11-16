@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.screen_record;
 import utility_funcs.system_cmd;
 
 public class pool_data {
@@ -140,7 +141,10 @@ public class pool_data {
 			String case_path,
 			String case_url,
 			float est_mem,
-			int time_out) {
+			int time_out,
+			Boolean call_recorded,
+			screen_record video_object
+			) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
 		HashMap<pool_attr, Object> sys_call_data = new HashMap<pool_attr, Object>();
@@ -162,6 +166,8 @@ public class pool_data {
 		sys_call_data.put(pool_attr.call_status, call_state.INITIATE);
 		ArrayList<String> call_output = new ArrayList<String>();
 		sys_call_data.put(pool_attr.call_output, call_output);
+		sys_call_data.put(pool_attr.call_recorded, call_recorded);
+		sys_call_data.put(pool_attr.call_videoobj, video_object);
 		call_map.put(sys_call_key, sys_call_data);
 	}
 
@@ -183,6 +189,8 @@ public class pool_data {
 			long current_time = System.currentTimeMillis() / 1000;
 			long start_time = (long) hash_data.get(pool_attr.call_gentime);
 			int time_out = (int) hash_data.get(pool_attr.call_reqtime);
+			Boolean record_request = (Boolean) hash_data.get(pool_attr.call_recorded);
+			screen_record record_object = (screen_record) hash_data.get(pool_attr.call_videoobj);
 			// timeout task cancel
 			if (current_time - start_time > time_out + 5) {
 				hash_data.put(pool_attr.call_timeout, true);
@@ -207,6 +215,9 @@ public class pool_data {
 				if (is_child_process_timeout(call_output)){
 					call_output.add(">>>Timeout extra run:");
 					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir), tools_data));
+				}
+				if (record_request) {
+					record_object.stop();
 				}
 			} else {
 				hash_data.put(pool_attr.call_status, call_state.PROCESSIONG);

@@ -29,6 +29,7 @@ import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
+import utility_funcs.screen_record;
 import utility_funcs.system_call;
 import utility_funcs.time_info;
 
@@ -959,8 +960,19 @@ public class task_waiter extends Thread {
 			}
 		}
 		//Environment check
+		HashMap<String, String> environ_data = checked_data.get("Environment");
+		if (environ_data.containsKey("override")) {
+			if (!data_check.str_choice_check(environ_data.get("override"), new String [] {"globle", "local"} )){
+				environ_data.remove("override");
+			}
+		}		
 		//LaunchCommand check
 		HashMap<String, String> lcmd_data = checked_data.get("LaunchCommand");
+		if (lcmd_data.containsKey("parallel")) {
+			if (!data_check.str_choice_check(lcmd_data.get("parallel"), new String [] {"false", "true"} )){
+				lcmd_data.remove("parallel");
+			}
+		}
 		if (lcmd_data.containsKey("override")) {
 			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"globle", "local"} )){
 				lcmd_data.remove("override");
@@ -982,6 +994,11 @@ public class task_waiter extends Thread {
 				preference_data.remove("case_mode");
 			}
 		}
+		if (preference_data.containsKey("greed_mode")) {
+			if (!data_check.str_choice_check(preference_data.get("greed_mode"), new String [] {"false", "true", "auto"} )){
+				preference_data.remove("greed_mode");
+			}
+		}
 		if (preference_data.containsKey("keep_path")) {
 			if (!data_check.str_choice_check(preference_data.get("keep_path"), new String [] {"false", "true"} )){
 				preference_data.remove("keep_path");
@@ -995,6 +1012,16 @@ public class task_waiter extends Thread {
 		if (preference_data.containsKey("result_keep")) {
 			if (!data_check.str_choice_check(preference_data.get("result_keep"), new String [] {"auto", "zipped", "unzipped"} )){
 				preference_data.remove("result_keep");
+			}
+		}
+		if (preference_data.containsKey("host_restart")) {
+			if (!data_check.str_choice_check(preference_data.get("host_restart"), new String [] {"false", "true"} )){
+				preference_data.remove("host_restart");
+			}
+		}
+		if (preference_data.containsKey("video_record")) {
+			if (!data_check.str_choice_check(preference_data.get("video_record"), new String [] {"false", "true"} )){
+				preference_data.remove("video_record");
 			}
 		}
 		return checked_data;
@@ -1343,6 +1370,22 @@ public class task_waiter extends Thread {
 			data = data_max; 
 		}
 		return data;
+	}
+	
+	private Boolean get_task_record_request(
+			HashMap<String, HashMap<String, String>> task_data
+			) {
+		Boolean request = Boolean.valueOf(public_data.TASK_DEF_VIDEO_RECORD);
+		//by default squish case will be record
+		if(task_data.get("Software").containsKey("squish")) {
+			request = true;
+		}
+		if(task_data.get("Preference").containsKey("video_record")) {
+			if (task_data.get("Preference").get("video_record").equalsIgnoreCase("true")) {
+				request = true;
+			}
+		}
+		return request;
 	}
 	
 	private String get_last_error_msg(ArrayList<String> message_list){
@@ -1727,6 +1770,7 @@ public class task_waiter extends Thread {
 			String python_version = switch_info.get_system_python_version();
 			String cmds_decision = task_data.get("LaunchCommand").getOrDefault("decision", public_data.TASK_DEF_CMD_DECISION).trim(); 
 			Boolean corescript_link_status = switch_info.get_remote_corescript_linked();
+			Boolean record_request = get_task_record_request(task_data);
 			int case_timeout = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
 			// task 9 : launch reporting
@@ -1736,10 +1780,15 @@ public class task_waiter extends Thread {
 				continue;
 			} 
 			// task 10 : launch
+			screen_record record_object = null;
+			if (record_request) {
+				record_object = new screen_record(launch_path, "case_video", false);
+				record_object.start();
+			}
 			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
 			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
 			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, greed_mode, client_info);
-			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout);
+			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout, record_request, record_object);
 			client_info.decrease_registered_memory(est_mem);
 			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
 		}

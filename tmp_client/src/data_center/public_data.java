@@ -28,10 +28,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.35"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21435; //version for code use
-	public final static String BASE_BUILDDATE = "2022/10/26";
-	public final static String BASE_SUITEFILEVERSION = "1.25";
+	public final static String BASE_CURRENTVERSION = "2.14.36"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21436; //version for code use
+	public final static String BASE_BUILDDATE = "2022/11/16";
+	public final static String BASE_SUITEFILEVERSION = "1.26";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -219,6 +219,7 @@ public class public_data {
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
 	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
 	public final static String TASK_DEF_HOST_RESTART = "false"; //no Restart need
+	public final static String TASK_DEF_VIDEO_RECORD = "false"; // false, true
 	public final static long TASK_DEF_RESTART_IDENTIFY_THRESHOLD = 600;
 	public final static long TASK_DEF_RESTART_SYSTEM_THRESHOLD = 3600; //3600
     public final static String TASK_PRI_LOCALLY = "1"; 
