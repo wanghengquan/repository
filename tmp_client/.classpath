@@ -118,5 +118,13 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="D:/java_dev/lib/jna/jna-5.12.1.jar"/>
 	<classpathentry kind="lib" path="D:/java_dev/lib/jna/jna-platform-5.12.1.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/ffmpeg.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/javacpp.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/javacv.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/opencv.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/ffmpeg-platform.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/ffmpeg-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/ffmpeg-linux-x86_64.jar"/>
+	<classpathentry kind="lib" path="D:/java_dev/lib/javacv-1.5.8/javacv-platform.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

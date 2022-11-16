@@ -55,7 +55,7 @@ public class env_checker extends TimerTask {
 		String python_cmd = new String("");
 		python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
 		String cur_ver = version_info.get_python_version(python_cmd);
-		if (cur_ver.equals("unknown")) {
+		if (cur_ver.equals("NA")) {
 			ENV_CHECKER_LOGGER.warn("Get Python version error: unknown version");
 			return false;
 		}
@@ -213,7 +213,11 @@ public class env_checker extends TimerTask {
 		String python_cmd = new String("");
 		python_cmd = client_info.get_client_tools_data().getOrDefault("python", public_data.DEF_PYTHON_PATH);
 		String cur_ver = version_info.get_python_version(python_cmd);
-		switch_info.set_system_python_version(cur_ver);
+		if (cur_ver.equalsIgnoreCase("NA")){
+			ENV_CHECKER_LOGGER.warn("Wrong Python vertion got, will not update to client database.");
+		} else {
+			switch_info.set_system_python_version(cur_ver);
+		}
 	}
 	
 	public void run() {

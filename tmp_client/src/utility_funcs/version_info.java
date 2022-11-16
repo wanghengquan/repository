@@ -29,7 +29,7 @@ public class version_info {
 		String cmd = python_cmd + " --version ";
 		// Python 2.7.2
 		ArrayList<String> excute_retruns = new ArrayList<String>();
-		String ver_str = new String("unknown");
+		String ver_str = new String("NA");
 		try {
 			excute_retruns.addAll(system_cmd.run(cmd));
 		} catch (Exception e) {
@@ -50,7 +50,7 @@ public class version_info {
 				break;
 			}
 		}
-		if (ver_str.equals("unknown")){
+		if (ver_str.equals("NA")){
 			VERSION_INFO_LOGGER.warn("Got unknown Python version. command returns:");
 			for(String item: excute_retruns){
 				VERSION_INFO_LOGGER.warn(item);
