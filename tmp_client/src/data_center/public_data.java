@@ -28,8 +28,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.38"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21438; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.14.39"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21439; //version for code use
 	public final static String BASE_BUILDDATE = "2022/11/20";
 	public final static String BASE_SUITEFILEVERSION = "1.26";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -277,7 +277,6 @@ public class public_data {
 	public final static String DEF_STABLE_VERSION = "1"; // 1 get stable update, 0 get develop update
 	public final static String DEF_CLIENT_DEBUG_MODE = "0"; //1: Client run in debug mode
 	// preference
-	public final static String DEF_DEV_REALTIME_UPDATE = "1";// 1 update whenever there is a update, 0 wait for idle or client restart
 	public final static String DEF_INTERFACE_MODE = "gui"; // "gui", "cmd", "int"(interactive)
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial", parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
