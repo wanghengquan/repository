@@ -99,7 +99,10 @@ public class hall_manager extends Thread {
 		return waiters;
 	}
 
-	private void start_right_task_waiter(HashMap<String, task_waiter> waiters, int current_number) {
+	private void start_right_task_waiter(
+			HashMap<String, task_waiter> waiters, 
+			int current_number
+			) {
 		int right_number = current_number;
 		Set<String> waiter_set = waiters.keySet();
 		Iterator<String> waiter_it = waiter_set.iterator();
