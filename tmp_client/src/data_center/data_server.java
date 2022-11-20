@@ -264,7 +264,6 @@ public class data_server extends Thread {
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		preference_data.put("debug_mode", public_data.DEF_CLIENT_DEBUG_MODE);
 		preference_data.put("greed_mode", public_data.DEF_CLIENT_GREED_MODE);
-		preference_data.put("realtime_dev", public_data.DEF_DEV_REALTIME_UPDATE);
 		//the following three are for history name support
 		if(config_hash.get("tmp_preference").containsKey("work_path")){
 			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path").replaceAll("\\\\", "/"));
