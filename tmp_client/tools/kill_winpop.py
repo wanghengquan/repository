@@ -17,7 +17,7 @@ p_cancel = [re.compile('edif2ngd\.exe', re.I),
             re.compile('^error', re.I),
             re.compile('vlm\.exe', re.I),
             re.compile('pnmainc\.exe', re.I),
-            re.compile('pnmain\.exe', re.I),
+            #re.compile('pnmain\.exe', re.I),  --20221123,Jason: when 'PNMAIN_CONSOLE_DEBUG=1' enabled pnmain window will open
             re.compile('synbatch\.exe', re.I),
             re.compile('drive not ready', re.I),
             re.compile('sbtimer\.exe', re.I),
