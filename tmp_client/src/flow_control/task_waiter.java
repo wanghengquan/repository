@@ -1384,7 +1384,7 @@ public class task_waiter extends Thread {
 			) {
 		Boolean request = Boolean.valueOf(public_data.TASK_DEF_VIDEO_RECORD);
 		//by default squish case will be record
-		if(task_data.get("Software").containsKey("squish") && task_data.get("Environment").containsKey("SQUISH_RECORD")) {
+		if(task_data.get("Software").containsKey("squish") && task_data.get("Environment").containsKey(public_data.ENV_SQUISH_RECORD)) {
 			request = true;
 		}
 		if(task_data.get("Preference").containsKey("video_record")) {

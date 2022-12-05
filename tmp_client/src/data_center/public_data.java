@@ -28,8 +28,8 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.42"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21442; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.14.43"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21443; //version for code use
 	public final static String BASE_BUILDDATE = "2022/12/05";
 	public final static String BASE_SUITEFILEVERSION = "1.26";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -39,6 +39,10 @@ public class public_data {
 	public final static String BASE_PYTHONMAXVERSION = "4.0";
 	public final static String BASE_SVNBASEVERSION = "1.4";
 
+	// ========================
+	// Client sensitive environment list
+	public final static String ENV_SQUISH_RECORD = "CLIENT_SQUISH_RECORD";
+	
 	// ========================
 	// Software bin path
 	public final static String SW_HOME_PATH = get_home_path();
