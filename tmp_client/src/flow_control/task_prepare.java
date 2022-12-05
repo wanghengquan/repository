@@ -1187,6 +1187,8 @@ public class task_prepare {
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+		else if (launch_cmd.contains("run_vivado.py"))
+			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else
