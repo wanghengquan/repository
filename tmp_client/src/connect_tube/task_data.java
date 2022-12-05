@@ -620,7 +620,8 @@ public class task_data {
 	public Boolean register_case_to_processed_task_queues_map(
 			String queue_name, 
 			String case_id,
-			HashMap<String, HashMap<String, String>> case_data) {
+			HashMap<String, HashMap<String, String>> case_data
+			) {
 		rw_lock.writeLock().lock();
 		Boolean register_status = Boolean.valueOf(false);
 		TreeMap<String, HashMap<String, HashMap<String, String>>> queue_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();

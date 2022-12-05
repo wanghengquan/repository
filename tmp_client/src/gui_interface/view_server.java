@@ -785,8 +785,8 @@ public class view_server extends Thread {
 				return add_line;//non-tbd line which will be ignore
 			}
 		}		
-		if (design_data.get("ID").containsKey("id")) {
-			add_line.add(design_data.get("ID").get("id"));
+		if (design_data.get("ID").containsKey("id_index")) {
+			add_line.add(design_data.get("ID").get("id_index"));
 		} else {
 			add_line.add("NA");
 		}

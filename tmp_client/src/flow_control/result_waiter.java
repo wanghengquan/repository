@@ -784,6 +784,9 @@ public class result_waiter extends Thread {
 			hash_data.put("suiteId", task_data.get("ID").get("suite"));
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
+			if (task_data.get("ID").containsKey("breakpoint")) {
+				hash_data.put("breakpoint", task_data.get("ID").get("breakpoint"));
+			}
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
 			task_enum task_status = task_enum.OTHERS;
 			String task_reason = new String("NA");
