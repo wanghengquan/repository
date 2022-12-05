@@ -521,7 +521,8 @@ public class task_waiter extends Thread {
 	private HashMap<String, HashMap<String, String>> get_final_task_data(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data,
-			HashMap<String, String> client_preference_data) {
+			HashMap<String, String> client_preference_data
+			) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_task_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		HashMap<String, HashMap<String, String>> standard_case_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
@@ -696,7 +697,8 @@ public class task_waiter extends Thread {
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_standard_task_data(
-			HashMap<String, HashMap<String, String>> case_data) {
+			HashMap<String, HashMap<String, String>> case_data
+			) {
 		HashMap<String, HashMap<String, String>> formated_data = new HashMap<String, HashMap<String, String>>();
 		// ID format
 		HashMap<String, String> id_hash = new HashMap<String, String>();
@@ -1031,6 +1033,17 @@ public class task_waiter extends Thread {
 		if (case_data.containsKey("ID")) {
 			id_hash.putAll(case_data.get("ID"));
 		}
+		StringBuilder id_index = new StringBuilder();
+		id_index.append(case_data.get("ID").get("id"));
+		if (case_data.get("ID").containsKey("breakpoint")) {
+			String breakpoint = new String();
+			breakpoint = case_data.get("ID").get("breakpoint");
+			if(breakpoint != null) {
+				id_index.append("_");
+				id_index.append(breakpoint.split("\\s*,\\s*")[0]);
+			}
+		}
+		id_hash.put("id_index", id_index.toString());
 		default_data.put("ID", id_hash);
 		// CaseInfo format, 4 level override:
 		// default < configure < command line < task 
@@ -1130,7 +1143,7 @@ public class task_waiter extends Thread {
 		String tmp_result = public_data.WORKSPACE_RESULT_DIR;
 		String prj_name = "prj" + task_data.get("ID").get("project");
 		String run_name = "run" + task_data.get("ID").get("run");
-		String task_name = "T" + task_data.get("ID").get("id");
+		String task_name = "T" + task_data.get("ID").get("id_index");
 		String work_space = public_data.DEF_WORK_SPACE;
         String save_space = public_data.DEF_SAVE_SPACE;
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
@@ -1650,6 +1663,9 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, Object>> report_data = new HashMap<String, HashMap<String, Object>>();
 		HashMap<String, Object> hash_data = new HashMap<String, Object>();
 		String task_index = case_id + "#" + queue_name;
+		if (task_data.get("ID").containsKey("breakpoint")) {
+			hash_data.put("breakpoint", task_data.get("ID").get("breakpoint"));
+		}
 		hash_data.put("testId", task_data.get("ID").get("id"));
 		hash_data.put("suiteId", task_data.get("ID").get("suite"));
 		hash_data.put("runId", task_data.get("ID").get("run"));
@@ -1742,18 +1758,18 @@ public class task_waiter extends Thread {
 				run_invalid_tasks_data_jobs(queue_name, est_mem, cmds_parallel, greed_mode, admin_data);
 				continue;
 			}
-			// task 6 : get case_id, variable 4: case_id OK now
-			String case_id = new String(task_data.get("ID").get("id"));
-			if (case_id == null || case_id.equals("")){
+			// task 6 : get case_id, variable 4: case_id OK now, 12345, 12345_80_80
+			String case_index = new String(task_data.get("ID").get("id_index"));
+			if (case_index == null || case_index.equals("")){
 				run_invalid_case_id_jobs(queue_name, est_mem, cmds_parallel, greed_mode, admin_data, task_data);
 				continue;				
 			}
 			// task 7 : register task case to processed task queues map
-			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id, task_data);
+			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_index, task_data);
 			if (register_status) {
-				run_valid_register_status_jobs(queue_name, case_id);
+				run_valid_register_status_jobs(queue_name, case_index);
 			} else {
-				run_invalid_register_status_jobs(queue_name, case_id, est_mem, cmds_parallel, greed_mode, admin_data);
+				run_invalid_register_status_jobs(queue_name, case_index, est_mem, cmds_parallel, greed_mode, admin_data);
 				continue;// register false, someone register this case already.
 			}
 			// task 8 : get task info and case ready
@@ -1768,9 +1784,9 @@ public class task_waiter extends Thread {
 			int case_timeout = get_time_out(task_data.get("CaseInfo").get("timeout"));
 			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
 			// task 9 : launch reporting
-			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
+			run_pre_launch_reporting(queue_name, case_index, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){
-				run_invalid_task_prepare_jobs(queue_name, case_id, est_mem, cmds_parallel, greed_mode, admin_data);
+				run_invalid_task_prepare_jobs(queue_name, case_index, est_mem, cmds_parallel, greed_mode, admin_data);
 				continue;
 			} 
 			// task 10 : launch
@@ -1782,9 +1798,9 @@ public class task_waiter extends Thread {
 			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
 			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
 			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, greed_mode, client_info);
-			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout, record_request, record_object);
+			pool_info.add_sys_call(sys_call, queue_name, case_index, launch_path, case_path, design_url, est_mem, case_timeout, record_request, record_object);
 			client_info.decrease_registered_memory(est_mem);
-			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
+			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_index);
 		}
 	}
 
