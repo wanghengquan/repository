@@ -864,7 +864,7 @@ public class result_waiter extends Thread {
 			return report_data;
 		}
 		// <status>Passed</status>
-		Pattern p = Pattern.compile("<(.+?)>(.+?)</");
+		Pattern p = Pattern.compile("^\\s*<(.+?)>(.+?)</");
 		for (String line : cmd_output) {
 			Matcher m = p.matcher(line);
 			if (m.find()) {
