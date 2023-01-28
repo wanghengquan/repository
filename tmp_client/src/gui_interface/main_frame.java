@@ -198,7 +198,8 @@ public class main_frame extends JFrame {
 
     private void drag_import_local_task_data(
             String task_files,
-            String task_env){
+            String task_env
+            ){
         if (local_tube.suite_file_sanity_check(task_files)){
             MAIN_FRAME_LOGGER.warn("Importing suite file:" + task_files);
         } else {
