@@ -57,7 +57,9 @@ public class xls_parser {
 
 	}
 
-	private Workbook openWorkbook(File file) throws FileNotFoundException, IOException {
+	private Workbook openWorkbook(
+			File file
+			) throws FileNotFoundException, IOException {
 		FileInputStream fis = null;
 		try {
 			System.out.println(">>>Info: Opening workbook [" + file.getName() + "]");
@@ -328,6 +330,12 @@ public class xls_parser {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 			XLS_LOGGER.error("Error: xlsx file open error.");
+			return null;
+		} catch (Exception e) {
+			// e.printStackTrace();
+			XLS_LOGGER.error("Error: Excel file open error. Please confirm your Excel file:");
+			XLS_LOGGER.error("-> 1. Excel2007 format, file name end with .xlsx");
+			XLS_LOGGER.error("-> 2. Excel2003 format, file name end with .xls");
 			return null;
 		}
 		int sheet_number = workbook_obj.getNumberOfSheets();
