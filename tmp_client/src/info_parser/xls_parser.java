@@ -90,9 +90,9 @@ public class xls_parser {
 	}
 
 	private Workbook getWorkbook(int edition, InputStream in) throws IOException {
-		if (edition == 0) {
+		if (edition == Excel2003) {
 			return new HSSFWorkbook(in);
-		} else if (edition == 1) {
+		} else if (edition == Excel2007) {
 			return new XSSFWorkbook(in);
 		}
 		return null;

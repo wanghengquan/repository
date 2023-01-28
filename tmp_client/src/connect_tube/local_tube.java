@@ -75,6 +75,15 @@ public class local_tube {
 			System.out.println(">>>Error: Suite file not exists.");
 			return false;
 		}
+		//file extend check
+		String file_name = new String(xlsx_fobj.getName());
+		if (file_name.endsWith(".xls") || file_name.endsWith(".xlsx")) {
+			;
+		} else {
+			suite_file_error_msg = "Error: Suite file expanded-name issue, should be '.xls' or '.xlsx'";
+			System.out.println(">>>Error: Suite file expanded-name issue, should be '.xls' or '.xlsx'");
+			return false;
+		}
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		ExcelData.putAll(get_excel_data(file_path));
 		//check suite sheet
