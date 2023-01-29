@@ -1,0 +1,6 @@
+#ldc_set_location -site D7 [get_ports {D}] 
+#ldc_set_location -site C6 [get_ports {LSR}] 
+#ldc_set_location -site F9 [get_ports {CE}] 
+#ldc_set_location -site B1 [get_ports {CK}] 
+#ldc_set_location -site A7 [get_ports {Q}] 
+ldc_set_location -site R6C2D [get_cells {inst1*}] 

@@ -62,7 +62,7 @@ public class xls_parser {
 			) throws FileNotFoundException, IOException {
 		FileInputStream fis = null;
 		try {
-			System.out.println(">>>Info: Opening workbook [" + file.getName() + "]");
+			//System.out.println(">>>Info: Opening workbook [" + file.getName() + "]");
 			String[] file_name = file.getName().split("\\.");
 			int ExcelFormat = 0;
 			if (file_name[1].equalsIgnoreCase("xlsx")) {
@@ -111,7 +111,12 @@ public class xls_parser {
 	 * 
 	 * @return
 	 */
-	private List<List<String>> getExcelString(Workbook workbook, int startRow, int startCol, int indexSheet) {
+	private List<List<String>> getExcelString(
+			Workbook workbook, 
+			int startRow, 
+			int startCol, 
+			int indexSheet
+			) {
 		List<List<String>> stringTable = new ArrayList<List<String>>();
 		// get sheet object
 		Sheet sheet = workbook.getSheetAt(indexSheet);
@@ -315,7 +320,9 @@ public class xls_parser {
 		return null;
 	}
 
-	public Map<String, List<List<String>>> GetExcelData(String excel_file) {
+	public Map<String, List<List<String>>> GetExcelData(
+			String excel_file
+			) {
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		File xlsx_file = new File(excel_file);
 		Workbook workbook_obj = null;

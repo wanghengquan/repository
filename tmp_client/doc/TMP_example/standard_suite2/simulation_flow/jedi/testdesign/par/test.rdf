@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RadiantProject version="4.2" radiant="2023.1.t.175.0" title="test" device="LIFCL-40-8BG400C" performance_grade="8_High-Performance_1.0V" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="dsp"/>
+        <Source name="../source/dsp.v" type="Verilog" type_short="Verilog">
+            <Options top_module="dsp"/>
+        </Source>
+        <Source name="../sim/tb_dsp.v" type="Verilog" type_short="Verilog" syn_sim="SimOnly">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="test1.sty"/>
+</RadiantProject>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="counter" device="ITPA08-6UWG30C" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="LSE" default_strategy="Strategy1">
+        <Options/>
+        <Source name="source/count_attr.v" type="Verilog" type_short="Verilog">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="counter1.sty"/>
+</BaliProject>

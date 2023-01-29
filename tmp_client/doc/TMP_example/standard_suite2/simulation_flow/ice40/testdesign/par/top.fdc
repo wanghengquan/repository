@@ -1,0 +1,3 @@
+create_clock -name CK_c -period 10 [get_ports {CK}] 
+set_input_delay -clock CK_c  5 [all_inputs]
+set_output_delay -clock CK_c  4 [all_outputs] 
