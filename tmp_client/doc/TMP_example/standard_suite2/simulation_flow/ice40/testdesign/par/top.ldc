@@ -1,0 +1,4 @@
+create_clock -name {CK} -period 10 [get_ports CK]
+create_clock -name {vclk} -period 10
+set_input_delay -clock [get_clocks vclk] 5 [all_inputs]
+set_output_delay -clock [get_clocks vclk] 4 [all_outputs]

@@ -1,0 +1,9 @@
+[qa]
+rdf_file = testdesign/par/test.rdf
+
+[sim]
+tb_file = testdesign/sim/tb_dsp.v
+sim_top   = tb_dsp
+uut_name  = u_dsp
+sim_time  = 1 us 
+

@@ -1,0 +1,5 @@
+create_clock -period 16.330 -name i_clk [ get_ports { i_clk } ]
+#create_clock -name {clk1} -period 28.187 [get_nets {i2c_slave_u4/io_scl_N_200}]
+#set_clock_groups -group [get_clocks clk1] -group [get_clocks i_clk] -logically_exclusive
+
+

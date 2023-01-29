@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="top" device="LCMXO3D-9400HC-6TG144I" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="synplify" default_strategy="Strategy1">
+        <Options def_top="top"/>
+        <Source name="../source/top.v" type="Verilog" type_short="Verilog">
+            <Options top_module="top"/>
+        </Source>
+        <Source name="../sim/sim_tb.v" type="Verilog" type_short="Verilog" syn_sim="SimOnly">
+            <Options/>
+        </Source>
+        <Source name="rtl/rtl.spf" type="Simulation Project File" type_short="SPF">
+            <Options/>
+        </Source>
+        <Source name="rtl_sim/rtl_sim.spf" type="Simulation Project File" type_short="SPF">
+            <Options/>
+        </Source>
+        <Source name="top.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+        <Source name="../sim/sim.spf" type="Simulation Project File" type_short="SPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="top1.sty"/>
+</BaliProject>
