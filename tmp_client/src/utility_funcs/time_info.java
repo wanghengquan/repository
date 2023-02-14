@@ -24,6 +24,11 @@ public class time_info {
 		return formatter.format(new Date());
 	}
 
+	public static String get_short_year_date() {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd");
+		return formatter.format(new Date());
+	}
+	
 	public static String get_date_year() {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy");
 		return formatter.format(new Date());

@@ -380,7 +380,10 @@ public class file_action {
 		}
 	}
 	
-	public static List<String> get_key_path_list(String top_path, String key_pattern) {
+	public static List<String> get_key_path_list(
+			String top_path, 
+			String key_pattern
+			) {
 		key_file_list = new ArrayList<String>();
 		File top_path_obj = new File(top_path);
 		if (!top_path_obj.exists()){
@@ -390,7 +393,10 @@ public class file_action {
 		return key_file_list;
 	}
 	
-	public static void scan_directory2(File file, String key_pattern) {
+	public static void scan_directory2(
+			File file, 
+			String key_pattern
+			) {
 		File flist[] = file.listFiles();
 		if (flist == null || flist.length == 0) {
 		    return;

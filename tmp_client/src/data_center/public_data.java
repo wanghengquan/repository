@@ -28,9 +28,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.48"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21448; //version for code use
-	public final static String BASE_BUILDDATE = "2023/01/29";
+	public final static String BASE_CURRENTVERSION = "2.14.49"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21449; //version for code use
+	public final static String BASE_BUILDDATE = "2023/02/14";
 	public final static String BASE_SUITEFILEVERSION = "1.27";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -407,12 +407,12 @@ public class public_data {
 		build_name = build_name.replaceAll("\\?" + "cmd_1", "");
 		System.out.println(time_info.get_date_time());
         // <status>Passed</status>
-		String ttt = new String(" <status>Passed</status>");
-        Pattern p = Pattern.compile("status\\s*>\\s*(.+?)<");
+		String ttt = new String("711@t0r0_run_200979_20230119_170715");
+        Pattern p = Pattern.compile("(\\d{6})_\\d+$");
         Matcher m = p.matcher(ttt);
         if (m.find()) {
         	System.out.println(m.group(1));
-        }
+        } 
         Integer memory_est = Integer.valueOf(80);
         Integer memory_exp = Integer.valueOf(96);
         System.out.println(memory_est + memory_exp);
