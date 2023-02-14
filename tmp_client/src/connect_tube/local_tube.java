@@ -1384,7 +1384,8 @@ public class local_tube {
 			String generate_time,
 			String suite_path,
 			String work_space,
-			HashMap<String, String> imported_data){
+			HashMap<String, String> imported_data
+			){
 		//step 1:generate original case list
 		List<String> case_list = new ArrayList<String>();
 		case_list.addAll(get_case_list(suite_path, work_space, imported_data));
@@ -2000,6 +2001,8 @@ public class local_tube {
 			}
 		} else {
 			valid_case_list.addAll(case_list);
+			LOCAL_TUBE_LOGGER.info("Following case caught:");
+			LOCAL_TUBE_LOGGER.info(valid_case_list.toString());
 		}
 		if (!invalid_case_list.isEmpty()) {
 			LOCAL_TUBE_LOGGER.warn("Following case removed due to System reserved name impacting:");
@@ -2286,12 +2289,11 @@ public class local_tube {
 		HashMap<String, String> imported_data = new HashMap<String, String>();
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
-		imported_data.put("key", "run_info.ini");
-		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/test/radiant_suite/radiant_regression.xlsx", null, current_terminal);
+		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
 		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\standard_suite2\\radiant_regression.xlsx", imported_data, current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/tttt", "D:/tmp_work", imported_data);
+		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/qinhai_suite", "D:/tmp_work", imported_data);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*		

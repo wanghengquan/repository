@@ -621,9 +621,9 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private String get_earliest_task_date(List<String> queue_list){
-		String earlist_date = time_info.get_year_date();
+		String earlist_date = time_info.get_short_year_date();
 		for (String queue_name: queue_list){
-			String queue_date = get_date_srting(queue_name, "_(\\d+)_\\d+$");
+			String queue_date = get_date_srting(queue_name, "(\\d{6})_\\d+$");
 			if (queue_date.compareTo(earlist_date) < 0){
 				earlist_date = queue_date;
 			}
