@@ -310,7 +310,7 @@ public class upload_dialog extends JFrame{
 			if(jr_all_sheet.isSelected()) {
 				;
 			} else if (jr_lst_sheet.isSelected()) {
-				sheet_option = suite_sheets.replaceAll("\\s*,\\s*", " ").replaceAll("\\s*;\\s*", " ").trim();
+				sheet_option = suite_sheets.replaceAll("\\s*,\\s*", ",").replaceAll("\\s*;\\s*", ",").trim();
 			} else {
 				;
 			}
@@ -373,6 +373,7 @@ public class upload_dialog extends JFrame{
 				cmd_args.add("-s");
 				cmd_args.add(sheet_option);
 			}
+			cmd_args.add("-c");
 			cmd_args.add("-u");
 			cmd_args.add(user);
 			cmd_args.add("-p");
