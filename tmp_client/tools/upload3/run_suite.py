@@ -75,6 +75,8 @@ class FlowOptions(xLogger.Voice):
         if self.operation in ("upload", "agile"):
             self.macro_only = opts.macro_only
             self.suite_sheets = opts.suites
+            if self.suite_sheets:
+                self.suite_sheets = re.split(",", self.suite_sheets)
             self.username = opts.username
             self.password = opts.password
             self.testrail_api = testrailAPI.TestrailWrapper(username=self.username, password=self.password)
@@ -106,8 +108,8 @@ class FlowOptions(xLogger.Voice):
     def _add_other_options(sub_parser):
         _hlp = "handle cases that meet macro only, default is auto: 'no' if single suite sheet in Suite file else 'yes'"
         sub_parser.add_argument("-m", "--macro-only", choices=("yes", "no", "auto"), default="auto", help=_hlp)
-        _help = "specify suite sheet name(s), default is all suites"
-        sub_parser.add_argument("-s", "--suites", nargs="+", help=_help)
+        _help = "specify suite sheet name(s) with comma, example: suite_engine,suite_gui, default is all suites"
+        sub_parser.add_argument("-s", "--suites", help=_help)
         sub_parser.add_argument("-u", "--username", required=True, help="specify TMP username")
         sub_parser.add_argument("-p", "--password", required=True, help="specify TMP password")
 
@@ -690,6 +692,9 @@ class FlowSuite(FlowOptions):
                 _info = "---SECTION-- delete {section_name} in suite {suite_name}".format(**old_section_data)
                 self.say_info(_info)
                 self.testrail_api.delete_section(old_section_data.get("id"))
+        # ---- show suite_ids
+        for suite_key, new_suite_data in list(new_suite_dict.items()):
+            self.say_info("---- Suite_id: S{}, {}".format(new_suite_data.get("id"), suite_key))
 
 
 if __name__ == "__main__":
