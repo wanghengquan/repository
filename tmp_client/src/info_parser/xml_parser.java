@@ -161,6 +161,7 @@ public class xml_parser {
 			"<data>" + 
 				"<Sub name=\"request\" value=\"data\"></Sub>" +
 				"<Sub name=\"return\" value=\"data\"></Sub>" +
+			"</data>" +	
 		"</slave_data>";
 		Map<String, HashMap<String, HashMap<String, String>>> level1_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		Document xml_doc = null;
@@ -295,7 +296,7 @@ public class xml_parser {
 			}
 			String test_id = new String("");
 			test_id = level3_data.get("test_id");
-			if (test_id == null || test_id == "") {
+			if (test_id == null || test_id.equals("")) {
 				XML_PARSER_LOGGER.warn("Skip level3 data, wrong test_id value found.");
 				continue;
 			}

@@ -475,7 +475,7 @@ public class tube_server extends Thread {
 			
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
 			String imported_paths = imported_data.get("path");
-			for(String imported_path : imported_paths.split(",")){
+			for(String imported_path : imported_paths.split("\\s*,\\s*")){
 			    local_path_tube_parser.generate_suite_path_local_admin_task_queues(
 			    		imported_id, imported_path, work_space, imported_data);
 			}
@@ -507,7 +507,7 @@ public class tube_server extends Thread {
 			}
 			HashMap<String, String> imported_data = imported_map.get(imported_id);
 			String imported_files = imported_data.get("path");
-			for(String imported_file : imported_files.split(",")){
+			for(String imported_file : imported_files.split("\\s*,\\s*")){
 			    local_file_tube_parser.generate_suite_file_local_admin_task_queues(imported_id, imported_file, imported_data, terminal);
 			}
 			counter++;

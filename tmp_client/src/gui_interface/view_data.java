@@ -807,4 +807,25 @@ public class view_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	
+	public void set_watching_queue_data_default() {
+		rw_lock.writeLock().lock();
+		try {
+			watching_queue_data.clear();
+			Vector<Vector<String>> new_data = new Vector<Vector<String>>();
+			Vector<String> add_line = new Vector<String>();
+			add_line.add("No data found.");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			add_line.add("..");
+			new_data.add(add_line);
+			watching_queue_data.addAll(new_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
 }

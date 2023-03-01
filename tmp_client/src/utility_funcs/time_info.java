@@ -24,6 +24,11 @@ public class time_info {
 		return formatter.format(new Date());
 	}
 
+	public static String get_short_year_date() {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd");
+		return formatter.format(new Date());
+	}
+	
 	public static String get_date_year() {
 		SimpleDateFormat formatter = new SimpleDateFormat("MMddyy");
 		return formatter.format(new Date());
@@ -47,6 +52,11 @@ public class time_info {
 	public static String get_date_time() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmmss");
 		return formatter.format(new Date());
+	}
+	
+	public static String get_date_time(long milliseconds){
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd_HHmmss");
+		return formatter.format(new Date(milliseconds));
 	}
 	
 	public static String get_man_date_time() {
@@ -165,7 +175,7 @@ public class time_info {
 		System.out.println(System.currentTimeMillis() / 1000); 
 		System.out.println(get_time_stamp());
 		System.out.println(get_date_time());
-		System.out.println(get_timestamp_yyMMdd_HHmmss("210714_160500"));
-		System.out.println(get_timestamp());
+		System.out.println(get_timestamp_yyMMdd_HHmmss("220630_152150"));
+		System.out.println(get_date_time(1626249900));
 	}
 }

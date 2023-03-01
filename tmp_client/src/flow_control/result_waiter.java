@@ -9,15 +9,19 @@
  */
 package flow_control;
 
+import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import connect_tube.queue_attr;
 import connect_tube.task_data;
 import data_center.client_data;
 import data_center.public_data;
@@ -26,7 +30,9 @@ import gui_interface.view_data;
 import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.deep_clone;
+import utility_funcs.file_action;
 import utility_funcs.postrun_call;
+import utility_funcs.system_cmd;
 import utility_funcs.time_info;
 
 public class result_waiter extends Thread {
@@ -44,6 +50,7 @@ public class result_waiter extends Thread {
 	private switch_data switch_info;
 	private post_data post_info;
 	private task_report report_obj;
+	private DecimalFormat decimalformat = new DecimalFormat("0.00");
 	private String line_separator = System.getProperty("line.separator");
 	//private String file_separator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
@@ -288,14 +295,34 @@ public class result_waiter extends Thread {
 
 	private Boolean fresh_thread_pool_data(){
 		Boolean run_status = Boolean.valueOf(true);
+		ArrayList<String> mem_info = new ArrayList<String>();
+		HashMap<String,String> tools_data = new HashMap<String,String>();
+		tools_data.putAll(client_info.get_client_tools_data());
+		mem_info.addAll(get_current_tasks_memory_output(tools_data));
 		//fresh pool call map data
-		pool_info.fresh_sys_call(client_info.get_client_tools_data());
+		pool_info.fresh_sys_call(mem_info, tools_data);
 		post_info.fresh_postrun_call();
 		//clean post run map data (sys call map will be clean later)
 		clean_postrun_map_data();
 		//clean history send data
 		clean_history_send_data();
 		return run_status;
+	}
+	
+	private ArrayList<String> get_current_tasks_memory_output(
+			HashMap<String,String> tools_data
+			){
+		ArrayList<String> output_data = new ArrayList<String>();
+		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String run_cmd = new String(python_cmd + " " + public_data.TOOLS_MEM_CHECK);
+		try {
+			output_data.addAll(system_cmd.run(run_cmd, System.getProperty("user.dir")));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			output_data.add("Run Memory check error out.");
+		}
+		return output_data;
 	}
 	
 	private Boolean clean_history_send_data(){
@@ -340,16 +367,17 @@ public class result_waiter extends Thread {
 	}
 	
 	private Boolean release_resource_usage(){
-		//release software usage
+		//release software usage 
 		Boolean software_release = release_software_usage();
 		//release thread usage
-		Boolean thread_release = release_thread_usage();
+		Boolean thread_release = Boolean.valueOf(true);
+		thread_release = release_thread_usage();
 		if (software_release && thread_release){
 			return true;
 		} else 
 			return false;
 	}
-	
+
 	private Boolean release_software_usage() {
 		Boolean release_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
@@ -366,14 +394,18 @@ public class result_waiter extends Thread {
 			}
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
 			String case_id = (String) one_call_data.get(pool_attr.call_case);
+			String greed_mode = task_info.get_admin_queue_attribute_value(queue_name, queue_attr.GREED_MODE);
 			HashMap<String, HashMap<String, String>> case_data = task_info
 					.get_case_from_processed_task_queues_map(queue_name, case_id);
 			Boolean parallel_cmd = Boolean.valueOf(case_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL));
-			release_status = client_info.release_used_soft_insts(case_data.get("Software"), parallel_cmd);
+			//release non-greed mode only (greed mode released after system cmd run)
+			if(!greed_mode.equals("true")) {
+				release_status = client_info.release_used_soft_insts(case_data.get("Software"), parallel_cmd);
+			}
 		}
 		return release_status;
 	}
-
+	
 	private Boolean release_thread_usage() {
 		Boolean release_status = Boolean.valueOf(true);
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
@@ -411,48 +443,14 @@ public class result_waiter extends Thread {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
 			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);			
-			// only done call will be release. timeout call will be get in
-			// the next cycle(at that time status will be done)
 			if (!call_status.equals(call_state.DONE)) {
 				continue;
 			}
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			String memory_info = (String) one_call_data.get(pool_attr.call_expmem);
-			if(memory_info.contains(".")) {
-				memory_info = memory_info.split("\\.")[0];
-			}
-			if(memory_valid_check(memory_info)) {
-				task_info.update_client_run_case_summary_memory_map(queue_name, get_valid_memory_data(memory_info));
-			}
+			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM);
+			task_info.update_client_run_case_summary_memory_map(queue_name, call_mem);
 		}
 		return update_status;
-	}
-	
-	private Boolean memory_valid_check(
-			String memory_value
-			) {
-		Boolean status = Boolean.valueOf(true);
-		Integer value = Integer.valueOf(0);
-		try {
-			value = Integer.valueOf(memory_value);
-		} catch (NumberFormatException e) {
-			RESULT_WAITER_LOGGER.debug(memory_value + ", not a number");
-			return false;
-		}
-		if (value < 0) {
-			return false;
-		}
-		return status;
-	}
-	
-	private Integer get_valid_memory_data(
-			String memory_value
-			) {
-		Integer value = Integer.valueOf(memory_value);
-		if (value > Integer.valueOf(public_data.TASK_DEF_MAX_MEM_USG)) {
-			value = 16;
-		}
-		return value;
 	}
 	
 	private Boolean update_client_run_case_status_summary(
@@ -531,6 +529,7 @@ public class result_waiter extends Thread {
 			case_status.put("key_check", (String) case_report_map.get(call_index).get("key_check"));
 			case_status.put("location", (String) case_report_map.get(call_index).get("location"));
 			case_status.put("run_time", (String) case_report_map.get(call_index).get("run_time"));
+			case_status.put("used_mem", (String) case_report_map.get(call_index).get("used_mem"));
 			case_status.put("update_time", (String) case_report_map.get(call_index).get("update_time"));
             case_status.put("defects", (String) case_report_map.get(call_index).get("defects"));
             case_status.put("defects_history", (String) case_report_map.get(call_index).get("defects_history"));
@@ -617,7 +616,7 @@ public class result_waiter extends Thread {
 		StringBuilder loc_rpt = new StringBuilder();
         String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
         String lin_href = "<a href=file:///%s  target='_blank'>%s";		
-        String[] ori_paths = save_paths.split(",");
+        String[] ori_paths = save_paths.split("\\s*,\\s*");
         //get effective and unique paths
         ArrayList<String> uniq_paths = new ArrayList<String>();
         for(String path: ori_paths) {
@@ -627,9 +626,12 @@ public class result_waiter extends Thread {
         	if (path.startsWith("/lsh/")) {
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("/lsh/", "//lsh-smb02/").replace("\\", "/");
+        	} else if (path.startsWith("\\\\lsh-smb01\\")){
+        		match_str1 = ori_path.replace("\\", "/");
+        		match_str2 = ori_path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
         	} else if (path.startsWith("\\\\lsh-smb02\\")){
         		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
+        		match_str2 = ori_path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");        		
         	} else if (path.startsWith("/disks/")){
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("/disks/", "//ldc-smb01/").replace("\\", "/");
@@ -657,7 +659,7 @@ public class result_waiter extends Thread {
         for(String path: uniq_paths) {
             path = path.trim();
             String site = new String("");
-            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb02\\")) {
+            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb01\\") || path.startsWith("\\\\lsh-smb02\\")) {
             	site = "(LSH)";
             } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb01\\")) {
             	site = "(LSV)";
@@ -672,6 +674,14 @@ public class result_waiter extends Thread {
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
+            } else if (path.startsWith("\\\\lsh-smb01\\")) {
+            	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
+            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
+            	loc_rpt.append("</a>" + line_separator);
+            	path = path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
+            	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
+            	loc_rpt.append(String.format(lin_href, path, path));
+            	loc_rpt.append("</a>" + line_separator);
             } else if (path.startsWith("\\\\lsh-smb02\\")) {
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
@@ -679,7 +689,7 @@ public class result_waiter extends Thread {
             	path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
-            	loc_rpt.append("</a>" + line_separator);
+            	loc_rpt.append("</a>" + line_separator);            	
             } else if (path.startsWith("/disks/")){
             	//for LSV path, passed case will not be copy, so don't show link
             	if (status.equals(task_enum.PASSED)) {
@@ -775,14 +785,20 @@ public class result_waiter extends Thread {
 			hash_data.put("suiteId", task_data.get("ID").get("suite"));
 			hash_data.put("runId", task_data.get("ID").get("run"));
 			hash_data.put("projectId", task_data.get("ID").get("project"));
+			if (task_data.get("ID").containsKey("breakpoint")) {
+				hash_data.put("breakpoint", task_data.get("ID").get("breakpoint"));
+			}
 			hash_data.put("design", task_data.get("CaseInfo").get("design_name"));
 			task_enum task_status = task_enum.OTHERS;
 			String task_reason = new String("NA");
+			String case_dir = new String("NA");
 			String milestone = new String("NA");
 			String key_check = new String("NA");
 			String defects = new String("");
 			String defects_history = new String("NA");
 			String scan_result = "";
+			float used_mem = 0.0f;
+			float peak_mem = 0.0f;
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -792,16 +808,20 @@ public class result_waiter extends Thread {
 				} else {
 					task_status = get_task_status((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				}
-				task_reason = get_task_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output));
+				case_dir = (String) one_call_data.get(pool_attr.call_casedir);
+				task_reason = get_task_reason((ArrayList<String>) one_call_data.get(pool_attr.call_output), case_dir);
 				milestone = get_milestone_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				key_check = get_key_check_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects = get_defects_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				defects_history = get_defects_history_info((ArrayList<String>) one_call_data.get(pool_attr.call_output));
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
-				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));				
+				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));
+				used_mem = (float) one_call_data.get(pool_attr.call_maxmem);
 			}  else {
 				task_status = task_enum.PROCESSING;
+				used_mem = (float) one_call_data.get(pool_attr.call_curmem);
 			}
+			peak_mem = (float) one_call_data.get(pool_attr.call_maxmem);
 			hash_data.putAll(detail_report);
             hash_data.put("scan_result", scan_result);
 			hash_data.put("defects", defects);
@@ -814,6 +834,8 @@ public class result_waiter extends Thread {
 			long start_time = (long) one_call_data.get(pool_attr.call_gentime);
 			long current_time = System.currentTimeMillis() / 1000;
 			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
+			hash_data.put("used_mem", decimalformat.format(used_mem));
+			hash_data.put("peak_mem", decimalformat.format(peak_mem));
 			hash_data.put("update_time", time_info.get_man_date_time());
 			case_data.put(call_index, hash_data);
 		}
@@ -843,7 +865,7 @@ public class result_waiter extends Thread {
 			return report_data;
 		}
 		// <status>Passed</status>
-		Pattern p = Pattern.compile("<(.+?)>(.+?)</");
+		Pattern p = Pattern.compile("^\\s*<(.+?)>(.+?)</");
 		for (String line : cmd_output) {
 			Matcher m = p.matcher(line);
 			if (m.find()) {
@@ -901,7 +923,10 @@ public class result_waiter extends Thread {
 		return task_status;
 	}
 
-	private String get_task_reason(ArrayList<String> call_output) {
+	private String get_task_reason(
+			ArrayList<String> call_output,
+			String case_dir
+			) {
 		String reason = new String("NA");
 		if(call_output == null || call_output.isEmpty()){
 			return reason;
@@ -929,6 +954,21 @@ public class result_waiter extends Thread {
 				reason = reason_match.group(1);
 			}
 		}
+		// extra info from case_dir/console.log
+		String log_file = new String(case_dir + "/" + "console.log");
+		File log_frh = new File(log_file);
+		if (!log_frh.exists()) {
+			return reason;
+		}
+		List<String> file_lines = new ArrayList<String>();
+		file_lines.addAll(file_action.read_file_lines(log_file));
+		Pattern sense_patt = Pattern.compile("(error|fail).+?\\(screenshot.+?\\)\\s*?(.+?)$", Pattern.CASE_INSENSITIVE);
+		for (String line : file_lines) {
+			Matcher sense_match = sense_patt.matcher(line);
+			if (sense_match.find()) {
+				reason = sense_match.group(2);
+			}
+		}		
 		return reason;
 	}
 

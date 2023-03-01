@@ -10,6 +10,7 @@
 package data_center;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,10 +28,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.13.02"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21302; //version for code use
-	public final static String BASE_BUILDDATE = "2022/01/20";
-	public final static String BASE_SUITEFILEVERSION = "1.24";
+	public final static String BASE_CURRENTVERSION = "2.13.03"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21303; //version for code use
+	public final static String BASE_BUILDDATE = "2023/03/01";
+	public final static String BASE_SUITEFILEVERSION = "1.27";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -38,6 +39,10 @@ public class public_data {
 	public final static String BASE_PYTHONMAXVERSION = "4.0";
 	public final static String BASE_SVNBASEVERSION = "1.4";
 
+	// ========================
+	// Client sensitive environment list
+	public final static String ENV_SQUISH_RECORD = "CLIENT_SQUISH_RECORD";
+	
 	// ========================
 	// Software bin path
 	public final static String SW_HOME_PATH = get_home_path();
@@ -137,6 +142,7 @@ public class public_data {
 	public final static String TOOLS_KILL_PROCESS = SW_HOME_PATH + "/tools/kill_process.py";
 	public final static String TOOLS_KILL_WINPOP = SW_HOME_PATH + "/tools/kill_winpop.py";
 	public final static String TOOLS_EXP_CHECK = SW_HOME_PATH + "/tools/exp_check.py";
+	public final static String TOOLS_MEM_CHECK = SW_HOME_PATH + "/tools/mem_check.py";
 	public final static String TOOLS_OS_NAME = SW_HOME_PATH + "/tools/os_name.py";
 	public final static String TOOLS_GET_CPU = SW_HOME_PATH + "/tools/get_cpu.py";
 	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
@@ -149,7 +155,7 @@ public class public_data {
 	public final static String TOOLS_PUTTY = SW_HOME_PATH + "/tools/putty.exe";
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
 	public final static String TOOLS_UPLOAD2 = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
-	public final static String TOOLS_UPLOAD3 = SW_HOME_PATH + "/tools/upload3/excel2testrail.py";
+	public final static String TOOLS_UPLOAD3 = SW_HOME_PATH + "/tools/upload3/run_suite.py";
 
 	// ========================
 	// external documents based on software bin path
@@ -209,7 +215,7 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
-	public final static String TASK_DEF_ESTIMATE_MEM = "1"; //in G, 1G
+	public final static float TASK_DEF_ESTIMATE_MEM = 1.0f; //in G, 1G
 	public final static String TASK_DEF_MAX_MEM_USG = "16";
 	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
 	public final static String TASK_DEF_CMD_DECISION = "last"; //last, all, <indiviual cmd>, <indiviual cmds> join with Python:and,or
@@ -217,6 +223,7 @@ public class public_data {
 	public final static String TASK_DEF_RESULT_KEEP = "auto"; // auto, zipped, unzipped
 	public final static String TASK_DEF_MAX_THREADS = "0"; //no limitation
 	public final static String TASK_DEF_HOST_RESTART = "false"; //no Restart need
+	public final static String TASK_DEF_VIDEO_RECORD = "false"; // false, true
 	public final static long TASK_DEF_RESTART_IDENTIFY_THRESHOLD = 600;
 	public final static long TASK_DEF_RESTART_SYSTEM_THRESHOLD = 3600; //3600
     public final static String TASK_PRI_LOCALLY = "1"; 
@@ -235,7 +242,7 @@ public class public_data {
 	public final static int PERF_AUTO_ADJUST_CYCLE = 6;
 	public final static float PERF_GOOD_MEM_USAGE_RATE = 0.85f;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
-	public final static int PERF_SQUISH_WIN_MAX_MEM = 50;
+	public final static int PERF_SQUISH_WIN_MAX_MEM = 60;
 	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
 	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
@@ -278,7 +285,8 @@ public class public_data {
 	public final static String DEF_TASK_ASSIGN_MODE = "auto"; // "serial", parallel", "auto"
 	public final static String DEF_MAX_THREAD_MODE = "auto"; // "manual", "auto"
 	public final static String DEF_CLIENT_LINK_MODE = "both"; // "local","remote","both"
-	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","hold_case" 
+	public final static String DEF_CLIENT_CASE_MODE = "copy_case"; // "copy_case","hold_case"
+	public final static String DEF_CLIENT_GREED_MODE = "auto"; // "auto","true","false"
 	public final static String DEF_COPY_KEEP_PATH = "false";  //flatten copied case
 	public final static String DEF_COPY_LAZY_COPY = "false";
 	public final static String DEF_CLIENT_IGNORE_REQUEST = "null";//"all", "software", "system", "machine"
@@ -399,18 +407,20 @@ public class public_data {
 		build_name = build_name.replaceAll("\\?" + "cmd_1", "");
 		System.out.println(time_info.get_date_time());
         // <status>Passed</status>
-		String ttt = new String(" <status>Passed</status>");
-        Pattern p = Pattern.compile("status\\s*>\\s*(.+?)<");
+		String ttt = new String("711@t0r0_run_200979_20230119_170715");
+        Pattern p = Pattern.compile("(\\d{6})_\\d+$");
         Matcher m = p.matcher(ttt);
         if (m.find()) {
         	System.out.println(m.group(1));
-        }
+        } 
         Integer memory_est = Integer.valueOf(80);
         Integer memory_exp = Integer.valueOf(96);
         System.out.println(memory_est + memory_exp);
-        float rate = 0.85f;
+        float rate = 100.85456f;
         System.out.println(memory_exp * rate);
         Float available = Float.valueOf(memory_exp * rate);
         available.intValue();
+        DecimalFormat decimalformat = new DecimalFormat("0.00");
+        System.out.println(decimalformat.format(rate)); 
 	}
 }

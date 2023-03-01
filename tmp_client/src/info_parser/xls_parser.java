@@ -57,10 +57,12 @@ public class xls_parser {
 
 	}
 
-	private Workbook openWorkbook(File file) throws FileNotFoundException, IOException {
+	private Workbook openWorkbook(
+			File file
+			) throws FileNotFoundException, IOException {
 		FileInputStream fis = null;
 		try {
-			System.out.println(">>>Info: Opening workbook [" + file.getName() + "]");
+			//System.out.println(">>>Info: Opening workbook [" + file.getName() + "]");
 			String[] file_name = file.getName().split("\\.");
 			int ExcelFormat = 0;
 			if (file_name[1].equalsIgnoreCase("xlsx")) {
@@ -88,9 +90,9 @@ public class xls_parser {
 	}
 
 	private Workbook getWorkbook(int edition, InputStream in) throws IOException {
-		if (edition == 0) {
+		if (edition == Excel2003) {
 			return new HSSFWorkbook(in);
-		} else if (edition == 1) {
+		} else if (edition == Excel2007) {
 			return new XSSFWorkbook(in);
 		}
 		return null;
@@ -109,7 +111,12 @@ public class xls_parser {
 	 * 
 	 * @return
 	 */
-	private List<List<String>> getExcelString(Workbook workbook, int startRow, int startCol, int indexSheet) {
+	private List<List<String>> getExcelString(
+			Workbook workbook, 
+			int startRow, 
+			int startCol, 
+			int indexSheet
+			) {
 		List<List<String>> stringTable = new ArrayList<List<String>>();
 		// get sheet object
 		Sheet sheet = workbook.getSheetAt(indexSheet);
@@ -313,7 +320,9 @@ public class xls_parser {
 		return null;
 	}
 
-	public Map<String, List<List<String>>> GetExcelData(String excel_file) {
+	public Map<String, List<List<String>>> GetExcelData(
+			String excel_file
+			) {
 		Map<String, List<List<String>>> ExcelData = new HashMap<String, List<List<String>>>();
 		File xlsx_file = new File(excel_file);
 		Workbook workbook_obj = null;
@@ -328,6 +337,12 @@ public class xls_parser {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
 			XLS_LOGGER.error("Error: xlsx file open error.");
+			return null;
+		} catch (Exception e) {
+			// e.printStackTrace();
+			XLS_LOGGER.error("Error: Excel file open error. Please confirm your Excel file:");
+			XLS_LOGGER.error("-> 1. Excel2007 format, file name end with .xlsx");
+			XLS_LOGGER.error("-> 2. Excel2003 format, file name end with .xls");
 			return null;
 		}
 		int sheet_number = workbook_obj.getNumberOfSheets();

@@ -1,13 +1,23 @@
 import os
+from . import filelock
 import re
+import hashlib
 import sys
 import time
 import shlex
+import stat
 import shutil
 import configparser
+from collections import OrderedDict
 
 __author__ = 'syan'
 __version__ = '17:21 14/1/17'
+
+LINE_MARK = OrderedDict()
+LINE_MARK["dos"] = [r"\r\n", "\r\n"]
+LINE_MARK["unix"] = [r"\n", "\n"]
+LINE_MARK["mac"] = [r"\r", "\r"]
+
 
 def say_it(an_object, comments="", show=1):
     """
@@ -116,8 +126,8 @@ def get_conf_options(conf_files, key_lower=True):
             conf_options[section] = t_section
         return 0, conf_options
     except Exception as e:
-        print(("Error. Can not parse configuration file(s) %s" % conf_files))
-        print(e)
+        # print(("Error. Can not parse configuration file(s) %s" % conf_files))
+        # print(e)
         return 1, ""
 
 def get_fname(a_file):
@@ -169,6 +179,60 @@ def write_file(a_file, lines):
     """
     return append_file(a_file, lines, append=False)
 
+
+def get_file_format(a_file):
+    if os.path.isfile(a_file):
+        with open(a_file, "rb") as ob:
+            for line in ob:
+                line = repr(line)
+                for k, v in list(LINE_MARK.items()):
+                    if v[0] in line:
+                        return k
+
+
+def new_write_file(this_file, lines, append=False, file_format=""):
+    """Write/append a file
+    """
+    this_file = os.path.abspath(this_file)
+    this_dir = os.path.dirname(this_file)
+    ret = wrap_md(this_dir, "")
+    if ret:
+        return ret
+    if append and (not file_format):
+        file_format = get_file_format(this_file)
+    new_line = LINE_MARK.get(file_format)
+    if new_line:
+        new_line = new_line[1]
+    if new_line:
+        aw = "a+b" if append else "w+b"
+    else:
+        aw = "a" if append else "w"
+    if isinstance(lines, str):
+        lines = [lines]
+    for i in range(5):
+        try:
+            with open(this_file, aw) as file_ob:
+                for item in lines:
+                    if new_line:
+                        new_item = item + new_line
+                        new_item = new_item.encode(encoding="utf-8")
+                        file_ob.write(new_item)
+                    else:
+                        print(item, file=file_ob)
+            return
+        except IOError:
+            time.sleep(2.71)
+    return "Failed to open file: {}".format(this_file)
+
+
+def update_file(this_file, new_lines):
+    """Update a file and keep the original file format
+    """
+    file_format = get_file_format(this_file)
+    return new_write_file(this_file, new_lines, file_format=file_format)
+
+
+
 def generate_file(a_file, template_file, kwargs):
     """
     generate a file from a template file and its keywords arguments
@@ -179,6 +243,72 @@ def generate_file(a_file, template_file, kwargs):
         new_ob.write(line)
     new_ob.close()
 
+
+def add_license_control(ini_file):
+    return
+    p = re.compile("AllowLicenseControl=(.+)")
+    with open(ini_file) as ob:
+        for line in ob:
+            m = p.search(line)
+            if m:
+                if m.group(1) == "true":
+                    return  # do not change
+    ini_lines = open(ini_file).readlines()
+    with open(ini_file, "w") as ob:
+        for line in ini_lines:
+            if p.search(line):
+                continue
+            print(line, file=ob, end="")
+            if "[General]" in line:
+                print("AllowLicenseControl=true", file=ob)
+
+
+def safe_copy_file(_src, _dst, _force):
+    if os.path.isfile(_dst):
+        if _force:
+            try:
+                os.remove(_dst)
+            except:
+                pass
+        else:
+            return
+    try:
+        shutil.copy2(_src, _dst)
+        os.chmod(_dst, stat.S_IRWXU)
+    except:
+        print("Failed to copy {} to {}".format(_src, _dst))
+
+    if _dst.endswith(".setting.ini"):
+        add_license_control(_dst)
+
+
+def file_sha1(file_name, ignore_format=False, max_call_times=None):
+    """
+    get sha1 code for a file.
+    if ignore_format is True, will not calculate sha1 code for newline tag.
+    if the file is huge, will calculate sha1 core max_call_times at most to save time.
+    """
+    _FILE_SLIM = 65536  # read stuff in 64kb chunks!
+    call_times = 0
+    my_sha1 = hashlib.sha1()
+    with open(file_name, "rb") as ob:
+        while True:
+            data = ob.read(_FILE_SLIM)
+            if not data:
+                break
+            if ignore_format:
+                data = data.decode(encoding="utf-8")
+                data = data.replace("\r", '')
+                data = data.replace("\n", '')
+                data = data.encode(encoding="utf-8")
+            if max_call_times:
+                call_times += 1
+                if call_times > max_call_times:
+                    break
+            my_sha1.update(data)
+    return my_sha1.hexdigest()
+
+
 def wrap_cp_file(src, dst, force=True):
     """
     copy a file
@@ -187,25 +317,52 @@ def wrap_cp_file(src, dst, force=True):
     abs_dst = os.path.abspath(dst)
     if abs_src == abs_dst:
         return
-    try:
-        if os.path.isfile(abs_dst):
-            if force:
-                os.remove(abs_dst)
+    if os.path.isfile(abs_src) and os.path.isfile(abs_dst):
+        # change mode when OSError or PermissionError
+        for foo in (abs_src, abs_dst):
+            try:
+                with open(foo) as ob:
+                    pass
+            except:
+                os.chmod(foo, stat.S_IRWXU)
+        code_a, code_b = file_sha1(abs_src), file_sha1(abs_dst)
+        if code_a == code_b:
+            print("Message: same file for {}".format(abs_dst))
+            return
         else:
-            dst_dir = os.path.dirname(dst)
-            if wrap_md(dst_dir, "path"):
-                return 1
-        shutil.copy2(src, dst)
-    except Exception as e:
-        say_it("- Error. Not copy %s to %s" % (src, dst))
-        say_it("- %s" % e)
-        return 1
+            sts_a, options_a = get_conf_options(abs_src, key_lower=False)
+            sts_b, options_b = get_conf_options(abs_dst, key_lower=False)
+            if sts_a or sts_b:  # cannot parse options
+                pass
+            else:
+                will_copy = 0
+                for section_name, option_a_dict in list(options_a.items()):
+                    if will_copy:
+                        break
+                    option_b_dict = options_b.get(section_name, dict())
+                    for key, value_a in list(option_a_dict.items()):
+                        if key in ("RecentProjList", "LastProjPath", "LastFilePath", "RecentFileList"):
+                            continue
+                        value_b = option_b_dict.get(key)
+                        if value_a != value_b:
+                            will_copy = 1
+                            break
+                if not will_copy:
+                    return
+    copy_lock_file = os.path.splitext(abs_dst)[0] + ".lock"
+    dir_name = os.path.dirname(abs_dst)
+    if not os.path.isdir(dir_name):
+        wrap_md(dir_name, "layout_path")
+    print("[MSG] try to update {}".format(abs_dst))
+    filelock.safe_run_function(safe_copy_file, args=(abs_src, abs_dst, force), func_lock_file=copy_lock_file)
+
 
 def get_original_lines(a_file):
     bak_file = a_file + ".original_bak"
     if wrap_cp_file(a_file, bak_file, force=False):
         return 1
     return open(bak_file).readlines()
+
 
 def wrap_move_file_folder(src, dst):
     """
@@ -686,12 +843,125 @@ def get_environment(radiant_diamond, nt_lin, squish):
     return "\n".join(env_lines)
 
 
-if __name__ == "__main__":
-    print(get_relative_path("none.log", r"D:\lscc31057\diamond\3.1\active-hdl\Books", r"f:\Mike"))
+def set_lm_license_environment(root_file):
+    # DO NOt use .. to get the DEV path
+    root_file = os.path.abspath(root_file)
+    root_path = os.path.dirname(root_file)
+    for i in range(2):
+        root_path = os.path.dirname(root_path)
+
+    conf_file = os.path.join(root_path, "conf", "default.ini")
+    if not os.path.isfile(conf_file):
+        print("Warning. Not found {}".format(conf_file))
+        return 1
+    sts, options = get_conf_options(conf_file, key_lower=False)
+    d_env = options.get("environment", dict())
+    x = "AllowLicenseControl"
+    if d_env.get(x) in ("1", "yes", "true", "True"):
+        os.environ[x] = "1"
+    env_key = "LM_LICENSE_FILE"
+    my_env = d_env.get(env_key)
+    if my_env:
+        os.environ[env_key] = os.pathsep.join(my_env)
+    else:
+        print("Warning. Not found {} in {}".format(env_key, conf_file))
+        return 1
 
 
+IMG_PERL = ('testSettings->logScreenshotOnError(1);', 'testSettings->logScreenshotOnFail(1);')
 
 
+def _update_test_pl_file(design_path):
+    msg = "update test.pl in {}".format(design_path)
+    pl_files = list()
+    file_a = os.path.join(design_path, "test.pl")
+    if os.path.isfile(file_a):
+        pl_files.append(file_a)
+    for foo in os.listdir(design_path):
+        file_b = os.path.join(design_path, foo, "test.pl")
+        if os.path.isfile(file_b):
+            pl_files.append(file_b)
+    for pl in pl_files:
+        new_lines = list()
+        added = 0
+        with open(pl, encoding="utf-8") as ob:
+            for line in ob:
+                line_y = line.rstrip()
+                line_x = re.sub(r"\s", "", line)
+                if not line_x:
+                    if not added:
+                        new_lines.extend(IMG_PERL)
+                        added = 1
+                elif line_x in IMG_PERL:
+                    continue
+                new_lines.append(line_y)
+        sts = "Successfully" if added else "NO Changes!"
+        print("{}: {}".format(msg, sts))
+        update_file(pl, new_lines)
 
 
+def _remove_console_log_file(design_path):
+    log_file = os.path.join(design_path, "console.log")
+    if os.path.isfile(log_file):
+        log_file = os.path.realpath(log_file)
+        print("removing {}".format(log_file))
+        rm_with_error(log_file)
 
+
+def very_first_process(design_path):
+    _update_test_pl_file(design_path)
+    _remove_console_log_file(design_path)
+
+
+def sort_by_num(raw_string):
+    p = re.compile(r"_(\d+)")
+    m = p.search(raw_string)
+    if m:
+        return int(m.group(1))
+    else:
+        return 0
+
+
+def _printout_images_info(design_path):
+    """Show 9 pictures at most.
+       will try to print the newer file if exceed 9.
+    """
+    _max_pic_number = 8
+    images = dict()
+    for foo in os.listdir(design_path):
+        abs_foo = os.path.join(design_path, foo)
+        if os.path.isfile(abs_foo):
+            continue
+        if foo.endswith("Images"):
+            images.setdefault(foo, list())
+            for bar in os.listdir(abs_foo):
+                if bar.endswith(".png"):
+                    images[foo].append(bar)
+    if images:
+        for k, v in list(images.items()):
+            v.sort(key=sort_by_num, reverse=True)
+        nine_images = dict()
+        images_number = 0
+        for i in range(0, 10):
+            if images_number > _max_pic_number:
+                break
+            for k, v in list(images.items()):
+                nine_images.setdefault(k, list())
+                try:
+                    nine_images[k].append(v[i])
+                    images_number += 1
+                    if images_number > _max_pic_number:
+                        break
+                except IndexError:
+                    continue
+        say_it("")
+        say_it("Images Number: {}".format(images_number))
+        ii = 1
+        for kk, vv in list(nine_images.items()):
+            for foo in vv:
+                say_it("-PNG{}: {}/{}".format(ii, kk, foo))
+                ii += 1
+
+
+def ultimate_process(design_path):
+    _printout_images_info(design_path)

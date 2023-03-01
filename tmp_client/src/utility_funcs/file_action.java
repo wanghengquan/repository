@@ -105,27 +105,58 @@ public class file_action {
 	}
 
 	public static Boolean del_file_match_extension(
-			String run_path,
-			String extension
+			String path,
+			String ext
 			) {
-		File run_path_dobj = new File(run_path);
+		File path_dobj = new File(path);
 		FilenameFilter filter = new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
 				// TODO Auto-generated method stub
 				File test_file = new File(dir, name);
-				return test_file.isFile() && test_file.getName().endsWith(extension);
+				return test_file.isFile() && test_file.getName().endsWith(ext);
 			}
 		};
-		if (!run_path_dobj.exists()) {
-			FILE_ACTION_LOGGER.warn("run_path doesn't exists:" + run_path);
+		if (!path_dobj.exists()) {
+			FILE_ACTION_LOGGER.warn("Path doesn't exists:" + path);
 			return false;
 		}
-		if (!run_path_dobj.canWrite()) {
-			FILE_ACTION_LOGGER.warn("run_path doesn't writeable:" + run_path);
+		if (!path_dobj.canWrite()) {
+			FILE_ACTION_LOGGER.warn("Path doesn't writeable:" + path);
 			return false;
 		}
-		for(File file_obj:run_path_dobj.listFiles(filter)) {
+		for(File file_obj:path_dobj.listFiles(filter)) {
+			if(file_obj.canWrite()){
+				file_obj.delete();
+			} else {
+				FILE_ACTION_LOGGER.warn("Delete file failed:" + file_obj.getAbsolutePath());
+			}
+		}
+        return true;
+	}
+	
+	public static Boolean del_file_match_expression(
+			String path,
+			String exp
+			) {
+		File path_dobj = new File(path);
+		FilenameFilter filter = new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				// TODO Auto-generated method stub
+				File test_file = new File(dir, name);
+				return test_file.isFile() && test_file.getName().contains(exp);
+			}
+		};
+		if (!path_dobj.exists()) {
+			FILE_ACTION_LOGGER.warn("Path doesn't exists:" + path);
+			return false;
+		}
+		if (!path_dobj.canWrite()) {
+			FILE_ACTION_LOGGER.warn("Path doesn't writeable:" + path);
+			return false;
+		}
+		for(File file_obj:path_dobj.listFiles(filter)) {
 			if(file_obj.canWrite()){
 				file_obj.delete();
 			} else {
@@ -349,7 +380,10 @@ public class file_action {
 		}
 	}
 	
-	public static List<String> get_key_path_list(String top_path, String key_pattern) {
+	public static List<String> get_key_path_list(
+			String top_path, 
+			String key_pattern
+			) {
 		key_file_list = new ArrayList<String>();
 		File top_path_obj = new File(top_path);
 		if (!top_path_obj.exists()){
@@ -359,7 +393,10 @@ public class file_action {
 		return key_file_list;
 	}
 	
-	public static void scan_directory2(File file, String key_pattern) {
+	public static void scan_directory2(
+			File file, 
+			String key_pattern
+			) {
 		File flist[] = file.listFiles();
 		if (flist == null || flist.length == 0) {
 		    return;
@@ -468,7 +505,7 @@ public class file_action {
 	
 	public static String get_absolute_paths(
 			String raw_paths){
-		String [] path_list = raw_paths.split(",");
+		String [] path_list = raw_paths.split("\\s*,\\s*");
 		ArrayList<String> return_list = new ArrayList<String>();
 		for (String path: path_list){
 			if (path.contains("$")){

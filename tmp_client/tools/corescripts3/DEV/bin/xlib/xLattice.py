@@ -5,6 +5,7 @@ import glob
 import time
 import shutil
 import platform
+import getpass
 
 from . import xTools
 from . import xReport
@@ -12,6 +13,7 @@ from . import xLatticeDev
 from . import xCommandFlow
 from . import changeNames
 from . import utils
+from . import filelock
 from . import scan_radiant
 
 from . import yTimeout
@@ -142,6 +144,11 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
 
     @2016/10/18 ignore the failed export flow
     """
+    ldf_dict = parse_ldf_file(ldf_file, is_ng_flow)
+    impl_node = ldf_dict.get("impl")
+    bali_node = ldf_dict.get("bali")
+    name_list = (impl_node.get("title"), bali_node.get("title"), ldf_dict.get("macro_string"))
+
     if is_ng_flow:
         tcl_cmd = {key: value[1] for key, value in list(TCL_COMMAND.items())}
     else:
@@ -157,7 +164,14 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
         tcl_lines.append(tcl_cmd.get("save"))
     tcl_lines.append('set r 0')
     for (process, task) in process_task:
+        if is_ng_flow and process == "COMMAND":
+            for raw_cmd in task:
+                raw_cmd = raw_cmd.format(*name_list)
+                tcl_lines.append(raw_cmd)
+            continue
         if (not is_ng_flow) and task == "SynTrace":
+            task = ""
+        elif os.getenv("ENV_DEVICE_IS_APOLLO") and task == "SynTrace":
             task = ""
         elif task:
             task = "-task %s" % task
@@ -165,7 +179,7 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
         if process in ("Map", "Export", "PAR"):
             _line = "set r [catch {%s} msg]" % _line
             tcl_lines.append(_line)
-            tcl_lines.append('puts "$msg"')
+            # tcl_lines.append('puts "$msg"')
         else:
             tcl_lines.append(_line)
     tcl_lines.append('%s "%s"' % (tcl_cmd.get("save"), ldf_file))
@@ -335,6 +349,7 @@ class LatticeEnvironment:
         self.simrel_path = flow_options.get("simrel_path")
         self.debug = flow_options.get("debug")
         self.sim_vendor_name = ""
+        self.will_set_default_simulation_path = False
 
     def set_env_by_env_rtf(self):
         env_value = os.getenv("ENV", os.getenv("env"))
@@ -422,8 +437,20 @@ class LatticeEnvironment:
         sts = self.set_fe_env()
         if sts:
             return sts
+        self.change_path_env()
         # set environment for pre/post process
         self.set_pre_post_environment()
+
+    def change_path_env(self):
+        if self.will_set_default_simulation_path:
+            f_path = os.getenv("FOUNDRY")
+            f_root = os.path.dirname(f_path)
+            oem_path = "win32loem" if self.on_win else "linuxloem"
+            modelsim_path = os.path.join(f_root, "modeltech", oem_path)
+            if os.path.isdir(modelsim_path):
+                os.environ["PATH"] = os.pathsep.join([modelsim_path, os.getenv("PATH", "")])
+            else:
+                xTools.say_it("Waring. Not found default modelsim path: {}".format(modelsim_path))
 
     def set_pre_post_environment(self):
         """Will set environment for:
@@ -451,6 +478,8 @@ class LatticeEnvironment:
         if self.environment:
             for key, value in list(self.environment.items()):
                 env_key = key.upper()
+                if env_key == "ALLOWLICENSECONTROL":
+                    env_key = "AllowLicenseControl"
                 if type(value) is list:
                     value = os.pathsep.join(value)
                 if env_key in ("PATH", "LD_LIBRARY_PATH"):
@@ -575,6 +604,7 @@ class LatticeEnvironment:
             self.questasim_path = ""
             self.riviera_path = ""
             self.activehdl_path = ""
+            self.will_set_default_simulation_path = True
             return
         self.modelsim_path = self.flow_options.get("modelsim_path")
         self.questasim_path = self.flow_options.get("questasim_path")
@@ -656,13 +686,14 @@ class LatticeEnvironment:
         self.sim_map_vlg = xTools.get_true(self.flow_options, "sim_map_vlg")
         self.sim_map_vhd = xTools.get_true(self.flow_options, "sim_map_vhd")
         self.sim_par_vlg = xTools.get_true(self.flow_options, "sim_par_vlg")
+        self.sim_bit_vlg = xTools.get_true(self.flow_options, "sim_bit_vlg")
         self.sim_par_vhd = xTools.get_true(self.flow_options, "sim_par_vhd")
         self.sim_all = xTools.get_true(self.flow_options, "sim_all")
         self.will_run_sim = 0
         for item in (self.sim_all, self.sim_rtl,
                      self.sim_syn_vhd, self.sim_syn_vlg,
                      self.sim_map_vhd, self.sim_map_vlg,
-                     self.sim_par_vhd, self.sim_par_vlg):
+                     self.sim_par_vhd, self.sim_par_vlg, self.sim_bit_vlg):
             if item:
                 self.will_run_sim = 1
                 break
@@ -749,6 +780,18 @@ class UpdateLDF:
                 line = self.update_inc_path(line)
             line = line.rstrip()
             final_lines.append(line)
+        apb_flow = os.getenv("EXTERNAL_APB_FLOW")
+        if apb_flow:
+            p_change = re.compile(r'(device="ap6a00-\d+)-\d')
+            if str(apb_flow.strip()) in ("1", "yes"):
+                x = final_lines[:]
+                final_lines = list()
+                for foo in x:
+                    new_foo = p_change.sub(r"\g<1>-3", foo)
+                    if new_foo != foo:
+                        os.environ["PNMAIN_ENABLE_BITGEN"] = '1'   # for ng3_2apb apollo temporary flow
+                        os.environ["INNER_APB_FLOW"] = '1'
+                    final_lines.append(new_foo)
         xTools.write_file(self.final_ldf_file, final_lines)
 
     def copy_ngo_file_if_have(self):
@@ -1029,27 +1072,31 @@ class CreateDiamondProjectFile:
         if self.synthesis_done:
             return
         if self.src_files or self.edf_file or self.ldf_file:
+            self.flow_options["reusing"] = self.x_reusing = False
             if self.clean:
                 t = xTools.ChangeDir("../..")
                 xTools.remove_dir_without_error(self.dst_design)
                 xTools.wrap_md(self.dst_design, "Job Working Design Path")
                 t.comeback()
             else:
-                xTools.remove_dir_without_error(self.impl_dir)
+                # xTools.remove_dir_without_error(self.impl_dir)
+                self.flow_options["reusing"] = self.x_reusing = os.path.isfile(self.final_ldf_file)
+                if self.x_reusing:
+                    _msg = "Warning: Project {} already exists, ".format(self.final_ldf_file)
+                    xTools.say_it(_msg + "will reuse it and current results.")
             # can use tcl console
-            if self.copy_other_files():
-                return 1
-
-            if self.ldf_file:
-                sts = self.update_ldf_file()
-            else:
-                sts = self.generate_ldf_file()
-            if sts:
-                return 1
+            if not self.x_reusing:
+                if self.copy_other_files():
+                    return 1
+                if self.ldf_file:
+                    sts = self.update_ldf_file()
+                else:
+                    sts = self.generate_ldf_file()
+                if sts:
+                    return 1
             self.ldf_dict = parse_ldf_file(self.final_ldf_file, self.is_ng_flow)
             if not self.ldf_dict:
                 return 1
-            # xTools.say_it(self.ldf_dict)
             impl_node = self.ldf_dict.get("impl")
             self.impl_name = impl_node.get("title")
             if self.run_scuba:
@@ -1061,8 +1108,10 @@ class CreateDiamondProjectFile:
                 self.new_src_files = new_source_files[:]
             if self.change_names:
                 changeNames.change_names(self.ldf_dict.get("top"), self.ldf_dict.get("source"))
-            if not sts:
-                sts = self.add_strategy_and_synthesis()
+            sts = self.add_strategy_and_synthesis()
+            if os.getenv("USE_FE_BE_VENDOR") == "yes":
+                self.run_synthesis = False
+                self.flow_options["run_synthesis"] = False
             return sts
         else:
             if self.is_ng_flow:
@@ -1139,6 +1188,8 @@ class CreateDiamondProjectFile:
         my_update = UpdateLDF(real_ldf_file, self.final_ldf_file, self.empty_lpf, self.lpf_factor, self.copy_all)
         if my_update.process():
             return 1
+        if os.getenv("INNER_APB_FLOW"):
+            self.flow_options["run_export_bitstream"] = False  # Do NOT run
 
     def generate_ldf_file(self):
         if not self.is_ng_flow:
@@ -1273,11 +1324,13 @@ class CreateDiamondProjectFile:
                         print('        <Option name="top" value="%s"/>' % self.top_module, file=_t_ldf_ob)
                     print("    </Options>", file=_t_ldf_ob)
             _t_ldf_ob.close()
+
     def add_strategy_and_synthesis(self):
         # update diamond version in ldf file
-        current_version, small_version = get_diamond_version()
-        if update_diamond_version(self.final_ldf_file, current_version):
-            return 1
+        if not self.x_reusing:
+            current_version, small_version = get_diamond_version()
+            if update_diamond_version(self.final_ldf_file, current_version):
+                return 1
         if self.scuba_type:
             if self.sim_others:
                 pass
@@ -1358,13 +1411,10 @@ class CreateDiamondProjectFile:
                 self.set_strategy = re.split(",", self.set_strategy)
             for item in self.set_strategy:
                 item = item.strip()
-                # remove brace
-                #if item.startswith("par_cmdline_args"):
-                #    item = "{%s}" % item
                 add_lines.append('%s %s' % (pre_set, item))
         if self.is_ng_flow:
             # generate lsedata in scripts mode
-            p_sty_file = re.compile('name="{}"\s+file="(.+)"'.format(sty_name))
+            p_sty_file = re.compile(r'name="{}"\s+file="(.+)"'.format(sty_name))
             _this_impl = self.ldf_dict.get("impl", dict()).get("dir", "implDir")
             _this_title = self.ldf_dict.get("bali", dict()).get("title", "title")
             sty_file = ""
@@ -1374,15 +1424,18 @@ class CreateDiamondProjectFile:
                     if m_sty_file:
                         sty_file = m_sty_file.group(1)
             old_str = ""
-            if sty_file and os.path.exists(sty_file):     #jason updated 2019/11/15
-                p_old_str = re.compile('"PROP_LST_CmdLineArgs"\s+value="([^"]+)"')
+            if sty_file and os.path.exists(sty_file):
+                p_old_str = re.compile(r'"PROP_LST_CmdLineArgs"\s+value="([^"]+)"')
                 with open(sty_file) as ob:
                     for line in ob:
                         m_old_str = p_old_str.search(line)
                         if m_old_str:
                             old_str = m_old_str.group(1)
                             break
-            add_lines.append('%s {lse_cmdline_args=%s -udb %s_%s_rtl.udb}' % (pre_set, old_str, _this_title, _this_impl))
+            new_str = " -udb %s_%s_rtl.udb" % (_this_title, _this_impl)
+            if old_str.strip() == new_str.strip():
+                new_str = ""
+            add_lines.append('%s {lse_cmdline_args=%s%s}' % (pre_set, old_str, new_str))
             # set syn/map/par trce report format
             add_lines.append('%s {syntrce_report_format=Diamond Style}' % pre_set)
             add_lines.append('%s {maptrce_report_format=Diamond Style}' % pre_set)
@@ -1399,12 +1452,17 @@ class CreateDiamondProjectFile:
             x_syn = "prj_run Synthesis {} -forceOne"
         elif self.sim_rtl:
             if self.sim_others:
-                x_syn = "prj_run Synthesis {} -forceOne"
+                if not self.x_reusing:
+                    x_syn = "prj_run Synthesis {} -forceOne"
         elif self.is_ng_flow:
-            if self.flow_options.get("gen_pdc"):
-                x_syn = "prj_run Synthesis {} -forceOne"
+            if not self.x_reusing:
+                if self.flow_options.get("gen_pdc"):
+                    x_syn = "prj_run Synthesis {} -forceOne"
         if x_syn:
-            st = "-task SynTrace " if self.is_ng_flow else ""
+            if os.getenv("ENV_DEVICE_IS_APOLLO"):
+                st = ""
+            else:
+                st = "-task SynTrace " if self.is_ng_flow else ""
             add_lines.append(x_syn.format(st))
 
         add_lines.append('%s "%s"' % (self.tcl_cmd.get("save"), self.final_ldf_file))
@@ -1420,6 +1478,7 @@ def parse_ldf_file(ldf_file, for_radiant):
     from . import readXML
     return readXML.parse_ldf_file(ldf_file=ldf_file, for_radiant=for_radiant)
 
+
 def get_task_list(flow_options, user_options, donot_infer_options=True):
     task_list = list()
     till_map = flow_options.get("till_map")
@@ -1429,9 +1488,24 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
     else:
         if flow_options.get(x) or user_options.get(x):
             user_options["run_map_trace"] = 1
-            user_options["run_synthesis"] = 1
+            if os.getenv("USE_FE_BE_VENDOR") != "yes":
+                user_options["run_synthesis"] = 1
+    special_command_lines = list()
+    special_command_lines.append("# ----- Radiant Post-Synthesis Simulation File")
+    special_command_lines.append("set TIME_start [clock clicks -milliseconds]")
+    x = 'log2sim -w -o ./{0}/{1}_{0}_syn.vo {2} ./{0}/{1}_{0}_syn.udb'
+    special_command_lines.append('exec %s' % x)
+    special_command_lines.append("after 1000")  # avoid 0
+    special_command_lines.append("set TIME_taken [expr ([clock clicks -milliseconds] - $TIME_start)/1000]")
+    special_command_lines.append('set LOG [open "log2sim.log" "w"];')
+    special_command_lines.append('puts $LOG "%s"' % x)
+    special_command_lines.append('puts $LOG "Elapsed Time: $TIME_taken seconds"')
+    special_command_lines.append('close $LOG;')
+    special_command_lines.append("# -----")
+
     for (task_name, task_cmd) in [
         ["synthesis",       ["Synthesis", "SynTrace"]],
+        ["syn_backanno",    ["COMMAND", special_command_lines]],
         ["translate",       ["Translate", ""]],
         ["map",             ["Map", ""]],
         ["map_trace",       ["Map", "MapTrace"]],
@@ -1452,6 +1526,9 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
     ]:
         if till_map and task_name == "par":
             break
+        if task_name == "synthesis":
+            if os.getenv("USE_FE_BE_VENDOR") == "yes":
+                continue
         option_name = "run_%s" % task_name
         if flow_options.get(option_name) or user_options.get(option_name):
             task_list.append(task_cmd)
@@ -1463,7 +1540,8 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
 
 
 def no_space(a_string):
-    return re.sub("\s+", "", a_string)
+    return re.sub(r"\s+", "", a_string)
+
 
 flow_support_dict = dict()
                   # Family                            # Jedec  # Bitstream
@@ -1733,7 +1811,10 @@ class RunTclFlow:
         user_options = dict()
         if self.till_map:
             return self._run_till_map_flow()
-        dnio = False if self.is_ng_flow else True
+        if self.flow_options.get("reusing"):
+            dnio = True
+        else:
+            dnio = False if self.is_ng_flow else True
         task_list = get_task_list(self.flow_options, user_options, donot_infer_options=dnio)
         if self.synthesis_only:
             return
@@ -1853,7 +1934,7 @@ class RunTclFlow:
             if self.skip(ii): continue
             run_mark = "Target_seed_%02d" % seed
             xTools.say_it("--Launch Test flow: %s" % run_mark)
-            process_task = get_task_list(self.flow_options, dict(run_par_trace=1))
+            process_task = get_task_list(self.flow_options, dict(run_par=1, run_par_trace=1))
 
             pre_set = "%s -strategy %s" % (self.tcl_cmd.get("set_sty_val"), self.sty_name)
             flow_settings = ["%s par_place_iterator_start_pt=%d par_save_best_result=1" % (pre_set, seed)]
@@ -2365,7 +2446,7 @@ def run_scuba_flow(source_list, run_scuba, conf_options):
     return 0, new_source_list
 
 
-def run_pre_post_process(base_path, pp_scripts):
+def _run_pre_post_process(base_path, pp_scripts):
     """
     add function for getting the real scripts if it has command arguments
     """
@@ -2389,3 +2470,23 @@ def run_pre_post_process(base_path, pp_scripts):
     sts = os.system(cmd_line)
     _recov.comeback()
     return sts
+
+
+def run_pre_post_process(base_path, pp_scripts):
+    args = (base_path, pp_scripts)
+    user = getpass.getuser()
+    if sys.platform.startswith("win"):
+        lock_file_path = os.path.join(r"C:\Users\%s\AppData\Roaming\custom_lock" % user)
+    else:
+        lock_file_path = "/users/%s/.config/custom_lock" % user
+    if not os.path.isdir(lock_file_path):
+        try:
+            os.makedirs(lock_file_path)
+        except:
+            xTools.say_it("Error. cannot create folder: {}".format(lock_file_path))
+            return _run_pre_post_process(*args)
+    my_lock_file = os.path.join(lock_file_path, "_lock_pre_post_process")
+    try:
+        filelock.safe_run_function(_run_pre_post_process, args=args, func_lock_file=my_lock_file, timeout=1200)
+    except:
+        _run_pre_post_process(*args)

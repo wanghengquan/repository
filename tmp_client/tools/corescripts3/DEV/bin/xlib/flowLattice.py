@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import shutil
 import glob
 import configparser
 
@@ -15,6 +16,7 @@ from . import xCommandFlow
 from . import xiCEcube2
 from . import xDMSsta
 from . import qas
+from . import utils
 
 __author__ = 'syan'
 
@@ -40,10 +42,8 @@ class FlowLattice(XOptions):
         xTools.add_cmd_line_history(log_file)
         xTools.append_file(log_file, head_lines + play_lines)
         os.environ["BQS_L_O_G"] = log_file
-        xTools.remove_license_setting(phase="LATTICE_LICENSE:")
         _recov = xTools.ChangeDir(self.dst_design)
         sts = 0
-
         if self.scan_only:
             self.scan_report()
             self.check_only = True
@@ -58,6 +58,11 @@ class FlowLattice(XOptions):
                 pass
             else:
                 sts = self.create_env_setter()
+        try:
+            xTools.remove_license_setting(phase="LATTICE_LICENSE_WINREG_OR_FLEXLMRC")
+        except:
+            pass  # DO not care
+        utils.add_license_control()
         if not sts:
             sts = self.merge_local_options()
 
@@ -115,7 +120,7 @@ class FlowLattice(XOptions):
 
         if self.post_process:
             xLattice.run_pre_post_process(self.src_design, self.post_process)
-
+        self.copy_to_another_location_if_needed()
         if self.run_ice:
             final_sts = sts
         else:
@@ -134,8 +139,7 @@ class FlowLattice(XOptions):
         _recov.comeback()
         return final_sts
 
-    @staticmethod
-    def run_final_closing_flow():
+    def run_final_closing_flow(self):
         # current working directory: $design/_scratch
         # 1. stop Simrel inner flow
         timeout_file = "../_timeout.py"
@@ -144,7 +148,7 @@ class FlowLattice(XOptions):
         if line_m:
             m = line_m[1]
             nc_stop_line = m.group(1)
-            print(("Executing command <{}>".format(nc_stop_line)))
+            print(("Try to kill Simrel process: {}".format(nc_stop_line)))
             os.system(nc_stop_line)
         # end of 1.
 
@@ -258,6 +262,12 @@ class FlowLattice(XOptions):
         xTools.say_raw(text)
 
     def run_check_flow(self, dump_only=0):
+        if not dump_only:
+            _do_not_check = self.scripts_options.get("no_check")
+            if _do_not_check:
+                sts, text = 200, ("Not executed check flow, always return Passed", "Final check status: 200", "Passed")
+                xTools.say_it(text)
+                return sts
         report_path = self.scripts_options.get("cwd")
         if not self.check_rpt:
             report = "check_flow.csv"
@@ -274,6 +284,9 @@ class FlowLattice(XOptions):
         if not dump_only:
             xx = self.original_options.get("check_sections")
             yy = self.original_options.get("check_smart")
+            if os.getenv("INNER_APB_FLOW"):
+                yy = True
+                self.original_options["run_export_bitstream"] = False
             new_args = list()
             if not (xx or yy):
                 new_args.append("check_normal")
@@ -296,9 +309,12 @@ class FlowLattice(XOptions):
                     project_files = glob.glob(os.path.join(self.job_dir, self.design, self.tag, "*.*df"))
                     if not project_files:
                         pass
-                    got_name = xTools.simple_parser(project_files[0], [re.compile('synthesis="([^"]+)"')])
-                    if got_name:
+                    try:
+                        got_name = xTools.simple_parser(project_files[0], [re.compile('synthesis="([^"]+)"')])
                         new_args.append(got_name[1].group(1))
+                    except:
+                        new_args.append("lse")
+
             cmd_kwargs["preset_options"] = "--preset-options={}".format("+".join(new_args))
         cmd_kwargs["top_dir"] = "--top-dir=%s" % self.job_dir
         cmd_kwargs["design"] = "--design=%s" % self.design
@@ -455,11 +471,6 @@ class FlowLattice(XOptions):
                 return 1
             if self.scuba_only:
                 return 1
-        gen_ip_sts = None
-        if self.is_ng_flow and self.run_ipgen:
-            gen_ip_sts = self.run_ipgen_for_radiant()
-        if gen_ip_sts:
-            return 1
         if self.info_file_name:
             t = os.path.join(self.src_design, self.info_file_name)
             if xTools.not_exists(t, "user specified info file"):
@@ -554,6 +565,17 @@ class FlowLattice(XOptions):
         except:
             pass
         xTools.say_it(self.scripts_options, "Final Options", self.debug)
+        if self.is_ng_flow:
+            gen_ip_sts = None
+            if self.is_ng_flow and self.run_ipgen:
+                _info = self.scripts_options.get("info")
+                rdf_file = self.scripts_options.get("rdf_file", "NotFound_rdf")
+                info_dir = os.path.dirname(_info) if os.path.isfile(_info) else os.getcwd()
+                abs_rdf_file = xTools.get_abs_path(rdf_file, info_dir)
+                gen_ip_sts = self.run_ipgen_for_radiant(abs_rdf_file)
+            if gen_ip_sts:
+                return 1
+
 
     def generate_check_conf_file(self, real_info_file):
         """
@@ -689,14 +711,15 @@ class FlowLattice(XOptions):
             new_postsyn_command = " ".join(new_cmd_list)
             xTools.run_command(new_postsyn_command, "new_postsyn.log", "new_postsyn.time")
 
-    def run_ipgen_for_radiant(self):
+    def run_ipgen_for_radiant(self, abs_rdf_file):
         for a, b, c in os.walk(self.src_design):
             for item in c:
                 if item.endswith(".sbx"):
                     self.sbx_file = os.path.join(a, item)
                 elif item.endswith(".cfg"):
                     _cfg = os.path.join(a, item)
-                    my_ipgen = xRadiantIPgen.UpdateRadiantIP(_cfg, self.sbx_file, os.path.dirname(os.getenv("FOUNDRY")))
+                    my_ipgen = xRadiantIPgen.UpdateRadiantIP(_cfg, self.sbx_file, self.scripts_options, abs_rdf_file,
+                                                             os.path.dirname(os.getenv("FOUNDRY")))
                     if my_ipgen.process():
                         return 1
 
@@ -741,3 +764,16 @@ class FlowLattice(XOptions):
                                 break
                     _this_recov.comeback()
         return sts
+
+    def copy_to_another_location_if_needed(self):
+        bak_tag = self.scripts_options.get("bak_tag")
+        if bak_tag:
+            tag_dir = os.path.join(os.path.dirname(self.dst_design), bak_tag)
+            msg = "copy {} to {}".format(self.dst_design, tag_dir)
+            if os.path.isdir(tag_dir):
+                xTools.remove_dir_without_error(tag_dir)
+            try:
+                shutil.copytree(self.dst_design, tag_dir)
+                print("Success: {}".format(msg))
+            except:
+                print("Failed: {}".format(msg))

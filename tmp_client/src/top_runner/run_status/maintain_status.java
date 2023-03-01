@@ -87,10 +87,8 @@ public class maintain_status extends abstract_status {
 				break;
 			case update:
 				client.STATUS_LOGGER.warn(">>>Update: Begin to update DEV...");
-				Boolean update_status = implements_core_script_update();
-				if (update_status){
-					client.switch_info.set_core_script_update_request(false);
-				} 
+				implements_core_script_update();
+				client.switch_info.set_core_script_update_request(false);
 				break;
 			case environ:
 				client.STATUS_LOGGER.warn(">>>Environ: Begin to propagate env issue...");
@@ -148,36 +146,24 @@ public class maintain_status extends abstract_status {
 	private Boolean implements_core_script_update(){
 		//confirm remote corescript linked
 		if (!client.switch_info.get_remote_corescript_linked()) {
-			client.STATUS_LOGGER.info("CoreScript update...SKIPPED");
+			client.STATUS_LOGGER.info("CoreScript update...SKIPPED, SVN link issue.");
 			return false;
 		}
-		//confirm no test case running
-		int counter = 0;
-		while(true){
-			counter++;
-			if(counter > 10){
-				client.STATUS_LOGGER.warn("CoreScript update...FAILED");
-				return false;
-			}
-			if (client.pool_info.get_pool_used_threads() > 0){
-				try {
-					Thread.sleep(1000 *60);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				continue;
-			} else {
-				break;
-			}
+		//wait a moment to make sure all task waiter go to sleep
+		try {
+			Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		//start update
 		core_update my_core = new core_update(client.client_info);
 		Boolean update_status = my_core.update();
 		if (update_status){
 			client.STATUS_LOGGER.info("CoreScript update...PASS");
 			return update_status;
 		}
-		client.STATUS_LOGGER.info("CoreScript update...FAILED");
+		client.STATUS_LOGGER.info("CoreScript update...FAILED, try to propagate it.");
 		HashMap<String, String> machine_data = new HashMap<String, String>();
 		machine_data.putAll(client.client_info.get_client_machine_data());
 		HashMap<String, String> preference_data = new HashMap<String, String>();
@@ -188,7 +174,7 @@ public class maintain_status extends abstract_status {
 			if(preference_data.get("interface_mode").equals("gui")){
 				client.view_info.set_corescript_update_apply(true);
 			} else {
-				client.STATUS_LOGGER.warn("Manually CoreScript update needed...");
+				client.STATUS_LOGGER.warn("Manual CoreScript update needed...");
 				try {
 					Thread.sleep(1000 * public_data.PERF_THREAD_BASE_INTERVAL);
 				} catch (InterruptedException e) {
@@ -217,13 +203,13 @@ public class maintain_status extends abstract_status {
 	}	
 	
 	private void send_core_script_update_issue_info(){
-		String subject = new String("TMP Client: Core Script update issue, manually check needed.");
+		String subject = new String("TMP Client: Core Script update issue, manual check needed.");
 		String to_str = client.client_info.get_client_preference_data().get("opr_mails");
 		String line_separator = System.getProperty("line.separator");
 		StringBuilder message = new StringBuilder("");
 		message.append("Hi all:" + line_separator);
-		message.append("    TMP client get Core Script update issue, manually check needed." + line_separator);
-		message.append("    TMP client will suspended before this issue removed:" + line_separator);
+		message.append("    TMP client get Core Script update issue, manual check needed." + line_separator);
+		message.append("    TMP client will run with existing Core Script continuously." + line_separator);
 		message.append("    Possible reason are: Core script locked" + line_separator);
 		message.append("    " + line_separator);
 		message.append("    Time:" + time_info.get_date_time() + line_separator);
@@ -612,10 +598,10 @@ public class maintain_status extends abstract_status {
 				client.STATUS_LOGGER.warn("Task file removed:" + task_path);
 			}
 			// delete results in disk
-			String tmp_result_dir = public_data.WORKSPACE_RESULT_DIR;
+			String tmp_result = public_data.WORKSPACE_RESULT_DIR;
 			String prj_dir_name = "prj" + admin_data.get("ID").get("project");
 			String run_dir_name = "run" + admin_data.get("ID").get("run");
-			String[] path_array = new String[] { work_space, tmp_result_dir, prj_dir_name, run_dir_name };
+			String[] path_array = new String[] { work_space, tmp_result, prj_dir_name, run_dir_name };
 			String file_seprator = System.getProperty("file.separator");
 			String result_url = String.join(file_seprator, path_array);	
 			File result_url_fobj = new File(result_url);
@@ -635,9 +621,9 @@ public class maintain_status extends abstract_status {
 	}
 	
 	private String get_earliest_task_date(List<String> queue_list){
-		String earlist_date = time_info.get_year_date();
+		String earlist_date = time_info.get_short_year_date();
 		for (String queue_name: queue_list){
-			String queue_date = get_date_srting(queue_name, "_(\\d+)_\\d+$");
+			String queue_date = get_date_srting(queue_name, "(\\d{6})_\\d+$");
 			if (queue_date.compareTo(earlist_date) < 0){
 				earlist_date = queue_date;
 			}

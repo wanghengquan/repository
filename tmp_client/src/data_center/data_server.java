@@ -138,7 +138,7 @@ public class data_server extends Thread {
 		}
 		Pattern path_patt = Pattern.compile(tool, Pattern.CASE_INSENSITIVE);
 		for (String line : excute_retruns){
-		    if(line == null || line == "")
+		    if(line == null || line.equals(""))
 		        continue;
 		    if(line.contains("which")){
 		    	continue;
@@ -263,6 +263,7 @@ public class data_server extends Thread {
 		preference_data.put("work_space", public_data.DEF_WORK_SPACE);
 		preference_data.put("save_space", public_data.DEF_SAVE_SPACE);
 		preference_data.put("debug_mode", public_data.DEF_CLIENT_DEBUG_MODE);
+		preference_data.put("greed_mode", public_data.DEF_CLIENT_GREED_MODE);
 		//the following three are for history name support
 		if(config_hash.get("tmp_preference").containsKey("work_path")){
 			preference_data.put("work_space", config_hash.get("tmp_preference").get("work_path").replaceAll("\\\\", "/"));

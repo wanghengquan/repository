@@ -175,7 +175,7 @@ public class task_prepare {
 		String tool_path = public_data.TOOLS_ROOT_PATH;
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
 		String keep_path = task_data.get("Preference").get("keep_path").trim();
-		if (script_url.equals("") || script_url == null) {
+		if (script_url == null || script_url.equals("")) {
 			CASE_PREPARE_LOGGER.debug("Internal script used, no export needed.");
 			task_prepare_info.add("Info : Internal script used, no export needed.");
 			return true;
@@ -677,7 +677,7 @@ public class task_prepare {
 			break;
 		} 
 		task_prepare_info.add(">Export Task case with CMD(s):");
-		task_prepare_info.addAll(cmd_array);		
+		task_prepare_info.addAll(cmd_array);
 		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
 		return export_ok;
 	}
@@ -1035,10 +1035,14 @@ public class task_prepare {
 				env_array.add(env_key + "=" + env_value);
 			}
 			cmd_data.put(cmd_attr.environ, env_array);
+			//job software depends prepare
+			List<String> sws_array = new ArrayList<String>();
+			sws_array.addAll(get_tool_software_depends(option_name, task_data, client_data).keySet());
+			cmd_data.put(cmd_attr.deptool, sws_array);
 			//job run control prepare
 			List<String> ctl_array = new ArrayList<String>();
 			String ctl_string = new String(task_data.get("LaunchCommand").getOrDefault("exe_ctrl", "").trim());
-			for(String ctl_item: ctl_string.split(",")) {
+			for(String ctl_item: ctl_string.split("\\s*,\\s*")) {
 				if(ctl_item.contains("?" + option_name)) {
 					ctl_array.add(ctl_item.replaceAll("\\?" + option_name, ""));
 				}
@@ -1059,7 +1063,8 @@ public class task_prepare {
 			task_prepare_info.add(">LC" + ":" + cmd_index);
 			task_prepare_info.add("exectrl:" + launch_cmds.get(cmd_index).get(cmd_attr.exectrl).toString());
 			task_prepare_info.add("environ:" + launch_cmds.get(cmd_index).get(cmd_attr.environ).toString());
-			task_prepare_info.add("command:" + launch_cmds.get(cmd_index).get(cmd_attr.command).toString());
+			task_prepare_info.add("command:" + String.join(" ", launch_cmds.get(cmd_index).get(cmd_attr.command)));
+			task_prepare_info.add("deptool:" + launch_cmds.get(cmd_index).get(cmd_attr.deptool).toString());
 			task_prepare_info.add("");
 		}
 		return launch_cmds;
@@ -1182,6 +1187,8 @@ public class task_prepare {
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+		else if (launch_cmd.contains("run_vivado.py"))
+			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
 			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
 		else
@@ -1222,8 +1229,11 @@ public class task_prepare {
 		String python_path = new String();
 		python_path = client_data.get("tools").getOrDefault("python", public_data.DEF_PYTHON_PATH);
 		File python_fobj = new File(python_path);
-		python_fobj.getParent().replaceAll("\\\\", "/");
-		run_env.put("EXTERNAL_PYTHON_PATH", python_fobj.getParent().replaceAll("\\\\", "/"));
+		if(python_fobj.isDirectory()) {
+			run_env.put("EXTERNAL_PYTHON_PATH",  python_path);
+		} else {
+			run_env.put("EXTERNAL_PYTHON_PATH", python_fobj.getParent().replaceAll("\\\\", "/"));
+		}
 		// put external core script path
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String core_path = new String(public_data.CORE_SCRIPT_NAME);
@@ -1249,7 +1259,7 @@ public class task_prepare {
 				String request_build = task_data.get("Software").get(software_name);
 				String software_path = new String("");
 				software_path = get_correct_build_path(software_name, request_build, cmd_index, client_data);
-				if(software_path == "" ||software_path == null) {
+				if(software_path == null || software_path.equals("")) {
 					continue;
 				}
 				String software_env_name = "EXTERNAL_" + software_name.toUpperCase() + "_PATH";
@@ -1261,6 +1271,10 @@ public class task_prepare {
 		while (env_request_it.hasNext()) {
 			String env_name = env_request_it.next();
 			String env_value = task_data.get("Environment").get(env_name);
+			//ignore control option
+			if(env_name.equalsIgnoreCase("override")) {
+				continue;
+			}
 			if(env_value.contains("@cmd")) {
 				if(env_value.endsWith(cmd_index)) {
 					env_value = env_value.replaceAll("@.*$", "");
@@ -1274,8 +1288,32 @@ public class task_prepare {
 			run_env.put(env_name, get_updated_environment_string(env_value, cmd_index, task_data, client_data));
 		} 
 		return run_env;
-	}	
+	}
 
+	protected HashMap<String, String> get_tool_software_depends(
+			String cmd_index,
+			HashMap<String, HashMap<String, String>> task_data,
+			HashMap<String, HashMap<String, String>> client_data
+			) {
+		HashMap<String, String> dep_tools = new HashMap<String, String>();
+		// put environ for software requirements in sub process
+		String ignore_request = client_data.get("preference").getOrDefault("ignore_request", public_data.DEF_CLIENT_IGNORE_REQUEST);
+		if (!ignore_request.contains("software") && !ignore_request.contains("all")){
+			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
+			while (software_request_it.hasNext()) {
+				String software_name = software_request_it.next();
+				//request_build can be: ng3_1p.1@cmd_2, ng3_1p.2@cmd_1, ng3_1p.33
+				String request_build = new String("");
+				request_build = get_correct_build_name(software_name, task_data.get("Software").get(software_name), cmd_index);
+				if (request_build == null || request_build.equals("")) {
+					continue;
+				}
+				dep_tools.put(software_name, request_build);
+			}
+		}
+		return dep_tools;
+	}
+	
 	private String get_correct_build_path(
 			String software_name,
 			String available_builds,
@@ -1283,7 +1321,7 @@ public class task_prepare {
 			HashMap<String, HashMap<String, String>> client_data
 			) {
 		String software_path = new String("");
-		if (available_builds == null || available_builds == "") {
+		if (available_builds == null || available_builds.equals("")) {
 			return software_path;
 		}
 		ArrayList<String> available_builds_list = new ArrayList<String>();		
@@ -1322,6 +1360,53 @@ public class task_prepare {
 			;
 		}
 		return software_path;
+	}
+	
+	private String get_correct_build_name(
+			String software_name,
+			String available_builds,
+			String cmd_index
+			) {
+		String build_name = new String("");
+		if (available_builds == null || available_builds.equals("")) {
+			return build_name;
+		}
+		ArrayList<String> available_builds_list = new ArrayList<String>();		
+		if (available_builds.contains(",")){
+			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*,\\s*")));
+		} else if (available_builds.contains(";")){
+			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*;\\s*")));
+		} else{
+			available_builds_list.add(available_builds);
+		}
+		if (available_builds_list.size() == 1) {
+			if (available_builds.contains("@cmd")) {
+				if (available_builds.contains(cmd_index)) {
+					build_name = available_builds.replaceAll("@.*$", "");
+				}
+			} else {
+				build_name = available_builds;
+			}
+		} else if (available_builds_list.size() > 1) {
+			//search by location 
+			int cmd_index_int = get_cmd_index(cmd_index);
+			if (cmd_index_int > 0 && cmd_index_int <= available_builds_list.size()) {
+				String index_build = new String(available_builds_list.get(cmd_index_int - 1));
+				if (!index_build.contains("@cmd")) {
+					build_name = index_build;
+				}
+			}
+			//override with explicit instruction
+			for(String build_string:available_builds_list) {
+				if (build_string.endsWith("@" + cmd_index)) {
+					build_name = build_string.replaceAll("@.*$", "");
+					break;
+				}
+			}
+		} else {
+			;
+		}
+		return build_name;
 	}
 	
 	private String get_updated_environment_string(

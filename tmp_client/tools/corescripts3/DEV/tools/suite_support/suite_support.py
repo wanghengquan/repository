@@ -45,7 +45,7 @@ def update_process_num(TIME_flag,add=True):
     starts_line = TIME_flag+' '+machine_name
     new_lines = []
     if os.path.isfile(shared_file):
-        file_hand = file(shared_file)
+        file_hand = open(shared_file)
         all_lines = file_hand.readlines()
         file_hand.close()
         #print '***********************'
@@ -76,7 +76,7 @@ def update_process_num(TIME_flag,add=True):
             if add:
                 l = starts_line+' 1'
                 new_lines.append(l)
-        file_hand = file(shared_file,'w')
+        file_hand = open(shared_file,'w')
         #print '---------------------'
         #print new_lines
         #print '---------------------'
@@ -84,7 +84,7 @@ def update_process_num(TIME_flag,add=True):
         file_hand.close()
     else:
         if add:
-            file_hand = file(shared_file,'w')
+            file_hand = open(shared_file,'w')
             l = starts_line+' 1'
             file_hand.writelines(l+'\n')
             file_hand.close()
@@ -108,7 +108,7 @@ def retrun_process_num():
     starts_line = machine_name
     number = 0
     if os.path.isfile(shared_file):
-        file_hand = file(shared_file)
+        file_hand = open(shared_file)
         all_lines = file_hand.readlines()
         file_hand.close()
         for l in all_lines:
@@ -137,7 +137,7 @@ def stop_process(pid,lock,max_process,cmd='',TIME_flag=str(time.time())):
             time.sleep(30)
     lock.acquire()
     max_process.value = max_process.value - 1
-    rerun_bat = file('rerun.bat','a')
+    rerun_bat = open('rerun.bat','a')
     rerun_bat.write(cmd+'\n')
     rerun_bat.close()
     lock.release()
@@ -175,7 +175,7 @@ def get_suit_content(top_dir='',suite_file='',suite_name='',lattice='',scan=''):
     if not os.path.isfile(suite_file):
         print('Can not get file:%s'%suite_file)
         return -1
-    all_lines  =  file(suite_file).readlines()
+    all_lines = open(suite_file).readlines()
     return_lines = []
     begin = 0
     suite_command = ''
@@ -374,8 +374,7 @@ def run_case(cmd,lock,max_process,result_log='',run_over_file='aa',TIME_flag=str
         pro_lines_temp.append(item.rstrip()+'\n')
     try:
         sts = pipe2.close()
-
-        if sts >=1:
+        if sts and sts >=1:
             process_stat_temp = sts
         if sts is None: process_stat_temp = 0
     except IOError:
@@ -385,7 +384,7 @@ def run_case(cmd,lock,max_process,result_log='',run_over_file='aa',TIME_flag=str
 
     lock.acquire()
     if result_log:
-        file_hand = file(result_log,'a')
+        file_hand = open(result_log,'a')
         file_hand.writelines(pro_lines_temp)
         file_hand.close()
 
@@ -402,12 +401,12 @@ def run_case(cmd,lock,max_process,result_log='',run_over_file='aa',TIME_flag=str
     new_lines = []
 
     if os.path.isfile(run_over_file):
-        run_over_lines = file(run_over_file).readlines()
+        run_over_lines = open(run_over_file).readlines()
         for case_l in run_over_lines:
             if case_l.find(initial_cmd) != -1:
                 case_l = time_scope + '  '+case_l
             new_lines.append(case_l)
-    file_hand_t = file(run_over_file,'w')
+    file_hand_t = open(run_over_file,'w')
     file_hand_t.writelines(new_lines)
     file_hand_t.close()
     if platform.system().find('Win')!= -1:
@@ -474,7 +473,7 @@ if __name__ == '__main__':
 
                 all_command = all_command + ' '+signal_cmd
             except:
-                cmd_hand = file(opt.cmd_file).readlines()
+                cmd_hand = open(opt.cmd_file).readlines()
                 for signal_cmd in cmd_hand:
                     signal_cmd = signal_cmd.strip()
                     if signal_cmd:
@@ -568,9 +567,9 @@ if __name__ == '__main__':
     log_file = 'temp/result.log'
     new_lines_bat = 'new_'+os.path.basename(top_dir)+'_'+time_flag+'.bat'
     run_cmd = []
-    file_hand = file('temp/'+new_lines_bat,'w')
+    file_hand = open('temp/'+new_lines_bat,'w')
     file_hand_check_file = os.path.join('temp',( os.path.basename(top_dir)+'_check_'+time_flag+'.bat'))
-    file_hand_check = file(file_hand_check_file,'w')
+    file_hand_check = open(file_hand_check_file,'w')
     for l in cases:
         #cmd = 'python '+new_cmd+ ' '+all_command+' --design='+l   before
         l = l.strip()
@@ -610,7 +609,7 @@ if __name__ == '__main__':
                         lock_hand = xFiles.lock_file('temp/'+'temp_lock_file.log')
                     run_over_file = 'temp/'+'run_over_'+new_lines_bat
                     if os.path.isfile(run_over_file):
-                        run_over_lines = file(run_over_file).readlines()
+                        run_over_lines = open(run_over_file).readlines()
                         for case_l in run_over_lines:
                             if case_l.find(cmd+'\n') != -1:
                                 case_run_over = 1
@@ -619,7 +618,7 @@ if __name__ == '__main__':
                         #run_cmd.remove(cmd)
                         pass
                     else:
-                        run_over_file_hand = file(run_over_file,'a')
+                        run_over_file_hand = open(run_over_file,'a')
                         try:
                             machine_name = platform.uname()[1] + ' '
                         except:
@@ -642,7 +641,7 @@ if __name__ == '__main__':
                 print_logs.append('-'*50)
                 print_logs.append("|  "+"%-20s"%('Status(Finish/Total)')+'|'+( str(id1+1)+'/'+str(len(run_cmd))+' over in the suite').center(30))
                 pro_lines_temp = []
-                file_hand = file(log_file,'a')
+                file_hand = open(log_file,'a')
                 if sys.platform[:3] != "win":
                     cmd = "{ " + cmd + "; }"
                 pipe2 = os.popen(cmd + " 2>&1", "r")
@@ -705,7 +704,7 @@ if __name__ == '__main__':
                                 lock_hand = xFiles.lock_file('temp/'+'temp_lock_file.log')
                             run_over_file = 'run_over_'+new_lines_bat
                             if os.path.isfile(run_over_file):
-                                run_over_lines = file(run_over_file).readlines()
+                                run_over_lines = open(run_over_file).readlines()
                                 for case_l in run_over_lines:
                                     if case_l.find(cmd+'\n') != -1:
                                         case_run_over = 1
@@ -714,7 +713,7 @@ if __name__ == '__main__':
                                 run_cmd.remove(cmd)
                                 pass
                             else:
-                                run_over_file_hand = file(run_over_file,'a')
+                                run_over_file_hand = open(run_over_file,'a')
                                 try:
                                     machine_name = platform.uname()[1] + ' '
                                 except:
@@ -887,7 +886,7 @@ if __name__ == '__main__':
         time.sleep(30)
         print('Waiting for stop kill old process thread: ',time.ctime())
     if check_again == 1 and (not lse_daily):
-        for l in file(file_hand_check_file).readlines():
+        for l in open(file_hand_check_file).readlines():
             os.system(l)
     try:
         os.remove('temp_lock_file.log')

@@ -73,6 +73,7 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_column.add("Status");
 		work_column.add("Reason");
 		work_column.add("Elapsed Time");
+		work_column.add("MEM(G)");
 		work_table = new panel_table(work_data, work_column);
 		work_table.getColumn("ID").setMinWidth(50);
 		work_table.getColumn("ID").setMaxWidth(150);
@@ -84,7 +85,9 @@ public class work_panel extends JSplitPane implements Runnable{
 		work_table.getColumn("Reason").setMinWidth(100);
 		work_table.getColumn("Elapsed Time").setMinWidth(150);
 		work_table.getColumn("Elapsed Time").setMaxWidth(200);
-		this.setDividerLocation(300);
+		work_table.getColumn("MEM(G)").setMinWidth(150);
+		work_table.getColumn("MEM(G)").setMaxWidth(200);		
+		this.setDividerLocation(280);
 		this.setDividerSize(10);
 		this.setOneTouchExpandable(true);
 		this.setContinuousLayout(true);
@@ -192,10 +195,7 @@ public class work_panel extends JSplitPane implements Runnable{
 	
 	private Boolean update_working_queue_data() {
 		Boolean show_update = Boolean.valueOf(true);
-		String watching_queue = view_info.get_current_watching_queue();
-		if (watching_queue.equals("")) {
-			return show_update; // no watching queue selected
-		}
+		//String watching_queue = view_info.get_current_watching_queue();
 		work_data.clear();
 		work_data.addAll(view_info.get_watching_queue_data());
 		return show_update;
@@ -214,6 +214,7 @@ public class work_panel extends JSplitPane implements Runnable{
 					work_line.add("design");
 					work_line.add("status");
 					work_line.add("reason");
+					work_line.add("memory");
 					work_line.add(time_info.get_man_date_time());
 					new_data.add(work_line);
 				}

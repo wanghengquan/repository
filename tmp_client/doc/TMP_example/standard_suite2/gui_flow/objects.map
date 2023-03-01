@@ -1,0 +1,111 @@
+:Add_QMenu	{name='Add' type='QMenu' visible='1' window=':_QMenu'}
+:BaseSplitter.BaseSplitterHandleBtn_bali::basguiwidget::BaseSplitterHandleBtn	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' name='BaseSplitterHandleBtn' type='bali::basguiwidget::BaseSplitterHandleBtn' visible='1'}
+:BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter	{container=':PNMainWindow.BaseSplitter_bali::basguiwidget::BaseSplitter' name='BaseSplitter' type='bali::basguiwidget::BaseSplitter' visible='1'}
+:BaseSplitter.PNNorthTabWidget_PNTabWidget	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' name='PNNorthTabWidget' type='PNTabWidget' visible='1'}
+:BaseSplitter.PNSouthTabWidget_QTabWidget	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' name='PNSouthTabWidget' type='QTabWidget' visible='1'}
+:BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' name='qt_tabwidget_stackedwidget' occurrence='2' type='QStackedWidget' visible='1'}
+:BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget_2	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' name='qt_tabwidget_stackedwidget' type='QStackedWidget' visible='1'}
+:BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget_3	{container=':PNMainWindow.BaseSplitter_bali::basguiwidget::BaseSplitter' name='qt_tabwidget_stackedwidget' occurrence='3' type='QStackedWidget' visible='1'}
+:BaseSplitter_CloseButton	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' type='CloseButton' unnamed='1' visible='1'}
+:BaseSplitter_CloseButton_2	{container=':BaseSplitter.BaseSplitter_bali::basguiwidget::BaseSplitter' occurrence='2' type='CloseButton' unnamed='1' visible='1'}
+:Categories:_QTreeWidget	{buddy=':New File.Categories:_QLabel' type='QTreeWidget' unnamed='1' visible='1'}
+:Destination directory:...._QPushButton	{container=':Open Archived Project.Destination directory:_QGroupBox' text='...' type='QPushButton' unnamed='1' visible='1'}
+:Device.Use Default_QPushButton	{text='Use Default' type='QPushButton' unnamed='1' visible='1' window=':Device_QMessageBox'}
+:Device_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Device'}
+:Name:_QLineEdit	{buddy=':Project:.Name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Name:_QLineEdit_2	{buddy=':New File.Name:_QLabel' type='QLineEdit' unnamed='1' visible='1'}
+:Name_Edit	{name='Name' occurrence='4' type='Edit' visible='true'}
+:New File.Categories:_QLabel	{text='Categories:' type='QLabel' unnamed='1' visible='1' window=':New File_PNNewDesignDlg'}
+:New File.Close_QPushButton	{text='Close' type='QPushButton' unnamed='1' visible='1' window=':New File_PNNewDesignDlg'}
+:New File.Name:_QLabel	{text='Name:' type='QLabel' unnamed='1' visible='1' window=':New File_PNNewDesignDlg'}
+:New File.New_QPushButton	{text='New' type='QPushButton' unnamed='1' visible='1' window=':New File_PNNewDesignDlg'}
+:New File.Source Files:_QLabel	{text='Source Files:' type='QLabel' unnamed='1' visible='1' window=':New File_PNNewDesignDlg'}
+:New File_PNNewDesignDlg	{type='PNNewDesignDlg' unnamed='1' visible='1' windowTitle='New File'}
+:Open Archived Project.Destination directory:_QGroupBox	{title='Destination directory:' type='QGroupBox' unnamed='1' visible='1' window=':Open Archived Project_PNArchivePrjDlg'}
+:Open Archived Project.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':Open Archived Project_PNArchivePrjDlg'}
+:Open Archived Project_PNArchivePrjDlg	{type='PNArchivePrjDlg' unnamed='1' visible='1' windowTitle='Open Archived Project'}
+:Open File.Cancel_Button	{container=':Open File_Dialog' text='Cancel' type='Button'}
+:Open File_Dialog	{text='Open File' type='Dialog'}
+:Open Project.Cancel_Button	{container=':Open Project_Dialog' text='Cancel' type='Button'}
+:Open Project.Open_CheckBox	{container=':Open Project_Dialog' text='Open' type='CheckBox'}
+:Open Project_Dialog	{text='Open Project' type='Dialog'}
+:Open Project_Edit	{container=':Open Project_Dialog' type='Edit'}
+:PN New Project QWizard.Add Source..._QPushButton	{text='Add Source...' type='QPushButton' unnamed='1' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.Copy source to implementation directory_QCheckBox	{text='Copy source to implementation directory' type='QCheckBox' unnamed='1' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.Create empty constraint files_QCheckBox	{text='Create empty constraint files' type='QCheckBox' unnamed='1' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.Project:_QGroupBox	{title='Project:' type='QGroupBox' unnamed='1' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.Select Device:_QGroupBox	{title='Select Device:' type='QGroupBox' unnamed='1' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.Synthesis Tools:_QGroupBox	{title='Synthesis Tools:' type='QGroupBox' unnamed='1' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.__qt__passive_wizardbutton1_QPushButton	{name='__qt__passive_wizardbutton1' type='QPushButton' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.qt_wizard_cancel_QPushButton	{name='qt_wizard_cancel' type='QPushButton' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard.qt_wizard_finish_QPushButton	{name='qt_wizard_finish' type='QPushButton' visible='1' window=':PN New Project QWizard_PNCreateProjWizard'}
+:PN New Project QWizard_PNCreateProjWizard	{name='PN New Project QWizard' type='PNCreateProjWizard' visible='1'}
+:PNFileWidget.PNTreeView_PNTreeView	{container=':qt_tabwidget_stackedwidget.PNFileWidget_PNFileWidget' name='PNTreeView' type='PNTreeView' visible='1'}
+:PNMainWindow.BaseSplitter_bali::basguiwidget::BaseSplitter	{name='BaseSplitter' type='bali::basguiwidget::BaseSplitter' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Device Constraint Editor_QToolButton	{text='Device Constraint Editor' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.File_QMenu	{title='File' type='QMenu' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Floorplan View_QToolButton	{text='Floorplan View' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Netlist Analyzer_QToolButton	{text='Netlist Analyzer' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.New_QToolButton	{text='New' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Open_QToolButton	{text='Open' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Physical View_QToolButton	{text='Physical View' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.PnProcessIconBtn_QToolButton	{name='PnProcessIconBtn' occurrence='4' type='QToolButton' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.PnProcessLabelBtn_QToolButton	{name='PnProcessLabelBtn' type='QToolButton' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.PnProcessLabelBtn_QToolButton_2	{name='PnProcessLabelBtn' occurrence='2' type='QToolButton' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.PnProcessLabelBtn_QToolButton_3	{name='PnProcessLabelBtn' occurrence='3' type='QToolButton' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.PnProcessLabelBtn_QToolButton_4	{name='PnProcessLabelBtn' occurrence='4' type='QToolButton' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Power Calculator_QToolButton	{text='Power Calculator' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Programmer_QToolButton	{text='Programmer' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Project_QMenu	{title='Project' type='QMenu' unnamed='1' visible='0' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Reveal Analyzer_QToolButton	{text='Reveal Analyzer' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Reveal Inserter_QToolButton	{text='Reveal Inserter' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Simulation Wizard_QToolButton	{text='Simulation Wizard' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Timing Analysis View_QToolButton	{text='Timing Analysis View' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow.Timing Constraint Editor_QToolButton	{text='Timing Constraint Editor' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow_PNMainWindow	{name='PNMainWindow' type='PNMainWindow' visible='1'}
+:PNMainWindow_QMenuBar	{type='QMenuBar' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow_QToolButton	{type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNMainWindow_QToolButton_2	{occurrence='2' type='QToolButton' unnamed='1' visible='1' window=':PNMainWindow_PNMainWindow'}
+:PNRecentProjBtn_QPushButton	{container=':qt_tabwidget_stackedwidget_QWidget' name='PNRecentProjBtn' occurrence='2' type='QPushButton' visible='1'}
+:PNRecentProjBtn_QPushButton_2	{container=':qt_tabwidget_stackedwidget_QWidget' name='PNRecentProjBtn' type='QPushButton' visible='1'}
+:PNRecentProjLabel_QLabel	{container=':qt_tabwidget_stackedwidget_QWidget' name='PNRecentProjLabel' occurrence='2' type='QLabel' visible='1'}
+:PNToolFrame_QToolButton	{container=':qt_tabwidget_stackedwidget.PNToolFrame_PNToolFrame' occurrence='2' type='QToolButton' unnamed='1' visible='1'}
+:PnProcessTreeWidget.PNClearToolBtn_QToolButton	{name='PNClearToolBtn' type='QToolButton' visible='1' window=':PnProcessTreeWidget_bali::baspn::PnProcessTreeWidget'}
+:PnProcessTreeWidget.PNTreeView_PNTreeView	{name='PNTreeView' type='PNTreeView' visible='1' window=':PnProcessTreeWidget_bali::baspn::PnProcessTreeWidget'}
+:PnProcessTreeWidget_bali::baspn::PnProcessTreeWidget	{name='PnProcessTreeWidget' type='bali::baspn::PnProcessTreeWidget' visible='1'}
+:PnProcessTreeWidget_bali::baspn::PnProcessTreeWidget_2	{name='PnProcessTreeWidget' type='bali::baspn::PnProcessTreeWidget' visible='0'}
+:Project.No_QPushButton	{text='No' type='QPushButton' unnamed='1' visible='1' window=':Project_QMessageBox'}
+:Project.Yes_QPushButton	{text='Yes' type='QPushButton' unnamed='1' visible='1' window=':Project_QMessageBox'}
+:Project:.Name:_QLabel	{container=':PN New Project QWizard.Project:_QGroupBox' text='Name:' type='QLabel' unnamed='1' visible='1'}
+:Project_QMessageBox	{type='QMessageBox' unnamed='1' visible='1' windowTitle='Project'}
+:QFileDialog.Add_QPushButton	{text='Add' type='QPushButton' unnamed='1' visible='1' window=':QFileDialog_QFileDialog'}
+:QFileDialog.Open_QPushButton	{text='Open' type='QPushButton' unnamed='1' visible='1' window=':QFileDialog_QFileDialog'}
+:QFileDialog.fileNameLabel_QLabel	{name='fileNameLabel' type='QLabel' visible='1' window=':QFileDialog_QFileDialog'}
+:QFileDialog.splitter_QSplitter	{name='splitter' type='QSplitter' visible='1' window=':QFileDialog_QFileDialog'}
+:QFileDialog_QFileDialog	{name='QFileDialog' type='QFileDialog' visible='1'}
+:Reveal Analyzer Startup Wizard.qt_wizard_cancel_QPushButton	{name='qt_wizard_cancel' type='QPushButton' visible='1' window=':Reveal Analyzer Startup Wizard_bali::toolrva::StartupWizard'}
+:Reveal Analyzer Startup Wizard_bali::toolrva::StartupWizard	{type='bali::toolrva::StartupWizard' unnamed='1' visible='1' windowTitle='Reveal Analyzer Startup Wizard'}
+:Save Modified Files.OK_QPushButton	{text='OK' type='QPushButton' unnamed='1' visible='1' window=':Save Modified Files_PNSavePrjFileDlg'}
+:Save Modified Files_PNSavePrjFileDlg	{type='PNSavePrjFileDlg' unnamed='1' visible='1' windowTitle='Save Modified Files'}
+:Select Archived Project File.Cancel_Button	{container=':Select Archived Project File_Dialog' text='Cancel' type='Button'}
+:Select Archived Project File_Dialog	{text='Select Archived Project File' type='Dialog'}
+:Select Device:.Part Number:_QComboBox	{aboveWidget=':Select Device:.Part Number:_QLabel' container=':PN New Project QWizard.Select Device:_QGroupBox' type='QComboBox' unnamed='1' visible='1'}
+:Select Device:.Part Number:_QLabel	{container=':PN New Project QWizard.Select Device:_QGroupBox' text='Part Number:' type='QLabel' unnamed='1' visible='1'}
+:Show Views_QMenu	{title='Show Views' type='QMenu' unnamed='1' visible='1' window=':_QMenu'}
+:Simulation Wizard.qt_wizard_cancel_QPushButton	{name='qt_wizard_cancel' type='QPushButton' visible='1' window=':Simulation Wizard_bali::simwizard::SimWizard'}
+:Simulation Wizard_bali::simwizard::SimWizard	{type='bali::simwizard::SimWizard' unnamed='1' visible='1' windowTitle='Simulation Wizard'}
+:Source Files:_QListWidget	{buddy=':New File.Source Files:_QLabel' type='QListWidget' unnamed='1' visible='1'}
+:Synthesis Tools:.Lattice LSE_QRadioButton	{container=':PN New Project QWizard.Synthesis Tools:_QGroupBox' text='Lattice LSE' type='QRadioButton' unnamed='1' visible='1'}
+:Synthesis Tools:.Synplify Pro_QRadioButton	{container=':PN New Project QWizard.Synthesis Tools:_QGroupBox' text='Synplify Pro' type='QRadioButton' unnamed='1' visible='1'}
+:UpdateDialog.m_button_QPushButton	{name='m_button' type='QPushButton' visible='1' window=':UpdateDialog_PNUpdateDialog'}
+:UpdateDialog_PNUpdateDialog	{name='UpdateDialog' type='PNUpdateDialog' visible='1'}
+:_PNTclConsole	{container=':qt_tabwidget_stackedwidget_PNInfoWidget' type='PNTclConsole' unnamed='1' visible='1'}
+:_QMenu	{type='QMenu' unnamed='1' visible='1'}
+:fileNameEdit_QLineEdit	{buddy=':QFileDialog.fileNameLabel_QLabel' name='fileNameEdit' type='QLineEdit' visible='1'}
+:frame.stackedWidget_QStackedWidget	{container=':splitter.frame_QFrame' name='stackedWidget' type='QStackedWidget' visible='1'}
+:qt_tabwidget_stackedwidget.PNFileWidget_PNFileWidget	{container=':BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget_3' name='PNFileWidget' type='PNFileWidget' visible='1'}
+:qt_tabwidget_stackedwidget.PNToolFrame_PNToolFrame	{container=':BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget' name='PNToolFrame' type='PNToolFrame' visible='1'}
+:qt_tabwidget_stackedwidget_PNInfoWidget	{container=':BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget_2' type='PNInfoWidget' unnamed='1' visible='1'}
+:qt_tabwidget_stackedwidget_QWidget	{container=':BaseSplitter.qt_tabwidget_stackedwidget_QStackedWidget' type='QWidget' unnamed='1' visible='1'}
+:splitter.frame_QFrame	{container=':QFileDialog.splitter_QSplitter' name='frame' type='QFrame' visible='1'}
+:stackedWidget.treeView_QTreeView	{container=':frame.stackedWidget_QStackedWidget' name='treeView' type='QTreeView' visible='1'}

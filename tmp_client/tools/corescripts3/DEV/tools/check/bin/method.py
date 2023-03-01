@@ -1,6 +1,7 @@
 
 from .__default__ import ALL_METHODS, Default, SectionInfo, ConfigIssue
 import os
+import zlib
 from collections import OrderedDict
 from .tools import log, get_index, find_str_in_file, get_index_list_from_file_by_string
 import logging
@@ -226,19 +227,20 @@ class CheckValue(Method):
             real_judge_string = judge_string.format(**self.env.value_dict)
         except KeyError:
             raise ConfigIssue("not specified all value for {}".format(judge_string))
+        x_out = '"{}": {}'.format(judge_string, real_judge_string)
         if 'None' in real_judge_string:
-            self.log_error("None in string: {}".format(real_judge_string))
+            self.log_error('Failed due to None in string {}'.format(x_out))
             self.ret = Default.FAIL
             return
         try:
             judge_result = eval(real_judge_string)
-            self.log_info('Judging: {}, the Result is: {}'.format(real_judge_string, judge_result))
+            self.log_info('Judging {}, the Result is: {}'.format(x_out, judge_result))
             if judge_result is False:
-                self.log_error("Expression: {} IS FAIL".format(real_judge_string))
+                self.log_error("Expression {} IS FAIL".format(x_out))
                 self.ret = Default.FAIL
                 return
         except TypeError:
-            raise ConfigIssue('cannot get judge result for {}'.format(real_judge_string))
+            raise ConfigIssue('cannot get judge result for {}'.format(x_out))
         self.ret = Default.PASS
 
 
@@ -337,7 +339,7 @@ class CheckLines(Method):
             self.log_error('check_1: ' + first_match + ' not found!')
             return
         self.log_info('check_1: ' + first_match + ' found!')
-        if matchs:
+        if matchs or times:
             if times:
                 for _ in range(int(times)-1):
                     _offset = find_str_in_file(first_match, filename, start=anchor, grep=use_grep)
@@ -347,7 +349,14 @@ class CheckLines(Method):
                         return
                     anchor = anchor + _offset + 1
                 self.log_info('check_1 has been found ' + times + ' times')
+            if times:
+                bingo_point = int(times) - 1
+            else:
+                bingo_point = 0
             for ka, a in enumerate(anchor_list):
+                if times:
+                    if ka != bingo_point:  # not greedy match
+                        continue
                 if len(anchor_list) > 1:
                     self.log_info("Check the following lines after line number {}".format(a))
                 got_it = 1
@@ -363,6 +372,107 @@ class CheckLines(Method):
             self.log_error("Cannot search all lines for {}, check fail!".format(task))
             self.ret = Default.FAIL
 
+
+class CheckClockSkew(Method):
+    """
+
+[method]
+check_clock_skew_1 = 1
+
+[check_clock_skew_1]
+; KEYWORDS: "get_twr.", "get_par." and ".string", ".regexp"
+file = ./_scratch/impl/*.twr
+trunk = 5
+mode = more
+get_twr.0.string = Path Begin       : temp4_Z/Q  (SLICE_R5C1F)
+get_twr.1.string = Path End         : Qout2_Z/DF  (SLICE_R54C50E)
+get_twr.7.regexp = Setup Constraint :
+get_twr.8.regexp = Common Path Skew : ([\d\.]+) ns
+
+get_par.0.regexp = from .+gclk_cent2trunk        to .+: cip cnt=0
+get_par.1.regexp = rc delay:.+?<(.+?)>
+    """
+    def __init__(self):
+        super(CheckClockSkew, self).__init__()
+        self.__name__ = "check_clock_skew"
+
+    def handle(self, task, section):
+        self.ret = Default.FAIL
+        filename = os.path.abspath(section['file'])
+        files = glob.glob(filename)
+        if not files:
+            self.log_error('file ' + filename + 'not found!')
+            self.ret = Default.FAIL
+            return
+        twr_file = files[0]
+        par_file = os.path.splitext(twr_file)[0] + ".par"
+        if not os.path.isfile(par_file):
+            self.log_error("File {} not found".format(par_file))
+            self.ret = Default.FAIL
+            return
+        twr_pattern_and_string = self.get_sub_dict(section, re.compile(r"^get_twr\."))
+        par_pattern_and_string = self.get_sub_dict(section, re.compile(r"get_par\."))
+        twr_getter = tools.GetAllValue(twr_pattern_and_string, twr_file)
+        twr_getter.process()
+        twr_values = twr_getter.get_values()
+        par_getter = tools.GetAllValue(par_pattern_and_string, par_file)
+        par_getter.process()
+        par_values = par_getter.get_values()
+
+        real_twr_data = self.get_match_group_1(twr_values)
+        real_par_data = self.get_match_group_1(par_values).strip()
+        real_par_data_list = re.split(",", real_par_data)
+        if real_twr_data is None:
+            self.log_error("Not found data from twr file")
+            self.ret = Default.FAIL
+            return
+
+        # twr data: 0.302 -> 3 digital -> 0.302000
+        # par data: 0.30285858 -> 0.302 -> 0.302000
+        p = re.compile(r"^(\d+)\.(\d+)$")
+        m_twr = p.search(real_twr_data)
+        digital_number = len(m_twr.group(2))
+        final_twr_data_in_ns = round(float(real_twr_data), 6)
+
+        final_par_data_string = "({} - {}) * {} / 1000".format(real_par_data_list[1], real_par_data_list[0], section.get("trunk"))
+        final_par_data_string = re.sub(r"\s", "", final_par_data_string)
+        final_par_data_in_ns = str(eval(final_par_data_string))
+        m_par = p.search(final_par_data_in_ns)
+        final_par_data_in_ns = round(float("{}.{}".format(m_par.group(1), m_par.group(2)[:digital_number])), 6)
+
+        my_mode = section.get("mode")
+        if my_mode == "more":
+            compare_sign = ">"
+        elif my_mode == "less":
+            compare_sign = "<"
+        else:
+            compare_sign = "=="
+
+        ret_string = "{} {} {}".format(final_par_data_in_ns, compare_sign, final_twr_data_in_ns)
+        ret = eval(ret_string)
+
+        self.log_info(f"Checking par_data{compare_sign}twr_data IS {ret}: {final_par_data_string} = {ret_string}")
+        if ret:
+            self.ret = Default.PASS
+        else:
+            self.ret = Default.FAIL
+
+    @staticmethod
+    def get_sub_dict(basic_dict, key_pattern):
+        new_dict = dict()
+        for k, v in list(basic_dict.items()):
+            if key_pattern.search(k):
+                new_dict[k] = v
+        return new_dict
+
+    @staticmethod
+    def get_match_group_1(raw_values):
+        for k, v in list(raw_values.items()):
+            if isinstance(v, re.Match):
+                try:
+                    return v.group(1)
+                except:
+                    pass
 
 class CheckNo(Method):
     def __init__(self):
@@ -477,12 +587,15 @@ class CheckRadiantFlow(Method):
         }
 
     @staticmethod
-    def file_not_empty(filename):
+    def file_not_empty(flow_name, filename):
         flag = False
         files = glob.glob(filename)
         if not files:
             return flag
         for f in files:
+            if flow_name == "bitstream":
+                if re.search(r"\Wsim_\w+", f):  # wrong bin file in sim_par_vlg/init.bin for checking bitstream
+                    continue
             if os.path.getsize(f) != 0:
                 flag = True
                 break
@@ -519,7 +632,7 @@ class CheckRadiantFlow(Method):
             if check_string == 'FILE_EXISTS':
                 ret = []
                 for uncheck_file in uncheck_files:
-                    ret.append(self.file_not_empty(uncheck_file))
+                    ret.append(self.file_not_empty(flow, uncheck_file))
                 if any(ret):
                     self.basic_result[flow] = True
                 else:
@@ -582,6 +695,84 @@ class CheckDiamondFlow(CheckRadiantFlow):
         self.logic_flow = {
             'synthesis': 'synp | lse'
         }
+
+
+class CheckRbt(Method):
+    def __init__(self):
+        Method.__init__(self)
+        self.__name__ = 'check_rbt'
+
+    @staticmethod
+    def get_rbt_data(rbt_file):
+        _data = dict()
+        with open(rbt_file) as ob:
+            for i, line in enumerate(ob):
+                if i > 30:  # ONLY parse 30 lines
+                    break
+                line = line.strip()
+                if not line:
+                    continue
+                line = re.sub(r"\s", "", line)
+                line_list = re.split(":", line)
+                if len(line_list) > 1:
+                    _data[line_list[0]] = ":".join(line_list[1:])
+        return _data
+
+    @staticmethod
+    def get_file_crc32(file_path):
+        hash_value = 0
+        start_string = b'File Format:'
+        started_tag = False
+        with open(file_path, "rb") as ob:
+            while True:
+                line = ob.readline()
+                if not line:
+                    break
+                if not started_tag:
+                    started_tag = start_string in line
+                else:
+                    hash_value = zlib.crc32(line, hash_value)
+        return '0x%x' % (hash_value & 0xffffffff)
+
+    def handle_for_rbt_file(self, old_rbt_file, new_rbt_file):
+        must_be_same_titles = ("Rows", "Cols", "Bits", "BitstreamCRC", "FileFormat")  # no space
+        must_be_diff_titles = ("Date",)
+        old_dict = self.get_rbt_data(old_rbt_file)
+        new_dict = self.get_rbt_data(new_rbt_file)
+        for k in must_be_same_titles:
+            old_v, new_v = old_dict.get(k), new_dict.get(k)
+            if old_v != new_v:
+                self.log_error("value {} and {} for {} should be same!".format(old_v, new_v, k))
+                self.ret = Default.FAIL
+                return
+        for k in must_be_diff_titles:
+            old_v, new_v = old_dict.get(k), new_dict.get(k)
+            if old_v == new_v and new_v:
+                self.log_error("value {} for {} should be different.".format(new_v, k))
+                self.ret = Default.FAIL
+                return
+        self.log_info('check rbt pass!')
+
+    def handle_for_rbt_file_new(self, old_rbt_file, new_rbt_file):
+        old_crc32 = self.get_file_crc32(old_rbt_file)
+        new_crc32 = self.get_file_crc32(new_rbt_file)
+        if old_crc32 == new_crc32:
+            self.log_info('check rbt pass!')
+        else:
+            self.log_error(r"Diff CRC32 value: {}({}) and {}({})".format(old_crc32, old_rbt_file, new_crc32, new_rbt_file))
+            self.ret = Default.FAIL
+
+    def handle(self, task, section):
+        try:
+            compare_file = os.path.abspath(section['compare_file'])
+            compare_file = glob.glob(compare_file)[0]
+            golden_file = os.path.abspath(section['golden_file'])
+            golden_file = glob.glob(golden_file)[0]
+        except Exception:
+            self.log_error("Cannot find golden_file and/or compare_file")
+            self.ret = Default.FAIL
+            return
+        return self.handle_for_rbt_file_new(golden_file, compare_file)
 
 
 class CheckBlock(Method):
@@ -1091,6 +1282,17 @@ class CheckParSim(CheckSim):
         self.language = 'verilog'
         self.passkey = 'PASS'
         self.failkey = 'FAIL'
+        
+
+class CheckBitSim(CheckSim):
+    def __init__(self):
+        CheckSim.__init__(self)
+        self.__name__ = 'check_sim_bit'
+        self.path = './_scratch/sim_bit_vlg'
+        self.filename = 'outlog.log'
+        self.language = 'verilog'
+        self.passkey = 'PASS'
+        self.failkey = 'FAIL'        
 
 
 class CheckResource(Method):

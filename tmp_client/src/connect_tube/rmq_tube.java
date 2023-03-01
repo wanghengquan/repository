@@ -43,6 +43,7 @@ public class rmq_tube {
 	private static String rmq_user = public_data.RMQ_USER;
 	private static String rmq_pwd = public_data.RMQ_PWD;
 	private static String task_msg = new String();
+	private static String action_msg = new String();
 	private task_data task_info;
 	private client_data client_info;
 	private Connection admin_connection;
@@ -189,6 +190,59 @@ public class rmq_tube {
 		return msg_hash;
 	}
 
+	public static synchronized Map<String, HashMap<String, HashMap<String, String>>> read_action_server(
+			String hostname,
+			client_data client_info)
+			throws Exception {
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost(rmq_host);
+		factory.setUsername(rmq_user);
+		factory.setPassword(rmq_pwd);
+		String v_host = new String("vhost_action");
+		hostname = hostname.split("\\.")[0];
+		String queue_name = new String("action_" + hostname);	//lsh-guitar
+		//String queue_name = new String("action_lsh-guitar");
+		factory.setVirtualHost(v_host);
+		final Connection connection = factory.newConnection();
+		final Channel channel = connection.createChannel();
+		channel.queueDeclare(queue_name, true, false, false, null);
+		channel.basicQos(1);
+		action_msg = "";
+		final Consumer consumer = new DefaultConsumer(channel) {
+			@Override
+			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+					byte[] body) throws IOException {
+				String message = new String(body, "UTF-8");
+				action_msg = message;
+				channel.basicAck(envelope.getDeliveryTag(), false);
+				if (channel.isOpen())
+					try {
+						channel.close();
+					} catch (TimeoutException e) {
+						//e.printStackTrace();
+						RMQ_TUBE_LOGGER.warn("close channel TimeoutException");
+					}
+				if (connection.isOpen())
+					connection.close();
+			}
+		};
+		channel.basicConsume(queue_name, false, consumer);
+		Thread.sleep(2000);
+		if (channel.isOpen())
+			try {
+				channel.close();
+			} catch (TimeoutException e) {
+				//e.printStackTrace();
+				RMQ_TUBE_LOGGER.warn("close channel TimeoutException");
+			}
+		if (connection.isOpen())
+			connection.close();
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash = xml_parser.get_common_xml_data(action_msg);
+		export_data.debug_disk_client_in_task(queue_name + ".xml", action_msg, client_info);
+		return msg_hash;
+	}
+	
 	public synchronized void start_admin_tube(String current_terminal) throws Exception {
 		/*
 		 * This function used to read the admin queue and return the strings at
@@ -385,5 +439,14 @@ public class rmq_tube {
 		task_info.update_received_stop_queues_map(msg_hash);
 		export_data.debug_disk_client_in_stop("stop_queue.xml", message, client_info);
 		return update_status;
+	}
+	
+	public static void main(String[] args) {
+		try {
+			rmq_tube.read_action_server("localhost", null);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

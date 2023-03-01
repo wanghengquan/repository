@@ -10,6 +10,7 @@ import shutil
 import configparser
 from . import revision_record
 import datetime
+import getpass
 
 __version__ = '2436 2019-3-22'
 __author__ = 'syan'
@@ -488,18 +489,16 @@ def remove_needless_newline(raw_list):
     """
     if not sys.platform.startswith("win"):
         return raw_list
-    # make sure
-    x = raw_list[:1000][7::2]  # 1000: shorten time
-    if x.count("") < len(x) * 0.7:
-        return raw_list
-
     new_list = list()
-    for i, item in enumerate(raw_list):
-        new_item = item.rstrip()
-        if divmod(i, 2)[1] == 1:
-            if not new_item:
+    for i, foo in enumerate(raw_list):
+        last_1_foo = raw_list[i-1] if i else ""
+        last_2_foo = raw_list[i-2] if i > 1 else ""
+        if foo == "":
+            if last_1_foo:
                 continue
-        new_list.append(new_item)
+            if last_2_foo == "" and last_1_foo == "":
+                continue
+        new_list.append(foo)
     return new_list
 
 
@@ -554,6 +553,7 @@ p_error_msg = [re.compile("^\s*error", re.I),
                re.compile("\*+\s+error:", re.I),
                re.compile("Errno"),
                re.compile("child killed", re.I),
+               re.compile("UnicodeDecodeError"),
                # # add more Exception here.
                ]
 
@@ -614,7 +614,7 @@ def run_command(cmd, log_file, time_file):
             error_msg_line = simple_parser(log_file, ps, 200)
             if error_msg_line:
                 # use standard message for showing in TMP
-                raw_error = error_msg_line[0]
+                raw_error = error_msg_line[0][:70]
                 raw_error = re.sub("@E:", "", raw_error)
                 say_it('@E: {}'.format(raw_error))
                 break
@@ -708,7 +708,7 @@ def head_announce():
     lines.append("")
     lines.append("*---------------------------------------------")
     lines.append("* Welcome to Lattice Batch-queuing System Test Suite")
-    lines.append("* HOST NAME: %s" % get_machine_name())
+    lines.append("* HOST: {1}({0})".format(getpass.getuser(), get_machine_name()))
     lines.append("* Platform: %s" % platform.platform())
     lines.append("* Scripts Version: %s" % revision_record.REVISION[0])
     for foo in lines:
@@ -887,16 +887,21 @@ def run_safety(func, lock_file, *args, **kwargs):
 
 
 def remove_license_setting(phase="removing LICENSE_FILE"):
+    sts = 0
     if sys.platform.startswith("win"):
         import winreg
         try:
             _key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\FLEXlm License Manager')
             _value, _type = winreg.QueryValueEx(_key, 'LATTICE_LICENSE_FILE')
-            reg_cmd = 'reg delete "hkcu\software\FLEXlm License Manager" /f /v LATTICE_LICENSE_FILE'
-            sts, text = get_status_output(reg_cmd)
-            if sts:
-                text.insert(0, phase)
-                say_it(text)
+            reg_license_list = re.split(";", _value)
+            env_license_list = re.split(";", os.getenv("LM_LICENSE_FILE"))
+            has_diff_license = set(reg_license_list) - set(env_license_list)
+            if has_diff_license:
+                reg_cmd = r'reg delete "hkcu\software\FLEXlm License Manager" /f /v LATTICE_LICENSE_FILE'
+                sts, text = get_status_output(reg_cmd)
+                if sts:
+                    text.insert(0, phase)
+                    say_it(text)
         except:
             sts = 1   # no LATTICE_LICENSE_FILE in register
     else:
@@ -904,6 +909,16 @@ def remove_license_setting(phase="removing LICENSE_FILE"):
         if not os.path.isfile(_flex_file):
             sts = 1
         else:
-            sts = rm_with_error(_flex_file)
+            p_value = re.compile("LATTICE_LICENSE_FILE=(.+)")
+            env_license_set = set(re.split(":", os.getenv("LM_LICENSE_FILE")))
+            with open(_flex_file) as ob:
+                for line in ob:
+                    line = line.strip()
+                    m_value = p_value.search(line)
+                    if m_value:
+                        reg_licence_set = set(re.split(":", m_value.group(1)))
+                        has_diff_license = reg_licence_set - env_license_set
+                        if has_diff_license:
+                            sts = rm_with_error(_flex_file)
     if not sts:
-        say_it("{} removed successfully.".format(phase))
+        say_it("Remove {} successfully.".format(phase))

@@ -5,6 +5,7 @@ import glob
 import time
 from . import xTools
 from . import xLattice
+from collections import OrderedDict
 import shutil
 
 __author__ = 'syan'
@@ -27,6 +28,13 @@ endmodule
 """
 
 
+def make_line_has_opt_for_xun(raw_line):
+    v_x = "-v_XCELIUM20.09.012"
+    raw_line = raw_line.replace(v_x, "")
+    raw_line = re.sub("xrun ", "xrun {} ".format(v_x), raw_line)
+    return raw_line
+
+
 def get_radiant_lib_file(family_path):
     t = list()
     if os.path.basename(family_path) == "pmi":
@@ -41,7 +49,7 @@ def get_radiant_lib_file(family_path):
     if family == "iCE40UP":
         my_dirs = ("iCE40UP",)
     elif family == "ap6a00":
-        my_dirs = (family, "applatform")
+        my_dirs = ("applatform", family)
     else:
         my_dirs = ("uaplatform", family)
     cds_files = [glob.glob(os.path.join(hdl_path, item, "convertDeviceString*")) for item in my_dirs]
@@ -61,6 +69,8 @@ def get_radiant_lib_file(family_path):
             if 'convertDeviceString' in bar:
                 continue
             if not p_v_sv_f.search(bar):
+                continue
+            if "_build.f" in bar:
                 continue
             if p_package.search(os.path.basename(bar)):
                 t.insert(0, bar)
@@ -197,10 +207,29 @@ def get_lib_file_dict(cae_path, hdl_type, family, sim_vendor, is_ng_flow):
     return lib_file_dict
 
 
-def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool=""):
+def split_and_join(raw_string):
+    raw_string = re.sub(r"\s", "", raw_string)
+    _ = re.split(",", raw_string)
+    return '({})'.format("|".join(_))
+
+
+def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, general_options, vendor_tool=""):
     cmpl_lines = list()
     _is_ice = re.search("ice40up", work_name.lower())
     is_riviera_tplus = ("Riviera" in vendor_tool) and _is_ice or ("Active" in vendor_tool)
+    # args for compiling .f file
+    for_questasim_only = general_options.get("family_vlog_arg_for_f_file", dict()).get("for_questasim")
+    if not for_questasim_only:
+        for_questasim_only = "(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f|ap6a|lfmxo5)"  # DO NOT CHANGE THIS LINE
+    else:
+        for_questasim_only = split_and_join(for_questasim_only)
+    for_activehdl_only = general_options.get("family_vlog_arg_for_f_file", dict()).get("for_activehdl")
+    if not for_activehdl_only:
+        for_activehdl_only = "(lifcl|jd5d00|lfmxo5|lfcpnx|lfd2nx)"  # DO NOT CHANGE THIS LINE
+    else:
+        for_activehdl_only = split_and_join(for_activehdl_only)
+    #
+
     for item in hdl_files:
         fext = xTools.get_fext_lower(item)
         if fext in (".v", ".sv"):
@@ -217,13 +246,13 @@ def vcom_vlog_file_lines(hdl_files, vcom_cmd, vlog_cmd, work_name, vendor_tool="
             item = " -v2k " + item
         elif fext == ".f":
             cmd_exe = vlog_cmd
-            if re.search("(lifcl|jd5d00|lfcpnx|lfd2nx|jd5f|ap6a)", work_name.lower()) and "QuestaSim" in vendor_tool:
+            if re.search(for_questasim_only, work_name.lower()) and "QuestaSim" in vendor_tool:
                 cmd_exe += " -sv -mfcu "
             elif "Modelsim" in vendor_tool and os.getenv("YOSE_RADIANT") == "1" and not _is_ice:
                 cmd_exe += " -sv -mfcu "
             _path, _file = os.path.split(item)
             if "Active" in vendor_tool:
-                two_k_five = "-sv2k5" if re.search("(lifcl|jd5d00)", work_name.lower()) else "-v2k5"
+                two_k_five = "-sv2k5" if re.search(for_activehdl_only, work_name.lower()) else "-v2k5"
                 item = "{} -f {} +incdir+{} ".format(two_k_five, item, _path)
             elif is_riviera_tplus:
                 _fo = xTools.win2unix(os.getenv("FOUNDRY"))
@@ -254,7 +283,7 @@ def change_dot_lib_name(new_lib):
 
 
 def compile_library(*args):
-    diamond_path, hdl_type, family, sim_name, sim_bin_path, sim_vendor, is_ng_flow = args
+    diamond_path, hdl_type, family, sim_name, sim_bin_path, sim_vendor, is_ng_flow, general_options = args
     # family = family.lower()  # change case due to Linux platform
     cae_path = os.path.join(diamond_path, "cae_library")
     if os.getenv("BALI_USE_FOUNDRY_OUTSIDE") == "1":
@@ -293,9 +322,11 @@ def compile_library(*args):
             return
         for foo in x:
             if xTools.get_fext_lower(foo) == ".f":  # compile .f ONLY
-                _header = "xrun" if "pmi" in sim_name else "xrun -sv"
+                _header = "xrun" if re.search("(pmi|ice40up)", sim_name, re.I) else "xrun -sv"
                 names = [_header, sim_name, foo, os.path.dirname(foo)]
-                bat_lines.append("{} -compile -makelib ./{} -f {} -incdir {} -parallel -endlib".format(*names))
+                this_line = "{} -compile -makelib ./{} -f {} -incdir {} -parallel -endlib".format(*names)
+                this_line = make_line_has_opt_for_xun(this_line)
+                bat_lines.append(this_line)
         if bat_lines:
             xTools.write_file(compile_bat_file, bat_lines)
             if not on_win:
@@ -307,11 +338,10 @@ def compile_library(*args):
     compile_bat_file = "Compile_%s.bat" % sim_name
     bat_lines = list()
 
-    if on_win:
-        x = "rem set FOUNDRY="
-    else:
-        x = "# setenv FOUNDRY "
-    bat_lines.append('{}{}'.format(x, os.getenv("FOUNDRY")))
+    _set = "set {}={}" if on_win else "setenv {} {}"
+
+    bat_lines.append(_set.format('FOUNDRY'.rjust(15, ' '), os.getenv("FOUNDRY")))
+    bat_lines.append('')
 
     vlib_cmd = "%s/vlib" % sim_bin_path
     vcom_cmd = "%s/vcom" % sim_bin_path
@@ -321,24 +351,102 @@ def compile_library(*args):
     bat_lines.append("%s/vmap -del %s" % (sim_bin_path, sim_name))
     if vhdl_files:
         bat_lines.append("%s %s" % (vlib_cmd, sim_name))
-        bat_lines += vcom_vlog_file_lines(vhdl_files, vcom_cmd, vlog_cmd, sim_name, vendor_tool=sim_vendor)
+        bat_lines += vcom_vlog_file_lines(vhdl_files, vcom_cmd, vlog_cmd, sim_name,
+                                          general_options, vendor_tool=sim_vendor)
     elif verilog_files:
         bat_lines.append("%s %s" % (vlib_cmd, sim_name))
-        bat_lines += vcom_vlog_file_lines(verilog_files, vcom_cmd, vlog_cmd, sim_name, vendor_tool=sim_vendor)
+        bat_lines += vcom_vlog_file_lines(verilog_files, vcom_cmd, vlog_cmd, sim_name,
+                                          general_options, vendor_tool=sim_vendor)
     else:
         if family != "pmi":
             xTools.say_it("Error. Cannot find HDL library files in {} for {}".format(cae_path, family))
         return 1
-    xTools.write_file(compile_bat_file, bat_lines)
+    bat_lines, xx_apollo = add_apollo_lines(bat_lines, family)
+    more_lines = list()
+    if xx_apollo:
+        for k, v in list(xx_apollo.items()):
+            more_lines.append(_set.format(k.rjust(15, ' '), v))
+
+    xTools.write_file(compile_bat_file, more_lines + bat_lines)
     if not on_win:
-        compile_bat_file = "sh %s" % compile_bat_file
+        compile_bat_file = "csh %s" % compile_bat_file
     sts = xTools.run_command(compile_bat_file, "%s.log" % sim_name, "%s.time" % sim_name)
     return sts
 
 
+def set_apollo_sim_flow_env(apollo_f_file):
+    """
+    ###################### ATM ################################
+
+    ## Notes for ATM compile : env variables must be set up.(used by Moortec)
+
+    ## setenv  ATM_ROOT      $FOUNDRY/../cae_library/simulation/verilog/ap6a00/ATM
+    ## setenv  MOORTEC_ROOT  $ATM_ROOT/MR75514_PVT_controller_series_3plus/moortec_ip
+    ##
+    ## setenv  ATM_SW_MODEL   $ATM_ROOT/sw_model
+    ## setenv  MR76003        $ATM_ROOT/MR76003_voltage_monitor_prescaler
+    ## setenv DIR_DIGI_BLK    $MOORTEC_ROOT
+    ## setenv DIR_DIGI_SLV    $MOORTEC_ROOT
+    ## setenv DIR_DIGI_IP     $MOORTEC_ROOT
+    ## setenv DIR_DIGI_WRAP   $MOORTEC_ROOT
+    ## setenv DIR_DIGI_MODELS $MOORTEC_ROOT
+    ## setenv DIR_STD_DESIGN  $MOORTEC_ROOT
+    ## setenv DIR_STD_IP      $MOORTEC_ROOT
+
+    ###################### ATM ################################
+    """
+    root_a = os.path.dirname(apollo_f_file)
+    atm_path = os.path.join(root_a, "ATM")
+    if not os.path.isdir(atm_path):
+        xTools.say_it("Warning. Not found {} for ap6a00".format(atm_path))
+        return
+    atm_path = xTools.win2unix(atm_path)
+    apollo_environments = OrderedDict()
+    apollo_environments["ATM_ROOT"] = atm_path
+    apollo_environments["MOORTEC_ROOT"] = tec_root = "{}/MR75514_PVT_controller_series_3plus/moortec_ip".format(atm_path)
+    apollo_environments["ATM_SW_MODEL"] = "{}/sw_model".format(atm_path)
+    apollo_environments["MR76003"] = "{}/MR76003_voltage_monitor_prescaler".format(atm_path)
+    other_keys = """DIR_DIGI_BLK   
+                    DIR_DIGI_SLV   
+                    DIR_DIGI_IP    
+                    DIR_DIGI_WRAP  
+                    DIR_DIGI_MODELS
+                    DIR_STD_DESIGN 
+                    DIR_STD_IP"""
+    for foo in other_keys.splitlines():
+        foo = foo.strip()
+        if foo:
+            apollo_environments[foo] = tec_root
+    return apollo_environments
+            
+
+def add_apollo_lines(bat_lines, family):
+    apollo_xx_environment = OrderedDict()
+    if family in ("ap6a00", "latg1"):
+        p_f_file_path = re.compile(r"\s+-f\s+(\S+{}\.f)".format(family))
+        new_lines = list()
+        p1 = re.compile("-work")
+        p2 = re.compile(r"\+incdir\+(\S+) ")
+        for foo in bat_lines:
+            m_f_file_path = p_f_file_path.search(foo)
+            if m_f_file_path:
+                # ####### More environments #######
+                apollo_xx_environment = set_apollo_sim_flow_env(m_f_file_path.group(1))
+                # --------------------------------
+                foo = p1.sub("-work -suppress 2388,2902 ", foo)   # old: 2583,2600,2388
+                m2 = p2.search(foo)
+                if m2:
+                    foo += " +incdir+{}".format(os.path.join(m2.group(1), "pulp"))
+                    foo += " +incdir+{}".format(os.path.join(m2.group(1), "crea", "security_rtl"))
+            new_lines.append(foo)
+        return new_lines, apollo_xx_environment
+    else:
+        return bat_lines, apollo_xx_environment
+
+
 class GetSimulationLibrary:
     def __init__(self, diamond_path, sim_vendor_name, sim_bin_path, hdl_type, family,
-                 root_lib_path, is_ng_flow, sim_lib_folder):
+                 root_lib_path, is_ng_flow, sim_lib_folder, general_options):
         """
         hdl_type: verilog or vhdl
         """
@@ -351,6 +459,7 @@ class GetSimulationLibrary:
         self.is_ng_flow = is_ng_flow
         self.sim_lib_name = ""
         self.sim_lib_folder = sim_lib_folder
+        self.general_options = general_options
 
     def get_sim_lib_path(self):
         base_dir = os.path.basename(self.sim_lib_path)
@@ -364,6 +473,16 @@ class GetSimulationLibrary:
         if self.sim_vendor_name == "Riviera":
             _my = os.path.join(_my, base_dir + ".lib")
         return xTools.win2unix(_my)
+
+    def copy_modelsim_ini_file(self):
+        """vmap will modify modelsim.ini file, it will be failed to read this file when using many threads simulation.
+        and the vmap uses local modelsim.ini file firstly, so copy to local path
+        """
+        source_file = os.path.join(self.sim_bin_path, "..", "modelsim.ini")
+        if os.path.isfile(source_file):
+            source_file = os.path.abspath(source_file)
+            xTools.say_it("Try to copy file to local: {}".format(source_file))
+            xTools.wrap_cp_file(source_file, "./modelsim.ini", force=True)
 
     def process(self):
         # use longer wait time for compiling simulation library from 5x30 to 20x60
@@ -391,7 +510,10 @@ class GetSimulationLibrary:
                     break
         else:
             xTools.wrap_md(os.path.dirname(self.sim_lib_path), "simulation library path")
-            args = (self.diamond_path, self.hdl_type, self.family, self.sim_name, self.sim_bin_path, self.sim_vendor_name, self.is_ng_flow)
+            if self.sim_vendor_name == "Modelsim":
+                self.copy_modelsim_ini_file()
+            args = (self.diamond_path, self.hdl_type, self.family, self.sim_name, self.sim_bin_path,
+                    self.sim_vendor_name, self.is_ng_flow, self.general_options)
             xTools.run_safety(compile_library, lock_file, *args)
             try:
                 os.remove(lock_file)
@@ -403,7 +525,7 @@ class GetSimulationLibrary:
         self.sim_name = self.family
         if self.hdl_type == "verilog" and self.sim_name != "pmi":
             self.sim_name = "ovi_" + self.sim_name
-        real_path = os.path.join(self.sim_lib_folder, self.sim_name)
+        real_path = os.path.join(self.sim_lib_folder, "M_" + self.family.upper(), self.sim_name)
         self.sim_lib_path = xTools.win2unix(real_path, 0)
 
 
@@ -422,15 +544,3 @@ def get_sim_tool_version(tool_bin):
         m = p.search(line)
         if m:
             return [m.group(1), m.group(3)]
-
-
-if __name__ == "__main__":
-    # a = get_lib_file_dict(r"D:\lscc\diamond\3.5_x64\cae_library", "vhdl", "ecp5u")
-    # xTools.say_it(a)
-    os.environ["FOUNDRY"] = r"D:\lscc\diamond\3.5_x64\ispfpga"
-    os.environ["PATH"] = r"D:\lscc\diamond\3.5_x64\ispfpga\bin\nt64;D:\lscc\diamond\3.5_x64\bin\nt64;%s" % os.getenv("path")
-    tst = GetSimulationLibrary(r"D:\lscc\diamond\3.5_x64", "questasim",
-                r"C:\questa_sim64_10.1a\win64",
-                "verilog", "ecp5u", r"D:\YibinSun\shawn", 0)
-    tst.process()
-

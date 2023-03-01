@@ -67,8 +67,10 @@ class RunSquishCase:
 
     def process(self):
         xTools.say_it("---- Start running Squish test case ...")
+        xTools.set_lm_license_environment(__file__)
         sts = self._process()
         xTools.say_it("---- End of running Squish test case ...")
+        xTools.ultimate_process(self.design)
         return sts
 
     def _process(self):
@@ -143,6 +145,7 @@ class RunSquishCase:
                     return 1
 
     def run_batch_file(self):
+        xTools.very_first_process(self.design)
         testrun_path = os.path.join(self.design, "_scratch_cmd")
         if xTools.wrap_md(testrun_path, "TestRun Path"):
             return 1
@@ -181,10 +184,10 @@ class RunSquishCase:
         batch_kwargs["set_path"] = xTools.get_environment(self.diamond, self.nt_lin, self.squish)
         if self.on_win:
             batch_kwargs["run_server"] = r'start "Squishserver Window" /B "%s" --verbose' % self.squish_server
-            batch_kwargs["sleep"] = "%s 5" % os.path.join(self.xlib, "sleep.exe")
+            batch_kwargs["sleep"] = "%s 12" % os.path.join(self.xlib, "sleep.exe")
         else:
             batch_kwargs["run_server"] = "%s &" % self.squish_server
-            batch_kwargs["sleep"] = "sleep 5"
+            batch_kwargs["sleep"] = "sleep 12"
         batch_kwargs["name_of_aut"] = name_of_aut
 
         batch_file = "run_squish.bat"
@@ -209,8 +212,8 @@ def get_final_status(a_list):
             try:
                 return int(m.group(1))
             except ValueError:
-                return 0
-    return 0
+                return 201
+    return 201
 
 if __name__ == "__main__":
     my_tst = RunSquishCase()

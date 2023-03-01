@@ -5,8 +5,10 @@ import glob
 import copy
 import random
 import argparse
+from collections import OrderedDict
 
 from . import xTools
+from . import custom_environment
 
 __author__ = 'syan'
 
@@ -100,8 +102,22 @@ class XOptions:
         opts = self.parser.parse_args()
         self.original_options = opts.__dict__
         xTools.dict_none_to_new(self.scripts_options, self.original_options)
+        self.merge_old_new_args()
         self.debug = self.scripts_options.get("debug")
         xTools.say_it(self.scripts_options, "Command Options", self.debug)
+
+    def merge_old_new_args(self):
+        args = ("run_map_trace", "run_par_trace", "run_export_vlg")
+        for my_arg in args:
+            old_value, new_value = self.scripts_options.get("{}_old".format(my_arg)), self.scripts_options.get(my_arg)
+            if old_value and new_value:
+                print("Warning. will use {} for inner option {}".format(new_value, my_arg))
+                self.scripts_options[my_arg] = new_value
+            else:
+                if new_value:
+                    continue
+                if old_value:
+                    self.scripts_options[my_arg] = old_value
 
     def add_public_options(self):
         _choice_scuba_type = ("vhdl", "verilog")
@@ -112,7 +128,7 @@ class XOptions:
         _hlp += ' example: --set-env=a=1 --set-env="b=2;9;x"'
         pub_group.add_argument("-E", "--set-env", action="append", help=_hlp)
         pub_group.add_argument("-D", "--dry-run", action="store_true",
-                             help="Dry run the test flow, generate the Lattice Diamond File(.ldf) only")
+                               help="Dry run the test flow, generate the Lattice Diamond File(.ldf) only")
         # - pub_group.add_argument("-q", "--quiet", action="store_true", help="print as little as possible")
         pub_group.add_argument("-R", "--scan-rpt", action="store_true", help="scan reports after flow done")
         pub_group.add_argument("--scan-pap-rpt", action="store_true", help="scan reports after flow done")
@@ -125,8 +141,9 @@ class XOptions:
         pub_group.add_argument("--info", help="specify info file name")
         pub_group.add_argument("--job-dir", help="specify the job working path name")
         pub_group.add_argument("-T", "--timeout", type=int, default=0, help="specify pnmainc timeout value")
-        pub_group.add_argument("--tag", default="_scratch", help="specify the job tag name, default is _scratch, " +
-                                                               "which is created in the design job working path")
+        _hlp = "specify the job tag name, default is _scratch, which is created in the design job working path"
+        pub_group.add_argument("--tag", default="_scratch", help=_hlp)
+        pub_group.add_argument("--bak-tag", help="specify backup tag, will try to copy all files in $tag directory")
         pub_group.add_argument("--qas", action="store_true", help="will run qas test flow")
         pub_group.add_argument("--dsp", action="store_true", help="will run DSP test flow")
         pub_group.add_argument("--pmi", action="store_true", help="run PMI implementation and simulation flow")
@@ -135,6 +152,7 @@ class XOptions:
         pub_group.add_argument("--scuba-only", action="store_true", help="run scuba flow only for IPExpress cases")
         pub_group.add_argument("--check-rpt", help="specify the check report file")
         pub_group.add_argument("--check-only", action="store_true", help="check results only")
+        pub_group.add_argument("--no-check", action="store_true", help="do not check results, always passed")
         pub_group.add_argument("--scan-only", action="store_true", help="scan and check results only")
         pub_group.add_argument("--check-conf", help="specify the check conf FILE NAME")
         pub_group.add_argument("--pre-process", help="run pre-process for a case")
@@ -170,7 +188,7 @@ class XOptions:
               "2. no: compile library with simulator" \
               "3. auto: default.active-hdl/modelsim: use pre-compiled library;others: compile library"
         sim_group.add_argument("--library-path", help=_h0)
-        sim_group.add_argument("--library-precompiled", choices=("yes", "no", "auto"), help=_h1)
+        sim_group.add_argument("-l", "--library-precompiled", choices=("yes", "no", "auto"), help=_h1)
 
         ex_group = sim_group.add_mutually_exclusive_group()
         ex_group.add_argument("--sim-modelsim",  dest="run_modelsim", action="store_true", help="run simulation with Modelsim")
@@ -194,6 +212,7 @@ class XOptions:
             sim_group.add_argument("--sim-map-vlg", action="store_true", help="run MapVerilog simulation")
         sim_group.add_argument("--sim-par-vhd", action="store_true", help="run ParVHDL simulation")
         sim_group.add_argument("--sim-par-vlg", action="store_true", help="run PARVerilog simulation")
+        sim_group.add_argument("--sim-bit-vlg", action="store_true", help="run BIT Verilog simulation")
         sim_group.add_argument("--sim-all", action="store_true", help="run all simulation flow")
         lp_choices = ("5", "1000", "0.5")
         sim_group.add_argument("--lst-precision", choices=lp_choices,
@@ -206,6 +225,8 @@ class XOptions:
         _h2 = "run simrel flow and specify the lst file type, valid choices are: %s" % ", ".join(simrel_types)
         sim_group.add_argument("--run-simrel", choices=simrel_types, help=_h2)
         sim_group.add_argument("--simrel-copy-wave", action="store_true", help="copy back Simrel outwaves")
+        sim_group.add_argument("--sim-coverage", action="store_true", help="run Questasim coverage flow")
+        sim_group.add_argument("--sim-coverage-args", default="sbecft", help="Questasim coverage flow arguments")
         # self.parser.add_argument_group(sim_group)
 
     def add_diamond_options(self):
@@ -272,18 +293,35 @@ class XOptions:
         frontend_group.add_argument("--clean", action="store_true", help="clean the working path before running the flow")
         # self.parser.add_argument_group(frontend_group)
 
+    @staticmethod
+    def add_old_new_arg(group_name, dest_name, old_name, new_name, help_message, is_boolean=True):
+        base_dict = OrderedDict()
+        base_dict[old_name] = ("_old", "(OLD ARG)")
+        base_dict[new_name] = ("", "")
+        for args_string, v in list(base_dict.items()):
+            arg_dict = dict(dest="{}{}".format(dest_name, v[0]),
+                            help="{}{}".format(help_message, v[1])
+                            )
+            if is_boolean:
+                arg_dict["action"] = "store_true"
+            group_name.add_argument(args_string, **arg_dict)
+
     def add_impl_options(self):
         backend_group = self.parser.add_argument_group("Implementation Options")
-        backend_group.add_argument("--pushbutton", action="store_true", help="default pushbutton flow, run till the par trace")
+        hx = "default pushbutton flow, run till the par trace"
+        backend_group.add_argument("--pushbutton", action="store_true", help=hx)
         backend_group.add_argument("--run-synthesis", action="store_true", help="run synthesis flow")
+        hx = "Execute Post-Synthesis Simulation File flow"
+        backend_group.add_argument("--run-syn-backanno", action="store_true", help=hx)
         backend_group.add_argument("--run-translate", action="store_true", help="run Translate Design flow")
         backend_group.add_argument("--run-ncl", action="store_true", help="run NCD2NCL flow")
         backend_group.add_argument("--run-udb", action="store_true", help="run Radiant udb2sv/udb2txt flow")
         _choice_udb2sv = ("rtl", "syn", "map", "par")
-        backend_group.add_argument("--run-udb2sv", choices=_choice_udb2sv, nargs="+", help="execute udb2sv command with udb file(s)")
+        hx = "execute udb2sv command with udb file(s)"
+        backend_group.add_argument("--run-udb2sv", choices=_choice_udb2sv, nargs="+", help=hx)
         backend_group.add_argument("--map-done", action="store_true", help="map flow already done")
         backend_group.add_argument("--run-map", action="store_true", help="run Map flow")
-        backend_group.add_argument("--run-map-trce", dest="run_map_trace", action="store_true", help="run Map Trace trace flow")
+        self.add_old_new_arg(backend_group, "run_map_trace", "--run-map-trce", "--run-map-trace", "Run Map Trace flow")
         if not self.is_ng_flow:
             backend_group.add_argument("--run-map-vlg", action="store_true", help="generate Map Verilog Simulation File")
             backend_group.add_argument("--run-map-vhd", action="store_true", help="generate Map VHDL Simulation File")
@@ -291,17 +329,19 @@ class XOptions:
             backend_group.add_argument("--run-synthesis-trce", dest="run_synthesis_trace", action="store_true",
                                        help="run Radiant synthesis trace flow")
         backend_group.add_argument("--run-par", action="store_true", help="run PAR flow")
-        backend_group.add_argument("--run-par-trce", dest="run_par_trace", action="store_true", help="run Place & Route Trace flow")
+        self.add_old_new_arg(backend_group, "run_par_trace", "--run-par-trce", "--run-par-trace", "Run Par Trace flow")
         backend_group.add_argument("--run-par-iota", dest="run_par_ta", action="store_true", help="run I/O Timing Analysis flow")
         backend_group.add_argument("--run-par-power", action="store_true", help="run par powercal flow")
         backend_group.add_argument("--run-export-ibis", action="store_true", help="run Export IBIS Model flow")
         backend_group.add_argument("--run-export-ami", action="store_true", help="run Export IBIS AMI Model flow")
-        backend_group.add_argument("--run-export-vlg", action="store_true", help="generate Export Verilog Simulation File")
+        self.add_old_new_arg(backend_group, "run_export_vlg", "--run-export-vlg", "--run-par-backanno",
+                             "Execute Gate-Level Simulation File flow")
         backend_group.add_argument("--run-export-vhd", action="store_true", help="generate Export VHDL Simulation File")
         backend_group.add_argument("--run-export-jedec", action="store_true", help="generate Export JEDEC File")
         backend_group.add_argument("--run-export-bitstream", action="store_true", help="generate Export Bitstream File")
         backend_group.add_argument("--run-export-prom", action="store_true", help="generate Export PROM File")
         backend_group.add_argument("--run-export-xo3l", action="store_true", help="generate xo3l export files")
+        backend_group.add_argument("--run-export-rbt", action="store_true", help="generate .rbt file instead of .bit file")
         backend_group.add_argument("--till-map", action="store_true", help="run till map trace flow")
         backend_group.add_argument("--synthesis-only", action="store_true", help="run synthesis only")
 
@@ -357,7 +397,8 @@ class XOptions:
         self.devkit = self.scripts_options.get("devkit")
         self.random_devkit = self.scripts_options.get("random_devkit")
         self.run_simrel = self.scripts_options.get("run_simrel")
-        if self.run_simrel:
+        self.run_export_rbt = self.scripts_options.get("run_export_rbt")
+        if self.run_simrel or self.run_export_rbt:
             _t = "{bit_out_format=Raw Bit File (ASCII)}"
             self.scripts_options["run_export_bitstream"] = 1
             _set_strategy = self.scripts_options.get("set_strategy")
@@ -373,6 +414,7 @@ class XOptions:
             for b in ("be", "fe"):
                 if self.scripts_options.get("{}_{}".format(a, b)):
                     self.scripts_options["run_synthesis"] = True
+                    custom_environment.env_use_front_back_end_vendor()
 
         if not self.devkit:
             if self.random_devkit:
@@ -381,6 +423,13 @@ class XOptions:
                 self.devkit = one_devkit.strip()
                 xTools.say_it("* MSG: select devkit %s from %s" % (self.devkit, random_devkit))
                 self.scripts_options["devkit"] = self.devkit
+
+        x = self.scripts_options.get("sim_bit_vlg")
+        if x:
+            on_win, os_name = xTools.get_os_name()
+            if on_win:
+                print("Warning. Cannot run sim-bit-vlg flow on Windows")
+                self.scripts_options["sim_bit_vlg"] = None
 
     def _new_content(self, key, value):
         cmd_value = self.scripts_options.get(key)

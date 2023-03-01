@@ -12,10 +12,12 @@ categories = {
     8: 'Errors',
     9: 'Milestone',
     10: 'Simulation',
+    11: 'Coverage',
+    12: 'File Size',
 }
 
 
-MAX_ID = 110
+MAX_ID = 118
 ''' keyword: (id, [categories list]) '''
 maps = OrderedDict(sorted(list({
     'version': (0, [1]),
@@ -114,6 +116,11 @@ maps = OrderedDict(sorted(list({
     'postsyn_cpu_Time': (81, [6]),
     'postsyn_real_Time': (82, [6]),
     'lse_cpu_Time': (83, [6]),
+    #
+    'log2sim_cpu_Time': (83.1, [6]),
+    'backanno_cpu_Time': (83.2, [6]),
+    'bitgen_cpu_Time': (83.3, [6]),
+    #
     'Total_cpu_time': (84, [6]),
     'Total_real_time': (85, [6]),
     'lse_peak_Memory': (86, [7]),
@@ -121,6 +128,7 @@ maps = OrderedDict(sorted(list({
     'postsyn_peak_Memory': (88, [7]),
     'map_peak_Memory': (89, [7]),
     'ParPeakMem': (90, [7]),
+    'ParPeakMem_usage': (90.1, [7]),
     'mapErrors': (91, [8]),
     'parErrors': (92, [8]),
     'Synthesis': (93, [9]),
@@ -132,5 +140,18 @@ maps = OrderedDict(sorted(list({
     'sim_syn_time': (99, [10]),
     'sim_map_time': (100, [10]),
     'sim_par_time': (101, [10]),
+    'sim_rtl_cpu_time': (98, [10]),
+    'sim_syn_cpu_time': (99, [10]),
+    'sim_map_cpu_time': (100, [10]),
+    'sim_par_cpu_time': (101, [10]),
+    'rtl_sim_coverage': (117, [11]),
     'fmax_type': (110, [3]),
+    #
+    'syn_vm_size': (111, [12]),
+    'map_udb_size': (112, [12]),
+    'syn_vo_size': (113, [12]),
+    'par_udb_size': (114, [12]),
+    'par_vo_size': (115, [12]),
+    'export_bit_size': (116, [12]),
+    #
 }.items()), key=lambda t: t[1][0]))

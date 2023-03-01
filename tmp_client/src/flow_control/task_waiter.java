@@ -10,6 +10,7 @@
 package flow_control;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import connect_tube.local_tube;
+import connect_tube.queue_attr;
 import connect_tube.rmq_tube;
 import connect_tube.task_data;
 import data_center.client_data;
@@ -27,6 +29,7 @@ import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import utility_funcs.data_check;
 import utility_funcs.deep_clone;
+import utility_funcs.screen_record;
 import utility_funcs.system_call;
 import utility_funcs.time_info;
 
@@ -45,6 +48,7 @@ public class task_waiter extends Thread {
 	private task_data task_info;
 	private client_data client_info;
 	private switch_data switch_info;
+	private DecimalFormat decimalformat = new DecimalFormat("0.00");
 	//private String line_separator = System.getProperty("line.separator");
 	private String file_seprator = System.getProperty("file.separator");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
@@ -176,7 +180,7 @@ public class task_waiter extends Thread {
 		if (switch_info.get_core_script_update_request()){
 			if (waiter_name.equalsIgnoreCase("tw_0")){
 				TASK_WAITER_LOGGER.warn(waiter_name + ":Waiting for core script update...");
-			}			
+			}
 			return false;
 		}
 		//thread available ?
@@ -411,50 +415,27 @@ public class task_waiter extends Thread {
 		return status;
 	}
 	
-	private Integer get_thread_pool_case_memory_total() {
-		Integer total_estimate_usage = Integer.valueOf(0);
-		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
-		call_data.putAll(pool_info.get_sys_call_copy());		
-		Iterator<String> call_map_it = call_data.keySet().iterator();
-		while (call_map_it.hasNext()) {
-			String call_index = call_map_it.next();
-			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
-			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			Integer memory_estimate = Integer.valueOf(0);
-			String memory_est_str = (String) one_call_data.get(pool_attr.call_estmem);
-			Integer memory_est = Integer.valueOf(memory_est_str);
-			Integer memory_exp = task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("avg", 0);
-			if (memory_estimate.compareTo(memory_est) < 0) {
-				memory_estimate = memory_est;
-			}
-			if (memory_estimate.compareTo(memory_exp) < 0) {
-				memory_estimate = memory_exp;
-			}
-			total_estimate_usage = total_estimate_usage +  memory_estimate;
-		}
-		return total_estimate_usage;
-	}
-	
-	private Boolean system_memory_estimate_check(
-			String est_mem
+	private Boolean system_memory_booking(
+			float est_mem
 			) {
 		Boolean status = Boolean.valueOf(true);
 		//current running thread memory calculate
 		synchronized (this.getClass()) {
-			Integer estimate_total = Integer.valueOf(0);
-			estimate_total = Integer.valueOf(est_mem) + get_thread_pool_case_memory_total() + client_info.get_registered_memory();
-			Integer memory_free = Integer.valueOf(0);
-			memory_free = Integer.valueOf(client_info.get_client_system_data().get("mem_free"));
-			Float available_memory = Float.valueOf(memory_free * public_data.PERF_GOOD_MEM_USAGE_RATE);
-			if (available_memory.intValue() >= estimate_total.intValue()) {
+			float reg_request = client_info.get_registered_memory();
+			float run_request = pool_info.get_sys_call_extra_memory();
+			float estimate_total = est_mem + reg_request + run_request;
+			float memory_free = 0.0f;
+			memory_free = Float.valueOf(client_info.get_client_system_data().get("mem_free")).floatValue();
+			float available_memory = memory_free * public_data.PERF_GOOD_MEM_USAGE_RATE;
+			if (available_memory >= estimate_total) {
 				status = true;
-				client_info.add_registered_memory(Integer.valueOf(est_mem));
+				client_info.increase_registered_memory(est_mem);
 			} else {
 				status = false;
 			}
-			TASK_WAITER_LOGGER.debug(waiter_name + ":memory_free:" + memory_free.toString());
-			TASK_WAITER_LOGGER.debug(waiter_name + ":available_memory:" + available_memory.toString());
-			TASK_WAITER_LOGGER.debug(waiter_name + ":estimate_total:" + estimate_total.toString());
+			TASK_WAITER_LOGGER.debug(waiter_name + ":memory_free:" + decimalformat.format(memory_free));
+			TASK_WAITER_LOGGER.debug(waiter_name + ":available_memory:" + decimalformat.format(available_memory));
+			TASK_WAITER_LOGGER.debug(waiter_name + ":estimate_total:" + decimalformat.format(estimate_total));
 			TASK_WAITER_LOGGER.debug(waiter_name + ":status:" + status.toString());
 		}
 		return status;
@@ -462,8 +443,9 @@ public class task_waiter extends Thread {
 	
 	private Boolean system_resource_booking(
 			String queue_name,
+			float est_mem,
 			Boolean cmds_parallel,
-			String est_mem,
+			String greed_mode,
 			HashMap<String, HashMap<String, String>> admin_data
 			){
 		Boolean book_status = Boolean.valueOf(true);		
@@ -480,33 +462,67 @@ public class task_waiter extends Thread {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":System Space not available, skipping:" + queue_name);
 			return false;
 		}
-		//system ready for launch another thread
-		if (!system_memory_estimate_check(est_mem)) {
+		//
+		//
+		//=======booking=======
+		//1. software available check
+		//greed = true,do not reserve any quota
+		//greed = false, booking used software
+		if(greed_mode.equals("true")) {
+			//In greed mode only check current SW instance available or not!
+			Boolean software_available = client_info.software_available_check(admin_data.get("Software"), cmds_parallel);
+			if (!software_available) {
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
+				return false;
+			}
+		} else {
+			Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+			if (!software_booking) {
+				TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
+				return false;
+			}
+		}
+		//2. memory ready for launch another thread
+		if (!system_memory_booking(est_mem)) {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":System MEM not available for task launch, skipping:" + queue_name);
-			return false;
-		}		
-		//software booking
-		Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-		if (!software_booking) {
-			TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
-			client_info.sub_registered_memory(Integer.valueOf(est_mem));
+			if(!greed_mode.equals("true")) {
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+			}
 			return false;
 		}
-		//thread booking
+		//3. thread booking
 		Boolean thread_booking = pool_info.booking_reserved_threads(1);
 		if (!thread_booking) {
 			TASK_WAITER_LOGGER.debug(waiter_name + ":No Thread available, skipping:" + queue_name);
-			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-			client_info.sub_registered_memory(Integer.valueOf(est_mem));
+			if(!greed_mode.equals("true")) {
+				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+			}
+			client_info.decrease_registered_memory(est_mem);
 			return false;
 		}
 		return book_status;
 	}
 	
+	private HashMap<String, HashMap<String, String>> get_final_admin_data(
+			String queue_name
+			) {
+		HashMap<String, HashMap<String, String>> final_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> standard_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, HashMap<String, String>> raw_admin_data = new HashMap<String, HashMap<String, String>>();
+		raw_admin_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
+		if (raw_admin_data.isEmpty()) {
+			return final_data;
+		}
+		standard_data.putAll(get_standard_admin_data(raw_admin_data));
+		final_data.putAll(raw_admin_data_sanity_check(standard_data));
+		return final_data;
+	}
+	
 	private HashMap<String, HashMap<String, String>> get_final_task_data(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data,
-			HashMap<String, String> client_preference_data) {
+			HashMap<String, String> client_preference_data
+			) {
 		Map<String, HashMap<String, HashMap<String, String>>> indexed_task_data = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		HashMap<String, HashMap<String, String>> standard_case_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, HashMap<String, String>> raw_task_data = new HashMap<String, HashMap<String, String>>();
@@ -525,7 +541,7 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, String>> raw_case_data = indexed_task_data.get(case_title);
 		// again: merge case data admin queue and local queue (remote need,
 		// local is done)
-		standard_case_data.putAll(get_standard_case_data(raw_case_data));
+		standard_case_data.putAll(get_standard_task_data(raw_case_data));
 		if (task_info.get_received_task_queues_map().containsKey(queue_name)) {
 			// local data only need to merge admin ID run info
 			raw_task_data.putAll(get_merged_local_task_info(admin_data,standard_case_data));						
@@ -620,8 +636,69 @@ public class task_waiter extends Thread {
 		task_info.remove_queue_from_received_task_queues_map(queue_name);
 	}
 
-	private HashMap<String, HashMap<String, String>> get_standard_case_data(
-			HashMap<String, HashMap<String, String>> case_data) {
+	private HashMap<String, HashMap<String, String>> get_standard_admin_data(
+			HashMap<String, HashMap<String, String>> admin_data) {
+		HashMap<String, HashMap<String, String>> formated_data = new HashMap<String, HashMap<String, String>>();
+		// ID format
+		HashMap<String, String> id_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("ID")) {
+			id_hash.putAll(admin_data.get("ID"));
+		}
+		formated_data.put("ID", id_hash);
+		// CaseInfo format
+		HashMap<String, String> caseinfo_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("CaseInfo")) {
+			caseinfo_hash.putAll(admin_data.get("CaseInfo"));
+		}
+		formated_data.put("CaseInfo", caseinfo_hash);
+		// Environment no default data now
+		HashMap<String, String> envinfo_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("Environment")) {
+			envinfo_hash.putAll(admin_data.get("Environment"));
+		}
+		formated_data.put("Environment", envinfo_hash);
+		// LaunchCommand format
+		HashMap<String, String> command_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("LaunchCommand")) {
+			command_hash.putAll(admin_data.get("LaunchCommand"));
+		}
+		formated_data.put("LaunchCommand", command_hash);
+		// Machine format
+		HashMap<String, String> machine_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("Machine")) {
+			machine_hash.putAll(admin_data.get("Machine"));
+		}
+		formated_data.put("Machine", machine_hash);      
+		// System format
+		HashMap<String, String> system_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("System")) {
+			system_hash.putAll(admin_data.get("System"));
+		}
+		formated_data.put("System", system_hash);
+		// Software format
+		HashMap<String, String> software_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("Software")) {
+			software_hash.putAll(admin_data.get("Software"));
+		}
+		formated_data.put("Software", software_hash);
+        // Preference format
+        HashMap<String, String> preference = new HashMap<String, String>();
+        if (admin_data.containsKey("Preference")) {
+            preference.putAll(admin_data.get("Preference"));
+        }
+        formated_data.put("Preference", preference); 
+		// Status format
+		HashMap<String, String> status_hash = new HashMap<String, String>();
+		if (admin_data.containsKey("Status")) {
+			status_hash.putAll(admin_data.get("Status"));
+		}
+		formated_data.put("Status", status_hash);        
+		return formated_data;
+	}
+	
+	private HashMap<String, HashMap<String, String>> get_standard_task_data(
+			HashMap<String, HashMap<String, String>> case_data
+			) {
 		HashMap<String, HashMap<String, String>> formated_data = new HashMap<String, HashMap<String, String>>();
 		// ID format
 		HashMap<String, String> id_hash = new HashMap<String, String>();
@@ -751,6 +828,87 @@ public class task_waiter extends Thread {
 		return formated_data;
 	}
 
+	private HashMap<String, HashMap<String, String>> raw_admin_data_sanity_check(
+			HashMap<String, HashMap<String, String>> raw_admin_data){
+		HashMap<String, HashMap<String, String>> checked_data = new HashMap<String, HashMap<String, String>>();
+		checked_data.putAll(deep_clone.clone(raw_admin_data));
+		//CaseInfo check
+		HashMap<String, String> case_info = checked_data.get("CaseInfo");
+		if (case_info.containsKey("priority")) {
+			try {
+				Integer.parseInt(case_info.get("priority"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Admin:Invalid priority value found, ignore this admin setting");
+				case_info.remove("priority");
+			}
+		}
+		if (case_info.containsKey("est_mem")) {
+			try {
+				Integer.parseInt(case_info.get("est_mem"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Admin:Invalid est_mem value found, ignore this admin setting");
+				case_info.remove("est_mem");
+			}
+		}		
+		//Environment check		
+		//LaunchCommand check
+		HashMap<String, String> lcmd_data = checked_data.get("LaunchCommand");
+		if (lcmd_data.containsKey("parallel")) {
+			if (!data_check.str_choice_check(lcmd_data.get("parallel"), new String [] {"true", "false"} )){
+				lcmd_data.remove("parallel");
+			}
+		}
+		//Software check
+		//System check
+		HashMap<String, String> system_data = checked_data.get("System");
+		if (system_data.containsKey("max_cpu")) {
+			try {
+				Integer.parseInt(system_data.get("max_cpu"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Admin:Invalid max_cpu value found, ignore this admin setting");
+				system_data.remove("max_cpu");
+			}
+		}
+		if (system_data.containsKey("max_mem")) {
+			try {
+				Integer.parseInt(system_data.get("max_mem"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Admin:Invalid max_mem value found, ignore this admin setting");
+				system_data.remove("max_mem");
+			}
+		}
+		if (system_data.containsKey("min_space")) {
+			try {
+				Integer.parseInt(system_data.get("min_space"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Admin:Invalid min_space value found, ignore this admin setting");
+				system_data.remove("min_space");
+			}
+		}
+		//Machine check
+		//Preference check
+		HashMap<String, String> preference_data = checked_data.get("Preference");
+		if (preference_data.containsKey("greed_mode")) {
+			if (!data_check.str_choice_check(preference_data.get("greed_mode"), new String [] {"false", "true", "auto"} )){
+				preference_data.remove("greed_mode");
+			}
+		}
+		if (preference_data.containsKey("max_threads")) {
+			try {
+				Integer.parseInt(preference_data.get("max_threads"));
+			} catch (NumberFormatException e){
+				TASK_WAITER_LOGGER.warn("Admin:Invalid max_threads value found, ignore this admin setting");
+				preference_data.remove("max_threads");
+			}
+		}		
+		if (preference_data.containsKey("host_restart")) {
+			if (!data_check.str_choice_check(preference_data.get("host_restart"), new String [] {"false", "true"} )){
+				preference_data.remove("host_restart");
+			}
+		}
+		return checked_data;
+	}
+	
 	private HashMap<String, HashMap<String, String>> raw_task_data_sanity_check(
 			HashMap<String, HashMap<String, String>> raw_task_data){
 		HashMap<String, HashMap<String, String>> checked_data = new HashMap<String, HashMap<String, String>>();
@@ -798,8 +956,19 @@ public class task_waiter extends Thread {
 			}
 		}
 		//Environment check
+		HashMap<String, String> environ_data = checked_data.get("Environment");
+		if (environ_data.containsKey("override")) {
+			if (!data_check.str_choice_check(environ_data.get("override"), new String [] {"globle", "local"} )){
+				environ_data.remove("override");
+			}
+		}		
 		//LaunchCommand check
 		HashMap<String, String> lcmd_data = checked_data.get("LaunchCommand");
+		if (lcmd_data.containsKey("parallel")) {
+			if (!data_check.str_choice_check(lcmd_data.get("parallel"), new String [] {"false", "true"} )){
+				lcmd_data.remove("parallel");
+			}
+		}
 		if (lcmd_data.containsKey("override")) {
 			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"globle", "local"} )){
 				lcmd_data.remove("override");
@@ -821,6 +990,11 @@ public class task_waiter extends Thread {
 				preference_data.remove("case_mode");
 			}
 		}
+		if (preference_data.containsKey("greed_mode")) {
+			if (!data_check.str_choice_check(preference_data.get("greed_mode"), new String [] {"false", "true", "auto"} )){
+				preference_data.remove("greed_mode");
+			}
+		}
 		if (preference_data.containsKey("keep_path")) {
 			if (!data_check.str_choice_check(preference_data.get("keep_path"), new String [] {"false", "true"} )){
 				preference_data.remove("keep_path");
@@ -836,6 +1010,16 @@ public class task_waiter extends Thread {
 				preference_data.remove("result_keep");
 			}
 		}
+		if (preference_data.containsKey("host_restart")) {
+			if (!data_check.str_choice_check(preference_data.get("host_restart"), new String [] {"false", "true"} )){
+				preference_data.remove("host_restart");
+			}
+		}
+		if (preference_data.containsKey("video_record")) {
+			if (!data_check.str_choice_check(preference_data.get("video_record"), new String [] {"false", "true"} )){
+				preference_data.remove("video_record");
+			}
+		}
 		return checked_data;
 	}
 	
@@ -849,6 +1033,17 @@ public class task_waiter extends Thread {
 		if (case_data.containsKey("ID")) {
 			id_hash.putAll(case_data.get("ID"));
 		}
+		StringBuilder id_index = new StringBuilder();
+		id_index.append(case_data.get("ID").get("id"));
+		if (case_data.get("ID").containsKey("breakpoint")) {
+			String breakpoint = new String();
+			breakpoint = case_data.get("ID").get("breakpoint");
+			if(breakpoint != null) {
+				id_index.append("_");
+				id_index.append(breakpoint.split("\\s*,\\s*")[0]);
+			}
+		}
+		id_hash.put("id_index", id_index.toString());
 		default_data.put("ID", id_hash);
 		// CaseInfo format, 4 level override:
 		// default < configure < command line < task 
@@ -948,7 +1143,7 @@ public class task_waiter extends Thread {
 		String tmp_result = public_data.WORKSPACE_RESULT_DIR;
 		String prj_name = "prj" + task_data.get("ID").get("project");
 		String run_name = "run" + task_data.get("ID").get("run");
-		String task_name = "T" + task_data.get("ID").get("id");
+		String task_name = "T" + task_data.get("ID").get("id_index");
 		String work_space = public_data.DEF_WORK_SPACE;
         String save_space = public_data.DEF_SAVE_SPACE;
 		String case_mode = task_data.get("Preference").get("case_mode").trim();
@@ -1016,7 +1211,7 @@ public class task_waiter extends Thread {
 		}
 		paths_hash.put("work_suite", work_suite);		
 		//get suite save path save_suite
-        String[] tmp_space = save_space.split(",");
+        String[] tmp_space = save_space.split("\\s*,\\s*");
         ArrayList<String> tmp_suite = new ArrayList<String>();    
 		if (case_mode.equalsIgnoreCase("hold_case")){
 			save_suite = repository + "/" + suite_path;
@@ -1062,7 +1257,7 @@ public class task_waiter extends Thread {
 		script_url = script_url.replaceAll("\\$tool_path", public_data.TOOLS_ROOT_PATH);		
 		paths_hash.put("script_url", script_url);
 		//get script_name
-		if (script_url.equals("") || script_url == null) {
+		if (script_url == null || script_url.equals("")) {
 			script_base = "";
 		} else {
 			script_base = script_url.substring(script_url.lastIndexOf("/") + 1);
@@ -1070,7 +1265,7 @@ public class task_waiter extends Thread {
 		paths_hash.put("script_base", script_base);
 		paths_hash.put("script_name", get_source_unzip_name(script_base));
 		//get script_path
-		if (script_url.equals("") || script_url == null) {
+		if (script_url == null || script_url.equals("")) {
 			script_path = "";
 		} else if(script_url.startsWith(work_space) || script_url.startsWith(case_path) || script_url.startsWith(public_data.TOOLS_ROOT_PATH)) {
 			script_path = script_url;
@@ -1150,7 +1345,7 @@ public class task_waiter extends Thread {
 			if (admin_hash.containsKey(key_name)) {
 				HashMap<String, String> admin_info = new HashMap<String, String>();
 				admin_info.putAll(admin_hash.get(key_name));
-				merge_info.putAll(local_tube.comm_admin_task_merge(admin_info, case_info));
+				merge_info.putAll(local_tube.comm_admin_task_merge(admin_info, case_info, key_name));
 			} else {
 				merge_info.putAll(case_info);
 			}
@@ -1184,6 +1379,22 @@ public class task_waiter extends Thread {
 		return data;
 	}
 	
+	private Boolean get_task_record_request(
+			HashMap<String, HashMap<String, String>> task_data
+			) {
+		Boolean request = Boolean.valueOf(public_data.TASK_DEF_VIDEO_RECORD);
+		//by default squish case will be record
+		if(task_data.get("Software").containsKey("squish") && task_data.get("Environment").containsKey(public_data.ENV_SQUISH_RECORD)) {
+			request = true;
+		}
+		if(task_data.get("Preference").containsKey("video_record")) {
+			if (task_data.get("Preference").get("video_record").equalsIgnoreCase("true")) {
+				request = true;
+			}
+		}
+		return request;
+	}
+	
 	private String get_last_error_msg(ArrayList<String> message_list){
 		String return_string = new String("NA");
 		if (message_list == null || message_list.isEmpty()) {
@@ -1197,6 +1408,201 @@ public class task_waiter extends Thread {
 			}
 		}		
 		return return_string;
+	}
+	
+	private String calculate_admin_queue_greed_mode(
+			String queue_name,
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		//input 1: client default
+		String greed_value = new String(client_info.get_client_preference_data().getOrDefault("greed_mode", public_data.DEF_CLIENT_GREED_MODE));
+		//input 2: remote task inputs
+		if (admin_data.get("Preference").containsKey("greed_mode")) {
+			greed_value = admin_data.get("Preference").get("greed_mode");
+		}
+		if (greed_value.equals("auto")) {
+			if (admin_data.get("LaunchCommand").containsKey("cmd_1") || admin_data.get("LaunchCommand").containsKey("cmd_2")) {
+				greed_value = "true";
+			} else {
+				greed_value = "false";
+			}
+		}
+		task_info.update_admin_queue_attribute_value(queue_name, queue_attr.GREED_MODE, greed_value);
+		return greed_value;
+	}
+	
+	private String get_admin_queue_greed_mode(
+			String queue_name,
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		String greed_mode = new String("");
+		greed_mode = task_info.get_admin_queue_attribute_value(queue_name, queue_attr.GREED_MODE);
+		if(greed_mode == null || greed_mode.equals("")) {
+			greed_mode = calculate_admin_queue_greed_mode(queue_name, admin_data);
+		} 
+		return greed_mode;
+	}
+	
+	private float get_task_estimated_memory(
+			String queue_name,
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		float est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
+		float usr_est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
+		float his_est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
+		String usr_est_mem_str = new String("");
+		usr_est_mem_str = admin_data.get("CaseInfo").getOrDefault("est_mem", String.valueOf(public_data.TASK_DEF_ESTIMATE_MEM));
+		try {
+			usr_est_mem = Float.valueOf(usr_est_mem_str);
+		} catch (NumberFormatException e) {
+			TASK_WAITER_LOGGER.debug(usr_est_mem_str + ", wrong number format");
+		}
+		if (usr_est_mem < 0) {
+			TASK_WAITER_LOGGER.debug("Task estimate memory usage out of range, 0.0(G) will be used");
+			usr_est_mem = 0.0f;
+		}
+		if (usr_est_mem > 32) {
+			TASK_WAITER_LOGGER.debug("Task estimate memory usage out of range, 32.0(G) will be used");
+			usr_est_mem = 32.0f;
+		}
+		his_est_mem = task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("avg", public_data.TASK_DEF_ESTIMATE_MEM);
+		if (usr_est_mem > his_est_mem) {
+			est_mem = usr_est_mem;
+		} else {
+			est_mem = his_est_mem;
+		}
+		return est_mem;
+	}
+	
+	private void run_invalid_queue_name_jobs(
+			) {
+		//reporting
+		if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
+			TASK_WAITER_LOGGER.info(waiter_name + ":No runnable queue found.");
+		} else {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":No runnable queue found.");
+		}
+	}
+	
+	private void run_invalid_admin_data_jobs(
+			String queue_name
+			) {
+		//reporting
+		TASK_WAITER_LOGGER.warn(waiter_name + ":Empty admin queue find," + queue_name);
+	}
+	
+	private void run_invalid_resource_booking_jobs(
+			String queue_name
+			) {
+		//reporting
+		if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
+			TASK_WAITER_LOGGER.info(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+		} else {
+			TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+		}
+	}
+	
+	private void run_invalid_tasks_data_jobs(
+			String queue_name,
+			float est_mem,
+			Boolean cmds_parallel,
+			String greed_mode,
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		//reporting
+		if (switch_info.get_local_console_mode()){
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Try change queue to finished status:" + queue_name);
+		} else {
+			TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
+		}
+		// move queue form received to processed admin queue treemap
+		move_emptied_admin_queue_from_tube(queue_name);
+		move_emptied_task_queue_from_tube(queue_name);
+		// update list must be placed here to avoid multi threads risk
+		try {
+			Thread.sleep(10);// make the thread safe
+		} catch (InterruptedException e) {
+			TASK_WAITER_LOGGER.info(waiter_name + ":Sleep error out");
+		}
+		task_info.decrease_executing_admin_queue_list(queue_name);	
+		task_info.decrease_processing_admin_queue_list(queue_name);				
+		task_info.increase_emptied_admin_queue_list(queue_name);
+		// release booking info
+		if(!greed_mode.equals("true")) {
+			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+		}
+		client_info.decrease_registered_memory(est_mem);
+		pool_info.release_reserved_threads(1);
+	}
+	
+	private void run_invalid_case_id_jobs(
+			String queue_name,
+			float est_mem,
+			Boolean cmds_parallel,
+			String greed_mode,
+			HashMap<String, HashMap<String, String>> admin_data,
+			HashMap<String, HashMap<String, String>> task_data
+			) {
+		//reporting
+		TASK_WAITER_LOGGER.info(waiter_name + ":No Task id find, skip launching:" + task_data.toString());
+		// release booking info
+		if(!greed_mode.equals("true")) {
+			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+		}
+		client_info.decrease_registered_memory(est_mem);
+		pool_info.release_reserved_threads(1);
+	}
+	
+	private void run_invalid_register_status_jobs(
+			String queue_name,
+			String case_id,
+			float est_mem,
+			Boolean cmds_parallel,
+			String greed_mode,
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		//reporting
+		if (switch_info.get_local_console_mode()){
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
+		} else {
+			TASK_WAITER_LOGGER.info(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
+		}
+		// release booking info
+		if(!greed_mode.equals("true")) {
+			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+		}		
+		client_info.decrease_registered_memory(est_mem);
+		pool_info.release_reserved_threads(1);
+	}
+	
+	private void run_valid_register_status_jobs(
+			String queue_name,
+			String case_id
+			) {
+		//reporting
+		if (switch_info.get_local_console_mode()){
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Launching " + queue_name + "," + case_id);
+		} else {
+			TASK_WAITER_LOGGER.info(waiter_name + ":Launching " + queue_name + "," + case_id);
+		}
+	}
+	
+	private void run_invalid_task_prepare_jobs(
+			String queue_name,
+			String case_id,
+			float est_mem,
+			Boolean cmds_parallel,
+			String greed_mode,
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		//reporting
+		if(!greed_mode.equals("true")) {
+			client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
+		}	
+		client_info.decrease_registered_memory(est_mem);
+		pool_info.release_reserved_threads(1);
+		task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.BLOCKED, 1);
+		TASK_WAITER_LOGGER.info("Task launch failed:" + queue_name + "," + case_id);
 	}
 	
 	private void run_pre_launch_reporting(
@@ -1239,7 +1645,6 @@ public class task_waiter extends Thread {
 		ArrayList<String> title_list = new ArrayList<String>();
 		title_list.add("");
 		title_list.add("============================================================");
-		
 		title_list.add("Run Time:" + time_info.get_date_time());
 		StringBuilder hostlog = new StringBuilder();
 		hostlog.append("Host Info:");
@@ -1258,6 +1663,9 @@ public class task_waiter extends Thread {
 		HashMap<String, HashMap<String, Object>> report_data = new HashMap<String, HashMap<String, Object>>();
 		HashMap<String, Object> hash_data = new HashMap<String, Object>();
 		String task_index = case_id + "#" + queue_name;
+		if (task_data.get("ID").containsKey("breakpoint")) {
+			hash_data.put("breakpoint", task_data.get("ID").get("breakpoint"));
+		}
 		hash_data.put("testId", task_data.get("ID").get("id"));
 		hash_data.put("suiteId", task_data.get("ID").get("suite"));
 		hash_data.put("runId", task_data.get("ID").get("run"));
@@ -1270,24 +1678,6 @@ public class task_waiter extends Thread {
 		hash_data.put("update_time", update_time);
 		report_data.put(task_index, hash_data);
 		report_obj.send_tube_task_data_report(report_data, false);
-	}
-	
-	private Boolean estimate_memory_valid_check(
-			String memory_value
-			) {
-		Boolean status = Boolean.valueOf(true);
-		Integer value = Integer.valueOf(0);
-		try {
-			value = Integer.valueOf(memory_value);
-		} catch (NumberFormatException e) {
-			TASK_WAITER_LOGGER.debug(memory_value + ", not a number");
-			return false;
-		}
-		if (value < 0 || value > 16) {
-			TASK_WAITER_LOGGER.info("memory_value:" + memory_value + "out of range, 0 ~ " + public_data.TASK_DEF_MAX_MEM_USG);
-			return false;
-		}
-		return status;
 	}
 	
 	public void run() {
@@ -1340,122 +1730,77 @@ public class task_waiter extends Thread {
 				continue;
 			}
 			// task 2 : get working queue => key variable 1: queue_name OK now
-			String queue_name = new String(get_right_task_queue());
+			String queue_name = new String("");
+			queue_name = get_right_task_queue();
 			if (queue_name == null || queue_name.equals("")) {
-				//only TW_0 can report out when there is no work queue found.
-				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.info(waiter_name + ":No matched queue found.");
-				} else {
-					TASK_WAITER_LOGGER.debug(waiter_name + ":No matched queue found.");
-				}
+				run_invalid_queue_name_jobs();
 				continue;
-			} else {
-				TASK_WAITER_LOGGER.debug(waiter_name + ":Focus on " + queue_name);
 			}
 			// task 3 : get admin data =>key variable 2: admin_data OK now
 			HashMap<String, HashMap<String, String>> admin_data = new HashMap<String, HashMap<String, String>>();
-			admin_data.putAll(task_info.get_data_from_captured_admin_queues_treemap(queue_name));
+			admin_data.putAll(get_final_admin_data(queue_name));
 			if (admin_data.isEmpty()) {
-				TASK_WAITER_LOGGER.warn(waiter_name + ":Empty admin queue find," + queue_name);
+				run_invalid_admin_data_jobs(queue_name);
 				continue; // in case this queue deleted by other threads
 			}
-			String est_mem = new String(admin_data.get("CaseInfo").getOrDefault("est_mem", public_data.TASK_DEF_ESTIMATE_MEM).trim());
-			if (!estimate_memory_valid_check(est_mem)) {
-				est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
-			}
+			float est_mem = get_task_estimated_memory(queue_name, admin_data);
+			String greed_mode = get_admin_queue_greed_mode(queue_name, admin_data);
 			Boolean cmds_parallel = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL).trim());
-			// task 4 : resource booking (thread, software) =>Resource booking finished, release if not launched
-			if (!system_resource_booking(queue_name, cmds_parallel, est_mem, admin_data)) {
-				if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.info(waiter_name + ":System resource limitation, Skipping:" + queue_name);
-				} else {
-					TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation, Skipping:" + queue_name);
-				}
+			// task 4 : resource booking (memory, thread, software)
+			if (!system_resource_booking(queue_name, est_mem, cmds_parallel, greed_mode, admin_data)) {
+				run_invalid_resource_booking_jobs(queue_name);
 				continue;
 			}
 			// task 5 : get task data =>key variable 3: task_data OK now
 			HashMap<String, HashMap<String, String>> task_data = new HashMap<String, HashMap<String, String>>();
 			task_data.putAll(get_final_task_data(queue_name, admin_data, client_info.get_client_preference_data()));
 			if (task_data.isEmpty()) {
-				if (switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.debug(waiter_name + ":Try change queue to finished status:" + queue_name);
-				} else {
-					TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
-				}
-				// move queue form received to processed admin queue treemap
-				move_emptied_admin_queue_from_tube(queue_name);
-				move_emptied_task_queue_from_tube(queue_name);
-				// update list must be placed here to avoid multi threads risk
-				try {
-					Thread.sleep(10);// make the thread safe
-				} catch (InterruptedException e) {
-					TASK_WAITER_LOGGER.info(waiter_name + ":Sleep error out");
-				}
-				task_info.decrease_executing_admin_queue_list(queue_name);	
-				task_info.decrease_processing_admin_queue_list(queue_name);				
-				task_info.increase_emptied_admin_queue_list(queue_name);
-				// release booking info
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(Integer.valueOf(est_mem));
-				pool_info.release_reserved_threads(1);			
+				run_invalid_tasks_data_jobs(queue_name, est_mem, cmds_parallel, greed_mode, admin_data);
 				continue;
 			}
-			// task 6 : get case_id, variable 4: case_id OK now
-			String case_id = new String(task_data.get("ID").get("id"));
-			if (case_id == "" || case_id == null){
-				TASK_WAITER_LOGGER.info(waiter_name + ":No Task id find, skip launching:" + task_data.toString());
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(Integer.valueOf(est_mem));
-				pool_info.release_reserved_threads(1);
+			// task 6 : get case_id, variable 4: case_id OK now, 12345, 12345_80_80
+			String case_index = new String(task_data.get("ID").get("id_index"));
+			if (case_index == null || case_index.equals("")){
+				run_invalid_case_id_jobs(queue_name, est_mem, cmds_parallel, greed_mode, admin_data, task_data);
 				continue;				
 			}
 			// task 7 : register task case to processed task queues map
-			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_id, task_data);
+			Boolean register_status = task_info.register_case_to_processed_task_queues_map(queue_name, case_index, task_data);
 			if (register_status) {
-				if (switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.debug(waiter_name + ":Launching " + queue_name + "," + case_id);
-				} else {
-					TASK_WAITER_LOGGER.info(waiter_name + ":Launching " + queue_name + "," + case_id);
-				}
+				run_valid_register_status_jobs(queue_name, case_index);
 			} else {
-				if (switch_info.get_local_console_mode()){
-					TASK_WAITER_LOGGER.debug(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
-				} else {
-					TASK_WAITER_LOGGER.info(waiter_name + ":Launch failed:" + queue_name + "," + case_id + ", skipped.");
-				}
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(Integer.valueOf(est_mem));
-				pool_info.release_reserved_threads(1);
+				run_invalid_register_status_jobs(queue_name, case_index, est_mem, cmds_parallel, greed_mode, admin_data);
 				continue;// register false, someone register this case already.
 			}
-			// task 8 : get test case ready
+			// task 8 : get task info and case ready
 			task_prepare prepare_obj = new task_prepare();
-			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
-			// task 9 : launch info prepare
 			String design_url = task_data.get("Paths").get("design_url").trim();
 			String launch_path = task_data.get("Paths").get("launch_path").trim();
 			String case_path = task_data.get("Paths").get("case_path").trim();
 			String python_version = switch_info.get_system_python_version();
 			String cmds_decision = task_data.get("LaunchCommand").getOrDefault("decision", public_data.TASK_DEF_CMD_DECISION).trim(); 
 			Boolean corescript_link_status = switch_info.get_remote_corescript_linked();
+			Boolean record_request = get_task_record_request(task_data);
 			int case_timeout = get_time_out(task_data.get("CaseInfo").get("timeout"));
-			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
-			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
-			// task 10 : launch reporting
-			run_pre_launch_reporting(queue_name, case_id, task_data, prepare_obj, report_obj, task_ready);
+			Boolean task_ready = prepare_obj.get_task_case_ready(client_info.get_client_tools_data(), task_data);
+			// task 9 : launch reporting
+			run_pre_launch_reporting(queue_name, case_index, task_data, prepare_obj, report_obj, task_ready);
 			if (!task_ready){
-				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
-				client_info.sub_registered_memory(Integer.valueOf(est_mem));
-				pool_info.release_reserved_threads(1);
-				task_info.increase_client_run_case_summary_status_map(queue_name, task_enum.BLOCKED, 1);
-				TASK_WAITER_LOGGER.info("Task launch failed:" + queue_name + "," + case_id);
+				run_invalid_task_prepare_jobs(queue_name, case_index, est_mem, cmds_parallel, greed_mode, admin_data);
 				continue;
 			} 
-			// task 11 : launch
-			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, client_info.get_client_tools_data());
-			pool_info.add_sys_call(sys_call, queue_name, case_id, launch_path, case_path, design_url, est_mem, case_timeout);
-			client_info.sub_registered_memory(Integer.valueOf(est_mem));
-			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_id);
+			// task 10 : launch
+			screen_record record_object = null;
+			if (record_request) {
+				record_object = new screen_record(launch_path, "case_video", false);
+				record_object.start();
+			}
+			TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>();
+			launch_cmds.putAll(prepare_obj.get_launch_commands(python_version, corescript_link_status, client_info.get_client_tools_data(), task_data, client_info.get_client_data()));
+			system_call sys_call = new system_call(launch_cmds, cmds_parallel, cmds_decision, launch_path, case_timeout, greed_mode, client_info);
+			pool_info.add_sys_call(sys_call, queue_name, case_index, launch_path, case_path, design_url, est_mem, case_timeout, record_request, record_object);
+			client_info.decrease_registered_memory(est_mem);
+			TASK_WAITER_LOGGER.debug("Task launched:" + queue_name + "," + case_index);
 		}
 	}
 

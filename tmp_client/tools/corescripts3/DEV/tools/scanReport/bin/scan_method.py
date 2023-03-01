@@ -55,6 +55,15 @@ class ScanBasic(Process):
             return False
 
 
+def change_to_seconds(key_name, raw_value):
+    if key_name.endswith("_cpu_time"):
+        x_list = re.split(":", raw_value)
+        if len(x_list) == 3:
+            x_list = [int(item) for item in x_list]
+            raw_value = str(3600 * x_list[0] + 60 * x_list[1] + x_list[2])
+    return raw_value
+
+
 class ScanPattern(ScanBasic):
     def __init__(self):
         ScanBasic.__init__(self, name='scan_pattern')
@@ -80,6 +89,8 @@ class ScanPattern(ScanBasic):
                         ret = self.handle_number(m.group(args['keyword']))
                     else:
                         ret = self.handle_number(m.group(1))
+                        # sim_rtl_cpu_time 0:02:01 to 121
+                        ret = change_to_seconds(args['keyword'], ret)
                     self.out({args['keyword']: ret})
                     return
 
@@ -275,7 +286,7 @@ class ScanTiming(ScanBasic):
                 'keyword': 'maxLoads',
             },
         ]
-        
+
         self.call_lower_method(ScanPattern, options, pattern_args, handle_number=self.handle_number)
         self.call_lower_method(ScanNumbers, options, numbers_args_1)
 
@@ -301,7 +312,7 @@ class ScanTiming(ScanBasic):
                 'keyword': 'scoreSetup'
             },
         ]
-        
+
         numbers_args_1 = [
             {
                 'file': self.files['timing_totalloads_file'],
@@ -320,7 +331,7 @@ class ScanTiming(ScanBasic):
                 'keyword': 'maxLoads',
             },
         ]
-        
+
         self.call_lower_method(ScanPattern, options, pattern_args, handle_number=self.handle_number)
         self.call_lower_method(ScanNumbers, options, numbers_args_1)
 
@@ -562,6 +573,7 @@ class ScanLSE(ScanBasic):
                     'stop_pattern': self.patterns['lse_stop_pattern'],
                 }
         patterns_1.pop('lse_ebr')
+        patterns_1.pop('lse_carry')
 
         patterns_2 = [
             {
@@ -572,9 +584,18 @@ class ScanLSE(ScanBasic):
                 'operator': 'sum',
             }
         ]
-
+        patterns_3 = [
+            {
+                'file': self.files['lse_ebr_file'],
+                'pattern_1': self.patterns['lse_carry_pattern'][0],
+                'pattern_2': self.patterns['lse_carry_pattern'][1],
+                'keyword': 'lse_carry',
+                'operator': 'max',
+            }
+        ]
         self.call_lower_method(ScanPattern, options, patterns_1.values())
         self.call_lower_method(ScanNumbers, options, patterns_2)
+        self.call_lower_method(ScanNumbers, options, patterns_3)
 
         carry = even = odd = lut = 0
         for i in self.task_struct.stack:
@@ -587,9 +608,11 @@ class ScanLSE(ScanBasic):
             if 'lse_odd' in i:
                 odd = int(i['lse_odd'])
         if lut != 0:
-            lut = lut + 2 * carry - 2 * even - 3 * odd
+            # lut = lut + 2 * carry - 2 * even - 3 * odd
+            lut = lut + 2 * carry
         if carry != 0:
-            carry = 2 * carry - even - 2 * odd
+            # carry = 2 * carry - even - 2 * odd
+            carry = carry
         for i in self.task_struct.stack:
             if 'lse_carry' in i:
                 i['lse_carry'] = str(carry)
@@ -655,6 +678,18 @@ class ScanCPU(ScanBasic):
         patterns_1['postsyn_real_Time']['stop_pattern'] = self.patterns['cpu_postsyn_stop_pattern']
         patterns_1['postsyn_cpu_Time']['start_pattern'] = self.patterns['cpu_postsyn_start_pattern']
         patterns_1['postsyn_cpu_Time']['stop_pattern'] = self.patterns['cpu_postsyn_stop_pattern']
+        #
+        run_pb_log = patterns_1["postsyn_cpu_Time"].get("file")
+        log2sim_log = os.path.join(os.path.dirname(run_pb_log), "log2sim.log")
+        patterns_1["log2sim_cpu_Time"] = dict(file=log2sim_log,
+                                              pattern=r'Elapsed Time: ([\d\.]+)', keyword='log2sim_cpu_Time')
+        patterns_1["backanno_cpu_Time"] = dict(file=run_pb_log, pattern=r'Total CPU Time:\s+(.+)',
+                                               keyword='backanno_cpu_Time',
+                                               start_pattern=r'backanno:\s+version')
+        patterns_1["bitgen_cpu_Time"] = dict(file=run_pb_log, pattern=r'Total CPU Time:\s+(.+)',
+                                             keyword='bitgen_cpu_Time',
+                                             start_pattern='Bitstream generation complete')
+        #
 
         self.call_lower_method(ScanPattern, options, patterns_1.values(), handle_number=self.handle_number)
 
@@ -748,6 +783,30 @@ class ScanMemory(ScanBasic):
         self.call_lower_method(ScanPattern, options, patterns_3)
 
 
+class ScanCoverage(ScanBasic):
+    def __init__(self):
+        ScanBasic.__init__(self, name='scan_coverage')
+        self.descriptor = 'Coverage'
+
+    def handle(self, options, args):
+        eval('self.handle_' + options['software'])(options, args)
+
+    def handle_diamond(self, options, args):
+        self.handle_radiant(options, args)
+
+    def handle_radiant(self, options, args):
+        patterns = [
+            {
+                'file': os.path.join(options['tag_path'], "sim_rtl", "cover_report.txt"),
+                'pattern': r'Total Coverage By [^:]+: ([\.\d]+%)',
+                # Total Coverage By Instance (filtered view): 37.17%
+                'keyword': 'rtl_sim_coverage',
+            },
+
+        ]
+        self.call_lower_method(ScanPattern, options, patterns)
+
+
 class ScanErrors(ScanBasic):
     def __init__(self):
         ScanBasic.__init__(self, name='scan_errors')
@@ -837,33 +896,71 @@ class ScanSimulation(ScanBasic):
         self.handle_radiant(options, args)
 
     def handle_radiant(self, options, args):
+        old_file = self.files['simulation_sim_time_file']
+        root_folder = os.path.dirname(old_file)
         pattern1 = [
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_rtl_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_rtl_time',
             },
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_syn_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_syn_time',
             },
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_map_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_map_time',
             },
             {
                 'file': self.files['simulation_sim_time_file'],
                 'pattern': self.patterns['simulation_sim_time_pattern'],
                 'start_pattern': self.patterns['simulation_sim_par_start_pattern'],
+                'stop_pattern': self.patterns['simulation_sim_time_stop_pattern'],
                 'keyword': 'sim_par_time',
             },
-        ]
 
+            {
+                'file': os.path.join(root_folder, "sim_rtl", "run_sim_rtl.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_rtl_cpu_time',
+            },
+            {
+                'file': os.path.join(root_folder, "sim_syn_vlg", "run_sim_syn_vlg.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_syn_vlg_cpu_time',
+            },
+            {
+                'file': os.path.join(root_folder, "sim_map_vlg", "run_sim_map_vlg.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_map_vlg_cpu_time',
+            },
+            {
+                'file': os.path.join(root_folder, "sim_par_vlg", "run_sim_par_vlg.log"),
+                'pattern': r"Elapsed time:\s*(\S+)",
+                'start_pattern': r"Loading\s+work\.",
+                'keyword': 'sim_par_vlg_cpu_time',
+            },
+            #
+        ]
+        # parse 'simstats' data
+        _p = r"mem:\s+size\s+during\s+sim.+\s+([\d\.]+\s+\w+)"
+        _sp = r"Loading\s+work\."
+        _file = os.path.join(root_folder, "{0}", "run_{0}.log")
+        for k in ("sim_rtl", "sim_syn_vlg", "sim_map_vlg", "sim_par_vlg"):
+            pattern1.append(dict(file=_file.format(k), pattern=_p, start_pattern=_sp, keyword='{}_Memory'.format(k)))
+        #
         pattern2 = [
             {
                 'file': self.files['simulation_sim_tool_file'],
@@ -873,6 +970,8 @@ class ScanSimulation(ScanBasic):
                 'pattern_4': self.patterns['simulation_sim_riviera_version_pattern'],
                 'pattern_5': self.patterns['simulation_sim_questa_tool_pattern'],
                 'pattern_6': self.patterns['simulation_sim_questa_version_pattern'],
+                'pattern_7': self.patterns['simulation_sim_modelsim_tool_pattern'],
+                'pattern_8': self.patterns['simulation_sim_modelsim_version_pattern'],
                 'keyword': 'sim_tool',
                 'join': '-',
             },
@@ -880,3 +979,34 @@ class ScanSimulation(ScanBasic):
 
         self.call_lower_method(ScanPattern, options, pattern1)
         self.call_lower_method(ScanStrings, options, pattern2)
+
+
+class ScanFileSize(ScanBasic):
+    def __init__(self):
+        super(ScanFileSize, self).__init__(name="scan_file_size")
+        self.descriptor = 'File Size'
+
+    def handle(self, options, args):
+        eval('self.handle_' + options['software'])(options, args)
+
+    def handle_diamond(self, options, args):
+        self.handle_radiant(options, args)
+
+    def handle_radiant(self, options, args):
+        patterns = dict()
+        patterns["syn_vm_size"] = ".vm"
+        patterns["map_udb_size"] = "_map.udb"
+        patterns["syn_vo_size"] = "_syn.vo"
+        patterns["par_udb_size"] = ".udb"
+        patterns["par_vo_size"] = "_vo.vo"
+        patterns["export_bit_size"] = (".bin", ".bit")
+
+        file_root_path = os.path.join(options['tag_path'], "*")
+        design = options['design']
+        for k, v in list(patterns.items()):
+            if isinstance(v, str):
+                v = [v]
+            for foo in v:
+                my_file = get_file(os.path.join(design, file_root_path, "*" + foo))
+                if my_file:
+                    self.out({k: str(round(os.path.getsize(my_file)/1024, 1))})   # KB

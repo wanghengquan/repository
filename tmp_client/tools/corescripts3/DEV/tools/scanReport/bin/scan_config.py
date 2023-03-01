@@ -31,7 +31,7 @@ class Config:
         tag_path = os.path.join(top_dir, options['design'], options['tag'])
         options['tag_path'] = tag_path
         for item in os.listdir(tag_path):
-            if item.startswith("Target_fmax"):
+            if item.startswith("Target_"):
                 options['sweep'] = True
                 options['seed'], options['seed_folder'] = get_seed_folder(options)
                 break

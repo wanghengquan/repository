@@ -47,6 +47,14 @@ public class upload_dialog extends JFrame{
 	private JPasswordField field_password = new JPasswordField(public_data.TMP_DATABASE_PWD, 20);
 	private JTextField field_file = new JTextField("", 20);
 	private JButton open_button = new JButton("Select");
+	private JLabel jl_suite_sheet = new JLabel("Suite Sheets:");
+	private JRadioButton jr_all_sheet = new JRadioButton("All");
+	private JRadioButton jr_lst_sheet = new JRadioButton("List:");
+	private JTextField jt_sheet_list = new JTextField("");
+	private JLabel jl_match_case = new JLabel("Match Only:");
+	private JRadioButton jr_match_auto = new JRadioButton("Auto");
+	private JRadioButton jr_match_yes = new JRadioButton("Yes");
+	private JRadioButton jr_match_no = new JRadioButton("No");
 	private JButton cancel_button = new JButton("Cancel");
 	private JButton upload_button = new JButton("Upload");
 	private String line_separator = System.getProperty("line.separator");
@@ -72,13 +80,43 @@ public class upload_dialog extends JFrame{
 		GridBagLayout part1_layout = new GridBagLayout();
 		JPanel p1 = new JPanel(part1_layout);
 		JLabel blank_line1 = new JLabel("");
+		label_username.setToolTipText("TestRail User Name.");
 		p1.add(label_username);
 		p1.add(field_username);
+		label_password.setToolTipText("TestRail Password.");
 		p1.add(label_password);
 		p1.add(field_password);
+		label_suitefile.setToolTipText("TMP format suite file, maximum version:" + public_data.BASE_SUITEFILEVERSION);
 		p1.add(label_suitefile);
 		p1.add(field_file);
 		p1.add(open_button);
+		p1.add(jl_suite_sheet);
+		p1.add(jr_all_sheet);
+		p1.add(jr_lst_sheet);
+		p1.add(jt_sheet_list);
+		jl_suite_sheet.setToolTipText("Suite Sheet to upload.");
+		jr_all_sheet.setToolTipText("All suite sheets will be upload.");
+		jr_lst_sheet.setToolTipText("listed suite sheets will be upload.");
+		jt_sheet_list.setToolTipText("List suite sheets, separate with ',' or ';'.");
+		ButtonGroup suite_group = new ButtonGroup();
+		suite_group.add(jr_all_sheet);
+		suite_group.add(jr_lst_sheet);
+		jr_all_sheet.setSelected(true);
+		p1.add(jl_match_case);
+		p1.add(jr_match_auto);
+		p1.add(jr_match_yes);
+		p1.add(jr_match_no);
+		jl_match_case.setToolTipText("How upload script process those cases doesn't match any 'macro' condition.");
+		jr_match_auto.setToolTipText("1. Suite file with one suite sheet, upload all case, 2. Suite file with mulitple suite sheets only matched case will be upload.");
+		jr_match_yes.setToolTipText("Test case must match suite 'macro' before upload.");
+		jr_match_no.setToolTipText("Test case doesn't match suite 'macro' will also be upload.");
+		ButtonGroup match_group = new ButtonGroup();
+		match_group.add(jr_match_auto);
+		match_group.add(jr_match_yes);
+		match_group.add(jr_match_no);
+		jr_match_auto.setSelected(true);
+		JPanel blank_cell1 = new JPanel();
+		p1.add(blank_cell1);
 		p1.add(blank_line1);
 		p1.add(cancel_button);		
 		JPanel blank_cell2 = new JPanel();
@@ -93,30 +131,30 @@ public class upload_dialog extends JFrame{
 		//for label_username
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
-		layout_s.weighty=0.1;
+		layout_s.weighty = 0;
 		part1_layout.setConstraints(label_username, layout_s);
 		//for field_username
 		layout_s.gridwidth=0;
 		layout_s.weightx = 0;
-		layout_s.weighty=0;
+		layout_s.weighty = 0;
 		part1_layout.setConstraints(field_username, layout_s);
 		//for label_password
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
-		layout_s.weighty=0.1;
+		layout_s.weighty = 0;
 		part1_layout.setConstraints(label_password, layout_s);	
 		//for field_password
 		layout_s.gridwidth=0;
 		layout_s.weightx = 0;
-		layout_s.weighty=0;
+		layout_s.weighty = 0;
 		part1_layout.setConstraints(field_password, layout_s);	
 		//for label_suitefile
 		layout_s.gridwidth=1;
 		layout_s.weightx = 0;
-		layout_s.weighty=0.1;
+		layout_s.weighty=0;
 		part1_layout.setConstraints(label_suitefile, layout_s);	
 		//for field_file
-		layout_s.gridwidth=2;
+		layout_s.gridwidth=4;
 		layout_s.weightx = 1;
 		layout_s.weighty=0;
 		part1_layout.setConstraints(field_file, layout_s);
@@ -125,6 +163,51 @@ public class upload_dialog extends JFrame{
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
 		part1_layout.setConstraints(open_button, layout_s);
+		//for label_suitefile
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jl_suite_sheet, layout_s);	
+		//for jr_all_sheet
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0.1;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jr_all_sheet, layout_s);		
+		//for jr_lst_sheet
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0.1;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jr_lst_sheet, layout_s);		
+		//for jt_sheet_list
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0.8;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jt_sheet_list, layout_s);		
+		//for jl_match_case
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0;
+		layout_s.weighty=0.1;
+		part1_layout.setConstraints(jl_match_case, layout_s);	
+		//for jr_match_auto
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0.2;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jr_match_auto, layout_s);		
+		//for jr_match_yes
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0.2;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jr_match_yes, layout_s);		
+		//for jr_match_no
+		layout_s.gridwidth=1;
+		layout_s.weightx = 0.2;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(jr_match_no, layout_s);		
+		//for blank_cell1
+		layout_s.gridwidth=0;
+		layout_s.weightx = 0.4;
+		layout_s.weighty = 0;
+		part1_layout.setConstraints(blank_cell1, layout_s);
 		//for blank_line1
 		layout_s.gridwidth=0;
 		layout_s.weightx = 0;
@@ -136,7 +219,7 @@ public class upload_dialog extends JFrame{
 		layout_s.weighty=0.1;
 		part1_layout.setConstraints(cancel_button, layout_s);		
 		//for blank_cell2
-		layout_s.gridwidth=2;
+		layout_s.gridwidth=4;
 		layout_s.weightx = 0;
 		layout_s.weighty=0;
 		part1_layout.setConstraints(blank_cell2, layout_s);	
@@ -161,7 +244,7 @@ public class upload_dialog extends JFrame{
 		cancel_button.addActionListener(new cancel_action());
 		upload_button.addActionListener(new upload_action());
 		my_container.setBackground(Color.white);
-		this.setSize(500, 400);
+		this.setSize(600, 500);
 		//this.setLocationRelativeTo(null);
 		//this.setLocation(600,600);
 		if(client_info.get_client_data().containsKey("preference")){
@@ -197,15 +280,41 @@ public class upload_dialog extends JFrame{
 			String user = field_username.getText();
 			String pswd = new String(field_password.getPassword());
 			String file = field_file.getText();
-			
+			//suite file check
 			String message = new String("No file selected");
 			String title = new String("Upload File Error:");
 			if (file.isEmpty()){
 				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-
-			new Thread(new run_cmd(user, pswd, file, work_space)).start();
+			//suite sheet check
+			String suite_sheets = jt_sheet_list.getText();
+			if(jr_lst_sheet.isSelected() && suite_sheets.isEmpty()) {
+				message = "No suite sheet name listed";
+				title = "Upload File Error:";
+				JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			//generate run thread
+			String match_option = new String("");
+			if(jr_match_auto.isSelected()) {
+				match_option = "auto";
+			} else if (jr_match_yes.isSelected()) {
+				match_option = "yes";
+			} else if (jr_match_no.isSelected()) {
+				match_option = "no";
+			} else {
+				;
+			}
+			String sheet_option = new String("");
+			if(jr_all_sheet.isSelected()) {
+				;
+			} else if (jr_lst_sheet.isSelected()) {
+				sheet_option = suite_sheets.replaceAll("\\s*,\\s*", ",").replaceAll("\\s*;\\s*", ",").trim();
+			} else {
+				;
+			}
+			new Thread(new run_cmd(user, pswd, file, match_option, sheet_option, work_space)).start();
 			upload_button.setEnabled(false);
 		}
 	}
@@ -214,12 +323,23 @@ public class upload_dialog extends JFrame{
 		private String user = new String();
 		private String pswd = new String();
 		private String file = new String();
+		private String match_option = new String();
+		private String sheet_option = new String();
 		private String work_space = new String();
 		
-		public run_cmd(String user, String pswd, String file, String work_space){
+		public run_cmd(
+				String user, 
+				String pswd, 
+				String file, 
+				String match_option,
+				String sheet_option,
+				String work_space
+				){
 			this.user = user;
 			this.pswd = pswd;
 			this.file = file;
+			this.match_option = match_option;
+			this.sheet_option = sheet_option;
 			this.work_space = work_space;
 		}
 
@@ -244,12 +364,21 @@ public class upload_dialog extends JFrame{
 				UPLOAD_DIALOG_LOGGER.warn("Error:Got unknown Python version:" + cur_ver + ", Upload stopped.");
 				return;
 			}
+			cmd_args.add("upload");
 			cmd_args.add("-f");
 			cmd_args.add(file);
+			cmd_args.add("-m");
+			cmd_args.add(match_option);
+			if(!sheet_option.isEmpty()) {
+				cmd_args.add("-s");
+				cmd_args.add(sheet_option);
+			}
+			cmd_args.add("-c");
 			cmd_args.add("-u");
 			cmd_args.add(user);
 			cmd_args.add("-p");
 			cmd_args.add(pswd);
+			//System.out.println(cmd_args.toString());
 			output_area.append(String.join(" ", cmd_args));
 			output_area.append(line_separator);
 			ProcessBuilder pb = new ProcessBuilder(cmd_args);

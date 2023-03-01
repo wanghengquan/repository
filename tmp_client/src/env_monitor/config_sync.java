@@ -233,7 +233,7 @@ public class config_sync extends Thread {
 						option_value = public_data.DEF_MAX_THREAD_MODE;
 						CONFIG_SYNC_LOGGER.warn("Config file:Invalid thread_mode setting:" + section_name + ">" + option_key + ", default value will be used.");
 					}
-					break;				
+					break;
 				case "debug":
 					if (!data_check.str_choice_check(option_value, new String [] {"0", "1"} )){
 						option_value = public_data.DEF_CLIENT_DEBUG_MODE;
@@ -345,6 +345,7 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		tmp_preference_data.put("debug_mode", write_data.get("preference").get("debug_mode"));
+		tmp_preference_data.put("greed_mode", write_data.get("preference").get("greed_mode"));
 		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
 		cfg_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		cfg_preference_data.put("save_space", write_data.get("preference").get("save_space"));

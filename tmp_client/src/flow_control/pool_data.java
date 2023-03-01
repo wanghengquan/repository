@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.screen_record;
 import utility_funcs.system_cmd;
 
 public class pool_data {
@@ -139,11 +140,13 @@ public class pool_data {
 			String launch_path,
 			String case_path,
 			String case_url,
-			String est_mem,
-			int time_out) {
+			float est_mem,
+			int time_out,
+			Boolean call_recorded,
+			screen_record video_object
+			) {
 		Future<?> future_call_back = run_pool.submit(sys_call);
 		String sys_call_key = case_id + "#" + queue_name;
-		String exp_mem = new String("NA");
 		HashMap<pool_attr, Object> sys_call_data = new HashMap<pool_attr, Object>();
 		sys_call_data.put(pool_attr.call_back, future_call_back);
 		sys_call_data.put(pool_attr.call_queue, queue_name);
@@ -156,27 +159,38 @@ public class pool_data {
 		sys_call_data.put(pool_attr.call_reqtime, time_out);
 		sys_call_data.put(pool_attr.call_canceled, false);
 		sys_call_data.put(pool_attr.call_estmem, est_mem);
-		sys_call_data.put(pool_attr.call_expmem, exp_mem);
+		sys_call_data.put(pool_attr.call_curmem, 0.0f);
+		sys_call_data.put(pool_attr.call_maxmem, 0.0f);
 		sys_call_data.put(pool_attr.call_timeout, false);
 		sys_call_data.put(pool_attr.call_terminate, false);
 		sys_call_data.put(pool_attr.call_status, call_state.INITIATE);
 		ArrayList<String> call_output = new ArrayList<String>();
 		sys_call_data.put(pool_attr.call_output, call_output);
+		sys_call_data.put(pool_attr.call_recorded, call_recorded);
+		sys_call_data.put(pool_attr.call_videoobj, video_object);
 		call_map.put(sys_call_key, sys_call_data);
 	}
 
 	@SuppressWarnings("unchecked")
 	public synchronized void fresh_sys_call(
-			HashMap<String,String> tools_data) {
+			ArrayList<String> mem_info,
+			HashMap<String,String> tools_data
+			) {
+		if (call_map.isEmpty()) {
+			return;
+		}
 		Iterator<String> call_map_it = call_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> hash_data = call_map.get(call_index);
 			// put call_status
 			Future<?> call_back = (Future<?>) hash_data.get(pool_attr.call_back);
+			String call_case_id = (String) hash_data.get(pool_attr.call_case);
 			long current_time = System.currentTimeMillis() / 1000;
 			long start_time = (long) hash_data.get(pool_attr.call_gentime);
 			int time_out = (int) hash_data.get(pool_attr.call_reqtime);
+			Boolean record_request = (Boolean) hash_data.get(pool_attr.call_recorded);
+			screen_record record_object = (screen_record) hash_data.get(pool_attr.call_videoobj);
 			// timeout task cancel
 			if (current_time - start_time > time_out + 5) {
 				hash_data.put(pool_attr.call_timeout, true);
@@ -202,28 +216,37 @@ public class pool_data {
 					call_output.add(">>>Timeout extra run:");
 					call_output.addAll(get_cancel_extra_run_output((String) hash_data.get(pool_attr.call_casedir), tools_data));
 				}
-				hash_data.put(pool_attr.call_expmem, get_memory_info(call_output));
+				if (record_request) {
+					record_object.stop();
+				}
 			} else {
 				hash_data.put(pool_attr.call_status, call_state.PROCESSIONG);
+				float cur_mem = get_current_task_memory_usage(call_case_id, mem_info);
+				hash_data.put(pool_attr.call_curmem, cur_mem);
+				float max_mem = (float) hash_data.get(pool_attr.call_maxmem);
+				if (cur_mem > max_mem) {
+					hash_data.put(pool_attr.call_maxmem, cur_mem);
+				}
 			}
 		}
 	}
 	
-    private String get_memory_info(ArrayList<String> call_output) {
-        String memory = new String("NA");
-        if(call_output == null || call_output.isEmpty()){
-            return memory;
-        }
-        // <status>Passed</status>
-        Pattern p = Pattern.compile("memory\\s*>\\s*(.+?)<");
-        for (String line : call_output) {
-            Matcher m = p.matcher(line);
-            if (m.find()) {
-            	memory = m.group(1);
-            }
-        }
-        return memory;
-    }
+	private float get_current_task_memory_usage(
+			String case_id,
+			ArrayList<String> mem_info
+			){
+		float current_mem = 0.0f;
+		String scan_value = new String("0.0");
+		//System.out.println(mem_info);
+		for (String line: mem_info) {
+			line = line.replace(")", "");//for python2.7 compatibility
+			if(line.contains("T" + case_id) && line.contains(" ")) {
+				scan_value = line.split("\\s+")[1];
+				current_mem = Float.valueOf(scan_value).floatValue();
+			}
+		}
+		return current_mem;
+	}
 	
 	private Boolean is_child_process_timeout(ArrayList<String> cmd_output) {
 		if (cmd_output == null | cmd_output.isEmpty()){
@@ -251,7 +274,7 @@ public class pool_data {
 		cancel_status = call_back.cancel(true);
 		hash_data.put(pool_attr.call_canceled, cancel_status);		
 		return cancel_status;
-	}	
+	}
 	
 	private ArrayList<String> get_cancel_extra_run_output(
 			String case_path,
@@ -288,7 +311,20 @@ public class pool_data {
 		}
 		return call_data;
 	}
-
+	
+	public synchronized float get_sys_call_extra_memory() {
+		float total_estimate_usage = 0.0f;		
+		Iterator<String> call_map_it = call_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_map.get(call_index);
+			float est_mem = (float) one_call_data.get(pool_attr.call_estmem);
+			float cur_mem = (float) one_call_data.get(pool_attr.call_curmem);
+			total_estimate_usage = total_estimate_usage +  est_mem - cur_mem;
+		}
+		return total_estimate_usage;
+	}
+	
 	public synchronized HashMap<String, HashMap<pool_attr, Object>> get_sys_call_link() {
 		return this.call_map;
 	}	

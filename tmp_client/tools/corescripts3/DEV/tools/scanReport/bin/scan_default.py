@@ -14,7 +14,7 @@ MUST_HAVE = (
 LOCAL_URL = 'mysql+pymysql://root:1234@localhost:3306/test'
 
 SCAN_FMAX_START_PRE = r'4\.1  Setup Detailed Report'
-SCAN_FMAX_START_CONSTRAINT = r'4\.1\.\d+.+?constraint\:\s+(?P<Constraint>.+?\-name\s+\{(?P<clkname>.+?)\}\s+-.+?$)'
+SCAN_FMAX_START_CONSTRAINT = r'Setup\s+path\s+details\s+for\s+constraint:\s+(?P<Constraint>.+?\-name\s+\{(?P<clkname>.+?)\}\s+-.+?$)'
 SCAN_FMAX_END_CONSTRAINT = r'(End of Detailed Report for timing paths|End-of-path required time)'
 MAX_FMAX = 500
 
@@ -129,6 +129,7 @@ class Default:
                     'memory_postsyn_peak_Memory_file': radiant_sweep_run_pb_log,
                     'memory_map_peak_Memory_file': radiant_sweep_mrp_file,
                     'memory_ParPeakMem_file': radiant_sweep_par_file,
+                    'memory_ParPeakMem_usage_file': radiant_sweep_par_file,
 
                     'comments_mapComments_file': radiant_sweep_mrp_file,
                     'comments_parComments_file': radiant_sweep_par_file,
@@ -179,9 +180,9 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_LRAM_pattern': 'Number of Large RAMs:\s+(\d+)',
-                    'resource_DSP_pattern': 'Number of DSPs:\s+(\d+)',
+                    'resource_DSP_pattern': 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)',
                     'resource_DSP_PREADD9_pattern': 'Number of PREADD9:\s+(\d+)',
                     'resource_DSP_MULT9_pattern': 'Number of MULT9:\s+(\d+)',
                     'resource_DSP_MULT18_pattern': 'Number of MULT18:\s+(\d+)',
@@ -209,7 +210,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
 
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -255,6 +256,7 @@ class Default:
                     'memory_postsyn_peak_Memory_start_pattern': 'Command Line: postsyn',
                     'memory_map_peak_Memory_pattern': 'Peak Memory Usage:\s+(\d+)',
                     'memory_ParPeakMem_pattern': 'after\s+PAR.+memory\s+([\d\.]+)\s+\S+$',
+                    'memory_ParPeakMem_usage_pattern': 'Peak Memory Usage:\s+(\d+)',
 
                     'comments_mapComments_pattern': '(ERROR\s+-\s+.{1,135})',
                     'comments_parComments_pattern': '(ERROR\s+-\s+.{1,135})',
@@ -266,15 +268,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$',
                 },
             },
 
@@ -350,6 +355,7 @@ class Default:
                     'memory_postsyn_peak_Memory_file': radiant_no_sweep_run_pb_log,
                     'memory_map_peak_Memory_file': radiant_no_sweep_mrp_file,
                     'memory_ParPeakMem_file': radiant_no_sweep_par_file,
+                    'memory_ParPeakMem_usage_file': radiant_no_sweep_par_file,
 
                     'comments_mapComments_file': radiant_no_sweep_mrp_file,
                     'comments_parComments_file': radiant_no_sweep_par_file,
@@ -399,9 +405,9 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_LRAM_pattern': 'Number of Large RAMs:\s+(\d+)',
-                    'resource_DSP_pattern': 'Number of DSPs:\s+(\d+)',
+                    'resource_DSP_pattern': 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)',
                     'resource_DSP_PREADD9_pattern': 'Number of PREADD9:\s+(\d+)',
                     'resource_DSP_MULT9_pattern': 'Number of MULT9:\s+(\d+)',
                     'resource_DSP_MULT18_pattern': 'Number of MULT18:\s+(\d+)',
@@ -429,7 +435,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
 
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -475,6 +481,7 @@ class Default:
                     'memory_postsyn_peak_Memory_start_pattern': 'Command Line: postsyn',
                     'memory_map_peak_Memory_pattern': 'Peak Memory Usage:\s+(\d+)',
                     'memory_ParPeakMem_pattern': 'after\s+PAR.+memory\s+([\d\.]+)\s+\S+$',
+                    'memory_ParPeakMem_usage_pattern': 'Peak Memory Usage:\s+(\d+)',
 
                     'comments_mapComments_pattern': '(ERROR\s+-\s+.{1,135})',
                     'comments_parComments_pattern': '(ERROR\s+-\s+.{1,135})',
@@ -486,15 +493,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$'
                 },
             },
         }
@@ -630,7 +640,7 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_CARRY_pattern': [
                         "Number\s+of\s+ripple\s+logic:\s+(?P<CARRY>\d+)",
                         "Number\s+used\s+as\s+ripple\s+logic:\s+(?P<CARRY>\d+)"
@@ -669,7 +679,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
 
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -726,15 +736,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$'
                 },
             },
 
@@ -868,7 +881,7 @@ class Default:
                     'resource_LUT_per_pattern': 'Number of LUT4s:.+out\s+of\s+\d+\s+\((.+)\)',
                     'resource_IO_pattern': 'Number of P?[IO sites|IOs].+used:\s+(\d+)',
                     'resource_IO_per_pattern': 'Number of P?[IO sites|IOs].+used:\s+\d+.+\((.+)\)',
-                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs):\s+(\d+)',
+                    'resource_EBR_pattern': 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs):\s+([\d.]+)',
                     'resource_CARRY_pattern': [
                         "Number\s+of\s+ripple\s+logic:\s+(?P<CARRY>\d+)",
                         "Number\s+used\s+as\s+ripple\s+logic:\s+(?P<CARRY>\d+)"
@@ -907,7 +920,7 @@ class Default:
                     'resource_LSRMaxLoad_stop_pattern': 'Top 10 highest fanout non-clock nets',
                     
                     'lse_reg_pattern': 'Number of register bits\s*=>\s*(\d+)',
-                    'lse_carry_pattern': 'FA2\s*=>\s*(\d+)',
+                    'lse_carry_pattern': ['CCU2\s*=>\s*(?P<lse_carry>\d+)', 'FA2\s*=>\s*(?P<lse_carry>\d+)'],
                     'lse_io_pattern': 'BB_B\s*=>\s*(\d+)',
                     'lse_lut4_pattern': 'LUT4\s*=>\s*(\d+)',
                     'lse_ebr_pattern': [
@@ -965,15 +978,18 @@ class Default:
 
                     'simulation_sim_active_tool_pattern': '(active-hdl)',
                     'simulation_sim_active_version_pattern': 'Simulator\s+build\s+([\d\.]+)',
+                    'simulation_sim_modelsim_tool_pattern': 'Model\s+Technology\s+(ModelSim)',
+                    'simulation_sim_modelsim_version_pattern': 'Edition\s+([\d\.]+)',
                     'simulation_sim_riviera_tool_pattern': '(riviera-pro)',
                     'simulation_sim_riviera_version_pattern': 'version\s+([\d\.]+)',
                     'simulation_sim_questa_tool_pattern': '(Questa Sim)',
                     'simulation_sim_questa_version_pattern': 'Version\s+(.+?)\s',
-                    'simulation_sim_rtl_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
-                    'simulation_sim_syn_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_syn',
-                    'simulation_sim_map_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_map',
-                    'simulation_sim_par_start_pattern': '/(.+?/.+?)/.+?/vsim.+?do_sim_par',
+                    'simulation_sim_rtl_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_rtl',
+                    'simulation_sim_syn_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_syn',
+                    'simulation_sim_map_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_map',
+                    'simulation_sim_par_start_pattern': '(.+?/.+?)/.+?/vsim.+?do_sim_par',
                     'simulation_sim_time_pattern': 'Elapsed Time: (.+?)\s+seconds',
+                    'simulation_sim_time_stop_pattern': '^$'
                 },
             },
         }

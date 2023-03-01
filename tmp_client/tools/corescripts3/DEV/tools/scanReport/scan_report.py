@@ -36,15 +36,17 @@ def add_scan():
     add_process(ScanNumbers())
     add_process(ScanPrjInfo())
     add_process(ScanTimingFMAX())
-    add_process(ScanTimingPAP())    
+    add_process(ScanTimingPAP())
     add_process(ScanResource())
     add_process(ScanLSE())
     add_process(ScanPAR())
     add_process(ScanCPU())
     add_process(ScanMemory())
     add_process(ScanErrors())
+    add_process(ScanCoverage())
     add_process(ScanMilestone())
     add_process(ScanSimulation())
+    add_process(ScanFileSize())
 
 
 def report(options):

@@ -31,6 +31,8 @@ def get_seed_folder(options):
             pass
     if max_target:
         return seeds.get(max_target), max_target
+    else:
+        return "", ""
 
 
 def get_config(args):
@@ -50,8 +52,15 @@ def get_config(args):
         dirs = []
         print(e)
 
-    configs = [os.path.join(top, d) for d in dirs
-               if os.path.isfile(os.path.join(top, d)) and d.endswith('.scf')]
+    #configs = [os.path.join(top, d) for d in dirs
+    #           if os.path.isfile(os.path.join(top, d)) and d.endswith('.scf')]
+    configs = list()
+    for foo in dirs:
+        if foo == "scan_full.scf":   # try to use the latest one
+            continue
+        abs_foo = os.path.join(top, foo)
+        if os.path.isfile(abs_foo) and foo.endswith(".scf"):
+            configs.append(abs_foo)
 
     if not configs:
         print("Warning: No configure files found, use default config instead!")
@@ -75,13 +84,20 @@ def get_file(filename):
         is_yes = re.compile("Command Line:", re.I)
         if len(files) > 1:
             for foo in files:
-                with open(foo) as ob:
-                    i = 0
-                    for line in ob:
-                        i += 1
-                        if i > 100:
-                            break
-                        if is_yes.search(line):
+                try:
+                    with open(foo) as ob:
+                        i = 0
+                        for line in ob:
+                            i += 1
+                            if i > 100:
+                                break
+                            if is_yes.search(line):
+                                return foo
+                except:   # search udb file, not _syn|rtl|map.udb
+                    for k in ("_syn.udb", "_rtl.udb", "_map.udb"):
+                        if foo.endswith(k):
+                            continue
+                        if foo.endswith(".udb"):
                             return foo
         return files[0]  # update later if needed
 
@@ -138,6 +154,7 @@ def get_part_lines(f, start_pattern, stop_pattern, flags=None):
     while True:
         line = f.readline()
         if line:
+            line = line.strip()
             if stop_pattern:
                 if flags:
                     m = re.search(stop_pattern, line, flags)
@@ -194,7 +211,7 @@ def get_twr_value_one_constraint(block, clk_info):
     patterns = {
         'SDC Constraint': re.compile(SCAN_FMAX_START_CONSTRAINT),
         'Original_period': re.compile(SCAN_FMAX_START_CONSTRAINT),
-        'Timing Error': re.compile(r'^(?P<score>[^0]\d*).+?(?P<Timing_error>\d+).+?$'),
+        'Timing Error': re.compile(r'^(?P<score>\d*).+?(?P<Timing_error>\d+).+?$'),
         'logic_level': re.compile(r'Logic Level\s+:\s+(?P<level>\d+)'),
         'mpw_cell': re.compile(r'MPW Cell\s+:\s+(?P<mpw_cell>.+?)$'),
         'mpw_period': re.compile(r'MPW Period\s+:\s+(?P<mpw_period>[.\-\d]+)\s*ns'),
@@ -230,6 +247,8 @@ def get_twr_value_one_constraint(block, clk_info):
             tmp['Target'] = float(Target.group('setup_constraint'))
         if Slack:
             tmp['Slack'] = float(Slack.group('slack'))
+    if 'Target' not in tmp:
+        return dict()
     if Original_period == tmp['Target']:
         freq_t = 1000 / (Original_period - tmp['Slack'])
     else:

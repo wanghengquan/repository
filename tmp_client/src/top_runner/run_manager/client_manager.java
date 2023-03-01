@@ -94,7 +94,8 @@ public class client_manager extends Thread  {
 	
 	private Boolean get_update_available(){
 		Boolean status = Boolean.valueOf(false);
-        if(switch_info.get_core_script_update_request() && pool_info.get_pool_used_threads() == 0){
+        //if(switch_info.get_core_script_update_request() && pool_info.get_pool_used_threads() == 0){
+		if(switch_info.get_core_script_update_request()){
 		    status = true;
         }
 		return status;

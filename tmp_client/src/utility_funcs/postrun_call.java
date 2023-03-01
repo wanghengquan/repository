@@ -102,9 +102,9 @@ public class postrun_call implements Callable<Object> {
 			String result_keep){
 		Boolean run_status = Boolean.valueOf(true);
 		//task 1: copy run results
-        String[] tmp_space = save_space.split(",");
-        String[] tmp_suite = save_suite.split(",");
-        String[] tmp_path = save_path.split(",");
+        String[] tmp_space = save_space.split("\\s*,\\s*");
+        String[] tmp_suite = save_suite.split("\\s*,\\s*");
+        String[] tmp_path = save_path.split("\\s*,\\s*");
         String os_type = System.getProperty("os.name").toLowerCase();
         for(int i=0; i<tmp_space.length; i++) {
             String save_space_index = tmp_space[i].trim();
@@ -145,6 +145,8 @@ public class postrun_call implements Callable<Object> {
     				continue;
     			}
     		}
+    		//backup original results
+    		backup_previous_results(report_path, save_path_index);
             //start detail case copy
             switch (result_keep.toLowerCase()) {
                 case "zipped":
@@ -247,8 +249,8 @@ public class postrun_call implements Callable<Object> {
 			return true;
 		}
 		//task 1: copy run results
-        String[] tmp_space = save_space.split(",");
-        String[] tmp_suite = save_suite.split(",");
+        String[] tmp_space = save_space.split("\\s*,\\s*");
+        String[] tmp_suite = save_suite.split("\\s*,\\s*");
         for(int i=0; i<tmp_space.length; i++) {
             String save_space_index = tmp_space[i].trim();
             String save_suite_index = tmp_suite[i].trim();
@@ -396,6 +398,34 @@ public class postrun_call implements Callable<Object> {
 			copy_status = false;
 		}
 		return copy_status;
+	}
+	
+	private Boolean backup_previous_results(
+			String case_path, 
+			String save_path) {
+		Boolean bak_status = Boolean.valueOf(true);
+		if (case_path.equalsIgnoreCase(save_path)){
+			return bak_status;
+		}
+		File case_path_obj = new File(case_path);
+		String case_folder_name = case_path_obj.getName();
+		File save_dest_folder = new File(save_path, case_folder_name);
+		File save_dest_file = new File(save_path, case_folder_name + ".zip");
+		String m_time = new String("");
+		try {
+			if (save_dest_folder.exists()) {
+				m_time = time_info.get_date_time(save_dest_folder.lastModified());
+				save_dest_folder.renameTo(new File(save_path, case_folder_name + "_" + m_time));
+			}
+			if (save_dest_file.exists()) {
+				m_time = time_info.get_date_time(save_dest_file.lastModified());
+				save_dest_file.renameTo(new File(save_path, case_folder_name + "_" + m_time + ".zip"));
+			}
+		} catch (Exception e) {
+			run_msg.add("Result back up error:" + case_folder_name);
+			bak_status = false;
+		}
+		return bak_status;
 	}
 	
 }

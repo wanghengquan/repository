@@ -14,6 +14,8 @@ import glob
 from jira import JIRA
 import shutil
 from .pattern import FILE_PATTERNS
+from . import filelock
+import csv
 
 
 def get_valid_crs(cr_note):
@@ -90,7 +92,8 @@ _KEYCRE = re.compile(r"%\(([^)]+)\)s")
 _KEY_TEMP = "LATTE-LATTICE-LSCC-LSH"
 def replace_tag(conf_file, args):
     lines = list()
-    with open(conf_file, "r") as in_ob:
+    # add encoding for UnicodeDecodeError: 'gbk' codec can't decode byte 0x93 in position : illegal multibyte sequence
+    with open(conf_file, "r", encoding="utf-8") as in_ob:
         for line in in_ob:
             lines.append(line)
     with open(conf_file, 'w') as f:
@@ -484,7 +487,7 @@ def get_final_status(check_data_designs, args):
     return final_status
 
 
-def create_check_report(check_data_design, args):
+def create_check_report_old(check_data_design, args):
     report_lines = ['Area,Type,Case, Device_syn,Result,Reason,Comments\n']
     status = get_status_from_check_data(check_data_design)
     for design_config, details in list(status.items()):
@@ -505,6 +508,126 @@ def create_check_report(check_data_design, args):
     with open(os.path.abspath(args.top_dir) + '/check_' +
               '_'.join(time.ctime().split()).replace(':', '_') + '.csv', 'w') as f:
         f.writelines(report_lines)
+
+
+def create_check_report(check_data_design, args):
+    wfr = WriteFinalReport(check_data_design, args)
+    filelock.safe_run_function(wfr.try_to_write_report, args=None)
+
+
+def get_device_from_project_file(design_dir, tag_name):
+    tag_dir = os.path.join(design_dir, tag_name)
+    _dev = "Not Found"
+    p_device = re.compile(r'\sdevice="([^"]+)"\s+')
+    if os.path.isdir(tag_dir):
+        for foo in os.listdir(tag_dir):
+            abs_foo = os.path.join(tag_dir, foo)
+            if re.search(r"\.[rl]df$", foo, re.I):
+                with open(abs_foo) as ob:
+                    for line in ob:
+                        m = p_device.search(line)
+                        if m:
+                            return m.group(1)
+    return _dev
+
+
+class WriteFinalReport(object):
+    def __init__(self, check_data_design, args):
+        self.args = args
+        self.report_path = args.report_path
+        self.report_filename = args.report
+        self.status_dict = get_status_from_check_data(check_data_design)
+        self.titles = ("Area", "Type", "Case", "Device_syn", "Result", "Message", "Comments")
+        self.sum_titles = ("SUM:", "Run No.", "TYPE", "TOTAL", "PASS", "FAIL", "TIME")
+
+    def try_to_write_report(self):
+        if self.prepare_report_file():
+            return 1
+        self.get_old_data()
+        self.get_new_data()
+        self.write_old_and_new_data()
+
+    def get_old_data(self):
+        self.old_data = list()
+        if not os.path.isfile(self.report_file):
+            return
+        xx = csv.DictReader(open(self.report_file))
+        for foo in xx:
+            chk_area_name = foo.get("Area")
+            if chk_area_name in ("SUM:", ''):
+                continue
+            new_foo = dict()
+            for k, v in list(foo.items()):
+                if v == '':
+                    v = '""'
+                new_foo[k] = v
+            self.old_data.append(new_foo)
+
+    def get_new_data(self):
+        self.new_data = list()
+        for design_config, details in list(self.status_dict.items()):
+            xx = dict()
+            design, config = design_config.split('&&')
+            case = os.path.basename(design.rstrip('/'))
+            case_info = details[-1]
+            result = str(details[0])
+            if not details[0]:
+                reason = get_message(design)
+                comments = find_a_error(config, self.args)
+            else:
+                reason = '""'
+                comments = os.path.basename(config)
+            xx["Area"] = case_info.get("area")
+            xx["Type"] = case_info.get("type")
+            xx["Case"] = case
+            xx["Device_syn"] = get_device_from_project_file(design, self.args.tag)
+            xx["Result"] = result
+            xx["Message"] = reason
+            xx["Comments"] = comments
+            self.new_data.append(xx)
+
+    def write_old_and_new_data(self):
+        case_lines = list()
+        for_summary = list()
+        for x in (self.old_data, self.new_data):
+            for _d in x:
+                one_status = ",".join([_d.get(item, '""') for item in self.titles])
+                if one_status not in case_lines:
+                    case_lines.append(one_status)
+                    for_summary.append(_d)
+        case_lines.sort(key=str.lower)
+        with open(self.report_file, "w") as wob:
+            print(",".join(self.titles), file=wob)
+            for foo in case_lines:
+                print(foo, file=wob)
+            if len(case_lines) > 1:
+                print('', file=wob)
+                print(",".join(self.sum_titles), file=wob)
+                total_number = len(for_summary)
+                p_number = [d.get("Result") for d in for_summary].count("True")
+                f_number = total_number - p_number
+                x = ',{0},Regression,{0},{1},{2},{3}'.format(total_number, p_number, f_number, time.asctime())
+                print(x, file=wob)
+                
+    @staticmethod
+    def _wrap_md(used_path, error_code):
+        if not os.path.isdir(used_path):
+            try:
+                os.makedirs(used_path)
+            except:
+                log("Error. Failed to create {}. Error {}".format(used_path, error_code))
+                return 1
+
+    def prepare_report_file(self):
+        self.report_path = os.path.abspath(self.report_path)
+        if self._wrap_md(self.report_path, "91293244"):
+            return 1
+        current_dir = os.getcwd()
+        os.chdir(self.report_path)
+        self.report_file = os.path.abspath(self.report_filename)
+        os.chdir(current_dir)
+        if self._wrap_md(os.path.dirname(self.report_file), "88382084"):
+            return 1
 
 
 def find_a_error(config, args):
@@ -810,3 +933,110 @@ def run_get_value_function(conf_parser, conf_file):
         my_parser.process()
         value_dict[value_name] = my_parser.this_string
     return value_dict
+
+
+class GetAllValue(object):
+    r"""
+    p_and_s: {"check_one.0.string": "a    one",
+              "check_one.1.string": "b   two",
+              "check_one.2~3.string": "three",
+              "check_one.3~4.grep": r"d\s+=\s+(\d+)"}
+    """
+    def __init__(self, p_and_s, report_file, head=0, tail=0, greedy=False):
+        self.p_dot = re.compile(r"\.")
+        self.p_to = re.compile("~")
+        self.p_space = re.compile(r"\s+")
+        self.p_and_s = p_and_s
+        self.report_file = report_file
+        self.head = head
+        self.tail = tail
+        self.greedy = greedy   # use the last one
+        self.values = OrderedDict()
+
+    def get_values(self):
+        return self.values
+
+    def process(self):
+        self.build_real_pattern_and_string()
+        for lines in self.yield_group_lines():
+            self.values = OrderedDict()
+            for idx, xy in list(lines.items()):
+                for k, v in list(self.real_ps_dict.items()):
+                    if k in self.values:
+                        continue
+                    if v.get("end_number") >= idx >= v.get("start_number"):
+                        s_m = self.get_string_or_match(v.get("pattern_or_string"), xy.get("raw_line"))
+                        if s_m:
+                            self.values[k] = s_m
+            if not self.greedy:
+                if len(self.values) == len(self.real_ps_dict):
+                    return
+
+    def build_real_pattern_and_string(self):
+        real_ps_list = list()
+        for k, v in list(self.p_and_s.items()):
+            list_by_dot = self.p_dot.split(k)
+            list_by_to = [int(item) for item in self.p_to.split(list_by_dot[1])]
+            if len(list_by_to) == 1:
+                list_by_to = [list_by_to[0]] * 2
+            list_by_to.sort()
+            if list_by_dot[-1] == "regexp":
+                v = self.p_space.sub(r"\\s+", v)
+                v = re.compile(v)
+            else:
+                v = self.p_space.sub("", v)
+            real_ps_list.append([list_by_to, v])
+        real_ps_list.sort()
+
+        self.real_ps_dict = OrderedDict()
+        for (start_end, ps) in real_ps_list:
+            key = "{0}:{1}".format(*start_end)
+            value = dict(start_number=start_end[0], end_number=start_end[1], pattern_or_string=ps)
+            self.real_ps_dict[key] = value
+        keys = list(self.real_ps_dict.keys())
+        self.top_number = self.real_ps_dict[keys[0]].get("start_number")
+        self.bottom_number = self.real_ps_dict[keys[-1]].get("end_number")
+
+    def get_string_or_match(self, pattern_or_string, raw_string):
+        raw_string = raw_string.strip()
+        if isinstance(pattern_or_string, str):
+            new_string = self.p_space.sub("", raw_string)
+            if pattern_or_string in new_string:
+                return raw_string
+        else:
+            m = pattern_or_string.search(raw_string)
+            if m:
+                return m
+
+    def yield_group_lines(self):
+        zero_ps = self.real_ps_dict["0:0"].get("pattern_or_string")
+        file_line_count = -1
+        with open(self.report_file, "r") as rob:
+            for file_line_count, line in enumerate(rob):
+                pass
+        file_line_count += 1
+
+        with open(self.report_file, "r") as rob:
+            for count, line in enumerate(rob):
+                if self.head:
+                    if count > self.head:
+                        break
+                elif self.tail:
+                    if count < file_line_count - self.tail:
+                        continue
+                yes_it_is = self.get_string_or_match(zero_ps, line)
+                if yes_it_is:
+                    target_lines = self.get_target_lines(count)
+                    yield target_lines
+
+    def get_target_lines(self, zero_index):
+        lines_with_index = OrderedDict()
+        for i in range(self.top_number, self.bottom_number + 1):
+            lines_with_index[i] = dict(real_index=zero_index + i)
+        with open(self.report_file, "r") as read_ob:
+            for count, line in enumerate(read_ob):
+                for k, v in list(lines_with_index.items()):
+                    if v.get("real_index") == count:
+                        v["raw_line"] = line
+                        break
+        return lines_with_index

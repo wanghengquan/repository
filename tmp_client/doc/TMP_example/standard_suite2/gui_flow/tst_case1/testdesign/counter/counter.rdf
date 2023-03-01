@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RadiantProject version="4.2" radiant="2023.1.t.175.0" title="counter" device="iCE40UP3K-UWG30ITR" performance_grade="High-Performance_1.2V" default_implementation="impl1">
+    <Options/>
+    <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="count"/>
+        <Source name="source/count_attr.v" type="Verilog" type_short="Verilog">
+            <Options top_module="count"/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="counter1.sty"/>
+</RadiantProject>

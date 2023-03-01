@@ -222,7 +222,7 @@ public class machine_sync extends Thread {
 	}
 	
 	private String get_mem_available() {
-		String mem_free_str = new String("NA");
+		String mem_free_str = new String("00");
 		GlobalMemory memory = hw_info.getMemory();
 		long current_data = memory.getAvailable() / 1024 / 1024 /1024;
         mem_free_list.addFirst(current_data);
