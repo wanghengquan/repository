@@ -329,9 +329,6 @@ public class local_tube {
 	public static Map<String, List<List<String>>> sort_macro_map(
 			Map<String, List<List<String>>> oriMap
 			) {
-		if (oriMap == null || oriMap.isEmpty()) {
-			return null;
-		}
 		Map<String, List<List<String>>> sortedMap = new TreeMap<String, List<List<String>>>(new Comparator<String>() {
 			public int compare(String mac1, String mac2) {
 				int intmac1 = 0, intmac2 = 0;
@@ -345,6 +342,9 @@ public class local_tube {
 				return intmac1 - intmac2;
 			}
 		});
+		if (oriMap == null || oriMap.isEmpty()) {
+			return sortedMap;
+		}		
 		sortedMap.putAll(oriMap);
 		return sortedMap;
 	}
