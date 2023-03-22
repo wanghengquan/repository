@@ -171,12 +171,12 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
             continue
         if (not is_ng_flow) and task == "SynTrace":
             task = ""
-        elif os.getenv("ENV_DEVICE_IS_APOLLO") and task == "SynTrace":
-            task = ""
+        # elif os.getenv("ENV_DEVICE_IS_APOLLO") and task == "SynTrace":
+        #     task = ""
         elif task:
             task = "-task %s" % task
         _line = "prj_run %s %s -forceOne" % (process, task)
-        if process in ("Map", "Export", "PAR"):
+        if process in ("Synthesis", "Map", "Export", "PAR"):
             _line = "set r [catch {%s} msg]" % _line
             tcl_lines.append(_line)
             # tcl_lines.append('puts "$msg"')
@@ -437,7 +437,7 @@ class LatticeEnvironment:
         sts = self.set_fe_env()
         if sts:
             return sts
-        self.change_path_env()
+        # self.change_path_env()
         # set environment for pre/post process
         self.set_pre_post_environment()
 
@@ -662,6 +662,8 @@ class LatticeEnvironment:
             if self.rtf:  # use env/rtf
                 l_w = "windows" if self.on_win else "linux"
                 c_s_l = os.path.join(self.diamond_be, "..", "tptools", "modelsim", l_w, oem_path)
+                if not os.path.exists(c_s_l):
+                    c_s_l = os.path.join(self.diamond_be, "..", "tptools", "modelsim", l_w, "modeltech", oem_path)
                 closest_simulation_library = os.path.abspath(c_s_l)
             else:
                 closest_simulation_library = os.path.join(self.diamond_be, "modeltech", oem_path)
@@ -1015,6 +1017,7 @@ class CreateDiamondProjectFile:
         self.src_design = flow_options.get("src_design")
         self.dst_design = flow_options.get("dst_design")
         self.change_names = flow_options.get("change_names")
+        self.trace_report_format = flow_options.get("trace_report_format")
 
         self.strategy = flow_options.get("strategy")
         self.goal = flow_options.get("goal")
@@ -1437,9 +1440,10 @@ class CreateDiamondProjectFile:
                 new_str = ""
             add_lines.append('%s {lse_cmdline_args=%s%s}' % (pre_set, old_str, new_str))
             # set syn/map/par trce report format
-            add_lines.append('%s {syntrce_report_format=Diamond Style}' % pre_set)
-            add_lines.append('%s {maptrce_report_format=Diamond Style}' % pre_set)
-            add_lines.append('%s {partrce_report_format=Diamond Style}' % pre_set)
+            if self.trace_report_format == "diamond":
+                add_lines.append('%s {syntrce_report_format=Diamond Style}' % pre_set)
+                add_lines.append('%s {maptrce_report_format=Diamond Style}' % pre_set)
+                add_lines.append('%s {partrce_report_format=Diamond Style}' % pre_set)
         if self.is_ng_flow:
             add_lines.append('%s "%s"' % (self.tcl_cmd.get("save"), self.final_ldf_file))
         else:
@@ -1505,7 +1509,8 @@ def get_task_list(flow_options, user_options, donot_infer_options=True):
 
     for (task_name, task_cmd) in [
         ["synthesis",       ["Synthesis", "SynTrace"]],
-        ["syn_backanno",    ["COMMAND", special_command_lines]],
+        # ["syn_backanno",    ["COMMAND", special_command_lines]],
+        ["syn_backanno", ["Synthesis", "SynVerilogSimFile"]],
         ["translate",       ["Translate", ""]],
         ["map",             ["Map", ""]],
         ["map_trace",       ["Map", "MapTrace"]],
@@ -1660,6 +1665,8 @@ class RunTclFlow:
             sts = self.run_fmax_seed_flow()
         elif self.seed_sweep:
             sts = self.run_seed_flow()
+        elif self.fmax_iteration:
+            sts = self.run_fmax_iteration_flow()
         elif self.fmax_sweep:
             sts = self.run_fmax_flow()
         else:
@@ -1753,6 +1760,7 @@ class RunTclFlow:
             self.fmax_sweep = xTools.get_xrange(_fmax_range)
         else:
             self.fmax_sweep = list()
+        self.fmax_iteration = self.flow_options.get("fmax_iteration")
         self.fmax_center = self.flow_options.get("fmax_center")
         if self.fmax_center:
             _ = re.split(',', self.fmax_center)
@@ -2061,6 +2069,49 @@ class RunTclFlow:
             new_file = "PAP{}_{}.fdc_ldc".format(pap_number, number)
             shutil.copy2("fmax_center.fdc", new_file)
             return pap_number
+
+    def get_now_twr_data(self):
+        twr_file = os.path.join(os.getcwd(), self.impl_dir, "{}_{}.twr".format(self.project_name, self.impl_dir))
+        if os.path.isfile(twr_file):
+            pdc_lines = utils.get_sdc_constraint_lines(twr_file)
+            clock_target_slack_dict = utils.get_clock_target_slack(twr_file)
+            return pdc_lines, clock_target_slack_dict
+        else:
+            print("Error. Failed to finish basic flow.")
+            return 1, 1
+
+    def run_fmax_iteration_flow(self):
+        if not self.is_ng_flow:
+            print("Warning. iteration flow not supported with Diamond flow")
+            return 1
+        if self.till_map:
+            sts = self._run_till_map_flow()
+            return sts
+        self.run_pushbutton_flow()
+        _pdc, _target_slack = self.get_now_twr_data()
+        if _pdc == 1:
+            return 1
+        move_bak_results("run_pb.tcl", self.impl_dir,  "Target_iteration_00", 0)
+        for iteration_number in range(1, int(self.fmax_iteration[-1]+1)):
+            if not _target_slack:
+                print("@E: Not found any clock in twr_file, cwd is {}".format(os.getcwd()))
+                break
+            run_mark = "Target_iteration_{:02d}".format(iteration_number)
+            xTools.say_it("--Launch Test flow: %s" % run_mark)
+            my_flow_settings = list()
+            pdc_file = "iteration_flow.pdc"
+            utils.create_iteration_flow_pdc_file(pdc_file, _pdc, _target_slack, self.fmax_iteration[0])
+            if iteration_number == 1:
+                my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict)
+                my_flow_settings.append('prj_add_source "%s"' % pdc_file)
+                my_flow_settings.append('prj_enable_source "%s"' % pdc_file)
+            process_task = get_task_list(self.flow_options, dict(run_par_trace=1))
+            sts = run_ldf_file(run_mark + ".tcl", self.final_ldf_file, process_task, my_flow_settings,
+                               is_ng_flow=self.is_ng_flow)
+            _pdc, _target_slack = self.get_now_twr_data()
+            if _pdc == 1:
+                return 1
+            move_bak_results(run_mark + ".tcl", self.impl_dir, run_mark, sts)
 
     def run_fmax_flow(self):
         if self.till_map:

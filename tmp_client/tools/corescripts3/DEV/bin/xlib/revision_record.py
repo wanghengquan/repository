@@ -1,4 +1,6 @@
-REVISION = ("3783", "Sun Oct  9 15:51:25 2022", "use printsimstats=1v for Questa and ModelSim, more info in _timeout.py")
+REVISION = ("3839", "Mon Dec 26 16:42:37 2022", "combine Vivado scripts")
+# REVISION = ("3823", "Fri Dec  2 16:21:53 2022", "add --trace-report-format {diamond,default}")
+# REVISION = ("3783", "Sun Oct  9 15:51:25 2022", "use printsimstats=1v for Questa and ModelSim, more info in _timeout.py")
 # REVISION = ("3781", "Sat Oct  8 11:10:39 2022", "xrun opt and simrel questa template and error message")
 # REVISION = ("3770", "Wed Sep 21 17:16:13 2022", "add simstats for Questa and Modelsim")
 # REVISION = ("3754", "Tue Sep  6 09:14:09 2022", "use environment AllowLicenseControl=1")

@@ -73,7 +73,7 @@ class DataDump(DeployOptions):
         query data by run_id, if not found lrf.run_x, will try to execute another sql command
         """
         for run_id, v in list(self.plan_run_dict.items()):
-            sql_commands = (xUtils.SELECT_WITH_DETAIL.format(run_id=run_id),
+            sql_commands = (xUtils.SELECT_WITH_DETAIL.format(sort_key=self.sort_key, run_id=run_id),
                             xUtils.SELECT_WITHOUT_DETAIL.format(run_id=run_id))
             for _cmd in sql_commands:
                 try:

@@ -1,6 +1,6 @@
 import os
 import sys
-import re
+from statistics import geometric_mean
 import shutil
 import glob
 from .scan_old import *
@@ -13,13 +13,23 @@ def get_seed_folder(options):
     tag_path = os.listdir(options['tag_path'])
     tag_path.sort()
     seeds = OrderedDict()
+    for real_name in ("fmax", "seed", "iteration"):   # find real name
+        t_name = "Target_{}".format(real_name)
+        for foo in tag_path:
+            if foo.startswith(t_name):
+                options['seed'] = real_name
+                break
+        else:
+            continue
+        break
     for folder in tag_path:
         if folder.startswith("Target_" + options['seed']):
             twr_file = get_file(os.path.join(options['tag_path'], folder, '*', '*.twr'))
             if not twr_file:
                 continue
             if os.path.isfile(twr_file):
-                seeds[folder] = get_fmax(twr_file, options['pap'], options['software'])
+                seeds[folder] = get_fmax(twr_file, options['pap'], options['software'],
+                                         fmax_sort=options.get("fmax_sort"), tag=options.get("tag"))
     max_target, max_fmax = None, 0
     for k, v in list(seeds.items()):
         try:
@@ -112,15 +122,22 @@ def replace_tag(conf_file, args):
                 f.write(line.replace('*tag*', args.tag))
 
 
-def get_fmax(twr_file, pap, software):
-    parsed_twr = eval('parse_twr_'+software)(twr_file)
+def get_fmax(twr_file, pap, software, tag, fmax_sort):
+    if software == "radiant":
+        parsed_twr = eval('parse_twr_'+software)(twr_file, fmax_sort, tag)
+    else:
+        parsed_twr = eval('parse_twr_' + software)(twr_file)
     parse_fmax = eval('parse_fmax_'+software)
     tfl = list()
     for item in parsed_twr:
         new_item = parse_fmax(item)
         if new_item:
             wang = "%s/%s" % (new_item.get("fmax"), new_item.get("targetFmax"))
-            new_item["pap"] = float("%.5f" % eval(wang))
+            try:
+                x = float("%.5f" % eval(wang))
+            except:
+                x = -1
+            new_item["pap"] = x
             tfl.append(new_item)
     if tfl:
         if pap:
@@ -143,6 +160,11 @@ def get_part_lines(f, start_pattern, stop_pattern, flags=None):
         line = f.readline()
         if not line:
             return
+        if not isinstance(line, str):
+            try:
+                line = str(line, encoding='utf-8')
+            except UnicodeDecodeError:
+                line = ""
         if flags:
             m = re.search(start_pattern, line, flags)
         else:
@@ -154,6 +176,11 @@ def get_part_lines(f, start_pattern, stop_pattern, flags=None):
     while True:
         line = f.readline()
         if line:
+            if not isinstance(line, str):
+                try:
+                    line = str(line, encoding='utf-8')
+                except UnicodeDecodeError:
+                    line = ""
             line = line.strip()
             if stop_pattern:
                 if flags:
@@ -281,18 +308,18 @@ def get_clk_info(twr_file):
     return clk_info
 
 
-def parse_twr_radiant(twr_file):
+def parse_twr_radiant_old(twr_file):
     """
     1. Start from SCAN_FMAX_START_PRE
     2. Every constraint begin with SCAN_FMAX_START_CONSTRAINT
     3. End for every constraint SCAN_FMAX_END_CONSTRAINT
     4. Rules for fmax
-        1)	If there is 0 path or endpoint/startpoint, ignore this clock constraint
-        2)	If the constraint has path
-            a.	If original period ==  Setup Constraint, Freq = 1000 / (original period - slack)
-            b.	If original period !=  Setup Constraint, Weight freq = 1000 / (original period - original period/actual setup constraint * current slack)
-            c.	If the MPW cell of Minimum Pulse Width Report is not SEIO18/SEIO33, Freq = 1000/MPW Period, if the MPW cell of Minimum Pulse Width Report is SEIO18/SEIO33, ignore this MPW.
-            d.	Pick the min clock frequency for a/b and c as frequency of this constraint.
+        1)  If there is 0 path or endpoint/startpoint, ignore this clock constraint
+        2)  If the constraint has path
+            a.  If original period ==  Setup Constraint, Freq = 1000 / (original period - slack)
+            b.  If original period !=  Setup Constraint, Weight freq = 1000 / (original period - original period/actual setup constraint * current slack)
+            c.  If the MPW cell of Minimum Pulse Width Report is not SEIO18/SEIO33, Freq = 1000/MPW Period, if the MPW cell of Minimum Pulse Width Report is SEIO18/SEIO33, ignore this MPW.
+            d.  Pick the min clock frequency for a/b and c as frequency of this constraint.
     :param twr_file:
     :return:
     """
@@ -304,3 +331,146 @@ def parse_twr_radiant(twr_file):
             if values_for_one_constraint:
                 ret.append(values_for_one_constraint)
     return ret
+
+
+def parse_twr_radiant(twr_file, sort_type="fmax", tag="_scratch"):
+    """
+    [
+      {
+        "targetFmax": 239.98080153587713,
+        "clkName": "wr_n_x",
+        "MPW Cell": "SEIO33_CORE",
+        "logic_level": "2",
+        "Target": 4.167,
+        "Slack": 3.539,
+        "Timing Error": "1",
+        "SDC Constraint": "create_clock -name {wr_n_x} -period 4.167 [get_ports wr_n_x]",
+        "Items Scored": "6",
+        "fmax": 200.0,
+        "fmax_type": 2
+      },
+      ..
+    ]
+    """
+    sdc_lines = get_sdc_constraint_lines(twr_file)
+    clock_target_slack_dict = get_clock_target_slack(twr_file)
+    ret = list()
+    p_name = re.compile(r"\s+-name\s+(\S+)")
+    p_period = re.compile(r"\s+-period\s*(\S+)")
+    for foo in sdc_lines:
+        m_name = p_name.search(foo)
+        m_period = p_period.search(foo)
+        original_period = 0
+        if m_period:
+            original_period = float(m_period.group(1))
+        if not m_name:
+            continue
+        my_raw_name = m_name.group(1)
+        real_target_slack = clock_target_slack_dict.get(my_raw_name)
+        if not real_target_slack:
+            continue
+        if not original_period:
+            original_period = real_target_slack[0]
+        _t = dict()
+        _t["SDC Constraint"] = foo
+        _t["targetFmax"] = 1000 / original_period
+        my_name = my_raw_name.strip("{")
+        my_name = my_name.strip("}")
+        _t["clkName"] = my_name
+        _t["Slack"] = real_target_slack[-1]
+        # raw_fmax = 1000 / (real_target_slack[0] - real_target_slack[1])
+        # fmax_offset = original_period / real_target_slack[0]
+        # if fmax_offset > 1.2:
+        #     fmax_offset = 2
+        # else:
+        #     fmax_offset = 1
+        # _t["fmax"] = raw_fmax / fmax_offset
+        _t["fmax"] = real_target_slack[3]
+        _t["logic_level"] = real_target_slack[2]
+        ret.append(_t)
+    if sort_type == "geomean":
+        geomean_data = dict()
+        for k in ("SDC Constraint", "targetFmax", "clkName", "Slack", "logic_level"):
+            geomean_data[k] = 0
+        m = re.search("\W{}\W(\w+)\W".format(tag), twr_file)
+        geomean_data["fmax_type"] = m.group(1) if m else ""
+        raw_fmax_list = [foo.get("fmax") for foo in ret]
+        geomean_data["fmax"] = geometric_mean(raw_fmax_list)
+        return [geomean_data]
+    else:
+        return ret
+
+
+def get_sdc_constraint_lines(twr_file):
+    start = False
+    p_start = re.compile("SDC Constraints$")
+    p_start_next = re.compile("={15}")
+    sdc_lines = list()
+    with open(twr_file) as ob:
+        while True:
+            line = ob.readline()
+            if not line:
+                break
+            line = line.strip()
+            if p_start.search(line):
+                next_line = ob.readline()
+                start = p_start_next.search(next_line)
+                continue
+            if start:
+                if not line:
+                    break
+                sdc_lines.append(line)
+    return sdc_lines
+
+
+def get_clock_target_slack(twr_file):
+    p_diamond_style_start = re.compile(r'SDC\s+Constraint\s+\|\s+Target\s+|\s+Slack\s+\|')
+    clock_target_slack_dict = dict()
+    p_clock = re.compile(r"-name\s+(\S+)")
+    p_target_slack = re.compile(r"""\|\s+
+                                    ([-\d.]+)\s+ns\s+\|\s+
+                                    ([-\d.]+)\s+ns\s+\|\s+
+                                    (\d+)\s+\|\s+""", re.X)
+    p_new_content = re.compile(r"^[\s|]+$")
+    real_lines = list()
+    temp_line = ""
+    with open(twr_file) as ob:
+        start = False
+        for line in ob:
+            if not start:
+                start = p_diamond_style_start.search(line)
+            else:
+                line = line.strip()
+                if not line:
+                    break
+                if p_new_content.search(line):
+                    temp_line = re.sub(r"\s*-(period|name)\s*", r" -\1 ", temp_line)
+                    real_lines.append(temp_line)
+                    temp_line = ""
+                else:
+                    temp_line += line
+    if temp_line:
+        real_lines.append(temp_line)
+    for foo in real_lines:
+        m_clock = p_clock.search(foo)
+        if m_clock:
+            now_clock = m_clock.group(1)
+            clock_target_slack_dict[now_clock] = now_list = list()
+            summary_list = re.split(r"\s*\|\s*", foo)
+            _target, _slack, _levels, _frequency = summary_list[1], summary_list[2], summary_list[3], summary_list[5]
+            if "ns" in _target and "ns" in _slack and "MHz" in _frequency:
+                _ = [_target, _slack, _levels, _frequency]
+                now_list.extend([to_int_or_float(item) for item in _])
+    return clock_target_slack_dict
+
+
+def to_int_or_float(raw_string):
+    raw_string = re.sub("(ns|MHz)", "", raw_string)
+    try:
+        v_final = int(raw_string)
+    except ValueError:
+        try:
+            v_final = float(raw_string)
+        except ValueError:
+            v_final = raw_string
+    return v_final

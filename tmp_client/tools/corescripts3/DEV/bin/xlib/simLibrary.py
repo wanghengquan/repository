@@ -31,7 +31,7 @@ endmodule
 def make_line_has_opt_for_xun(raw_line):
     v_x = "-v_XCELIUM20.09.012"
     raw_line = raw_line.replace(v_x, "")
-    raw_line = re.sub("xrun ", "xrun {} ".format(v_x), raw_line)
+    raw_line = re.sub("xrun ", "xrun {} -vlog_ext +.h,.vh1 ".format(v_x), raw_line)
     return raw_line
 
 
@@ -48,7 +48,7 @@ def get_radiant_lib_file(family_path):
     hdl_path, family = os.path.split(family_path)
     if family == "iCE40UP":
         my_dirs = ("iCE40UP",)
-    elif family == "ap6a00":
+    elif family in ("ap6a00", "ap6a00b"):
         my_dirs = ("applatform", family)
     else:
         my_dirs = ("uaplatform", family)
@@ -282,6 +282,37 @@ def change_dot_lib_name(new_lib):
             break
 
 
+def update_lines_for_ap6a00(bat_lines):
+    new_lines = list()
+    p_file = re.compile(r"-f\s+(\S+)")
+    for foo in bat_lines:
+        m_file = p_file.search(foo)
+        if not m_file:
+            new_lines.append(foo)
+        else:
+            f_file = m_file.group(1)
+            f_file_base_name = os.path.basename(f_file)
+            f_file_dir_name = os.path.dirname(f_file)
+            if f_file_base_name not in ("ap6a00.f", "ap6a00b.f"):
+                new_lines.append(foo)
+            else:
+                more_inc_dirs =["-incdir {}/{}".format(f_file_dir_name, item) for item in ("pulp", "crea/security_rtl")]
+                new_f_file = os.path.abspath("local_{}".format(f_file_base_name))
+                #
+                start_atm = False
+                with open(f_file) as oem_lines:
+                    with open(new_f_file, "w") as new_ob:
+                        for line in oem_lines:
+                            start_atm = start_atm if start_atm else re.search(r"#####\s+ATM\s+####", line)
+                            line = "// {}".format(line) if start_atm else line
+                            print(line, file=new_ob, end="")
+                #
+                foo = re.sub("-incdir", "{} -incdir".format(" ".join(more_inc_dirs)), foo)
+                foo = re.sub(f_file, new_f_file, foo)
+                new_lines.append(foo)
+    return new_lines
+
+
 def compile_library(*args):
     diamond_path, hdl_type, family, sim_name, sim_bin_path, sim_vendor, is_ng_flow, general_options = args
     # family = family.lower()  # change case due to Linux platform
@@ -307,9 +338,11 @@ def compile_library(*args):
                 pass
             return
     on_win, os_name = xTools.get_os_name()
+    _set = "set {}={}" if on_win else "setenv {} {}"
     if sim_vendor == "xrun":
         compile_bat_file = "Compile_%s.bat" % sim_name
         bat_lines = list()
+        bat_lines.append(_set.format('FOUNDRY'.rjust(15, ' '), os.getenv("FOUNDRY")))
         vhdl_files = lib_file_dict.get("vhdl")
         verilog_files = lib_file_dict.get("verilog")
         x = list()
@@ -328,17 +361,16 @@ def compile_library(*args):
                 this_line = make_line_has_opt_for_xun(this_line)
                 bat_lines.append(this_line)
         if bat_lines:
+            bat_lines = update_lines_for_ap6a00(bat_lines)
             xTools.write_file(compile_bat_file, bat_lines)
             if not on_win:
-                compile_bat_file = "sh %s" % compile_bat_file
+                compile_bat_file = "csh %s" % compile_bat_file
             sts = xTools.run_command(compile_bat_file, "%s.log" % sim_name, "%s.time" % sim_name)
             return sts
         return
 
     compile_bat_file = "Compile_%s.bat" % sim_name
     bat_lines = list()
-
-    _set = "set {}={}" if on_win else "setenv {} {}"
 
     bat_lines.append(_set.format('FOUNDRY'.rjust(15, ' '), os.getenv("FOUNDRY")))
     bat_lines.append('')
@@ -388,15 +420,15 @@ def set_apollo_sim_flow_env(apollo_f_file):
     ## setenv DIR_DIGI_BLK    $MOORTEC_ROOT
     ## setenv DIR_DIGI_SLV    $MOORTEC_ROOT
     ## setenv DIR_DIGI_IP     $MOORTEC_ROOT
-    ## setenv DIR_DIGI_WRAP   $MOORTEC_ROOT
-    ## setenv DIR_DIGI_MODELS $MOORTEC_ROOT
-    ## setenv DIR_STD_DESIGN  $MOORTEC_ROOT
+    ## setenv DIR_DIGI_WRAP   $MOORTEC_ROOT    ## setenv DIR_STD_DESIGN  $MOORTEC_ROOT
     ## setenv DIR_STD_IP      $MOORTEC_ROOT
 
     ###################### ATM ################################
     """
     root_a = os.path.dirname(apollo_f_file)
     atm_path = os.path.join(root_a, "ATM")
+    if not os.path.isdir(atm_path):
+        atm_path = re.sub("ap6a00b", "ap6a00", atm_path)   # ap6a00b borrow data from ap6a00 for now
     if not os.path.isdir(atm_path):
         xTools.say_it("Warning. Not found {} for ap6a00".format(atm_path))
         return
@@ -422,7 +454,7 @@ def set_apollo_sim_flow_env(apollo_f_file):
 
 def add_apollo_lines(bat_lines, family):
     apollo_xx_environment = OrderedDict()
-    if family in ("ap6a00", "latg1"):
+    if family in ("ap6a00", "ap6a00b", "latg1"):
         p_f_file_path = re.compile(r"\s+-f\s+(\S+{}\.f)".format(family))
         new_lines = list()
         p1 = re.compile("-work")
@@ -436,8 +468,11 @@ def add_apollo_lines(bat_lines, family):
                 foo = p1.sub("-work -suppress 2388,2902 ", foo)   # old: 2583,2600,2388
                 m2 = p2.search(foo)
                 if m2:
-                    foo += " +incdir+{}".format(os.path.join(m2.group(1), "pulp"))
-                    foo += " +incdir+{}".format(os.path.join(m2.group(1), "crea", "security_rtl"))
+                    base_folder = m2.group(1)
+                    new_base_folder = re.sub("ap6a00b", "ap6a00", base_folder)   # for now
+                    foo += " +incdir+{}".format(os.path.join(new_base_folder, "pulp"))
+                    foo += " +incdir+{}".format(os.path.join(new_base_folder, "crea", "security_rtl"))
+
             new_lines.append(foo)
         return new_lines, apollo_xx_environment
     else:

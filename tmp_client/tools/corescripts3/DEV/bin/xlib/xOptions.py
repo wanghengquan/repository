@@ -154,6 +154,7 @@ class XOptions:
         pub_group.add_argument("--check-only", action="store_true", help="check results only")
         pub_group.add_argument("--no-check", action="store_true", help="do not check results, always passed")
         pub_group.add_argument("--scan-only", action="store_true", help="scan and check results only")
+        pub_group.add_argument("--fmax-sort", choices=("max", "geomean"), default="max", help="specify fmax sort way")
         pub_group.add_argument("--check-conf", help="specify the check conf FILE NAME")
         pub_group.add_argument("--pre-process", help="run pre-process for a case")
         pub_group.add_argument("--post-process", help="run post-process for a case")
@@ -230,7 +231,7 @@ class XOptions:
         # self.parser.add_argument_group(sim_group)
 
     def add_diamond_options(self):
-        diamond_group = self.parser.add_argument_group("Diamond Options")
+        diamond_group = self.parser.add_argument_group("Diamond/Radiant Options")
         diamond_group.add_argument("-X", "--x86", action="store_true", help="run with x86 vendor tools")
         if not self.is_ng_flow:
             diamond_group.add_argument("--diamond", help="specify Diamond install path")
@@ -244,6 +245,9 @@ class XOptions:
             diamond_group.add_argument("--radiant-sol", help="specify Radiant install path(Solaris)")
             diamond_group.add_argument("--radiant-fe", help="specify Radiant install path for running synthesis")
             diamond_group.add_argument("--radiant-be", help="specify Radiant install path for running mpar")
+            _help = "specify syn/map/par trace report format"
+            diamond_group.add_argument("--trace-report-format", choices=("default", "diamond"), help=_help)
+            diamond_group.set_defaults(trace_report_format="diamond")
         # self.parser.add_argument_group(diamond_group)
 
     def add_project_options(self):
@@ -347,6 +351,8 @@ class XOptions:
 
         backend_group.add_argument("--fmax-sweep", metavar="<from,to,step>",
             help="specify fmax sweeping range")
+        _help = "specify fmax iteration setting: (adjust_percentage iteration_number"
+        backend_group.add_argument("--fmax-iteration", type=float, nargs=2, help=_help)
         backend_group.add_argument("--fmax-in-whole", action="store_true", help="use fmax in the whole test flow")
         backend_group.add_argument("--seed-sweep", metavar="<from,to,step>",
             help="specify seed sweeping range")
@@ -435,8 +441,15 @@ class XOptions:
         cmd_value = self.scripts_options.get(key)
         if cmd_value:
             pass
-        else:
-            self.scripts_options[key] = value
+        else:  # EXTERNAL_SIMREL_PATH=/disks/swrd3/jchen4/simrel_lib,/lsh/sw/qa/qausr/jwang1/simrel_lib
+            value_list = re.split(r"\s*[;,]\s*", value)
+            new_v = value_list[0]
+            if len(value_list) != 1:
+                for foo in value_list:
+                    if os.path.exists(foo):
+                        new_v = foo
+                        break
+            self.scripts_options[key] = new_v
 
     def merge_ex_env(self):
         """Merge environment by user settings.

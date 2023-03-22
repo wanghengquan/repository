@@ -761,9 +761,15 @@ def prepare_ipx_testbench_files(ipx_file, working_directory):
 def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
     kept_keys = ("ENV", "LD_LIBRARY_PATH", "PATH", "FOUNDRY")
     current_values = dict(zip(kept_keys, list(os.getenv(foo) for foo in kept_keys)))
-
+    radiant_bit2sim = os.getenv("EXTERNAL_BIT2SIM_RADIANT")
+    if radiant_bit2sim:
+        foundry_path = "/lsh/sw/qa/qadata/radiant/lin/{}/ispfpga".format(radiant_bit2sim)
     verific_lib = "/tools/dist/verific/sv/Jul21/pythonmain/install"
-    python27 = "/lsh/sw/qa/lshqa/qa_home/qa_tools/python27_x64/bin/python"
+    env_python27 = os.getenv("EXTERNAL_PYTHON27_EXECUTABLE")
+    if env_python27:
+        python27 = env_python27
+    else:
+        python27 = "/lsh/sw/qa/lshqa/qa_home/qa_tools/python27_x64/bin/python"
     is_using_env = os.getenv("ENV") or os.getenv("env")
     if is_using_env:   # FOUNDRY : /home/rel/ng2022_1.236/rtf/ispfpga
         build_name = os.path.basename(os.path.abspath(os.path.join(foundry_path, "..", "..")))
@@ -784,9 +790,9 @@ def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
     for k, v in list(new_values.items()):
         os.environ[k] = v
         lines.append("setenv {} {}".format(k, v))
-    xTools.run_command(cmd_line, "test_bit2sim.log", "test_bit2sim.time")
     lines.append(cmd_line)
     xTools.write_file("gen_vo.csh", lines)
+    xTools.run_command(cmd_line, "test_bit2sim.log", "test_bit2sim.time")
     for k, v in list(current_values.items()):
         if not v:
             os.environ.pop(k)
@@ -840,3 +846,136 @@ def add_license_control():
                     print("AllowLicenseControl=true", file=ob)
     except:
         pass
+
+
+def get_sdc_constraint_lines(twr_file):
+    start = False
+    p_start = re.compile("SDC Constraints$")
+    p_start_next = re.compile("={15}")
+    sdc_lines = list()
+    with open(twr_file) as ob:
+        while True:
+            line = ob.readline()
+            if not line:
+                break
+            line = line.strip()
+            if p_start.search(line):
+                next_line = ob.readline()
+                start = p_start_next.search(next_line)
+                continue
+            if start:
+                if not line:
+                    break
+                sdc_lines.append(line)
+    return sdc_lines
+
+
+def get_clock_target_slack(twr_file):
+    p_diamond_style_start = re.compile(r'SDC\s+Constraint\s+\|\s+Target\s+|\s+Slack\s+\|')
+    clock_target_slack_dict = dict()
+    p_clock = re.compile(r"-name\s+(\S+)")
+    p_target_slack = re.compile(r"""\|\s+
+                                    ([-\d.]+)\s+ns\s+\|\s+
+                                    ([-\d.]+)\s+ns\s+\|\s+
+                                    (\d+)\s+\|\s+""", re.X)
+    p_new_content = re.compile(r"^[\s|]+$")
+    real_lines = list()
+    temp_line = ""
+    with open(twr_file) as ob:
+        start = False
+        for line in ob:
+            if not start:
+                start = p_diamond_style_start.search(line)
+            else:
+                line = line.strip()
+                if not line:
+                    break
+                if p_new_content.search(line):
+                    temp_line = re.sub(r"\s*-(period|name)\s*", r" -\1 ", temp_line)
+                    real_lines.append(temp_line)
+                    temp_line = ""
+                else:
+                    temp_line += line
+    if temp_line:
+        real_lines.append(temp_line)
+    for foo in real_lines:
+        m_clock = p_clock.search(foo)
+        if m_clock:
+            now_clock = m_clock.group(1)
+            clock_target_slack_dict[now_clock] = now_list = list()
+            summary_list = re.split(r"\s*\|\s*", foo)
+            _target, _slack, _levels, _frequency = summary_list[1], summary_list[2], summary_list[3], summary_list[5]
+            if "ns" in _target and "ns" in _slack and "MHz" in _frequency:
+                _ = [_target, _slack, _levels, _frequency]
+                now_list.extend([to_int_or_float(item) for item in _])
+    return clock_target_slack_dict
+
+
+def to_int_or_float(raw_string):
+    raw_string = re.sub("(ns|MHz)", "", raw_string)
+    try:
+        v_final = int(raw_string)
+    except ValueError:
+        try:
+            v_final = float(raw_string)
+        except ValueError:
+            v_final = raw_string
+    return v_final
+
+
+def create_iteration_flow_pdc_file(pdc_file, pdc_lines, clock_target_slack, iter_per):
+    ret = dict()
+    p_name = re.compile(r"\s+-name\s+(\S+)")
+    p_period = re.compile(r"\s+-period\s*(\S+)")
+    for foo in pdc_lines:
+        m_name = p_name.search(foo)
+        m_period = p_period.search(foo)
+        original_period = 0
+        if m_period:
+            original_period = float(m_period.group(1))
+        if not m_name:
+            continue
+        my_raw_name = m_name.group(1)
+        real_target_slack = clock_target_slack.get(my_raw_name)
+        if not real_target_slack:
+            continue
+        if not original_period:
+            original_period = real_target_slack[0]
+        _t = dict()
+        _t["SDC Constraint"] = foo
+        _t["targetFmax"] = 1000 / original_period
+        my_name = my_raw_name.strip("{")
+        my_name = my_name.strip("}")
+        _t["clkName"] = my_name
+        _t["Slack"] = real_target_slack[-1]
+        raw_fmax = 1000 / (real_target_slack[0] - real_target_slack[1])
+        fmax_offset = original_period / real_target_slack[0]
+        if fmax_offset > 1.2:
+            fmax_offset = 2
+        else:
+            fmax_offset = 1
+        # _t["fmax"] = raw_fmax / fmax_offset
+        _t["fmax"] = real_target_slack[3]
+        _t["logic_level"] = real_target_slack[2]
+        ret[my_raw_name] = _t
+
+    p_clock = re.compile(r"-name\s+(\S+)")
+    with open(pdc_file, "w") as wob:
+        for foo in pdc_lines:
+            m_clock = p_clock.search(foo)
+            if not m_clock:
+                print(foo, file=wob)
+            else:
+                clk_name = m_clock.group(1)
+                fmax_dict = ret.get(clk_name)
+                if not fmax_dict:
+                    print(foo, file=wob)
+                else:
+                    if fmax_dict["Slack"] < 0:
+                        now_period = 1000 / (fmax_dict["fmax"] * (1 + iter_per * 0.01 / 2))
+                    else:
+                        now_period = 1000 / (fmax_dict["fmax"] * (1 + iter_per * 0.01))
+                    now_waveform = '{:.3f}'.format(now_period / 2)
+                    foo = re.sub(r"-period\s+\S+", "-period {:.3f}".format(now_period), foo)
+                    foo = re.sub(r"-waveform\s+{[.\d]+\s+[.\d]+}", '-waveform {0.000 %s}' % now_waveform, foo)
+                    print(foo, file=wob)

@@ -193,6 +193,17 @@ class FlowLattice(XOptions):
         else:
             this_cmd_line = cmd_file
         if this_cmd_line:
+            #
+            real_script_file = ""
+            max_index = 2
+            for i, foo in enumerate(this_cmd_line.split()):
+                if i >= max_index:
+                    break
+                if os.path.isfile(foo):
+                    real_script_file = foo
+            if real_script_file:
+                os.chdir(os.path.dirname(os.path.abspath(real_script_file)))  # NOT NEED COME BACK
+            #
             sts = xTools.run_command(this_cmd_line, "run_batch.log", "run_batch.time")
         else:
             sts = 1
@@ -246,6 +257,8 @@ class FlowLattice(XOptions):
         args = "--top-dir=%s --design=%s --tag=%s --software %s --rpt-dir %s" % (job_dir, design, tag, software, self.top_dir)
         if self.scripts_options.get("seed_sweep"):
             args += " --seed seed"
+        if self.scripts_options.get("fmax_sort") == "geomean":
+            args += " --fmax-sort geomean"
         if xTools.not_exists(scan_py, "Scan scripts"):
             return 1
         scan_py = os.path.abspath(scan_py)
@@ -519,18 +532,23 @@ class FlowLattice(XOptions):
 
         else:
             if not len_info_file:  # No info file found
-                valid_run_fext = (".sh", ".csh", ".bat", ".cmd", ".py", ".pl")
-                for foo in os.listdir(self.src_design):
-                    fname, fext = os.path.splitext(foo.lower())
-                    if fname == "run" and fext in valid_run_fext:
-                        self.scripts_options["cmd_file"] = os.path.join(self.src_design, foo)
+                whole_fext_list = ("bat", "cmd", "py", "pl", "sh", "csh")
+                valid_fext_list = whole_fext_list[:-2] if sys.platform.startswith("win32") else whole_fext_list
+                valid_file_list = ["run.{}".format(item) for item in valid_fext_list]
+                got_run_xxx_file = False
+                for a, b, c in os.walk(self.src_design):
+                    for a_file in c:
+                        if a_file in valid_file_list:
+                            self.scripts_options["cmd_file"] = os.path.normpath(os.path.join(a, a_file))
+                            got_run_xxx_file = True
+                            break
+                    if got_run_xxx_file:
                         break
                 else:
                     if self.is_ng_flow:
                         prj_fext = "*.rdf"
                     else:
                         prj_fext = "*.ldf"
-                    ldf_file = list()
                     for p in [os.path.join(self.src_design, "par"), self.src_design]:
                         ldf_file = glob.glob(os.path.join(p, prj_fext))
                         if ldf_file:

@@ -210,7 +210,8 @@ class RunSimulationFlow:
         return sts
 
     def generate_syn_vo_file(self):
-        if not self.is_ng_flow:
+        return
+        '''if not self.is_ng_flow:
             return
         udb_files = glob.glob(os.path.join(os.getcwd(), self.impl_dir, "*_syn.udb"))
         if udb_files:
@@ -219,7 +220,7 @@ class RunSimulationFlow:
             # log2sim -w -o "vhdl_DmTest_syn.vo" "vhdl_DmTest.udb"
             macro_opt = self.final_ldf_dict.get("macro_string")
             cmd = 'log2sim -w -o "{0}/{1}"{3} "{0}/{2}"'.format(self.impl_dir, syn_vo_file, syn_udb_file, macro_opt)
-            xTools.run_command(cmd, "log2sim.log", "log2sim.time")
+            xTools.run_command(cmd, "log2sim.log", "log2sim.time")'''
 
     def run_simrel_flow(self):
         _t = os.path.abspath(os.path.join(os.getcwd(), ".."))
@@ -246,6 +247,7 @@ class RunSimulationFlow:
     def get_user_options(self):
         user_options = dict()
         for (sim_type, flow_opt) in (
+                (self.sim_syn_vlg, "run_syn_backanno"),
                 (self.sim_map_vhd, "run_map_vhd"),
                 (self.sim_map_vlg, "run_map_vlg"),
                 (self.sim_par_vhd, "run_export_vhd"),
@@ -475,11 +477,14 @@ class RunSimulationFlow:
         """
         new_family_name = re.split("-|_", family_name)  # in lower case
         radiant_sim_map_dict = self.flow_options.get("family_radiant_map_sim_lib", dict())
-        perhaps_keys = ("{0}-{1}".format(*new_family_name), new_family_name[0])
+        perhaps_keys = ["{0}-{1}".format(*new_family_name), new_family_name[0]]
+        if len(new_family_name) > 2:
+            perhaps_keys.insert(0, "{0}-{1}-{2}".format(*new_family_name))
         for pk in perhaps_keys:
             v = radiant_sim_map_dict.get(pk)
             if v:
                 break
+
         if v:
             real_name = v
         else:
@@ -670,18 +675,13 @@ class RunSimulationFlow:
         return self._run_simulation(sim_path, source_files, user_options)
 
     def run_syn_vlg_simulation(self, sim_path):
-        if self.synthesis == "lse":
-            search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),
-                            "%s_%s.vm" % (self.project_name, self.impl_name),
+        if self.sim_postsyn_vm:
+            search_order = ("%s_%s.vm" % (self.project_name, self.impl_name),
                             "%s_prim.v" % self.project_name,
                             "*_prim.v")
         else:
-            search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),
-                            "%s_%s.vm" % (self.project_name, self.impl_name))
+            search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),)
         for so in search_order:
-            if self.sim_postsyn_vm:
-                if ".vo" in so:
-                    continue
             files = glob.glob(os.path.join(self.impl_dir, so))
             if files:
                 source_file = files[0]
@@ -861,7 +861,10 @@ class RunSimulationFlow:
             self.is_thunder_plus = True
         else:
             self.is_thunder_plus = False
-
+        is_ap6a00 = self.do_args.get("dev_name", "") == "ap6a00"
+        if is_ap6a00:
+            if re.search("conf.sim.vcs_do.template", self.do_vcs):
+                self.do_vcs = os.path.join(os.path.dirname(self.do_vcs), "vcs_do_ap6a00.template")
         self.do_args["source_files"] = self.get_vcs_lines(source_files, is_source_file=True)
         self.do_args["tb_files"] = self.get_vcs_lines(self.final_tb_files)
         x = "do_{}".format(sim_path)
@@ -1331,18 +1334,19 @@ class RunSimulationFlow:
                 self.dev_lib = os.path.join(self.original_library_path, _name)
                 self.pmi_lib = os.path.join(self.original_library_path, "pmi_work")
             return  # use it!
-        self.create_lock_file_folder()
+        # self.create_lock_file_folder()
 
         def try_to_compile_local_lib():
+            self.create_lock_file_folder()
             _lock_file = os.path.join(self.lock_file_folder, "compile_{}_library.lock".format(map_lib_name))
             filelock.safe_run_function(self.create_dev_lib, args=(map_lib_name, self.lock_file_folder),
                                        func_lock_file=_lock_file,
-                                       timeout=3600)
+                                       timeout=7000)
 
             _lock_file = os.path.join(self.lock_file_folder, "compile_pmi_library.lock")
             filelock.safe_run_function(self.create_pmi_lib, args=(self.lock_file_folder,),
                                        func_lock_file=_lock_file,
-                                       timeout=3600)
+                                       timeout=7000)
 
         ###########
         closest_path = os.getenv("CLOSEST_SIM_LIB", "NO_CLOSEST_SIM_LIB")

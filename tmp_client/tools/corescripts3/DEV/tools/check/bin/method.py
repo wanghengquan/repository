@@ -309,21 +309,32 @@ class CheckSdfSimulation(Method):
 
 class CheckLines(Method):
     def __init__(self):
-        Method.__init__(self)
+        super(CheckLines, self).__init__()
         self.__name__ = 'check_lines'
 
     def handle(self, task, section):
-        all_options = sorted(section.keys())
-        matchs = [(i, section[i]) for i in all_options if i.startswith('check_')]
-        if 'use_grep' in section and section['use_grep'] == '1':
-            use_grep = True
-        else:
-            use_grep = False
-        if not all_options[0].startswith('check_'):
+        all_keys = sorted(list(section.keys()))
+        check_keys = [item for item in all_keys if item.startswith("check_")]
+        use_grep = True if (section.get("use_grep") == '1') else False
+        if not check_keys:
             raise ConfigIssue(task + ' have no check_*')
-        first_match = section[all_options[0]]
-        matchs.remove((all_options[0], first_match))
-        times = section['times'] if 'times' in section else None
+        times = section.get("times")
+        times_strict = section.get("times_strict")
+        times_range = section.get("times_range")
+        empty_number = (times, times_strict, times_range).count(None)
+        raw_times = int(times) if times else 0
+        if empty_number == 3:  # use default times 1
+            raw_times = 1
+            times_range = ">=1"
+        elif empty_number == 2:
+            if times:
+                times_range = ">={}".format(times)
+            elif times_strict:
+                times_range = "=={}".format(times_strict)
+            else:
+                times_range = times_range
+        elif empty_number < 2:
+            raise ConfigIssue(task + ' Only one of times/times_range/times_strict can be selected.')
         filename = os.path.abspath(section['file'])
         filename = glob.glob(filename)
         if not filename:
@@ -332,43 +343,37 @@ class CheckLines(Method):
             return
         else:
             filename = filename[0]
-        anchor = find_str_in_file(first_match, filename, grep=use_grep)
-        anchor_list = get_index_list_from_file_by_string(first_match, filename, grep=use_grep)
-        if anchor is None:
+        matched_line_numbers = get_index_list_from_file_by_string(section.get(check_keys[0]), filename, grep=use_grep)
+        if not matched_line_numbers:
             self.ret = Default.FAIL
-            self.log_error('check_1: ' + first_match + ' not found!')
+            self.log_error('check_1: ' + check_keys[0] + ' not found!')
             return
-        self.log_info('check_1: ' + first_match + ' found!')
-        if matchs or times:
-            if times:
-                for _ in range(int(times)-1):
-                    _offset = find_str_in_file(first_match, filename, start=anchor, grep=use_grep)
-                    if _offset is None:
-                        self.log_error('first match do not appear enough times')
-                        self.ret = Default.FAIL
-                        return
-                    anchor = anchor + _offset + 1
-                self.log_info('check_1 has been found ' + times + ' times')
-            if times:
-                bingo_point = int(times) - 1
+        evaluation_string = "{} {}".format(len(matched_line_numbers), times_range)
+        res = eval(evaluation_string)
+        if not res:
+            self.ret = Default.FAIL
+            self.log_error("Evaluation: ({}) = False".format(evaluation_string))
+            return
+
+        if len(check_keys) > 1:  # check_2, check_3, ...
+            if raw_times:
+                perhaps_offsets = matched_line_numbers[raw_times-1:]
             else:
-                bingo_point = 0
-            for ka, a in enumerate(anchor_list):
-                if times:
-                    if ka != bingo_point:  # not greedy match
-                        continue
-                if len(anchor_list) > 1:
-                    self.log_info("Check the following lines after line number {}".format(a))
-                got_it = 1
-                for m in matchs:
-                    offset = get_index(all_options[0], m[0])
-                    if find_str_in_file(m[1], filename, offset+a, a+1, grep=use_grep) is None:
-                        self.log_info(m[0] + ': ' + m[1] + ' not found, check fail!')
-                        got_it = 0
+                perhaps_offsets = [matched_line_numbers[-1]]
+            got_it = 1
+            for more_check_key in check_keys[1:]:
+                sub_offset = get_index(check_keys[0], more_check_key)   # check_1, check_2, return 1
+                this_check = "{} : {}".format(more_check_key, section.get(more_check_key))
+                for my_offset in perhaps_offsets:
+                    line_index = my_offset + sub_offset
+                    if find_str_in_file(section.get(more_check_key), filename, index=line_index, grep=use_grep):
+                        self.log_info(this_check + ' found!')
                         break
-                    self.log_info(m[0] + ': ' + m[1] + ' found!')
-                if got_it:
-                    return
+                else:
+                    self.log_info(this_check + ' not found, check fail!')
+                    got_it = 0
+            if got_it:
+                return
             self.log_error("Cannot search all lines for {}, check fail!".format(task))
             self.ret = Default.FAIL
 
@@ -971,15 +976,19 @@ class CheckMultiline(Method):
     def __init__(self):
         Method.__init__(self)
         self.__name__ = 'check_multiline'
+        self.p_message_id = re.compile(r"<\d+>")
 
     def handle(self, task, section):
         filename = os.path.abspath(section['file'])
         filename = glob.glob(filename)[0]
         check_line = section['check_line'].replace(' ', '').replace('\n', '')
+        check_line = self.p_message_id.sub("", check_line)
         lines = ''
         with open(filename, 'r') as f:
             for line in f.readlines():
-                lines += line.replace(' ', '').strip()
+                x = line.replace(' ', '').strip()
+                x = self.p_message_id.sub("", x)
+                lines += x
 
         if check_line in lines:
             self.log_info('check_line pass!')

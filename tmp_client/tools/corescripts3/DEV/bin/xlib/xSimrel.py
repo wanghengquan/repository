@@ -217,7 +217,11 @@ def _get_pad_dict(pad_file, p_start, p_split, title):
                 t_dict = dict(list(zip(titles, line_list)))
                 item = t_dict.get(title)
                 if item:
-                    if "Reserved:" not in item:  # | AA21/2 | Reserved: sysCONFIG | | LVCMOS25_BIDI | PB46B | SI/SISPI
+                    if "used," in item:  # used, PULL:DOWN; unused, PULL:DOWN
+                        continue
+                    elif "Reserved" in item:  # Reserved: sysCONFIG; Prohibited/Reserved
+                        continue
+                    else:
                         pad_dict[item] = t_dict
     return pad_dict
 
@@ -870,14 +874,14 @@ def get_simrel_path(general_options, simrel_dirname, device):
     i = 0
     while True:
         xTools.say_it(" -- <{}> Searching real simrel path in {} for {} ...".format(i, simrel_root, simrel_family))
-        time.sleep(5)
+        time.sleep(12)
         i += 1
         for foo in set(os.listdir(simrel_root)):
             abs_foo = os.path.join(simrel_root, foo)
             if os.path.isdir(abs_foo):
                 check_file = os.path.join(abs_foo, "check_running.log")
                 try:
-                    if time.time() - os.path.getctime(check_file) > 212000:
+                    if time.time() - os.path.getmtime(check_file) > 600:
                         xTools.rm_with_error(check_file)
                 except:
                     pass
@@ -892,7 +896,7 @@ def get_simrel_path(general_options, simrel_dirname, device):
                     return simrel_root, foo, simrel_family
 
 
-def get_simrel_id(timeout_py_file):
+def get_simrel_id(timeout_py_file, case_simrel_path):
     log_file = "x_simrel_flow.log"
     temp_log_file = "temp_log_file_for_getting_job_id"
     p_id = re.compile(r'jobid\s+?=\s*?(\d+)', re.I)
@@ -914,9 +918,11 @@ def get_simrel_id(timeout_py_file):
     if not job_id:
         new_line = "# abnormal results. cannot find Simrel job id"
     else:
+        bak_log_cmd = "cp {} {}/simrel_timeout.log".format(os.path.abspath(log_file), case_simrel_path)
         new_line = ['print("try to kill simrel id: {}")'.format(job_id),
                     'os.system("nc stop {}")'.format(job_id),
-                    'os.system("nc list | grep {}")'.format(job_id)
+                    'os.system("nc list | grep {}")'.format(job_id),
+                    'os.system("{}")'.format(bak_log_cmd)
                     ]
     xTools.append_file(timeout_py_file, new_line)
 
@@ -1039,8 +1045,8 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
             break
         except:
             xTools.say_tb_msg()
-            xTools.say_it("Failed to get simrel path")
-        time.sleep(15)
+            xTools.say_it("@E: Failed to get simrel path")
+        time.sleep(35)
     temp_recov.comeback()
     if not simrel_root:
         return 1
@@ -1114,13 +1120,30 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
         xTools.say_it("Error. Not found simrel_path:%s" % my_simrel_path)
         return 1
     xTools.say_it(" Found simrel path: %s" % my_simrel_path)
-    thread_get_id = threading.Thread(target=get_simrel_id, args=(timeout_py, ))
+    thread_get_id = threading.Thread(target=get_simrel_id, args=(timeout_py, save_path))
     thread_get_id.setDaemon(True)
     thread_get_id.start()
+    fresh_log = threading.Thread(target=fresh_running_log, args=(check_log, design_path))
+    fresh_log.setDaemon(True)
+    fresh_log.start()
     run_sim_ncv(general_options, my_simrel_path, save_path, simrel_options, use_original_ctl)
-    if os.path.isfile(check_log):
-        xTools.rm_with_error(check_log)
+    while True:
+        if os.path.isfile(check_log):
+            sts = xTools.rm_with_error(check_log)
+            if sts:
+                time.sleep(3)
+        else:
+            break
 
 
-if __name__ == "__main__":
-    generate_avc_file("test.avc", "dataset.lst", "top_impl.pad", "Riviera", dict())
+def fresh_running_log(check_log, design_path):
+    """ heartbeat of the check_log file
+    """
+    while True:
+        if not os.path.isfile(check_log):
+            return
+        time.sleep(60)
+        with open(check_log, "w") as wob:
+            print(design_path, file=wob)
+            print(time.asctime(), file=wob)
+
