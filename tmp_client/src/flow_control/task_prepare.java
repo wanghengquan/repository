@@ -98,7 +98,8 @@ public class task_prepare {
 	
 	protected Boolean get_case_path_ready(
 			HashMap<String, String> client_tools,
-			HashMap<String, HashMap<String, String>> task_data){
+			HashMap<String, HashMap<String, String>> task_data
+			){
 		task_prepare_info.add(line_separator + ">Prepare case path:");
 		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();

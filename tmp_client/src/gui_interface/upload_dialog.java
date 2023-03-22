@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
+import utility_funcs.data_check;
 
 
 public class upload_dialog extends JFrame{
@@ -61,7 +62,7 @@ public class upload_dialog extends JFrame{
 	private JTextArea output_area = new JTextArea(">" + line_separator);
 	private static final Logger UPLOAD_DIALOG_LOGGER = LogManager.getLogger(upload_dialog.class.getName());
 	private Process run_processer;
-	String work_space = new String();
+	String work_path = new String();
 	
 	public upload_dialog(
 			switch_data switch_info,
@@ -248,15 +249,15 @@ public class upload_dialog extends JFrame{
 		//this.setLocationRelativeTo(null);
 		//this.setLocation(600,600);
 		if(client_info.get_client_data().containsKey("preference")){
-			work_space = client_info.get_client_data().get("preference").get("work_space") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
+			work_path = client_info.get_client_data().get("preference").get("work_space") + "/" +  public_data.WORKSPACE_UPLOAD_DIR;	
 		} else {
-			work_space = public_data.DEF_WORK_SPACE;
+			work_path = public_data.DEF_WORK_SPACE;
 		}		
 	}
 	
 	class open_action implements ActionListener{
 		public void actionPerformed(ActionEvent e){
-			JFileChooser import_file =  new JFileChooser(work_space); 
+			JFileChooser import_file =  new JFileChooser(work_path); 
 			import_file.setDialogTitle("Select Upload Suite file");
 			int return_value = import_file.showOpenDialog(null);
 			if (return_value == JFileChooser.APPROVE_OPTION){
@@ -314,7 +315,7 @@ public class upload_dialog extends JFrame{
 			} else {
 				;
 			}
-			new Thread(new run_cmd(user, pswd, file, match_option, sheet_option, work_space)).start();
+			new Thread(new run_cmd(user, pswd, file, match_option, sheet_option, work_path)).start();
 			upload_button.setEnabled(false);
 		}
 	}
@@ -325,7 +326,7 @@ public class upload_dialog extends JFrame{
 		private String file = new String();
 		private String match_option = new String();
 		private String sheet_option = new String();
-		private String work_space = new String();
+		private String work_path = new String();
 		
 		public run_cmd(
 				String user, 
@@ -333,14 +334,14 @@ public class upload_dialog extends JFrame{
 				String file, 
 				String match_option,
 				String sheet_option,
-				String work_space
+				String work_path
 				){
 			this.user = user;
 			this.pswd = pswd;
 			this.file = file;
 			this.match_option = match_option;
 			this.sheet_option = sheet_option;
-			this.work_space = work_space;
+			this.work_path = work_path;
 		}
 
 		@Override
@@ -359,7 +360,19 @@ public class upload_dialog extends JFrame{
 			if (cur_ver.startsWith("2.")) {
 				cmd_args.add(public_data.TOOLS_UPLOAD2);
 			} else if (cur_ver.startsWith("3.")) {
-				cmd_args.add(public_data.TOOLS_UPLOAD3);
+				String work_space = new String("");
+				if(client_info.get_client_data().containsKey("preference")){
+					work_space = client_info.get_client_data().get("preference").get("work_space");	
+				} else {
+					work_space = public_data.DEF_WORK_SPACE;
+				}	
+				String dynamic_path = new String("");
+				dynamic_path = public_data.TOOLS_UPLOAD3_DYNAMIC.replaceAll("\\$work_path", work_space);
+				if(data_check.str_path_check(dynamic_path)) {
+					cmd_args.add(dynamic_path);
+				} else {
+					cmd_args.add(public_data.TOOLS_UPLOAD3);
+				}
 			} else {
 				UPLOAD_DIALOG_LOGGER.warn("Error:Got unknown Python version:" + cur_ver + ", Upload stopped.");
 				return;
@@ -379,24 +392,24 @@ public class upload_dialog extends JFrame{
 			cmd_args.add("-p");
 			cmd_args.add(pswd);
 			//System.out.println(cmd_args.toString());
-			output_area.append(String.join(" ", cmd_args));
+			output_area.append(String.join(" ", cmd_args).replaceAll(" " + public_data.TMP_DATABASE_PWD, " ******"));
 			output_area.append(line_separator);
 			ProcessBuilder pb = new ProcessBuilder(cmd_args);
 			pb.redirectErrorStream(true);
-			File work_dobj = new File(work_space);
+			File work_dobj = new File(work_path);
 			if (!work_dobj.exists() || !work_dobj.isDirectory()){
 				try {
 					FileUtils.forceMkdir(work_dobj);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					UPLOAD_DIALOG_LOGGER.warn("Error:Can not create directory:" + work_space);
+					UPLOAD_DIALOG_LOGGER.warn("Error:Can not create directory:" + work_path);
 					return;
 				}
 			}
 			try {
 				pb.directory(work_dobj);
 			} catch (Exception e) {
-				UPLOAD_DIALOG_LOGGER.warn("Error:Can not find directory:" + work_space);
+				UPLOAD_DIALOG_LOGGER.warn("Error:Can not find directory:" + work_path);
 				return;
 			}
 			Map<String, String> env = pb.environment();
