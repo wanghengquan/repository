@@ -1,0 +1,68 @@
+file_timing_summary_routed_rpt:
+  GROUP: 'Timing'
+  MACRO: 'macro_get_twr_data'
+
+file_xpr:
+  GROUP: 'Project Info'
+  # HEAD: 100
+  # TAIL: 100
+  FIELDS:
+    - { name: 'device', pattern: [ '<Option Name="Part" Val="(.+?)"', 'another (exp)' ] }
+    - { name: 'simulator', pattern: '<Option Name="TargetSimulator" Val="(.+?)"/>', default: 'XSim' }
+    - { name: 'version', pattern: 'Product Version: Vivado (\S+)' }
+    - { name: 'synthesis', pattern: '<Option Name="DesignMode" Val="(.+?)"/>', alias: { GateLvl: 'synplify', RTL: 'VSynthesis' } }
+
+file_utilization_placed_rpt:
+  GROUP: 'Resource'
+  TABLE_SLICE_LOGIC_DISTRIBUTION_OR_ANY_STRING:
+    TABLE_NAME_PATTERN: '^\d+\. Slice Logic Distribution$'
+    FIELDS:
+      - { name: 'Slice', sel_title: 'Used', raw_title: 'Site Type', raw_name: 'Slice' }
+      - { name: 'Register', sel_title: 'Used', raw_title: 'Site Type', raw_name: 'Slice Registers' }
+  TABLE_SLICE_LOGIC_OR_ANY_STRING:
+    TABLE_NAME_PATTERN: '^\d+\. Slice Logic$'
+    FIELDS:
+      - { name: 'LUT', sel_title: 'Used', raw_title: 'Site Type', raw_name: 'Slice LUTs' }
+  TABLE_MEMORY_OR_ANY_STRING:
+    TABLE_NAME_PATTERN: '^\d+\. Memory$'
+    FIELDS:
+      - { name: 'Block_RAM', sel_title: 'Used', raw_title: 'Site Type', raw_name: 'Block RAM Tile' }
+  TABLE_DSP:
+    TABLE_NAME_PATTERN: '^\d+\. DSP$'
+    FIELDS:
+      - { name: 'DSP', sel_title: 'Used', raw_title: 'Site Type', raw_name: 'DSPs' }
+  TABLE_IO and GT Specific:
+    TABLE_NAME_PATTERN: '^\d+\. IO and GT Specific$'
+    FIELDS:
+      - { name: 'IO', sel_title: 'Used', raw_title: 'Site Type', raw_name: 'Bonded IOB' }
+
+file_behav_elapsed:
+  GROUP: 'simulation'
+  FIELDS:
+    - { name: [ 'sim_rtl_time', 'sim_behav_time' ], pattern: 'Elapsed Time: (\d+)' }
+
+file_psf_elapsed:
+  GROUP: 'simulation'
+  FIELDS:
+    - { name: 'sim_psf_time', pattern: 'Elapsed Time: (\d+)' }
+
+file_pst_elapsed:
+  GROUP: 'simulation'
+  FIELDS:
+    - { name: [ 'sim_syn_time', 'sim_pst_time' ], pattern: 'Elapsed Time: (\d+)' }
+
+file_pif_elapsed:
+  GROUP: 'simulation'
+  FIELDS:
+    - { name: 'sim_pif_time', pattern: 'Elapsed Time: (\d+)' }
+
+file_pit_elapsed:
+  GROUP: 'simulation'
+  FIELDS:
+    - { name: [ 'sim_par_time', 'sim_pit_time' ], pattern: 'Elapsed Time: (\d+)' }
+
+file_impl_runme_log:
+  GROUP: 'Elapsed'
+  FIELDS:
+    - { name: 'placer_time', pattern: 'place_design: Time.+cpu = (\S+)' }
+    - { name: 'router_time', pattern: 'route_design: Time.+cpu = (\S+)' }

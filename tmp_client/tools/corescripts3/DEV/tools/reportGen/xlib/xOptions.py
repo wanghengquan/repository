@@ -37,8 +37,9 @@ class XOptions(object):
         x.add_argument("-t", "--fields", help="dump data in fields only. fields list was defined in dump-configuration")
         _h = "dump test data into different file which is apart by section name"
         x.add_argument("-a", "--apart-by-section", action="store_true", help=_h)
+        x.add_argument("--sort-key", choices=("id", "fmax"), help="specify sort key for case data, default is id")
         x.add_argument("-CDI", "--custom-dump-ini", help="specify custom dump.ini file")
-        x.set_defaults(op_dump=True, op_report=False, export_type="csv")
+        x.set_defaults(op_dump=True, op_report=False, export_type="csv", sort_key='id')
 
     def _set_report_parser(self):
         y = self.operation_parser.add_parser("report", help="generate Excel report file")
@@ -65,11 +66,12 @@ class XOptions(object):
         y.add_argument("--sub-name", help="specify sub name in summary sheet")
         y.add_argument("--sheet-name", help="specify sheet name, should be less than 31 characters")
 
-        _c_c, _help = ("AVERAGE", "STDEVPA"), "specify statistical method(s)"
+        _c_c, _help = ("AVERAGE", "STDEVPA", "GEOMEAN"), "specify statistical method(s)"
         y.add_argument("-c", "--calculate", choices=_c_c, nargs="+", help=_help)
         y.add_argument("--case-group-name", help="specify ordered cases group name")
         y.add_argument("--force", action="store_true", help="dump report from database by force")
         y.add_argument("--add-test-id", action="store_true", help="add column xTestID in final report")
+        y.add_argument("--no-ad-data", action="store_true", help="Do not show AD_xxx data")
 
         y.set_defaults(op_dump=False, op_report=True, calculate=["AVERAGE"],
                        src_section=list(), dst_section=list(), section=list(),
@@ -102,6 +104,7 @@ class DeployOptions(xLogger.Voice):
             self.apart_by_section = self.opts.apart_by_section
             self.output_excel = self.opts.output_excel
             self.custom_dump_ini = self.opts.custom_dump_ini
+            self.sort_key = self.opts.sort_key
             self.report_conf_file_list = None  # for report only
             if self.__reset_fields():
                 return 1
@@ -137,6 +140,7 @@ class DeployOptions(xLogger.Voice):
             self.force = self.opts.force
             self.add_test_id = self.opts.add_test_id
             self.output_excel = self.opts.output_excel
+            self.no_ad_data = self.opts.no_ad_data
 
         if self._prepare_output_path():
             return 1

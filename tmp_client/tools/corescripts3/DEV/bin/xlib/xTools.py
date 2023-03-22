@@ -614,7 +614,7 @@ def run_command(cmd, log_file, time_file):
             error_msg_line = simple_parser(log_file, ps, 200)
             if error_msg_line:
                 # use standard message for showing in TMP
-                raw_error = error_msg_line[0][:70]
+                raw_error = error_msg_line[0][:249]
                 raw_error = re.sub("@E:", "", raw_error)
                 say_it('@E: {}'.format(raw_error))
                 break

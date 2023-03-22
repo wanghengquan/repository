@@ -126,7 +126,6 @@ class DataReport(DeployOptions):
             raw_src_sections = [foo.get("xSectionName") for foo in raw_src_data]
             raw_dst_sections = [foo.get("xSectionName") for foo in raw_dst_data]
             all_sections = list(set(raw_src_sections) | set(raw_dst_sections))
-            all_sections.sort(key=str.lower)
             local_src_sections = local_dst_sections = all_sections
         self.arg_dict["src_section"] = self.src_section = list()
         self.arg_dict["dst_section"] = self.dst_section = list()
@@ -248,7 +247,10 @@ class DataReport(DeployOptions):
             _s, _e = _e + 1, _e + len(dst_titles) - 1
             _mr = dict(start_row=self.row_number, end_row=self.row_number, start_column=_s, end_column=_e)
             cell_data["dst_name"] = dict(merge_range=_mr, value=dst_table_name)
-            _s, _e = _e + 1, _e + len(compare_titles) * 2
+            if self.no_ad_data:
+                _s, _e = _e + 1, _e + len(compare_titles)
+            else:
+                _s, _e = _e + 1, _e + len(compare_titles) * 2
             _mr = dict(start_row=self.row_number, end_row=self.row_number, start_column=_s, end_column=_e)
             cell_data["vs_name"] = dict(merge_range=_mr, value="{} VS {}".format(src_table_name, dst_table_name))
         else:
@@ -267,7 +269,8 @@ class DataReport(DeployOptions):
             _c = __add_cell(src_titles, 3, prefix="")
             _c = __add_cell(dst_titles, _c, prefix="#")
             _c = __add_cell(compare_titles, _c, prefix="VS_")
-            _c = __add_cell(compare_titles, _c, prefix="AD_")
+            if not self.no_ad_data:
+                _c = __add_cell(compare_titles, _c, prefix="AD_")
 
         # format
         for k, v in list(cell_data.items()):
@@ -472,7 +475,8 @@ class DataReport(DeployOptions):
             x["number_format"] = self.ew.number_percentage
             border_key = "0100" if (len(compare_titles) == cc + 1) else "0000"
             x["border"] = self.ew.borders_lrtb[border_key]
-            r_data["AD_" + foo] = x
+            if not self.no_ad_data:
+                r_data["AD_" + foo] = x
         self.row_number += 1
         if will_skip_this_row_when_calculate:
             for k, v in list(r_data.items()):

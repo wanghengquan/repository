@@ -44,9 +44,9 @@ LEFT JOIN(
     FROM
         lrf.run_{run_id}
     WHERE
-        id IN(
+        {sort_key} IN(
         SELECT
-            MAX(id)
+            MAX({sort_key})
         FROM
             lrf.run_{run_id}
         GROUP BY

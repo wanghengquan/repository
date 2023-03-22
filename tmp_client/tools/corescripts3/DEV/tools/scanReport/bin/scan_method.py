@@ -75,7 +75,7 @@ class ScanPattern(ScanBasic):
         filename = get_file(os.path.join(design, args['file']))
         if not filename:
             return
-        with open(filename, 'r') as f:
+        with open(filename, 'rb') as f:
             for line in get_part_lines(f, start_pattern, stop_pattern):
                 if 'flags' in args:
                     m = re.search(args['pattern'], line, args['flags'])
@@ -139,9 +139,9 @@ class ScanNumbers(ScanBasic):
         if not mrp_file:
             return
         tmp_str = ''
-        with open(mrp_file, 'r') as f:
+        with open(mrp_file, 'rb') as f:
             for line in get_part_lines(f, start_pattern, stop_pattern, flags=re.I):
-                if line.endswith('Pin')or re.search('\W$', line):
+                if line.endswith('Pin') or re.search('\W$', line):
                     line += ' '
                 tmp_str += line
         for p in args:
@@ -294,7 +294,7 @@ class ScanTiming(ScanBasic):
         self.twr_file = get_file(self.files['timing_seed_file'])
         if not self.twr_file:
             return
-        self.raw_list = parse_twr_radiant(self.twr_file)
+        self.raw_list = parse_twr_radiant(self.twr_file, options.get("fmax_sort"), options.get("tag"))
         self.parse_fmax = parse_fmax_radiant
         if not self.create_data_a():
             self.create_data_b()
@@ -365,7 +365,10 @@ class ScanTiming(ScanBasic):
             new_item = self.parse_fmax(item)
             if new_item:
                 wang = "%s/%s" % (new_item.get("fmax"), new_item.get("targetFmax"))
-                new_item["pap"] = float("%.5f" % eval(wang))
+                try:
+                    new_item["pap"] = float("%.5f" % eval(wang))
+                except:
+                    new_item["pap"] = -1
                 tfl.append(new_item)
         if tfl:
             if self.pap:

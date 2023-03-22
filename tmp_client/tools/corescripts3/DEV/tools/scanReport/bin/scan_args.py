@@ -70,7 +70,7 @@ options.add_argument(
     default="radiant",
     help="radiant or diamond"
 )
-
+options.add_argument("--fmax-sort", choices=("max", "geomean"), default="max", help="specify fmax sort way")
 options.add_argument(
     "--debug",
     action="store_true",
