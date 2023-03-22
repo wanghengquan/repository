@@ -392,7 +392,9 @@ public class data_server extends Thread {
 		return build_paths;
 	}
 	
-	private HashMap<String, String> get_scan_dir_build(String scan_path) {
+	private HashMap<String, String> get_scan_dir_build(
+			String scan_path
+			) {
 		HashMap<String, String> build_paths = new HashMap<String, String>();
 		if(scan_path == null || scan_path.trim().equals("")){
 			DATA_SERVER_LOGGER.warn("Illegal Scan path find, skip");
@@ -500,7 +502,12 @@ public class data_server extends Thread {
 			Iterator<String> new_option_it = new_data.get(new_section).keySet().iterator();
 			while(new_option_it.hasNext()){
 				String new_option = new_option_it.next();
+				String new_value = new_data.get(new_section).get(new_option);
 				if (!ori_data.get(new_section).containsKey(new_option)) {
+					return true;
+				}
+				String ori_value = ori_data.get(new_section).get(new_option);
+				if (!new_value.equalsIgnoreCase(ori_value)) {
 					return true;
 				}
 			}
