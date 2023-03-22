@@ -28,9 +28,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.53"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21453; //version for code use
-	public final static String BASE_BUILDDATE = "2023/03/21";
+	public final static String BASE_CURRENTVERSION = "2.14.54"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21454; //version for code use
+	public final static String BASE_BUILDDATE = "2023/03/22";
 	public final static String BASE_SUITEFILEVERSION = "1.27";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -156,6 +156,7 @@ public class public_data {
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
 	public final static String TOOLS_UPLOAD2 = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
 	public final static String TOOLS_UPLOAD3 = SW_HOME_PATH + "/tools/upload3/run_suite.py";
+	public final static String TOOLS_UPLOAD3_DYNAMIC = REMOTE_CORE_SCRIPT_DIR + "/tools/uploadSuites/run_suite.py";
 
 	// ========================
 	// external documents based on software bin path
