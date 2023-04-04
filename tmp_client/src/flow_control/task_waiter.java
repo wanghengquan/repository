@@ -1025,7 +1025,8 @@ public class task_waiter extends Thread {
 	
 	private HashMap<String, HashMap<String, String>> merge_default_and_preference_data(
 			HashMap<String, HashMap<String, String>> case_data,
-			HashMap<String, String> preference_data) {
+			HashMap<String, String> preference_data
+			) {
 		// the priority will be :  default < preference < case_data
 		HashMap<String, HashMap<String, String>> default_data = new HashMap<String, HashMap<String, String>>();
 		// ID format NA
