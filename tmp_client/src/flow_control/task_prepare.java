@@ -1083,6 +1083,7 @@ public class task_prepare {
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String case_name = task_data.get("Paths").get("case_name").trim();
+		String task_name = "T" + task_data.get("ID").get("id_index").trim();
 		//String base_name = task_data.get("Paths").get("base_name").trim();
 		String design_path = new String("");
 		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
@@ -1179,19 +1180,19 @@ public class task_prepare {
 		if (launch_path.equalsIgnoreCase(case_path))
 			cmd_list = launch_cmd.split("\\s+");
 		else if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_vivado.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else
 			cmd_list = launch_cmd.split("\\s+");
 		// replace the @#@
