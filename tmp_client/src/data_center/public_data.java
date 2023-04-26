@@ -28,9 +28,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.56"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21456; //version for code use
-	public final static String BASE_BUILDDATE = "2023/04/03";
+	public final static String BASE_CURRENTVERSION = "2.14.57"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21457; //version for code use
+	public final static String BASE_BUILDDATE = "2023/04/26";
 	public final static String BASE_SUITEFILEVERSION = "1.27";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -51,7 +51,7 @@ public class public_data {
 	// Client run limitation (system requirements)
 	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
 	public final static int RUN_LIMITATION_MEM = 95;//client suspend when MEM usage large than this value
-	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
+	public final static String RUN_LIMITATION_SPACE = "50";//G, client suspend when disk space less than this value
 	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
 	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
 	
