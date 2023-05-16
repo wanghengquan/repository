@@ -719,7 +719,7 @@ def make_sure_make_flow_done():
         time.sleep(30)
 
 
-def create_simrel_run_shell(wrap_simrel_file):
+def create_simrel_run_shell(wrap_simrel_file, device_in_rdf):
     with open(wrap_simrel_file, "w") as wob:
         try:
             with open("simenv.cshrc") as rob:
@@ -727,10 +727,12 @@ def create_simrel_run_shell(wrap_simrel_file):
                     print(line.rstrip(), file=wob)
         except:
             print("#!/usr//bin/csh -f", file=wob)
-        print("/usr/bin/make x_sim", file=wob)
+        p_avant_gx = re.compile(r"LAV-AT-\d+[GX]", re.I)
+        special_apollo_arg = "wakeup_seq " if p_avant_gx.search(device_in_rdf) else ""
+        print("/usr/bin/make {}x_sim".format(special_apollo_arg), file=wob)
 
 
-def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use_original_ctl):
+def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use_original_ctl, device_in_rdf):
     """ Since the remote workstation cannot read local file, link is unused.
         copy it!
     """
@@ -793,7 +795,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     use_make_for_simrel = False
     if not os.path.isfile(real_ncv):
         wrap_simrel_file = "simrel_wrapper.csh"
-        create_simrel_run_shell(wrap_simrel_file)
+        create_simrel_run_shell(wrap_simrel_file, device_in_rdf)
         real_ncv = "/usr/bin/csh {}".format(wrap_simrel_file)
         use_make_for_simrel = True
     xTools.say_it("Running {}".format(real_ncv))
@@ -1036,7 +1038,8 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
         xTools.say_it("Error. Never got here. No device specified in ldf file.")
         return 1
     # simrel_root, branch_name, simrel_family = get_simrel_path(general_options, simrel_dirname, my_device[1].group(1))
-    this_args = (general_options, simrel_dirname, my_device[1].group(1))
+    device_in_rdf = my_device[1].group(1)
+    this_args = (general_options, simrel_dirname, device_in_rdf)
     temp_recov = xTools.ChangeDir(simrel_dirname)
     simrel_root, branch_name, simrel_family = None, None, None
     for i in range(3):
@@ -1077,7 +1080,8 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
 
     # -------------------
     # --------- generate files
-    if "apollo/apollo" in simrel_family:
+    p_avant = re.compile("lav-at", re.I)
+    if p_avant.search(device_in_rdf):
         update_avc_for_apollo(avc_file)
         update_svwf_for_apollo(svwf_file)
     _is_jedi_d1 = "jedi_d1_80k" in simrel_family
@@ -1126,7 +1130,7 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
     fresh_log = threading.Thread(target=fresh_running_log, args=(check_log, design_path))
     fresh_log.setDaemon(True)
     fresh_log.start()
-    run_sim_ncv(general_options, my_simrel_path, save_path, simrel_options, use_original_ctl)
+    run_sim_ncv(general_options, my_simrel_path, save_path, simrel_options, use_original_ctl, device_in_rdf)
     while True:
         if os.path.isfile(check_log):
             sts = xTools.rm_with_error(check_log)

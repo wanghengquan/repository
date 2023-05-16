@@ -69,6 +69,7 @@ def main():
     parser.add_option("--base-suite", default=_default_suite, help="specify basic suite path")
     parser.add_option("--squish", help="specify Squish Install Path")
     parser.add_option("--x86", action="store_true", help="run with 32-bit vendor tool")
+    parser.add_option("--test-id", help="show test id in command line")
 
     opts, args = parser.parse_args()
     diamond = opts.diamond

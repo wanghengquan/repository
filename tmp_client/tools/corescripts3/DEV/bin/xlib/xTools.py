@@ -452,6 +452,7 @@ def get_cmd(cmd_str, cmd_args):
         return 1, ""
     return 0, cmd_str
 
+
 def get_status_output(cmd):
     """
     return (status, output) of executing cmd in a shell.
@@ -513,8 +514,15 @@ def get_file_line_count(a_file):
             pass
     except IOError:
         pass
+    except ValueError:
+        try:
+            for count, line in enumerate(open(a_file, "r")):
+                pass
+        except IOError:
+            pass
     count += 1
     return count
+
 
 def simple_parser(a_file, patterns, but_lines=0):
     file_lines_no = get_file_line_count(a_file)
@@ -700,6 +708,30 @@ def get_relative_path(file_string, root_path, working_path=""):
         new_path = pre_path + ff[:]
         return "/".join(new_path)
 
+
+def get_os_version():
+    if sys.platform.startswith("win"):
+        version_commands = ["wmic os get Caption", "ver"]
+        version_patterns = [re.compile(r"(Windows)\s+(\d+)"), re.compile(r"(Windows).+Version\s+(\d+)")]
+        default_os_version = "Windows"
+    else:
+        version_commands = ["cat /etc/redhat-release", "lsb_release -ds"]
+        version_patterns = [re.compile(r"(Red Hat|CentOS).+release\s+(\S+)"), re.compile(r"(Ubuntu)\s+(\S+)")]
+        default_os_version = "Unix"
+    for v_cmd in version_commands:
+        sts, text = get_status_output(v_cmd)
+        if sts:
+            continue
+        text = "\n".join(text)
+        for v_pat in version_patterns:
+            m = v_pat.search(text)
+            if m:
+                os_version = "{} {}".format(m.group(1), m.group(2))
+                os_version = re.sub(r"\s+", "", os_version)
+                return os_version
+    return default_os_version
+
+
 def head_announce():
     """
     head announcement
@@ -708,8 +740,8 @@ def head_announce():
     lines.append("")
     lines.append("*---------------------------------------------")
     lines.append("* Welcome to Lattice Batch-queuing System Test Suite")
-    lines.append("* HOST: {1}({0})".format(getpass.getuser(), get_machine_name()))
-    lines.append("* Platform: %s" % platform.platform())
+    lines.append("* Hostname: {1}({0})".format(getpass.getuser(), get_machine_name()))
+    lines.append("* Platform: %s" % get_os_version())
     lines.append("* Scripts Version: %s" % revision_record.REVISION[0])
     for foo in lines:
         say_it(foo)
@@ -922,3 +954,26 @@ def remove_license_setting(phase="removing LICENSE_FILE"):
                             sts = rm_with_error(_flex_file)
     if not sts:
         say_it("Remove {} successfully.".format(phase))
+
+
+def set_as_list(raw_value):
+    if not raw_value:
+        this_list = list()
+    elif isinstance(raw_value, list):
+        this_list = raw_value
+    else:
+        this_list = raw_value.split()
+    return this_list
+
+
+def get_fixed_clock_frequency_dict(raw_fixed_clock_value):
+    cfd = dict()
+    raw_fixed_list = set_as_list(raw_fixed_clock_value)
+    if raw_fixed_list:
+        for foo in raw_fixed_list:
+            foo_list = re.split(":", foo)
+            if len(foo_list) == 2:
+                cfd[foo_list[0]] = float(foo_list[1])
+            else:
+                print("Warning. Unknown fixed setting: {}".format(foo))
+    return cfd

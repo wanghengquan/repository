@@ -1,0 +1,8 @@
+VIVADO_TIMING_REPORT:
+  name_pattern: 'timing_summary_routed.rpt$'
+  group_1:
+    use_func: true
+    fields:
+      - { nickname: 'twr_data', func: 'get_vivado_twr_data' }
+
+# END OF FILE

@@ -107,6 +107,7 @@ class RunSquish:
         parser.add_option("--smoke", action="store_true", help="run smoke regression test only")
         parser.add_option("--aut", help="specify the AUT file name")
         parser.add_option("--dev-path", help="specify DEV(core scripts) path")
+        parser.add_option("--test-id", help="show test id in command line")
 
         opts, args = parser.parse_args()
         self.debug = opts.debug

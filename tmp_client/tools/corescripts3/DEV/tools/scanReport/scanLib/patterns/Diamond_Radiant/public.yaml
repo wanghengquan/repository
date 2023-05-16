@@ -1,0 +1,7 @@
+RUNTIME_CONSOLE_FILE:
+  name_pattern: 'runtime_console.log'
+  group_1:
+    fields:
+      - { name: 'flow_runtime', pattern: '^\* Elapsed time: ([.\d]+)' }
+      - { name: 'hostname', pattern: '\* Hostname: (.+)' }
+      - { name: 'os_name',  pattern: '\* Platform: (.+)' }

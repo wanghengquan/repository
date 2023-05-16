@@ -10,20 +10,23 @@ Description:
 """
 import os
 import re
-import shutil
+import sys
 import glob
-import json
+import copy
+import shutil
 
 from . import vivadoBasicFlow
 from . import vivadoBasicScan
 from . import CONSTANTS
 from . import vivadoUtil
+from . import xTools as originalTools
 from .localCapuchin import xTools
 
 
 class FlowVivado(vivadoBasicFlow.BasicFlow):
     def __init__(self):
         super(FlowVivado, self).__init__("vivado")
+        self.p_clock_custom_hdl = re.compile(r"-name([^-]+)-.+\[get_[^s]+s(.+)\]")
 
     def basic_very_first_process(self):
         """try to get all possible key-value dictionary
@@ -31,6 +34,10 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
         self.kwargs = dict()
         self.section_qa_dict = self.info_dict.get("qa", dict())
         self.section_sim_dict = self.info_dict.get("sim", dict())
+        if not self.ignore_clock:
+            self.ignore_clock = originalTools.set_as_list(self.section_qa_dict.get("ignore_clock"))
+        if not self.care_clock:
+            self.care_clock = originalTools.set_as_list(self.section_qa_dict.get("care_clock"))
         self.xpr_file = self.section_qa_dict.get("xpr_file")
         if not self.xpr_file:
             self.say_error("Error. Not specify xpr file in {}".format(self.info_file))
@@ -82,6 +89,7 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
             self.prepare_synthesis_lines()
             self.prepare_impl_lines()
             self.run_vivado_tcl("run_impl_flow")
+            self.get_clock_custom_hdl_dict_and_original_xdc_lines()
             if self.get_clocks():
                 return
             self.run_impl = self.run_synthesis = True
@@ -98,16 +106,30 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
             self.prepare_synthesis_lines()
             self.prepare_impl_lines()
             self.run_vivado_tcl("run_impl_flow")
+            self.get_clock_custom_hdl_dict_and_original_xdc_lines()
             self.move_and_clean_working_directory("target_iteration_00")
             self.run_impl = self.run_synthesis = True
+            if not (self.clock_custom_hdc_dict or self.original_xdc_lines):
+                print("Error. Cannot find the original xdc file")
+                return
+            good_clock_frequency_slack, trial_times = None, 0
             for iteration_number in range(1, int(self.fmax_iteration[-1]+1)):
+                if trial_times > 2:
+                    break
                 self.say_info("* Running Fmax Iteration Number: {}".format(iteration_number))
-                if self.get_clock_frequency_slack():  # self.c_f_s
-                    return 1
+                self.get_clock_frequency_slack()
+                if not self.c_f_s:
+                    if not good_clock_frequency_slack:
+                        print("Error. Not found any data in timing report")
+                        return
+                    trial_times += 1
+                else:
+                    good_clock_frequency_slack = copy.copy(self.c_f_s)
+                    trial_times = 0
                 vivadoUtil.cleanup_vivado_xdc(self.xpr_file)
                 target_folder = "target_iteration_{:02d}".format(iteration_number)
                 self.tcl_lines = list()
-                self.add_iteration_xdc_file(iteration_number)
+                self.add_iteration_xdc_file(iteration_number, good_clock_frequency_slack, trial_times)
                 self.prepare_synthesis_lines(in_sweeping_flow=True)
                 self.prepare_impl_lines()
                 self.run_vivado_tcl(f"run_{target_folder}")
@@ -117,6 +139,37 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
             self.prepare_impl_lines()
             self.prepare_simulation_lines()
             self.run_vivado_tcl("run_test_flow")
+
+    def get_clock_custom_hdl_dict_and_original_xdc_lines(self):
+        self.clock_custom_hdc_dict = dict()
+        self.original_xdc_lines = list()
+        runme_log_files = glob.glob(os.path.join(self.kwargs["point_runs"], "*", "runme.log"))
+        if not runme_log_files:
+            return
+        p_xdc_file = re.compile(r"Parsing\s+XDC\s+File\s+\[(\S+)\]$")
+        xdc_file = ""
+        for one_log in runme_log_files:
+            if xdc_file:
+                break
+            with open(one_log) as ob:
+                for line in ob:
+                    line = line.strip()
+                    m_xdc_file = p_xdc_file.search(line)
+                    if m_xdc_file:
+                        xdc_file = m_xdc_file.group(1)
+                        break
+        if not xdc_file:
+            return
+        with open(xdc_file) as xdc_ob:
+            for line in xdc_ob:
+                short_line = line.strip()
+                line = line.rstrip()
+                if short_line.startswith("#"):
+                    continue
+                self.original_xdc_lines.append(line)
+                m_clock_custom_hdl = self.p_clock_custom_hdl.search(short_line)
+                if m_clock_custom_hdl:
+                    self.clock_custom_hdc_dict[m_clock_custom_hdl.group(1)] = m_clock_custom_hdl.group(2)
 
     def prepare_synthesis_lines(self, in_sweeping_flow=False):
         if not self.run_synthesis:
@@ -222,6 +275,10 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
         with open(xdc_file, "w") as wob:
             for clk in self.port_clocks:
                 whole_period = 1000 / fmax_value
+                if self.fixed_clock:
+                    clk_fixed_fre = self.fixed_clock.get(clk)
+                    if clk_fixed_fre:
+                        whole_period = 1000 / clk_fixed_fre
                 half_period = whole_period / 2
                 t_kw = dict(period="{:.3f}".format(whole_period),
                             half_period="{:.3f}".format(half_period),
@@ -231,25 +288,54 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
                 print(vivadoUtil.set_clock_group(self.port_clocks), file=wob)
         self.tcl_lines.append(CONSTANTS.FMT_ADD_XDC.format(xdc_file=xdc_file))
 
-    def add_iteration_xdc_file(self, itr_number):
+    def add_iteration_xdc_file(self, itr_number, good_clock_frequency_slack, trial_times):
+        """
+        based on original xdc lines
+        :param itr_number:
+        :param good_clock_frequency_slack:
+        :param trial_times:
+        :return:
+        """
         self.kwargs["itr_number"] = "{:02d}".format(itr_number)
         xdc_file = "{point_srcs}/target_iteration_{itr_number}.xdc".format(**self.kwargs)
-        with open(xdc_file, "w") as wob:
-            for clk_name, c_f_s in list(self.c_f_s.items()):
-                _fmax, _slack = c_f_s.get("fmax"), c_f_s.get("slack")
-                if _slack > 0:
-                    _fmax = (1 + self.fmax_iteration[0] / 100) * _fmax
+        with open(xdc_file, "w", newline="\n") as wob:
+            for line in self.original_xdc_lines:
+                short_line = re.sub(r"\s+", "", line)
+                m_clock_custom_hdl = self.p_clock_custom_hdl.search(short_line)
+                if m_clock_custom_hdl:
+                    custom_clock, hdl_clock = m_clock_custom_hdl.group(1), m_clock_custom_hdl.group(2)
+                    if custom_clock not in good_clock_frequency_slack:
+                        print(line, file=wob)  # use raw line
+                    else:
+                        final_fmax = 0
+                        if self.fixed_clock:
+                            fixed_value = self.fixed_clock.get(custom_clock, self.fixed_clock.get(hdl_clock))
+                            if fixed_value:
+                                final_fmax = fixed_value
+                        if not final_fmax:
+                            last_timing_data = good_clock_frequency_slack.get(custom_clock)
+                            if last_timing_data:
+                                last_fmax = last_timing_data.get("fmax")
+                                last_slack = last_timing_data.get("slack")
+                                if not trial_times:
+                                    now_change_ratio = self.fmax_iteration[0]
+                                else:
+                                    now_change_ratio = (self.fmax_iteration[0] / 2) ** trial_times
+                                print("# {}, Ratio: {}".format(last_timing_data, now_change_ratio), file=wob)
+                                if last_slack > 0:
+                                    final_fmax = (1 + now_change_ratio / 100) * last_fmax
+                                else:
+                                    final_fmax = (1 + now_change_ratio / 200) * last_fmax
+                        if not final_fmax:
+                            print(line, file=wob)
+                        else:
+                            whole_period = 1000 / final_fmax
+                            half_period = whole_period / 2
+                            line = re.sub(r"-period \S+", "-period {:.3f}".format(whole_period), line)
+                            line = re.sub(r"-waveform\s+\{.+\}", "-waveform {0.000 %.3f}" % half_period, line)
+                            print(line, file=wob)
                 else:
-                    _fmax = (1 + self.fmax_iteration[0] / 200) * _fmax
-                whole_period = 1000 / _fmax
-                half_period = whole_period / 2
-                t_kw = dict(period="{:.3f}".format(whole_period),
-                            half_period="{:.3f}".format(half_period),
-                            clk_name=clk_name)
-                print("# {} {}".format(clk_name, c_f_s), file=wob)
-                print(CONSTANTS.FMT_XDC.format(**t_kw), file=wob)
-            if len(self.c_f_s) > 1:
-                print(vivadoUtil.set_clock_group(list(self.c_f_s.keys())), file=wob)
+                    print(line, file=wob)
         self.tcl_lines.append(CONSTANTS.FMT_ADD_XDC.format(xdc_file=xdc_file))
 
     def move_and_clean_working_directory(self, target_folder):
@@ -258,8 +344,24 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
             shutil.rmtree(my_target)
         if not os.path.isdir(my_target):
             os.mkdir(my_target)
-        for _src_path in (self.kwargs["point_runs"], self.kwargs["point_srcs"]):
-            shutil.copytree(_src_path, os.path.join(my_target, os.path.basename(_src_path)))
+        # for _src_path in (self.kwargs["point_runs"], self.kwargs["point_srcs"]):
+        #    shutil.copytree(_src_path, os.path.join(my_target, os.path.basename(_src_path)))
+        # when a lot of files under my_test.srcs folder, flow will be crashed!
+        src_runs = self.kwargs["point_runs"]
+        dst_runs = os.path.join(my_target, os.path.basename(src_runs))
+        shutil.copytree(src_runs, dst_runs)
+
+        src_srcs = self.kwargs["point_srcs"]
+        dst_srcs = os.path.join(my_target, os.path.basename(src_srcs))
+        if not os.path.isdir(src_srcs):
+            return
+        if not os.path.isdir(dst_srcs):
+            os.makedirs(dst_srcs)
+        for foo in os.listdir(src_srcs):
+            src_foo = os.path.join(src_srcs, foo)
+            dst_foo = os.path.join(dst_srcs, foo)
+            if os.path.isfile(src_foo):
+                shutil.copy2(src_foo, dst_foo)
 
     def compile_simulation_library_and_update_kwargs(self):
         self.say_info("* Prepare or check {} Simulation Lib [{}]...".format(self.simulator, xTools.get_shanghai_time()))
@@ -286,58 +388,16 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
         if not (self.scan_report or self.scan_report_only):
             return
         self.say_info("Scanning reports ...")
-        target_folders = glob.glob(os.path.join(self.project_root, "target_*"))
-        if not target_folders:
-            target_folders = [self.project_root]
-        yaml_file = "{}/vivado/general.yaml".format(self.default_conf_path)
-        self.yaml_dict = vivadoBasicScan.yaml2dict(yaml_file)
-        result_list = [self.scan_one_point(foo) for foo in target_folders]
-        # find the max fmax/geoFmax
-        real_title = "fmax" if self.fmax_sort=="max" else "geoFmax"
-        final_report_data = dict()
-        for foo in result_list:
-            if not final_report_data:
-                final_report_data = foo
-            else:
-                previous_fmax = final_report_data.get("Timing", dict()).get(real_title, 0)
-                now_fmax = foo.get("Timing", dict()).get(real_title, 0)
-                previous_fmax = previous_fmax if previous_fmax else 0
-                now_fmax = now_fmax if now_fmax else 0
-                if float(now_fmax) > float(previous_fmax):
-                    final_report_data = foo
-        self.say_info(json.dumps(final_report_data))
-        with open(os.path.join(self.working_path, "resource_utilization.data"), "w") as ob:
-            print(json.dumps(final_report_data, indent=2), file=ob)
-
-    def scan_one_point(self, point_directory):
-        impl_path = os.path.join(point_directory, self.project_name + ".runs", "impl_1")
-        sim_path = os.path.join(point_directory, self.project_name + ".sim", "sim_1")
-        scan_files = dict(file_xpr=self.xpr_file)
-        if os.path.join(impl_path):
-            x = xTools.get_files(impl_path, "", "timing_summary_routed.rpt", get_single=True)
-            y = xTools.get_files(impl_path, "", "utilization_placed.rpt", get_single=True)
-            z = xTools.get_files(impl_path, "", "runme.log", get_single=True)
-            scan_files["file_timing_summary_routed_rpt"] = x
-            scan_files["file_utilization_placed_rpt"] = y
-            scan_files["file_impl_runme_log"] = z
-        if os.path.isdir(sim_path):
-            for _type, _detail in list(CONSTANTS.VIVADO_SIMULATION_SETTINGS.items()):
-                path_list = (sim_path, _detail.get("exec_path"), self.kwargs["simulator_lower"], _type + ".elapsed")
-                etime_file = os.path.join(*path_list)
-                if os.path.isfile(etime_file):
-                    scan_files["file_{}_elapsed".format(_type)] = etime_file
-        one_point_data = list()
-        for file_type, file_name in list(scan_files.items()):
-            file_data_list = vivadoBasicScan.scan_file(file_name, self.yaml_dict.get(file_type), self.fmax_sort)
-            one_point_data.extend(file_data_list)
-        final_data = dict()
-        for foo in one_point_data:
-            group_name = foo.get("group", "Default")
-            final_data.setdefault(group_name, dict())
-            for title, value in list(foo.items()):
-                if title == "group":
-                    continue
-                if title.endswith("_time"):
-                    value = vivadoUtil.get_seconds(value)
-                final_data[group_name][title] = value
-        return final_data
+        scan_py = os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'scanReport', "new_scan.py")
+        scan_py = os.path.abspath(scan_py)
+        args = "--top-dir {} --design {} --vendor Vivado  --info {}".format(os.path.dirname(self.design_path), os.path.basename(self.design_path),
+                                                                            os.path.basename(self.info_file))
+        if self.ignore_clock:
+            args += " --ignore-clock {}".format(" ".join(self.ignore_clock))
+        if self.care_clock:
+            args += " --care-clock {}".format(" ".join(self.care_clock))
+        cmd_line = "{} {} {}".format(sys.executable, scan_py, args)
+        cmd_line = xTools.win2unix(cmd_line, 0)
+        originalTools.say_it(" Launching %s" % cmd_line)
+        sts, text = xTools.get_status_output(cmd_line)
+        originalTools.say_raw(text)

@@ -219,41 +219,15 @@ class FlowLattice(XOptions):
             except:
                 pass
 
-    def scan_report(self, dump_only=0, use_new=True):
+    def scan_report(self, dump_only=0):
         tag_dir = os.getcwd()
         design_dir, tag = os.path.split(tag_dir)
         job_dir, design = os.path.split(design_dir)
-
-        #old scan flow
-        if not use_new:
-            if self.is_ng_flow:
-                scan_py = os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'scan_report',
-                                    "radiant", "scan_radiant.py")
-                args = "--top-dir=%s --design=%s --tag=%s --rpt-dir=%s" % (job_dir, design, tag, self.top_dir)
-            else:
-                scan_py = os.path.join(os.path.dirname(__file__),'..','..','tools','scan_report', "bin", "run_scan_lattice_step_general_case.py")
-                args = "--special-structure=%s --job-dir=%s --design=%s" % (tag, job_dir, design)
-            if xTools.not_exists(scan_py, "Scan scripts"):
-                return 1
-            scan_py = os.path.abspath(scan_py)
-            cmd_line = "%s %s %s" % (sys.executable, scan_py, args)
-            if self.scan_pap_rpt:
-                cmd_line += " --pap "
-            cmd_line = xTools.win2unix(cmd_line, 0)
-            if dump_only:
-                timeout_py = xTools.win2unix(os.path.join("..", "_timeout.py"))
-                xTools.append_file(timeout_py, ["import os", "os.system('%s')" % cmd_line, ""])
-                return
-            xTools.say_it(" Launching %s" % cmd_line)
-            sts, text = xTools.get_status_output(cmd_line)
-            xTools.say_raw(text)
-        #new scan flow
         if self.is_ng_flow:
             software = 'radiant'
         else:
             software = 'diamond'
-        scan_py = os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'scanReport',
-                                   "scan_report.py")
+        scan_py = os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'scanReport', "scan_report.py")
         args = "--top-dir=%s --design=%s --tag=%s --software %s --rpt-dir %s" % (job_dir, design, tag, software, self.top_dir)
         if self.scripts_options.get("seed_sweep"):
             args += " --seed seed"
@@ -265,6 +239,19 @@ class FlowLattice(XOptions):
         cmd_line = "%s %s %s" % (sys.executable, scan_py, args)
         if self.scan_pap_rpt:
             cmd_line += " --pap "
+        #
+        if self.is_ng_flow:
+            scan_py = os.path.join(os.path.dirname(__file__), '..', '..', 'tools', 'scanReport', "new_scan.py")
+            scan_py = os.path.abspath(scan_py)
+            args = "--top-dir {} --design {} --tag {} --vendor Radiant".format(job_dir, design, tag)
+            raw_ic = self.scripts_options.get("ignore_clock")
+            raw_cc = self.scripts_options.get("care_clock")
+            if raw_ic:
+                args += " --ignore-clock {}".format(" ".join(raw_ic))
+            if raw_cc:
+                args += " --care-clock {}".format(" ".join(raw_cc))
+            cmd_line = "{} {} {}".format(sys.executable, scan_py, args)
+        #
         cmd_line = xTools.win2unix(cmd_line, 0)
         if dump_only:
             timeout_py = xTools.win2unix(os.path.join("..", "_timeout.py"))
@@ -688,8 +675,6 @@ class FlowLattice(XOptions):
         my_create = xLattice.CreateDiamondProjectFile(self.scripts_options)
         sts = my_create.process()
         self.final_ldf_file = my_create.final_ldf_file
-        if sts:
-            xTools.say_it("Error. Failed to create/update/run-synthesis flow")
         try:
             self.final_ldf_dict = xLattice.parse_ldf_file(self.final_ldf_file, self.is_ng_flow)
         except:
@@ -700,6 +685,9 @@ class FlowLattice(XOptions):
         if self.run_ice:
             pass
         elif self.env_setter.set_be_env():
+            return 1
+        if sts:
+            xTools.say_it("Error. Failed to create/update/run-synthesis flow")
             return 1
         self.run_postsyn_if_needed()
         self.special_frequency = my_create.special_frequency

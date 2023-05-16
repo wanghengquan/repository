@@ -15,6 +15,7 @@ from . import utils
 from . import filelock
 
 from . import yTimeout
+from .scanLib import xml2dict
 
 from .Verilog_VCD import Verilog_VCD
 
@@ -179,6 +180,7 @@ class RunSimulationFlow:
             self.run_udb2_flow()
         if self.get_pmi_file():
             return 1
+        self.get_vhdl_2008_boolean()
 
         for (sim_type, sim_path, sim_func) in (
                 (self.sim_rtl, "sim_rtl", self.run_rtl_simulation),
@@ -208,6 +210,35 @@ class RunSimulationFlow:
                                        self.flow_options.get("sim"))
             dms_flow.process()
         return sts
+
+    def get_vhdl_2008_boolean(self):
+        yes_patterns = [re.compile("ROP_(LST|SYN)_VHDL2008.+True"), re.compile("PROP_.+_CmdLineArgs.+2008")]
+        self.vhdl_2008_boolean = False
+        with open(self.final_ldf_file) as ob:
+            ldf_dict = xml2dict.parse(ob)
+            x_name = "RadiantProject" if self.is_ng_flow else "BaliProject"
+            x_dict = ldf_dict.get(x_name)
+            x_d_i = x_dict.get("@default_implementation")
+            y_impl = x_dict.get("Implementation")
+            y_impl = [y_impl] if isinstance(y_impl, dict) else y_impl
+            for foo in y_impl:
+                if x_d_i != foo.get("@description"):
+                    continue
+                using_strategy = foo.get("@default_strategy")
+                y_impl_sty = x_dict.get("Strategy")
+                y_impl_sty = [y_impl_sty] if isinstance(y_impl_sty, dict) else y_impl_sty
+                for bar in y_impl_sty:
+                    if bar.get("@name") == using_strategy:
+                        # -------------
+                        sty_file = xTools.get_abs_path(bar.get("@file"), os.path.dirname(os.path.abspath(self.final_ldf_file)))
+                        if os.path.isfile(sty_file):
+                            #     <Property name="PROP_SYN_VHDL2008" value="False" time="0"/>
+                            #     <Property name="PROP_LST_VHDL2008" value="True" time="0"/>
+                            match_status = xTools.simple_parser(sty_file, yes_patterns)
+                            if match_status:
+                                self.vhdl_2008_boolean = True
+                        return
+                        # -------------
 
     def generate_syn_vo_file(self):
         return
@@ -832,11 +863,11 @@ class RunSimulationFlow:
             else:
                 if self.is_thunder_plus:
                     if is_source_file:
-                        lines.append("vlogan -v2005 -timescale=1ns/1ps %s $VERILOG_READY" % all_files)
+                        lines.append("vlogan -v_T-2022.06 -v2005 -timescale=1ns/1ps %s $VERILOG_READY" % all_files)
                     else:
-                        lines.append("vlogan -v2005 %s $VERILOG_READY" % all_files)
+                        lines.append("vlogan -v_T-2022.06 -v2005 %s $VERILOG_READY" % all_files)
                 else:
-                    lines.append("vlogan -sverilog %s $VERILOG_READY" % all_files)
+                    lines.append("vlogan -v_T-2022.06 -sverilog %s $VERILOG_READY" % all_files)
         return "\n".join(lines)
 
     def get_xrun_lines(self, hdl_files):
@@ -1274,8 +1305,8 @@ class RunSimulationFlow:
                         my_work_lib = custom_lib_dict.get(item)
                         if my_work_lib:
                             x = "-work {} ".format(my_work_lib)
-
-                    v_v_lines.append("vcom {}{}".format(x, item))
+                    vhdl2008_arg = "-2008 " if self.vhdl_2008_boolean else ""
+                    v_v_lines.append("vcom {}{}{}".format(x, vhdl2008_arg, item))
                     if not self.use_vhd:
                         self.use_vhd = 1
                 elif fext == ".lpf":
