@@ -21,6 +21,7 @@ class ice_flow:
         # public options for the case
         pub_group = optparse.OptionGroup(self.parser, "Public Options")
         pub_group.add_option("--ice", help="specify ice install path,you should specify to LSE parent directory")
+        pub_group.add_option("--test-id", help="show test id when executing 'ps -ef | grep python'")
         pub_group.add_option("--nt64",action="store_true",default=False,help="run icecube 64bit iCECUBE")
         pub_group.add_option("--top-dir", help="specify the top source path name")
         pub_group.add_option("--design", help="specify the design name")

@@ -14,6 +14,7 @@ import argparse
 from . import CONSTANTS
 from .localCapuchin import xLogger
 from .localCapuchin import xTools
+from . import xTools as originalTools
 
 
 class AlphaOptions(xLogger.Voice):
@@ -29,8 +30,11 @@ class AlphaOptions(xLogger.Voice):
         gg.add_argument("--design", help="specify design name")
         gg.add_argument("--info", help="specify design .info file name")
         gg.add_argument("--check-conf", nargs="+", help="specify check configuration file(s)")
+        gg.add_argument("--test-id", help="show test id when executing 'ps -ef | grep python'")
         gg.add_argument("--scan-report", action="store_true", help="scan and dump reports")
         gg.add_argument("--scan-report-only", action="store_true", help="scan and dump reports ONLY")
+        gg.add_argument("--ignore-clock", nargs="+", help="specify ignore custom clocks when scanning timing data")
+        gg.add_argument("--care-clock", nargs="+", help="specify care only custom clocks when scanning timing data")
         gg.add_argument("--fmax-sort", choices=("max", "geomean"), default="max", help="specify fmax sort way")
         gg.add_argument("--solo", action="store_const", const="solo_", help="run SOLO flow based on current results")
         gg.set_defaults(solo="")
@@ -43,6 +47,8 @@ class AlphaOptions(xLogger.Voice):
         self.check_conf = self.opts.check_conf
         self.scan_report = self.opts.scan_report
         self.scan_report_only = self.opts.scan_report_only
+        self.ignore_clock = originalTools.set_as_list(self.opts.ignore_clock)
+        self.care_clock = originalTools.set_as_list(self.opts.care_clock)
         self.fmax_sort = self.opts.fmax_sort
         self.solo = self.opts.solo
         # inference and check
@@ -114,6 +120,8 @@ class BetaOptions(AlphaOptions):
         vig = self.parser.add_argument_group(group_name)
         vig.add_argument("--run-impl", action="store_true", help="Run Implementation Flow")
         vig.add_argument("--run-bitstream", action="store_true", help="Run Generate Bitstream Flow")
+        f_c_help = "specify custom clock name and fixed frequency for implementation flow, Example: CLK:10 clk_core:20"
+        vig.add_argument("--fixed-clock", nargs="+", help=f_c_help)
         ex_group = vig.add_mutually_exclusive_group()
         ex_group.add_argument("--fmax-sweep", type=int, nargs=3, help="specify fmax sweeping range: (start end step)")
         _help = "specify fmax iteration setting: (adjust_percentage iteration_number"
@@ -124,6 +132,7 @@ class BetaOptions(AlphaOptions):
         self.run_bitstream = self.opts.run_bitstream
         self.fmax_sweep = self.opts.fmax_sweep
         self.fmax_iteration = self.opts.fmax_iteration
+        self.fixed_clock = originalTools.get_fixed_clock_frequency_dict(self.opts.fixed_clock)
         if self.fmax_sweep:
             self.fmax_sweep = (self.fmax_sweep[0], self.fmax_sweep[1]+1, self.fmax_sweep[2])
 

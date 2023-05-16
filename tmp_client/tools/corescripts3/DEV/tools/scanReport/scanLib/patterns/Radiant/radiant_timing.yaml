@@ -1,0 +1,14 @@
+RADIANT_TIMING_REPORT_FILE:
+  name_pattern: '.twr$'
+  content_pattern: 'Lattice Timing Report.+Radiant Software'
+  group_1:
+    use_func: true
+    fields:
+      - { nickname: 'twr_data', func: 'get_radiant_twr_data' }
+  group_2:
+    head: 300
+    greedy: false
+    fields:
+      - { name: 'constraint_coverage', pattern: 'Constraint Coverage: (\S+)' }
+
+# END OF FILE

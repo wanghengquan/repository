@@ -1,0 +1,19 @@
+DIAMOND_MAPPING_REPORT:
+  content_pattern: 'Mapper:.+version:  Diamond '
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'clkNumber', 'clkMaxLoadNum', 'clkMaxLoadName' ],         func: 'get_clk_data_from_mrp' }
+      - { names: [ 'clkEnNumber', 'clkEnMaxLoadNum', 'clkEnMaxLoadName' ],   func: 'get_clken_data_from_mrp' }
+      - { names: [ 'LSRNumber', 'LSRMaxLoadNum', 'LSRMaxLoadName' ],         func: 'get_lsr_data_from_mrp' }
+      - { names: [ 'mapper_cpu_time', 'mapper_real_time', 'mapper_peak_memory' ], func: 'get_time_and_memory' }
+  group_2:
+    head: 1000
+    fields:
+      - { name: 'version',     pattern: 'Mapper:.+version: (.+)' }
+      - { names: [ 'Register', 'Register_per' ], pattern: 'Number of registers:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'Slice', 'Slice_per' ], pattern: 'Number of SLICEs:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'LUT', 'LUT_per' ], pattern: 'Number of LUT4s:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'IO',       'IO_per' ],       pattern: ' Number of PIO sites used:  (\d+) out of.+\(([^\)]+)\)' }
+      - { name: 'DSP', pattern: 'Number of Used DSP Sites:  (\d+)' }
+      - { name: 'distributed_RAM', pattern: 'Number of block RAMs:  (\d+)' }

@@ -129,6 +129,7 @@ class RunSquishCase:
         parser.add_option("--squish", help="specify Squish path")
         parser.add_option("--dev-path", help="specify DEV(core scripts) path")
         parser.add_option("--x86", action="store_true", help="run with x86 build")
+        parser.add_option("--test-id", help="show test id in command line")
         opts, args = parser.parse_args()
         self.top_dir = opts.top_dir
         self.design = opts.design
@@ -178,8 +179,19 @@ class RunSquishCase:
             layout_path = os.path.join(r"C:\Users\%s\AppData\Roaming\LatticeSemi\DiamondNG" % user)
         else:
             layout_path = "/users/%s/.config/LatticeSemi/DiamondNG" % user
+        for i in range(3):
+            try:
+                self._copy_them(testdata_path, layout_path)
+                return
+            except:
+                time.sleep(3)
+                continue
+        return 1  # when failed
+
+    @staticmethod
+    def _copy_them(testdata_path, layout_path):
         for foo in os.listdir(testdata_path):
-            if xTools.get_fext_lower(foo) == ".ini": # found layout file
+            if xTools.get_fext_lower(foo) == ".ini":  # found layout file
                 src_foo = os.path.join(testdata_path, foo)
                 dst_foo = os.path.join(layout_path, foo)
                 if xTools.wrap_cp_file(src_foo, dst_foo):

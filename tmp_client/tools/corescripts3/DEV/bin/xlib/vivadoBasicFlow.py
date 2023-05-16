@@ -37,16 +37,15 @@ class BasicFlow(FlowOptions):
                          self.public_parse_case_options,
                          self.basic_very_first_process]
         _flow_list = [self.basic_flow_processes, self.basic_very_end_process]
-        _other_list = [self.basic_scan_process, self.public_check_process]
-        if self.scan_report_only:
-            function_list = _other_list
-        else:
-            function_list = _flow_list + _other_list
-        function_list = _prepare_list + function_list
+        more_list = list() if self.scan_report_only else _flow_list
+        function_list = _prepare_list + more_list
         for func in function_list:
             sts = func()
             if sts:
-                return sts
+                break
+        _other_list = [self.basic_scan_process, self.public_check_process]
+        for func in _other_list:
+            func()
         return sts
 
     def public_head_announce(self):

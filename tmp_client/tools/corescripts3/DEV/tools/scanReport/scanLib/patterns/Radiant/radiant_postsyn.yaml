@@ -1,0 +1,8 @@
+RADIANT_POSTSYN_FILE:
+  name_pattern: '.psn$'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'postsyn_cpu_time', 'postsyn_real_time', 'postsyn_peak_memory' ], func: 'get_time_and_memory' }
+
+# END OF FILE

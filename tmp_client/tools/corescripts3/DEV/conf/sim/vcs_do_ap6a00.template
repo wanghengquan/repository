@@ -40,7 +40,7 @@ VERILOG_READY="${VERILOG_READY} -sverilog ${_cells}"
 VERILOG_READY="${VERILOG_READY} +libext+.v+.sv+.h+.vh1 +incdir+${_DEV}+${_UAP}+${_pulp}+${_security}+${_abt_ip}"
 VERILOG_READY="${VERILOG_READY} +define+SW_MODEL+USE_RTL+NO_SCAN+TSMC_CM_UNIT_DELAY"
 
-PMI_READY="vlogan -sverilog -f ${INSTALLED_PATH}/ip/pmi/pmi.f ${VERILOG_READY}+${INSTALLED_PATH}/ip/pmi"
+PMI_READY="vlogan -v_T-2022.06 -sverilog -f ${INSTALLED_PATH}/ip/pmi/pmi.f ${VERILOG_READY}+${INSTALLED_PATH}/ip/pmi"
 echo $PMI_READY
 $PMI_READY
 
@@ -50,5 +50,5 @@ $PMI_READY
 # testbench files
 %(tb_files)s
 
-vcs %(sim_top)s +vcs+lic+wait
+vcs -v_T-2022.06  %(sim_top)s +vcs+lic+wait
 ./simv -l sim.log +vcs+lic+wait -ucli -i ucli.cmd

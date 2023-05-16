@@ -87,6 +87,7 @@ class RunSquishCase:
         parser.add_option("--squish", help="specify Squish path")
         parser.add_option("--x86", action="store_true", help="run with x86 build")
         parser.add_option("--dev-path", help="specify DEV(core scripts) path")
+        parser.add_option("--test-id", help="show test id in command line")
         opts, args = parser.parse_args()
         self.top_dir = opts.top_dir
         self.design = opts.design

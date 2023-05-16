@@ -26,7 +26,7 @@ TCL_COMMAND = {"close": ["prj_project close", "prj_close"],
                "enable_src": ["prj_src enable", "enable_src_ContactShawn"],
                "new": ["prj_project new", "prj_create"],
                "open": ["prj_project open", "prj_open"],
-               "set_syn": ["prj_syn set", "prj_syn set"],
+               "set_syn": ["prj_syn set", "prj_set_impl_opt synthesis"],
                "copy_sty": ["prj_strgy copy", "prj_copy_strategy"],
                "set_sty": ["prj_strgy set", "prj_set_strategy"],
                "set_sty_val":["prj_strgy set_value", "prj_set_strategy_value"],
@@ -75,6 +75,7 @@ def copy_impl_dir_to_target(src_impl, dst_impl, copy_ncd=False):
             else:
                 os.remove(src_foo)
 
+
 def move_bak_results(tcl_file, impl_name, target_path, flow_sts):
     if flow_sts:
         ext_dir = "_Failed"
@@ -93,7 +94,7 @@ def move_bak_results(tcl_file, impl_name, target_path, flow_sts):
                 fname, fext = os.path.splitext(foo)
                 if fname == tcl_name:
                     shutil.move(abs_foo, dst_foo)
-                elif fext.lower() in (".ldf", ".lpf", ".sty", ".rdf", ".pdc"):
+                elif fext.lower() in (".ldf", ".lpf", ".sty", ".rdf", ".pdc", ".fdc", ".ldc"):
                     shutil.copy(abs_foo, dst_foo)
             else:
                 if foo == impl_name:
@@ -176,7 +177,8 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
         elif task:
             task = "-task %s" % task
         _line = "prj_run %s %s -forceOne" % (process, task)
-        if process in ("Synthesis", "Map", "Export", "PAR"):
+        # if process in ("Synthesis", "Map", "Export", "PAR"):
+        if process in ("Export", ) or task in ("-task MapTrace", "-task SynTrace", "-task PARTrace"):
             _line = "set r [catch {%s} msg]" % _line
             tcl_lines.append(_line)
             # tcl_lines.append('puts "$msg"')
@@ -701,7 +703,7 @@ class LatticeEnvironment:
                 break
 
 
-def update_synthesis_tool(ldf_file, synthesis, devkit, performance):
+def update_synthesis_tool(is_ng_flow, ldf_file, synthesis, devkit, performance):
     """
     Modify synthesis name in the ldf file
     use raw spelling for device setting. raised by Ling
@@ -713,7 +715,10 @@ def update_synthesis_tool(ldf_file, synthesis, devkit, performance):
     p_performance = re.compile('\s+performance_grade="[^"]+"\s+')
     new_string = ' synthesis="%s" ' % synthesis
     for line in ldf_lines:
-        new_line = p_synthesis.sub(new_string, line)
+        if not is_ng_flow:
+            new_line = p_synthesis.sub(new_string, line)
+        else:
+            new_line = line
         if devkit:
             new_line = p_device.sub(' device="%s" ' % devkit, new_line)
         if performance:
@@ -831,7 +836,9 @@ class UpdateLDF:
                 path_string = m_path_list.group(1)
                 path_list = re.split("\s*;\s*", path_string)
                 new_inc_list = [xTools.get_relative_path(item, self.ldf_dir) for item in path_list]
-                line = re.sub(path_string, ";".join(new_inc_list), line)
+                old_string = 'value="[^"]+"'  # sometimes the inc value is dot(.), which will make re.sub failed.
+                new_string = 'value="{}"'.format(";".join(new_inc_list))
+                line = re.sub(old_string, new_string, line)
         return line
 
     def update_sty_file(self, sty_file, new_sty):
@@ -1350,7 +1357,9 @@ class CreateDiamondProjectFile:
                 add_lines.append('%s "%s"' % (self.tcl_cmd.get("set_syn"), self.synthesis))
             else:
                 self.synthesis = _synthesis[0]
-        update_synthesis_tool(self.final_ldf_file, self.synthesis, self.devkit, self.performance)
+        if self.synthesis and self.is_ng_flow:
+            add_lines.append('%s "%s"' % (self.tcl_cmd.get("set_syn"), self.synthesis))
+        update_synthesis_tool(self.is_ng_flow, self.final_ldf_file, self.synthesis, self.devkit, self.performance)
         if self.synthesis == "lse":
             pre_syn = "lse"
         elif self.synthesis == "synplify":
@@ -1767,8 +1776,17 @@ class RunTclFlow:
             _ = list(map(int, _))
             self.fmax_center = _
         self.pdc4center = xTools.get_true(self.flow_options, "pdc4center")
+        self.fixed_clock = xTools.get_fixed_clock_frequency_dict(self.flow_options.get("fixed_clock"))
+        self.ignore_clock = xTools.set_as_list(self.flow_options.get("ignore_clock"))
+        self.care_clock = xTools.set_as_list(self.flow_options.get("care_clock"))
+        # self update
+        if self.fixed_clock:
+            self.flow_options["fixed_clock"] = self.fixed_clock
+        if self.ignore_clock:
+            self.flow_options["ignore_clock"] = self.ignore_clock
+        if self.care_clock:
+            self.flow_options["care_clock"] = self.care_clock
         #
-
         bali_node = self.final_ldf_dict.get("bali")
         impl_node = self.final_ldf_dict.get("impl")
         source_node = self.final_ldf_dict.get("source")
@@ -2080,7 +2098,7 @@ class RunTclFlow:
             print("Error. Failed to finish basic flow.")
             return 1, 1
 
-    def run_fmax_iteration_flow(self):
+    def run_fmax_iteration_flow(self, try_to_run_flow_times=3):
         if not self.is_ng_flow:
             print("Warning. iteration flow not supported with Diamond flow")
             return 1
@@ -2091,27 +2109,84 @@ class RunTclFlow:
         _pdc, _target_slack = self.get_now_twr_data()
         if _pdc == 1:
             return 1
+        self.get_clock_custom_hdl_dict_and_original_constraint_lines_and_fext()
+        if not self.original_constraint_lines:
+            print("Error. Not found original constraint file")
+            return
         move_bak_results("run_pb.tcl", self.impl_dir,  "Target_iteration_00", 0)
+        try_times = 0
+        good_target_slack = None
         for iteration_number in range(1, int(self.fmax_iteration[-1]+1)):
-            if not _target_slack:
-                print("@E: Not found any clock in twr_file, cwd is {}".format(os.getcwd()))
+            if (_pdc != 1) and _pdc:  # must have pdc lines
+                if utils.compare_timing_data(good_target_slack, _target_slack):
+                    print("Warning. Same timing report found. Exit")
+                    break
+                good_pdc, good_target_slack = _pdc, _target_slack
+                try_times = 0
+            else:
+                try_times += 1
+            if try_times > try_to_run_flow_times - 1:
+                print("Warning. Can not run more iteration data due to failed times")
                 break
+            if not good_target_slack:
+                return
+            real_iter = self.fmax_iteration[0]
+            for i in range(try_times):
+                real_iter /= 2
+            real_iter = round(real_iter, 6)
             run_mark = "Target_iteration_{:02d}".format(iteration_number)
             xTools.say_it("--Launch Test flow: %s" % run_mark)
             my_flow_settings = list()
-            pdc_file = "iteration_flow.pdc"
-            utils.create_iteration_flow_pdc_file(pdc_file, _pdc, _target_slack, self.fmax_iteration[0])
+            pdc_file = "iteration_flow" + self.constraint_fext
+            utils.create_iteration_flow_pdc_file(pdc_file, good_pdc, good_target_slack, real_iter, self.fixed_clock,
+                                                 self.clock_custom_hdl_dict, self.original_constraint_lines,
+                                                 self.constraint_fext, os.getcwd(), self.final_ldf_dict)
             if iteration_number == 1:
-                my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict)
+                my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict, True)
                 my_flow_settings.append('prj_add_source "%s"' % pdc_file)
                 my_flow_settings.append('prj_enable_source "%s"' % pdc_file)
             process_task = get_task_list(self.flow_options, dict(run_par_trace=1))
             sts = run_ldf_file(run_mark + ".tcl", self.final_ldf_file, process_task, my_flow_settings,
                                is_ng_flow=self.is_ng_flow)
             _pdc, _target_slack = self.get_now_twr_data()
-            if _pdc == 1:
-                return 1
             move_bak_results(run_mark + ".tcl", self.impl_dir, run_mark, sts)
+
+    def get_clock_custom_hdl_dict_and_original_constraint_lines_and_fext(self):
+        self.clock_custom_hdl_dict = dict()
+        self.original_constraint_lines = list()
+        self.constraint_fext = ""
+        _impl = os.path.join(os.getcwd(), self.impl_dir)
+        file_lse = os.path.join(_impl, "{}_{}_lattice.synproj".format(self.project_name, self.impl_dir))
+        file_synplify = os.path.join(_impl, "run_options.txt")
+        p_file = re.compile(r'-(sdc|fpga_constraint)\s+"(\S+)"')
+        if os.path.isfile(file_lse):
+            prj_file = file_lse
+        elif os.path.isfile(file_synplify):
+            prj_file = file_synplify
+        else:
+            return
+        constraint_file = ""
+        with open(prj_file) as rob:
+            for line in rob:
+                m_file = p_file.search(line)
+                if m_file:
+                    constraint_file = m_file.group(2)
+        if constraint_file:
+            self.constraint_fext = os.path.splitext(constraint_file)[-1]
+            p_custom_hdl = re.compile(r"-name([^-]+)-.+\[get_[^s]+s(.+)\]")
+            with open(constraint_file) as ob:
+                for line in ob:
+                    short_line = re.sub(r"\s", "", line)
+                    line = line.rstrip()
+                    if line.startswith("#"):
+                        continue
+                    self.original_constraint_lines.append(line)
+                    m_custom_hdl = p_custom_hdl.search(short_line)
+                    if m_custom_hdl:
+                        _a, _b = m_custom_hdl.group(1), m_custom_hdl.group(2)
+                        _a = _a.strip("{}")
+                        _b = _b.strip("{}")
+                        self.clock_custom_hdl_dict[_a] = _b
 
     def run_fmax_flow(self):
         if self.till_map:
@@ -2142,7 +2217,7 @@ class RunTclFlow:
                 continue
             my_flow_settings = list()
             if self.is_ng_flow:
-                utils.update_pdc_file(self.pdc_file, fmax)
+                utils.update_pdc_file(self.pdc_file, fmax, self.fixed_clock)
                 if i == 0:
                     my_flow_settings.append('prj_add_source "%s"' % self.pdc_file)
                     my_flow_settings.append('prj_enable_source "%s"' % self.pdc_file)
@@ -2175,7 +2250,7 @@ class RunTclFlow:
         my_flow_settings = list()
         if self.is_ng_flow and self.fmax_sweep:
             #  disable sdc/ldc file
-            my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict)
+            my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict, True)
         sts = run_ldf_file("run_till_map.tcl", self.final_ldf_file, process_task, my_flow_settings, is_ng_flow=self.is_ng_flow)
         self.run_ncl_flow()
         mrp_file = os.path.join(".", self.impl_dir, "%s_%s.mrp" % (self.project_name, self.impl_name))
@@ -2184,7 +2259,7 @@ class RunTclFlow:
         if self.is_ng_flow:
             clk_data = scan_radiant.get_clk_loads_net_from_mrp(mrp_file)
             self.pdc_file = "sweeping_flow.pdc"
-            utils.write_pdc_file(self.pdc_file, clk_data)
+            utils.write_pdc_file(self.pdc_file, clk_data, os.getcwd(), self.final_ldf_dict)
         else:
             clks = get_clocks_from_mrp_file(mrp_file)
             update_lpf_file(self.lpf_file, 88, clks)

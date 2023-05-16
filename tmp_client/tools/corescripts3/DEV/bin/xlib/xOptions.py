@@ -123,6 +123,7 @@ class XOptions:
         _choice_scuba_type = ("vhdl", "verilog")
         pub_group = self.parser.add_argument_group("Public Options")
         pub_group.add_argument("-d", "--debug", action="store_true", help="print debug message")
+        pub_group.add_argument("--test-id", help="show test id when executing 'ps -ef | grep python'")
         pub_group.add_argument("--copy-all", action="store_true", help="copy all files in ldf_dir to working directory")
         _hlp = "specify user's environment value (append action)"
         _hlp += ' example: --set-env=a=1 --set-env="b=2;9;x"'
@@ -359,6 +360,10 @@ class XOptions:
         backend_group.add_argument("--fmax-seed", action="store_true", help="run seed sweeping for every fmax points")
         backend_group.add_argument("--fmax-center", metavar="<initial_frequency,increase_percentage,total_points>",
                                  help="specify fmax-center arguments")
+        f_c_help = "specify custom clock name and fixed frequency for implementation flow, Example: CLK:10 clk_core:20"
+        backend_group.add_argument("--fixed-clock", nargs="+", help=f_c_help)
+        backend_group.add_argument("--ignore-clock", nargs="+", help="specify ignore custom clocks when scanning timing data")
+        backend_group.add_argument("--care-clock", nargs="+", help="specify care only custom clocks when scanning timing data")
         backend_group.add_argument("--pap-range", type=int, nargs=2, help="specify pap range, for example: 70 80")
         backend_group.add_argument("--pdc4center", action="store_true", help="inner switch for fmax center methodology")
         backend_group.add_argument("--double-step", action="store_true", help="double the running step for running faster")

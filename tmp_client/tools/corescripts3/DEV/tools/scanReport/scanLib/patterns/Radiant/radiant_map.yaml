@@ -1,0 +1,46 @@
+RADIANT_MAPPING_REPORT:
+  content_pattern: 'Mapper:    version Radiant Software'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'clkNumber', 'clkMaxLoadNum', 'clkMaxLoadName' ],         func: 'get_clk_data_from_mrp' }
+      - { names: [ 'clkEnNumber', 'clkEnMaxLoadNum', 'clkEnMaxLoadName' ],   func: 'get_clken_data_from_mrp' }
+      - { names: [ 'LSRNumber', 'LSRMaxLoadNum', 'LSRMaxLoadName' ],         func: 'get_lsr_data_from_mrp' }
+      - { names: [ 'mapper_cpu_time', 'mapper_real_time', 'mapper_peak_memory' ], func: 'get_time_and_memory' }
+      - { name: 'CARRY',   func: 'get_carry_from_mrp' }
+  group_2:
+    greedy: false
+    head: 1000
+    fields:
+      - { name: 'version',     pattern: 'Mapper:   version (.+)' }
+      - { names: [ 'Register', 'Register_per' ], pattern: 'Number of registers:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'Register', 'Register_per' ], pattern: 'Number of slice registers:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'IO',       'IO_per' ],       pattern: 'Number of PIOs used:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'IO',       'IO_per' ],       pattern: 'Number of PIOs used/reserved:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'IO',       'IO_per' ],       pattern: 'Number of IO sites used:  (\d+) out of.+\(([^\)]+)\)' }
+      - { name: 'DSP', pattern: 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)' }
+      - { name: 'EBR', pattern: 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs): ([\d.]+)' }
+      - { name: 'DSP_PREADD9',   pattern: 'Number of PREADD9:  (\d+)' }
+      - { name: 'DSP_MULT9',     pattern: 'Number of MULT9:  (\d+)' }
+      - { name: 'DSP_MULT18',    pattern: 'Number of MULT18:  (\d+)' }
+      - { name: 'DSP_MULT18X36', pattern: 'Number of MULT18X36:  (\d+)' }
+      - { name: 'DSP_MULT36',    pattern: 'Number of MULT36:  (\d+)' }
+      - { name: 'DSP_ACC54',     pattern: 'Number of ACC54:  (\d+)' }
+      - { name: 'DSP_REG18',     pattern: 'Number of REG18:  (\d+)' }
+      - { name: 'distributed_RAM', pattern: 'Number used as distributed RAM: (\d+)' }
+
+RADIANT_UDB2SV_MAP_SHA1:
+  name_pattern: 'test_udb2sv_map.v$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'udb2sv_map_sha1', func: 'get_text_file_sha1' }
+
+RADIANT_MAP_UDB_SIZE:
+  name_pattern: '_map.udb$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'map_udb_size', func: 'get_file_size' }
+
+# END OF FILE

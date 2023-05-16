@@ -1,0 +1,12 @@
+RADIANT_PROJECT_FILE:
+  name_pattern: '\.rdf$'
+  group_1:
+    greedy: false
+    fields:
+      - { name: 'device', pattern: '(?P<blank>BaliProject|RadiantProject).+ device="(?P<device>[^"]+)"' }
+  group_2:
+    use_func: true
+    fields:
+      - { names: [ 'HDL_type', 'synthesis' ] , func: 'get_project_hdl_type_and_synthesis' }
+
+# END OF FILE

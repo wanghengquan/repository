@@ -689,7 +689,8 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     :return: line number if str found else None
     """
     string = string.replace(' ', '').strip()
-    lines = try_to_get_lines_from_file(filename)
+    p_message_id = re.compile(r"<\d+>")
+    lines = try_to_get_lines_from_file(filename, p_message_id.search(string))
     if index is not None:
         if grep:
             if re.search(string, lines[index].replace(' ', '').strip()):
@@ -711,24 +712,28 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     return None
 
 
-def try_to_get_lines_from_file(a_file):
+def try_to_get_lines_from_file(a_file, string_has_message_id=True):
     lines = list()
-    p_bracket = re.compile(r"<\d+>")
-    p_b_bracket = re.compile(b"<\d+>")
+    p_bracket = None if string_has_message_id else re.compile(r"<\d+>")
+    p_b_bracket = None if string_has_message_id else re.compile(b"<\d+>")
     try:
         with open(a_file, 'r') as f:
             old_lines = f.readlines()
             for foo in old_lines:
-                foo = p_bracket.sub("", foo)
+                if p_bracket:
+                    foo = p_bracket.sub("", foo)
                 lines.append(foo)
     except UnicodeDecodeError:
         with open(a_file, 'rb') as f:
             old_lines = f.readlines()
             for foo in old_lines:
                 try:
-                    x = p_b_bracket.sub(b"", foo)
-                    x = re.sub(b"\W", b"", x)
-                    x = str(x, encoding="utf-8")
+                    if p_b_bracket:
+                        x = p_b_bracket.sub(b"", foo)
+                        x = re.sub(b"\W", b"", x)
+                        x = str(x, encoding="utf-8")
+                    else:
+                        x = str(x, encoding="utf-8")
                     lines.append(x)
                 except UnicodeDecodeError:
                     pass
@@ -745,7 +750,8 @@ def get_index_list_from_file_by_string(string, filename, index=None, start=-1, g
     :return: index list
     """
     string = string.replace(' ', '').strip()
-    lines = try_to_get_lines_from_file(filename)
+    p_message_id = re.compile(r"<\d+>")
+    lines = try_to_get_lines_from_file(filename, p_message_id.search(string))
     if index is not None:
         if grep:
             if re.search(string, lines[index].replace(' ', '').strip()):

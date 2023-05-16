@@ -368,8 +368,7 @@ class FlowSuite(FlowOptions):
         new_key_list = [str(base_data_dict.get(item)) for item in self.ssc_keys_dict.get(type_name)]
         return "{}::{}".format(type_name, "+".join(new_key_list))
 
-    @staticmethod
-    def _get_input_data_suite_description(suite_info_dict):
+    def _get_input_data_suite_description(self, suite_info_dict):
         exclude_keys = ("Author", "project_id", "suite_name")
         description_list = list()
         for k, v in list(suite_info_dict.items()):
@@ -378,6 +377,7 @@ class FlowSuite(FlowOptions):
             description_list.append('[{}]'.format(k))
             if v.count("") != len(v):
                 description_list.extend(v)
+        description_list = [self.p_quota.sub('"', item) for item in description_list]
         return '\n'.join(description_list)
 
     def _build_input_section_and_case_data(self, raw_suite_data):
@@ -405,13 +405,25 @@ class FlowSuite(FlowOptions):
                 one_case_data["matched_times"] += 1
                 action_list = macro_data.get("action")
                 # [{'Section': 'impl_lse_jedi'}, {'LaunchCommand': 'cmd = --synthesis=lse'}]
+                # should be combined
+                will_combine_fields = ("CaseInfo", "Environment", "Software", "System", "Machine")
                 for action_dict in action_list:
                     for new_field, new_value in list(action_dict.items()):
                         # LaunchCommand content in case level should be appended
-                        if new_field == "LaunchCommand":
+                        if new_field in ("LaunchCommand", "Environment"):
                             new_lc = new_value
                             old_lc = perhaps_case_data.get(new_field, "")
                             new_value = self.__get_lc_string(new_lc, old_lc)
+                        elif new_field in will_combine_fields:
+                            old_value = perhaps_case_data.get(new_field, "")
+                            old_list = self.split_with_semicolon(old_value)
+                            new_list = self.split_with_semicolon(new_value)
+                            old_odict = self.get_odict_from_list(old_list)
+                            new_odict = self.get_odict_from_list(new_list)
+                            for k, v in list(old_odict.items()):
+                                if k not in new_odict:
+                                    new_odict[k] = v
+                            new_value = self.get_value_from_odict(new_odict)
                         perhaps_case_data[new_field] = new_value
                 all_cases.append(perhaps_case_data)
         if self.macro_only == "yes":
@@ -440,6 +452,29 @@ class FlowSuite(FlowOptions):
             self._in_case_odict[key_for_case] = standard_case_dict
 
     @staticmethod
+    def get_odict_from_list(raw_list):
+        """[''] or ['a=1', 'bad = yes']
+        """
+        p_key_value = re.compile(r"([^=]+?)=(.+)")
+        my_odict = OrderedDict()
+        for foo in raw_list:
+            m_key_value = p_key_value.search(foo)
+            if foo:
+                _key, _value = m_key_value.group(1), m_key_value.group(2)
+                _key = _key.strip()
+                _value = _value.strip()
+                my_odict[_key] = _value
+        return my_odict
+
+    @staticmethod
+    def get_value_from_odict(raw_odict):
+        total_new_list = list()
+        for kk, vv in list(raw_odict.items()):
+            vv = re.sub(';', "TEMP_SEMICOLON", vv)
+            total_new_list.append("{} = {}".format(kk, vv))
+        return ";".join(total_new_list)
+
+    @staticmethod
     def __for_semicolon(raw_list):
         new_list = list()
         for foo in raw_list:
@@ -457,29 +492,19 @@ class FlowSuite(FlowOptions):
         elif new_has_yes:
             return self.__for_semicolon(new_list)
         else:
-            total_new_odict = OrderedDict()
-            p_key_value = re.compile(r"([^=]+?)=(.+)")
-            for foo in new_list:
-                m_key_value = p_key_value.search(foo)
-                if m_key_value:
-                    total_new_odict[m_key_value.group(1).strip()] = m_key_value.group(2).strip()
-            for bar in old_list:
-                m_key_value = p_key_value.search(bar)
-                if m_key_value:
-                    k, v = m_key_value.group(1).strip(), m_key_value.group(2).strip()
-                    if k == "cmd":
-                        if k in total_new_odict:
-                            total_new_odict[k] += " {}".format(v)
-                        else:
-                            total_new_odict[k] = v
-                    else:
-                        if k not in total_new_odict:   # macro has higher priority
-                            total_new_odict[k] = v
-            total_new_list = list()
-            for kk, vv in list(total_new_odict.items()):
-                vv = re.sub(';', "TEMP_SEMICOLON", vv)
-                total_new_list.append("{} = {}".format(kk, vv))
-            return ";".join(total_new_list)
+            new_lc_odict = self.get_odict_from_list(new_list)
+            old_lc_odict = self.get_odict_from_list(old_list)
+            for k, v in list(old_lc_odict.items()):
+                old_value = old_lc_odict.get(k)
+                new_value = new_lc_odict.get(k, "")
+                if k == "cmd":
+                    if old_value:  # operation is appending for cmd
+                        new_value = "{} {}".format(new_value, old_value)
+                        new_value = new_value.strip()
+                    new_lc_odict[k] = new_value
+                elif k not in new_lc_odict:
+                    new_lc_odict[k] = v
+            return self.get_value_from_odict(new_lc_odict)
 
     @staticmethod
     def __has_override_local(lc_list):
@@ -529,6 +554,10 @@ class FlowSuite(FlowOptions):
                             self.say_error("Error. Unknown string {} in {}".format(v, raw_case_dict))
                             xTools.eexit()
                         v = vv
+                try:
+                    v = self.p_quota.sub('"', v)
+                except TypeError:
+                    pass
                 new_dict[this_key] = v
         #
         cus_conf = list()
@@ -650,16 +679,15 @@ class FlowSuite(FlowOptions):
         return _is_diff
 
     def upload_cases(self, new_data, old_data):
-        if self.debug:
-            return 
         # ----- SUITE
         new_suite_dict, old_suite_dict = new_data.get("suite"), old_data.get("suite")
         for suite_key, new_suite_data in list(new_suite_dict.items()):
             old_suite_data = old_suite_dict.get(suite_key, dict())
             if not old_suite_data:  # create a new suite
                 self.say_info("--SUITE-- add {}".format(new_suite_data))
-                response = self.testrail_api.add_suite(new_suite_data.get("project_id"), new_suite_data)
-                new_suite_data["id"] = response.get("id")  # append suite id
+                if not self.debug:
+                    response = self.testrail_api.add_suite(new_suite_data.get("project_id"), new_suite_data)
+                    new_suite_data["id"] = response.get("id")  # append suite id
             else:
                 if self.__string_is_diff(new_suite_data.get("description"), old_suite_data.get("description")):
                     self.say_info("--SUITE-- update {}".format(new_suite_data))
@@ -675,8 +703,9 @@ class FlowSuite(FlowOptions):
                 higher_level_data = new_suite_dict.get(self.__get_ssc_key(new_section_data, "suite"))
                 project_id = new_section_data.get("project_id")
                 new_section_data["suite_id"] = higher_level_data.get("id")
-                response = self.testrail_api.add_section(project_id, new_section_data)
-                new_section_data["id"] = response.get('id')
+                if not self.debug:
+                    response = self.testrail_api.add_section(project_id, new_section_data)
+                    new_section_data["id"] = response.get('id')
             else:
                 new_section_data["id"] = old_section_data.get("id")
         # ----- CASE
@@ -687,22 +716,26 @@ class FlowSuite(FlowOptions):
                 higher_level_data = new_section_odict.get(self.__get_ssc_key(new_case_data, "section"))
                 section_id = higher_level_data.get("id")
                 self.say_info("----CASE-- add {}".format(case_key))
-                self.testrail_api.add_case(section_id, new_case_data)
+                if not self.debug:
+                    self.testrail_api.add_case(section_id, new_case_data)
             else:
                 if self.__case_is_diff(new_case_data, old_case_data):
-                    self.say_info("----CASE-- update {}".format(case_key))
                     case_id = old_case_data.get("id")
-                    self.testrail_api.update_case(case_id, new_case_data)
+                    self.say_info("----CASE-- update (C{}){}".format(case_id, case_key))
+                    if not self.debug:
+                        self.testrail_api.update_case(case_id, new_case_data)
         for case_key, old_case_data in list(old_case_odict.items()):
             if case_key not in new_case_odict:
                 self.say_info("----CASE-- delete (C{}){}".format(old_case_data.get("id"), case_key))
-                self.testrail_api.delete_case(old_case_data.get("id"))
+                if not self.debug:
+                    self.testrail_api.delete_case(old_case_data.get("id"))
         # ---- delete section after delete case
         for section_key, old_section_data in list(old_section_odict.items()):
             if section_key not in new_section_odict:
                 _info = "---SECTION-- delete {section_name} in suite {suite_name}".format(**old_section_data)
                 self.say_info(_info)
-                self.testrail_api.delete_section(old_section_data.get("id"))
+                if not self.debug:
+                    self.testrail_api.delete_section(old_section_data.get("id"))
         # ---- show suite_ids
         for suite_key, new_suite_data in list(new_suite_dict.items()):
             self.say_info("---- Suite_id: S{}, {}".format(new_suite_data.get("id"), suite_key))

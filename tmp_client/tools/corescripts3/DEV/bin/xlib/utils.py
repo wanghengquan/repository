@@ -9,6 +9,7 @@ import glob
 import shlex
 import shutil
 from collections import OrderedDict
+from .scanLib import utils as scan_utils
 
 __author__ = 'syan'
 
@@ -271,12 +272,15 @@ def get_ipm_vo_file(ipm_file):
         return vo_files[0]
 
 
-def disable_sdc_ldc_file(project_dict):
+def disable_sdc_ldc_file(project_dict, keep_pdc=False):
     source_list = project_dict.get("source", list())
     flow_settings = list()
     for item in source_list:
         type_name = item.get("type")
         if "Constraints File" in type_name:
+            if keep_pdc:
+                if item.get("type_short") == "PDC":
+                    continue
             flow_settings.append('prj_disable_source "%s"' % item.get("name", "NoFileName"))
     return flow_settings
 
@@ -287,23 +291,62 @@ def _create_group(clk_list):
     return "set_clock_groups %s -physically_exclusive" % new_string
 
 
-def write_pdc_file(pdc_file, clk_data):
+def _get_original_pdc_lines(project_file_path, project_dict):
+    source_list = project_dict.get("source")
+    original_pdc_file = ""
+    for foo in source_list:
+        if foo.get("type_short") == "PDC":
+            pdc_file_in_project = xTools.get_relative_path(foo.get("name"), project_file_path)
+            if os.path.isfile(pdc_file_in_project):
+                original_pdc_file = pdc_file_in_project
+    lines = list()
+    if original_pdc_file:
+        with open(original_pdc_file) as ob:
+            for line in ob:
+                short_line = line.strip()
+                line = line.rstrip()
+                if short_line.startswith("#"):
+                    continue
+                if "create_clock" in line:
+                    continue
+                if "set_clock_groups" in line:
+                    continue
+                lines.append(line)
+    return lines
+
+
+def write_pdc_file(pdc_file, clk_data, project_file_path, project_dict):
+    lines = _get_original_pdc_lines(project_file_path, project_dict)
     clk_list = [foo.get("clkName") for foo in clk_data]
-    lines = ["create_clock -name {%s} -period 100 [get_nets {%s}]" % (bar, bar) for bar in clk_list]
+    lines.extend(["create_clock -name {%s} -period 100 [get_nets {%s}]" % (bar, bar) for bar in clk_list])
     if clk_list:
         lines.append(_create_group(clk_list))
     xTools.append_file(pdc_file, lines, append=False)
 
 
-def update_pdc_file(pdc_file, fmax):
+def update_pdc_file(pdc_file, fmax, fixed_clock):
     pdc_lines = list()
     _period = "%.3f" % (1000.0/fmax)
     pdc_lines.append("#----  Target Frequency: %d MHz (%s ns)" % (fmax, _period))
+    p_name = re.compile(r"\[get_(port|pin|net)s\s*{*([^]]+)}*]")  # get_ports | get_pins | get_nets
     with open(pdc_file) as pdc_ob:
         for line in pdc_ob:
+            this_period = None
             if line.startswith("#---- "):
                 continue
-            new_line = re.sub("\s-period\s+\S+\s", " -period %s " % _period, line)
+            if fixed_clock:
+                m_name = p_name.search(line)
+                if m_name:
+                    clk_name = m_name.group(2)
+                    clk_name = clk_name.strip('}')
+                    clk_name = clk_name.strip('{')
+                    fixed_frequency = fixed_clock.get(clk_name)
+                    if fixed_frequency:
+                        pdc_lines.append("#---- Special Frequency {}".format(fixed_clock))
+                        this_period = "%.3f" % (1000.0/fixed_frequency)
+            if not this_period:
+                this_period = _period
+            new_line = re.sub("\s-period\s+\S+\s", " -period %s " % this_period, line)
             pdc_lines.append(new_line)
     with open(pdc_file, 'w') as pdc_w:
         for foo in pdc_lines:
@@ -807,7 +850,7 @@ def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
 def update_bit2sim_vo_file(source_files, dev_lib_path, foundry_path):
     dd = os.path.basename(dev_lib_path)
     dd = re.sub("ovi_", "", dd)
-    new_path = os.path.join(foundry_path, "..", "cae_library", "simulation", "verilog", dd, "ebr_package.sv")
+    new_path = os.path.join(foundry_path, "..", "cae_library", "simulation", "verilog", "ap6a00", "ebr_package.sv")
     new_path = xTools.win2unix(new_path, 1)
     p_ebr = re.compile('"ebr_package.sv"')
     for foo in source_files:
@@ -871,44 +914,9 @@ def get_sdc_constraint_lines(twr_file):
 
 
 def get_clock_target_slack(twr_file):
-    p_diamond_style_start = re.compile(r'SDC\s+Constraint\s+\|\s+Target\s+|\s+Slack\s+\|')
-    clock_target_slack_dict = dict()
-    p_clock = re.compile(r"-name\s+(\S+)")
-    p_target_slack = re.compile(r"""\|\s+
-                                    ([-\d.]+)\s+ns\s+\|\s+
-                                    ([-\d.]+)\s+ns\s+\|\s+
-                                    (\d+)\s+\|\s+""", re.X)
-    p_new_content = re.compile(r"^[\s|]+$")
-    real_lines = list()
-    temp_line = ""
-    with open(twr_file) as ob:
-        start = False
-        for line in ob:
-            if not start:
-                start = p_diamond_style_start.search(line)
-            else:
-                line = line.strip()
-                if not line:
-                    break
-                if p_new_content.search(line):
-                    temp_line = re.sub(r"\s*-(period|name)\s*", r" -\1 ", temp_line)
-                    real_lines.append(temp_line)
-                    temp_line = ""
-                else:
-                    temp_line += line
-    if temp_line:
-        real_lines.append(temp_line)
-    for foo in real_lines:
-        m_clock = p_clock.search(foo)
-        if m_clock:
-            now_clock = m_clock.group(1)
-            clock_target_slack_dict[now_clock] = now_list = list()
-            summary_list = re.split(r"\s*\|\s*", foo)
-            _target, _slack, _levels, _frequency = summary_list[1], summary_list[2], summary_list[3], summary_list[5]
-            if "ns" in _target and "ns" in _slack and "MHz" in _frequency:
-                _ = [_target, _slack, _levels, _frequency]
-                now_list.extend([to_int_or_float(item) for item in _])
-    return clock_target_slack_dict
+    extractor = scan_utils.ScanRadiantTimingReport()
+    extractor.process(twr_file)
+    return extractor.get_twr_data()
 
 
 def to_int_or_float(raw_string):
@@ -923,59 +931,75 @@ def to_int_or_float(raw_string):
     return v_final
 
 
-def create_iteration_flow_pdc_file(pdc_file, pdc_lines, clock_target_slack, iter_per):
-    ret = dict()
-    p_name = re.compile(r"\s+-name\s+(\S+)")
-    p_period = re.compile(r"\s+-period\s*(\S+)")
-    for foo in pdc_lines:
-        m_name = p_name.search(foo)
-        m_period = p_period.search(foo)
-        original_period = 0
-        if m_period:
-            original_period = float(m_period.group(1))
-        if not m_name:
-            continue
-        my_raw_name = m_name.group(1)
-        real_target_slack = clock_target_slack.get(my_raw_name)
-        if not real_target_slack:
-            continue
-        if not original_period:
-            original_period = real_target_slack[0]
-        _t = dict()
-        _t["SDC Constraint"] = foo
-        _t["targetFmax"] = 1000 / original_period
-        my_name = my_raw_name.strip("{")
-        my_name = my_name.strip("}")
-        _t["clkName"] = my_name
-        _t["Slack"] = real_target_slack[-1]
-        raw_fmax = 1000 / (real_target_slack[0] - real_target_slack[1])
-        fmax_offset = original_period / real_target_slack[0]
-        if fmax_offset > 1.2:
-            fmax_offset = 2
+def create_iteration_flow_pdc_file(pdc_file, pdc_lines, clock_target_slack, iter_per, fixed_clock,
+                                   clock_custom_hdl_dict, original_constraint_lines, constraint_fext,
+                                   project_path, project_dict):
+    new_pdc_lines = list()  # do not copy original pdc file lines_get_original_pdc_lines(project_path, project_dict)
+    p_custom_hdl = re.compile(r"-name([^-]+)-.+\[get_[^s]+s(.+)\]")
+    for line in original_constraint_lines:
+        short_line = re.sub(r"\s", "", line)
+        m_custom_hdl = p_custom_hdl.search(short_line)
+        if not m_custom_hdl:
+            new_pdc_lines.append(line)
         else:
-            fmax_offset = 1
-        # _t["fmax"] = raw_fmax / fmax_offset
-        _t["fmax"] = real_target_slack[3]
-        _t["logic_level"] = real_target_slack[2]
-        ret[my_raw_name] = _t
-
-    p_clock = re.compile(r"-name\s+(\S+)")
-    with open(pdc_file, "w") as wob:
-        for foo in pdc_lines:
-            m_clock = p_clock.search(foo)
-            if not m_clock:
-                print(foo, file=wob)
+            clk_custom, clk_hdl = m_custom_hdl.group(1), m_custom_hdl.group(2)
+            clk_custom = clk_custom.strip("{}")
+            final_frequency = 0
+            if clk_custom in fixed_clock:
+                final_frequency = fixed_clock.get(clk_custom)
+                timing_data = fixed_clock
             else:
-                clk_name = m_clock.group(1)
-                fmax_dict = ret.get(clk_name)
-                if not fmax_dict:
-                    print(foo, file=wob)
+                timing_data = clock_target_slack.get(clk_custom)
+                if not timing_data:
+                    new_pdc_lines.append(line)
+                    continue
+                try:
+                    now_fmax = float(timing_data.get("fmax"))
+                except (ValueError, TypeError):
+                    new_pdc_lines.append(line)
+                    continue
+                slack_value = timing_data.get("Slack")
+                if slack_value is None:
+                    try:
+                        slack_value = eval("{fmax} - {targetFmax}".format(**timing_data))
+                    except (ValueError, TypeError):
+                        slack_value = 0
                 else:
-                    if fmax_dict["Slack"] < 0:
-                        now_period = 1000 / (fmax_dict["fmax"] * (1 + iter_per * 0.01 / 2))
-                    else:
-                        now_period = 1000 / (fmax_dict["fmax"] * (1 + iter_per * 0.01))
-                    now_waveform = '{:.3f}'.format(now_period / 2)
-                    foo = re.sub(r"-period\s+\S+", "-period {:.3f}".format(now_period), foo)
-                    foo = re.sub(r"-waveform\s+{[.\d]+\s+[.\d]+}", '-waveform {0.000 %s}' % now_waveform, foo)
-                    print(foo, file=wob)
+                    try:
+                        slack_value = float(slack_value)
+                    except (ValueError, TypeError):
+                        slack_value = 0
+                if slack_value == 0:
+                    new_pdc_lines.append(line)
+                    continue
+                elif slack_value > 0:
+                    final_frequency = (1 + iter_per / 100) * now_fmax
+                else:
+                    final_frequency = (1 + iter_per / 200) * now_fmax
+            if final_frequency == 0:
+                new_pdc_lines.append(line)
+            else:
+                new_pdc_lines.append("# {}: {}".format(clk_custom, timing_data))
+                whole_period = 1000 / final_frequency
+                half_period = whole_period / 2
+                line = re.sub(r"-period \S+", "-period {:.3f}".format(whole_period), line)
+                line = re.sub(r"-waveform\s+\{.+\}", "-waveform {0.000 %.3f}" % half_period, line)
+                new_pdc_lines.append(line)
+    with open(pdc_file, "w", newline="\n") as ob:
+        for line in new_pdc_lines:
+            print(line, file=ob)
+        print("# Change Percentage: {}".format(iter_per), file=ob)
+
+
+def compare_timing_data(old_data, new_data):
+    def __dict2string(a_dict):
+        if not a_dict:
+            return ""
+        data_list = list()
+        for clk, clk_data in list(a_dict.items()):
+            data_list.append("{}_{}".format(clk, clk_data.get("fmax")))
+        data_list.sort()
+        return "".join(data_list)
+    old_string = __dict2string(old_data)
+    new_string = __dict2string(new_data)
+    return old_string == new_string

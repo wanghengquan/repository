@@ -1,0 +1,37 @@
+# get_simulation_data() return dict(index0=xxx, index1=yyy, index2=zzz)
+RADIANT_RTL_SIMULATION:
+  name_pattern: 'run_sim_rtl.log'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'sim_rtl_time', 'sim_rtl_cpu_time', 'sim_rtl_Memory' ], func: 'get_simulation_data' }
+
+RADIANT_POSTSYN_SIMULATION:
+  name_pattern: 'run_sim_syn_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'sim_syn_vlg_time', 'sim_syn_vlg_cpu_time', 'sim_syn_vlg_Memory' ], func: 'get_simulation_data' }
+
+RADIANT_MAP_SIMULATION:
+  name_pattern: 'run_sim_map_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'sim_map_vlg_time', 'sim_map_vlg_cpu_time', 'sim_map_vlg_Memory' ], func: 'get_simulation_data' }
+
+RADIANT_PAR_SIMULATION:
+  name_pattern: 'run_sim_par_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'sim_par_vlg_time', 'sim_par_vlg_cpu_time', 'sim_par_vlg_Memory' ], func: 'get_simulation_data' }
+
+RADIANT_BIT_SIMULATION:
+  name_pattern: 'run_sim_bit_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'sim_bit_vlg_time', 'sim_bit_vlg_cpu_time', 'sim_bit_vlg_Memory' ], func: 'get_simulation_data' }
+
+# END OF FILE

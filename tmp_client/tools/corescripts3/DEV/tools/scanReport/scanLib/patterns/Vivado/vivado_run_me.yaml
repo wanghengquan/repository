@@ -1,0 +1,12 @@
+VIVADO_RUN_ME_FILE:
+  name_pattern: 'runme.log$'
+  group_1:
+    fields:
+      - { names: [ 'router_cpu_time', 'router_real_time', 'router_peak_memory' ],
+          pattern: 'route_design: Time.+cpu = (\S+).+elapsed = (\S+).+Memory.+peak = (\S+) ' }
+      - { names: [ 'placer_cpu_time', 'placer_real_time', 'placer_peak_memory' ],
+          pattern: 'place_design: Time.+cpu = (\S+).+elapsed = (\S+).+Memory.+peak = (\S+) ' }
+      - { names: [ 'Xsynthesis_cpu_time', 'Xsynthesis_real_time', 'Xsynthesis_peak_memory' ],
+          pattern: 'synth_design: Time.+cpu = (\S+).+elapsed = (\S+).+Memory.+peak = (\S+) ' }
+
+# END OF FILE
