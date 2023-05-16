@@ -532,7 +532,8 @@ public class local_tube {
 
 	private Boolean case_data_match_task_sort(
 			Map<String, String> case_data, 
-			String task_sort){
+			String task_sort
+			){
 		Boolean case_match = Boolean.valueOf(true);
 		if (task_sort == null || task_sort.trim().equals("")){
 			return case_match;
@@ -600,12 +601,18 @@ public class local_tube {
 			}
 			String behavior = line.get(0).trim();
 			String column = line.get(1).trim();
-			String value = line.get(2).trim().replaceAll("=", "");
+			//String value = line.get(2).trim().replaceAll("=", "");
+			List<String> value_list = new ArrayList<String>();
+			value_list.addAll(Arrays.asList(line.get(2).trim().replaceAll("=", "").split("\\s*,\\s*")));
 			if (!behavior.equals("condition")) {
 				continue;
 			}
 			String raw_value = raw_data.get(column);
-			if (!raw_value.equals(value)) {
+			//if (!raw_value.equals(value)) {
+			//	condition = false;
+			//	break;
+			//}
+			if(!value_list.contains(raw_value)) {
 				condition = false;
 				break;
 			}
@@ -2290,13 +2297,13 @@ public class local_tube {
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
 		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
-		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\standard_suite2\\radiant_regression.xlsx", imported_data, current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/qinhai_suite", "D:/tmp_work", imported_data);
+		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/qinhai_suite", "D:/tmp_work", imported_data);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		/*		
+		/*
 		xml_parser xml_parser2 = new xml_parser();
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
 		String queue_name = dump_queue_it.next();
