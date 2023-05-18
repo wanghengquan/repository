@@ -34,6 +34,7 @@ public class client_data {
 	private HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 	private HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
 	private float registered_memory = 0.0f;
+	private float registered_space = 0.0f;
 	/*
 	 * private String task_assign_mode = public_data.DEF_TASK_ASSIGN_MODE;
 	 * private String thread_work_mode = public_data.DEF_MAX_THREAD_MODE;
@@ -60,6 +61,7 @@ public class client_data {
 			result.put("max_soft_insts", max_soft_insts.toString());
 			result.put("use_soft_insts", use_soft_insts.toString());
 			result.put("registered_memory", String.valueOf(registered_memory) + "(G)");
+			result.put("registered_space", String.valueOf(registered_space) + "(G)");
 		} finally {
 			rw_lock.readLock().unlock();
 		}
@@ -802,6 +804,56 @@ public class client_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	
+	//test_waiter registered_space
+	public void clean_registered_space() {
+		rw_lock.writeLock().lock();
+		try {
+			registered_space = 0.0f;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public float get_registered_space() {
+		rw_lock.readLock().lock();
+		float temp = 0.0f;
+		try {
+			temp = registered_space;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void decrease_registered_space(
+			float value
+			) {
+		rw_lock.writeLock().lock();
+		float new_value = 0.0f;
+		try {
+			new_value = registered_space - value;
+			if (new_value < 0) {
+				registered_space = 0.0f;
+			} else {
+				registered_space = new_value;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void increase_registered_space(
+			float value
+			) {
+		rw_lock.writeLock().lock();
+		try {
+			registered_space = registered_space + value;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	/*
 	 * main entry for test
 	 */

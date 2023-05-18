@@ -428,9 +428,11 @@ public class result_waiter extends Thread {
 	}
 	
 	private void update_client_run_case_summary(
-			HashMap<String, HashMap<String, Object>> case_report_map) {
+			HashMap<String, HashMap<String, Object>> case_report_map
+			) {
 		update_client_run_case_status_summary(case_report_map);
 		update_client_run_case_memory_summary();
+		update_client_run_case_space_summary();
 	}
 	
 	private Boolean update_client_run_case_memory_summary() {
@@ -448,6 +450,25 @@ public class result_waiter extends Thread {
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
 			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM);
 			task_info.update_client_run_case_summary_memory_map(queue_name, call_mem);
+		}
+		return update_status;
+	}
+	
+	private Boolean update_client_run_case_space_summary() {
+		Boolean update_status = Boolean.valueOf(true);
+		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
+		call_data.putAll(pool_info.get_sys_call_copy());		
+		Iterator<String> call_map_it = call_data.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
+			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);			
+			if (!call_status.equals(call_state.DONE)) {
+				continue;
+			}
+			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
+			float call_space = (float) one_call_data.getOrDefault(pool_attr.call_space, public_data.TASK_DEF_ESTIMATE_SPACE);
+			task_info.update_client_run_case_summary_space_map(queue_name, call_space);
 		}
 		return update_status;
 	}
@@ -798,6 +819,7 @@ public class result_waiter extends Thread {
 			String scan_result = "";
 			float used_mem = 0.0f;
 			float peak_mem = 0.0f;
+			float used_space = 0.0f;
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -816,11 +838,12 @@ public class result_waiter extends Thread {
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));
 				used_mem = (float) one_call_data.get(pool_attr.call_maxmem);
+				peak_mem = (float) one_call_data.get(pool_attr.call_maxmem);
+				used_space = (float) one_call_data.get(pool_attr.call_space);
 			}  else {
 				task_status = task_enum.PROCESSING;
 				used_mem = (float) one_call_data.get(pool_attr.call_curmem);
 			}
-			peak_mem = (float) one_call_data.get(pool_attr.call_maxmem);
 			hash_data.putAll(detail_report);
             hash_data.put("scan_result", scan_result);
 			hash_data.put("defects", defects);
@@ -835,6 +858,7 @@ public class result_waiter extends Thread {
 			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
 			hash_data.put("used_mem", decimalformat.format(used_mem));
 			hash_data.put("peak_mem", decimalformat.format(peak_mem));
+			hash_data.put("used_space", decimalformat.format(used_space));
 			hash_data.put("update_time", time_info.get_man_date_time());
 			case_data.put(call_index, hash_data);
 		}
