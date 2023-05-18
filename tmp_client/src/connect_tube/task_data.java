@@ -76,6 +76,7 @@ public class task_data {
 	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_status_map = new HashMap<String, HashMap<task_enum, Integer>>();
 	private HashMap<String, HashMap<String, Float>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Float>>();
+	private HashMap<String, HashMap<String, Float>> client_run_case_summary_space_map = new HashMap<String, HashMap<String, Float>>();
 	private HashMap<String,Integer> finished_queue_dump_delay_counter = new HashMap<String,Integer>();
 	//====data not used====
 	private ArrayList<String> thread_pool_admin_queue_list  = new ArrayList<String>();
@@ -116,6 +117,7 @@ public class task_data {
 			result.put("reported_admin_queue_list", reported_admin_queue_list.toString());
 			result.put("client_run_case_summary_status_map", client_run_case_summary_status_map.toString());
 			result.put("client_run_case_summary_memory_map", client_run_case_summary_memory_map.toString());
+			result.put("client_run_case_summary_space_map", client_run_case_summary_space_map.toString());
 			result.put("finished_queue_dump_delay_counter", finished_queue_dump_delay_counter.toString());
 			result.put("admin_queue_attribute_map", admin_queue_attribute_map.toString());
 		} finally {
@@ -1397,6 +1399,86 @@ public class task_data {
 			memory_data.put("avg", avg);
 			memory_data.put("num", num);
 			client_run_case_summary_memory_map.put(queue_name, memory_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public HashMap<String, HashMap<String, Float>> get_client_run_case_summary_space_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, Float>> temp = new HashMap<String, HashMap<String, Float>>();
+		try {
+			temp.putAll(client_run_case_summary_space_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public HashMap<String, Float> get_client_run_case_summary_space_map(String queue_name) {
+		rw_lock.readLock().lock();
+		HashMap<String, Float> temp = new HashMap<String, Float>();
+		try {
+			if (client_run_case_summary_space_map.containsKey(queue_name)) {
+				temp.putAll(client_run_case_summary_space_map.get(queue_name));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void reset_client_run_case_summary_space_map() {
+		rw_lock.writeLock().lock();
+		try {
+			client_run_case_summary_space_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_run_case_summary_space_map(
+			String queue_name, 
+			HashMap<String, Float> space_map) {
+		rw_lock.writeLock().lock();
+		HashMap<String, Float> space_data = new HashMap<String, Float>();
+		try {
+			if (client_run_case_summary_space_map.containsKey(queue_name)){
+				space_data.putAll(client_run_case_summary_space_map.get(queue_name));
+			}
+			space_data.putAll(space_map);
+			client_run_case_summary_space_map.put(queue_name, space_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_run_case_summary_space_map(
+			String queue_name, 
+			Float new_data) {
+		rw_lock.writeLock().lock();
+		HashMap<String, Float> space_data = new HashMap<String, Float>();
+		try {
+			if (client_run_case_summary_space_map.containsKey(queue_name)){
+				space_data.putAll(client_run_case_summary_space_map.get(queue_name));
+			}
+			Float min = space_data.getOrDefault("min", 0.0f);
+			Float max = space_data.getOrDefault("max", 1.0f);
+			Float avg = space_data.getOrDefault("avg", 1.0f);
+			Float num = space_data.getOrDefault("num", 0.0f);
+			if (new_data.compareTo(min) < 0) {
+				min = new_data;
+			}
+			if (new_data.compareTo(max) > 0) {
+				max = new_data;
+			}
+			avg = (avg * num + new_data) / (num + 1);
+			num = num + 1;
+			space_data.put("min", min);
+			space_data.put("max", max);
+			space_data.put("avg", avg);
+			space_data.put("num", num);
+			client_run_case_summary_space_map.put(queue_name, space_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
