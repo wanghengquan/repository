@@ -78,7 +78,7 @@ public class client_data {
 		}
 		return temp;
 	}
-
+	
 	public void set_client_data(HashMap<String, HashMap<String, String>> update_data) {
 		rw_lock.writeLock().lock();
 		try {

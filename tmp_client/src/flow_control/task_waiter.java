@@ -1546,29 +1546,38 @@ public class task_waiter extends Thread {
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data
 			) {
-		float est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
-		float usr_est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
-		float his_est_mem = public_data.TASK_DEF_ESTIMATE_MEM;
-		String usr_est_mem_str = new String("");
-		usr_est_mem_str = admin_data.get("CaseInfo").getOrDefault("est_mem", String.valueOf(public_data.TASK_DEF_ESTIMATE_MEM));
-		try {
-			usr_est_mem = Float.valueOf(usr_est_mem_str);
-		} catch (NumberFormatException e) {
-			TASK_WAITER_LOGGER.debug(usr_est_mem_str + ", wrong number format");
-		}
-		if (usr_est_mem < 0) {
-			TASK_WAITER_LOGGER.debug("Task estimate memory usage out of range, 0.0(G) will be used");
-			usr_est_mem = 0.0f;
-		}
-		if (usr_est_mem > 32) {
-			TASK_WAITER_LOGGER.debug("Task estimate memory usage out of range, 32.0(G) will be used");
-			usr_est_mem = 32.0f;
-		}
-		his_est_mem = task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("avg", public_data.TASK_DEF_ESTIMATE_MEM);
-		if (usr_est_mem > his_est_mem) {
-			est_mem = usr_est_mem;
+		float est_mem = 0.0f;
+		//1. default memory requirement:available memory * 0.6
+		float sys_mem_avi = 0.0f;
+		sys_mem_avi = Float.valueOf(client_info.get_client_system_data().get("mem_free")).floatValue();
+		float max_est_mem = sys_mem_avi * 0.60f;
+		if (max_est_mem > public_data.TASK_DEF_ESTIMATE_MEM_MAX) {
+			est_mem = public_data.TASK_DEF_ESTIMATE_MEM_MAX;
+		} else if(max_est_mem < public_data.TASK_DEF_ESTIMATE_MEM_MIN) {
+			est_mem = public_data.TASK_DEF_ESTIMATE_MEM_MIN;
 		} else {
-			est_mem = his_est_mem;
+			est_mem = max_est_mem;
+		}
+		//2. history memory requirement
+		if(task_info.get_client_run_case_summary_memory_map(queue_name).containsKey("avg")) {
+			est_mem = task_info.get_client_run_case_summary_memory_map(queue_name).get("avg");
+		}
+		//3. user memory requirement
+		if(admin_data.get("CaseInfo").containsKey("est_mem")) {
+			float usr_est_mem = 0;
+			try {
+				usr_est_mem = Float.valueOf(admin_data.get("CaseInfo").get("est_mem"));
+			} catch (NumberFormatException e) {
+				TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_mem") + ", wrong number format, ignored.");
+			}
+			if(usr_est_mem > 0) {
+				if(usr_est_mem > 32) {
+					est_mem = 32.0f;
+					TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_mem") + "> 32G, use 32G instead.");
+				} else {
+					est_mem = usr_est_mem;
+				}
+			}
 		}
 		return est_mem;
 	}
@@ -1577,29 +1586,28 @@ public class task_waiter extends Thread {
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data
 			) {
+		//1. default space requirement
 		float est_space = public_data.TASK_DEF_ESTIMATE_SPACE;
-		float usr_est_space = public_data.TASK_DEF_ESTIMATE_SPACE;
-		float his_est_space = public_data.TASK_DEF_ESTIMATE_SPACE;
-		String usr_est_space_str = new String("");
-		usr_est_space_str = admin_data.get("CaseInfo").getOrDefault("est_space", String.valueOf(public_data.TASK_DEF_ESTIMATE_SPACE));
-		try {
-			usr_est_space = Float.valueOf(usr_est_space_str);
-		} catch (NumberFormatException e) {
-			TASK_WAITER_LOGGER.debug(usr_est_space_str + ", wrong number format");
+		//2. history space requirement
+		if(task_info.get_client_run_case_summary_space_map(queue_name).containsKey("avg")) {
+			est_space = task_info.get_client_run_case_summary_space_map(queue_name).get("avg");
 		}
-		if (usr_est_space < 0) {
-			TASK_WAITER_LOGGER.debug("Task estimate space usage out of range, 0.0(G) will be used");
-			usr_est_space = 0.0f;
-		}
-		if (usr_est_space > 100) {
-			TASK_WAITER_LOGGER.debug("Task estimate space usage out of range, 100.0(G) will be used");
-			usr_est_space = 100.0f;
-		}
-		his_est_space = task_info.get_client_run_case_summary_space_map(queue_name).getOrDefault("avg", public_data.TASK_DEF_ESTIMATE_SPACE);
-		if (usr_est_space > his_est_space) {
-			est_space = usr_est_space;
-		} else {
-			est_space = his_est_space;
+		//3. user space requirement
+		if(admin_data.get("CaseInfo").containsKey("est_space")) {
+			float usr_est_space = 0;
+			try {
+				usr_est_space = Float.valueOf(admin_data.get("CaseInfo").get("est_space"));
+			} catch (NumberFormatException e) {
+				TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_space") + ", wrong number format, ignored.");
+			}
+			if(usr_est_space > 0) {
+				if(usr_est_space > 32) {
+					est_space = 32.0f;
+					TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_space") + "> 32G, use 32G instead.");
+				} else {
+					est_space = usr_est_space;
+				}
+			}
 		}
 		return est_space;
 	}

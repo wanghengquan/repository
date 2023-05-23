@@ -448,7 +448,7 @@ public class result_waiter extends Thread {
 				continue;
 			}
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM);
+			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM_MIN);
 			task_info.update_client_run_case_summary_memory_map(queue_name, call_mem);
 		}
 		return update_status;
