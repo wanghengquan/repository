@@ -623,9 +623,7 @@ public class data_server extends Thread {
 		}
  		// initial 2 : generate initial client data
 		initial_merge_client_data(cmd_info);
-		// initial 3 : update default current size into Pool Data
-		// initial_thread_pool_setting();  1213 //should this item go to hall manager
-		// initial 4 : Announce data server ready
+		// initial 3 : Announce data server ready
 		switch_info.set_data_server_power_up();
 		// loop start
 		while (!stop_request) {
@@ -651,11 +649,11 @@ public class data_server extends Thread {
 			// task 2: update client System data
 			dynamic_merge_system_data();
 			// task 3: update client current status
-			update_client_current_status();			
-			// task 4: check and remove invalid build path
-			remove_invalid_build_path();
-			// task 5: update max_sw_insts limitation
+			update_client_current_status();
+			// task 4: update max_sw_insts limitation
 			update_max_sw_insts_limitation();
+			// task 5: check and remove invalid build path
+			remove_invalid_build_path();
 			// task 6: update system property data
 			update_system_property_data();
 			// HashMap<String, Integer> soft_ware =

@@ -126,6 +126,22 @@ public class task_data {
 		return result;
 	}
 	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String ob_name = update_it.next();
+				update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
 	// =============================================function
 	// start=================================
 	public HashMap<queue_attr, String> get_admin_queue_attribute_map(

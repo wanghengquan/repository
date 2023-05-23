@@ -24,6 +24,7 @@ import top_runner.run_manager.thread_enum;
 import top_runner.run_status.exit_enum;
 import top_runner.run_status.maintain_enum;
 import top_runner.run_status.state_enum;
+import utility_funcs.data_check;
 
 public class switch_data {
 	// public property
@@ -125,6 +126,51 @@ public class switch_data {
 		}
 		return result;
 	}	
+	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String ob_name = update_it.next();
+				String optin_value = update_data.get(ob_name);
+				switch(ob_name) {
+				case "core_script_update_request":
+					if (data_check.str_choice_check(optin_value, new String [] {"true", "false"} )){
+						this.core_script_update_request = Boolean.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: true, false");
+					}
+					break;
+				case "dump_config_request":
+					if (data_check.num_scope_check(optin_value, 0, 9 )){
+						this.dump_config_request = Integer.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: 0~9");
+					}
+					break;
+				case "send_admin_request":
+					if (data_check.num_scope_check(optin_value, 0, 9 )){
+						this.send_admin_request = Integer.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: 0~9");
+					}
+					break;
+				default:
+					update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+				}
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
 	
 	public int get_system_client_insts() {
 		rw_lock.writeLock().lock();

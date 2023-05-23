@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 
 public class client_data {
@@ -68,6 +69,72 @@ public class client_data {
 		return result;
 	}
 	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String ob_name = update_it.next();
+				String optin_value = update_data.get(ob_name);
+				switch(ob_name) {
+				case "client_hash":
+					if (data_check.str_regexp_check(optin_value, ".+\\..+=.+" )){
+						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
+						String value_str = new String(optin_value.split("\\s*=\\s*")[1]);
+						String optin_str1 = new String(optin_str.split("\\s*\\.\\s*")[0]);
+						String optin_str2 = new String(optin_str.split("\\s*\\.\\s*")[1]);
+						if(client_hash.containsKey(optin_str1)) {
+							HashMap<String, String> option_hash = client_hash.get(optin_str1);
+							option_hash.put(optin_str2, value_str);
+							update_status.put(ob_name, "PASS");
+						} else {
+							update_status.put(ob_name, "FAIL, " + optin_str1 + " doesn't exists.");
+						}
+					} else {
+						update_status.put(ob_name, "FAIL, Wrong input string format, should be: sss.sss=sss");
+					}
+					break;
+				case "use_soft_insts":
+					if (data_check.str_regexp_check(optin_value, ".+=\\d+" )){
+						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
+						String value_str = new String(optin_value.split("\\s*=\\s*")[1]);
+						use_soft_insts.put(optin_str, Integer.valueOf(value_str));
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, Wrong input string format, should be: sss=d");
+					}
+					break;					
+				case "registered_memory":	
+					if (data_check.str_regexp_check(optin_value, "\\d+\\.\\d+" )){
+						String value_str = new String(optin_value.trim());
+						registered_memory = Float.valueOf(value_str);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, Wrong input string format, should be: dd.dd");
+					}
+					break;
+				case "registered_space":	
+					if (data_check.str_regexp_check(optin_value, "\\d+\\.\\d+" )){
+						String value_str = new String(optin_value.trim());
+						registered_space = Float.valueOf(value_str);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, Wrong input string format, should be: dd.dd");
+					}
+					break;					
+				default:
+					update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+				}
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+
 	public HashMap<String, HashMap<String, String>> get_client_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
