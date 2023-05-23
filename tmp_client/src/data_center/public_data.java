@@ -28,10 +28,10 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.60"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21460; //version for code use
-	public final static String BASE_BUILDDATE = "2023/05/18";
-	public final static String BASE_SUITEFILEVERSION = "1.27";
+	public final static String BASE_CURRENTVERSION = "2.14.61"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21461; //version for code use
+	public final static String BASE_BUILDDATE = "2023/05/22";
+	public final static String BASE_SUITEFILEVERSION = "1.28";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -216,8 +216,9 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
-	public final static float TASK_DEF_ESTIMATE_MEM = 1.0f; //in G, 1G
-	public final static float TASK_DEF_ESTIMATE_SPACE = 1.0f; //in G, 1G
+	public final static float TASK_DEF_ESTIMATE_MEM_MAX = 16.0f; //in G, 16G
+	public final static float TASK_DEF_ESTIMATE_MEM_MIN = 1.0f; //in G, 1G
+	public final static float TASK_DEF_ESTIMATE_SPACE = 2.0f; //in G, 2G
 	public final static String TASK_DEF_MAX_MEM_USG = "16";
 	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
 	public final static String TASK_DEF_CMD_DECISION = "last"; //last, all, <indiviual cmd>, <indiviual cmds> join with Python:and,or
