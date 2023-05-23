@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cmd_interface.insert_cmd;
 import cmd_interface.top_cmd;
 import connect_tube.task_data;
 import data_center.client_data;
@@ -109,6 +110,32 @@ public class link_client {
 		//return link status
 		return link_status;
 	}	
+	
+	public String channel_cmd_database_update(
+			insert_cmd db_name,
+			String ob_name,
+			String option_value) throws IOException{
+		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_LINK_PORT);
+		BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		request_data.put(ob_name, option_value);
+		xml_data.put(db_name.toString(), request_data);
+		String output = xml_parser.create_common_xml_string("channel_cmd", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+		socket_out.write(output);
+		socket_out.flush();
+		socket.shutdownOutput();
+		//get the return
+		StringBuilder return_data = new StringBuilder("");
+		BufferedReader socket_in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		String line = null;
+		while((line = socket_in.readLine()) != null){
+			return_data.append(line);
+		}
+		socket.shutdownInput();
+		socket.close();
+		return return_data.toString();
+	}
 	
 	public String channel_cmd_data_request(
 			String category,

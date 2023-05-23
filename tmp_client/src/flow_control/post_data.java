@@ -53,6 +53,23 @@ public class post_data {
 		return result;
 	}
 	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String ob_name = update_it.next();
+				update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+	
 	public HashMap<String, HashMap<post_attr, Object>> get_postrun_call_link() {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<post_attr, Object>> call_data = new HashMap<String, HashMap<post_attr, Object>>();

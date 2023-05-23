@@ -247,6 +247,12 @@ public class console_server extends Thread {
 		case LINK:
 			link_command_answer(input_list);			
 			break;
+		case IT:
+			insert_command_answer(input_list);
+			break;
+		case INSERT:
+			insert_command_answer(input_list);			
+			break;
 		case E:
 			exit_command_answer();
 			break;
@@ -288,6 +294,59 @@ public class console_server extends Thread {
 			}
 		}
 		return link_ok;
+	}
+	
+	private Boolean insert_command_answer(String [] cmd_list){
+		Boolean insert_ok = Boolean.valueOf(false);
+		if (cmd_list.length < 4) {
+			insert_help_command_output();
+			return insert_ok;
+		}
+		switch(insert_cmd.valueOf(cmd_list[1].toUpperCase())){
+		case HELP:
+			insert_help_command_output();
+			break;
+		case SWITCH:
+			insert_database_data_output(insert_cmd.SWITCH, cmd_list[2], cmd_list[3]);
+			break;
+		case CLIENT:
+			insert_database_data_output(insert_cmd.CLIENT, cmd_list[2], cmd_list[3]);
+			break;		
+		case VIEW:
+			insert_database_data_output(insert_cmd.VIEW, cmd_list[2], cmd_list[3]);
+			break;		
+		case TASK:
+			insert_database_data_output(insert_cmd.TASK, cmd_list[2], cmd_list[3]);
+			break;
+		case POOL:
+			insert_database_data_output(insert_cmd.POOL, cmd_list[2], cmd_list[3]);
+			break;
+		case POST:
+			insert_database_data_output(insert_cmd.POST, cmd_list[2], cmd_list[3]);
+			break;
+		default:
+			insert_help_command_output();
+			break;
+		}
+		return insert_ok;
+	}
+	
+	private void insert_database_data_output(
+			insert_cmd db_name,
+			String ob_name,
+			String option_value
+			){
+		String outputs = new String("");
+		try {
+			outputs = linked_client.channel_cmd_database_update(db_name, ob_name, option_value);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			CONSOLE_SERVER_LOGGER.warn("Run command error: Insert data to " + insert_cmd.SWITCH.toString());
+		}
+		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
+		msg_hash.putAll(xml_parser.get_common_xml_data(outputs));
+		common_hash_data_print(msg_hash);
 	}
 	
 	private Boolean info_command_answer(String [] cmd_list){
@@ -339,6 +398,14 @@ public class console_server extends Thread {
 		System.out.println("You may type: 'LINK <host_name>' to establish the connection.");		
 	}
 	
+	private void insert_help_command_output(){
+		System.out.println("INSERT commands:");
+		for (insert_cmd cmd: insert_cmd.values()){
+			System.out.format("  %8s  --  %s" + line_separator, cmd.toString(), cmd.get_description());
+		}
+		System.out.println("You may type: 'INSERT <db name> <object> <value>|<option=value>|<option1.option2=value>' to establish the connection.");		
+	}
+	
 	private void info_help_command_output(){
 		System.out.println("INFO commands:");
 		for (info_cmd cmd: info_cmd.values()){
@@ -379,7 +446,8 @@ public class console_server extends Thread {
 	
 	private void info_software_command_output(
 			String request_info,
-			String request_detail){
+			String request_detail
+			){
 		String outputs = new String("");
 		String request = new String("");
 		if (request_detail.equals("")){

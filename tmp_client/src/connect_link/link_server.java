@@ -26,6 +26,7 @@ import cmd_interface.action_cmd;
 import cmd_interface.console_server;
 import cmd_interface.database_cmd;
 import cmd_interface.info_cmd;
+import cmd_interface.insert_cmd;
 import cmd_interface.task_cmd;
 import cmd_interface.thread_cmd;
 import cmd_interface.top_cmd;
@@ -124,7 +125,19 @@ public class link_server extends Thread {
 				return_string = channel_cmd_database_return_data(ip, machine, cmd_data.get(top_cmd.DATABASE.toString()).get("request"));
 			} else if (cmd_data.containsKey(top_cmd.THREAD.toString())){
 				return_string = channel_cmd_thread_return_data(ip, machine, cmd_data.get(top_cmd.THREAD.toString()).get("request"));				
-			}else {
+			} else if (cmd_data.containsKey(insert_cmd.SWITCH.toString())){
+				return_string = channel_cmd_insert_return_data(ip, machine, insert_cmd.SWITCH, cmd_data.get(insert_cmd.SWITCH.toString()));				
+			} else if (cmd_data.containsKey(insert_cmd.CLIENT.toString())){
+				return_string = channel_cmd_insert_return_data(ip, machine, insert_cmd.CLIENT, cmd_data.get(insert_cmd.CLIENT.toString()));				
+			} else if (cmd_data.containsKey(insert_cmd.VIEW.toString())){
+				return_string = channel_cmd_insert_return_data(ip, machine, insert_cmd.VIEW, cmd_data.get(insert_cmd.VIEW.toString()));				
+			} else if (cmd_data.containsKey(insert_cmd.TASK.toString())){
+				return_string = channel_cmd_insert_return_data(ip, machine, insert_cmd.TASK, cmd_data.get(insert_cmd.TASK.toString()));				
+			} else if (cmd_data.containsKey(insert_cmd.POOL.toString())){
+				return_string = channel_cmd_insert_return_data(ip, machine, insert_cmd.POOL, cmd_data.get(insert_cmd.POOL.toString()));				
+			} else if (cmd_data.containsKey(insert_cmd.POST.toString())){
+				return_string = channel_cmd_insert_return_data(ip, machine, insert_cmd.POST, cmd_data.get(insert_cmd.POST.toString()));				
+			} else {
 				return_string = channel_cmd_default_return_data(ip, machine);
 			}
 		} else if (msg_hash.containsKey("channel_job")){
@@ -519,6 +532,42 @@ public class link_server extends Thread {
 		default:
 			break;
 		}
+	}
+	
+	private String channel_cmd_insert_return_data(
+			String ip,
+			String machine,
+			insert_cmd db_name,
+			HashMap<String, String> update_data 
+			){
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> detail_data = new HashMap<String, String>();
+		switch(db_name){
+		case SWITCH:
+			detail_data.putAll(switch_info.console_database_update(update_data));
+			break;
+		case CLIENT:
+			detail_data.putAll(client_info.console_database_update(update_data));
+			break;
+		case VIEW:
+			detail_data.putAll(view_info.console_database_update(update_data));
+			break;
+		case TASK:
+			detail_data.putAll(task_info.console_database_update(update_data));
+			break;
+		case POOL:
+			detail_data.putAll(pool_info.console_database_update(update_data));
+			break;
+		case POST:
+			detail_data.putAll(post_info.console_database_update(update_data));
+			break;		
+		default:
+			detail_data.put("default", "NA");
+			break;
+		}
+		xml_data.put("results", detail_data);
+		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		return return_str;
 	}
 	
 	public void run() {

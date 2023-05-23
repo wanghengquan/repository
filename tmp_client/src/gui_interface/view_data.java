@@ -11,6 +11,7 @@ package gui_interface;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -19,6 +20,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import flow_control.queue_enum;
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 
 public class view_data {
@@ -83,6 +85,59 @@ public class view_data {
 		}
 		return result;
 	}
+	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String ob_name = update_it.next();
+				String optin_value = update_data.get(ob_name);
+				switch(ob_name) {
+				case "view_debug":
+					if (data_check.str_choice_check(optin_value, new String [] {"true", "false"} )){
+						this.view_debug = Boolean.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: true, false");
+					}
+					break;
+				case "space_cleanup_apply":
+					if (data_check.str_choice_check(optin_value, new String [] {"true", "false"} )){
+						this.space_cleanup_apply = Boolean.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: true, false");
+					}
+					break;					
+				case "environ_issue_apply":
+					if (data_check.str_choice_check(optin_value, new String [] {"true", "false"} )){
+						this.environ_issue_apply = Boolean.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: true, false");
+					}
+					break;
+				case "corescript_update_apply":
+					if (data_check.str_choice_check(optin_value, new String [] {"true", "false"} )){
+						this.corescript_update_apply = Boolean.valueOf(optin_value);
+						update_status.put(ob_name, "PASS");
+					} else {
+						update_status.put(ob_name, "FAIL, wrong input string, available value: true, false");
+					}
+					break;					
+				default:
+					update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+				}
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}	
 	
 	public Boolean get_view_debug() {
 		rw_lock.readLock().lock();

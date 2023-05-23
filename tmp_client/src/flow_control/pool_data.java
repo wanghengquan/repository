@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.data_check;
 import utility_funcs.screen_record;
 import utility_funcs.system_cmd;
 
@@ -64,6 +65,46 @@ public class pool_data {
 		result.put("pool_maximum_size", String.valueOf(pool_maximum_size));
 		result.put("history_send_data", history_send_data.toString());
 		return result;
+	}
+	
+	public synchronized HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		Iterator<String> update_it = update_data.keySet().iterator();
+		while (update_it.hasNext()) {
+			String ob_name = update_it.next();
+			String optin_value = update_data.get(ob_name);
+			switch(ob_name) {
+			case "pool_current_size":
+				if (data_check.num_scope_check(optin_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE )){
+					this.pool_current_size = Integer.valueOf(optin_value);
+					update_status.put(ob_name, "PASS");
+				} else {
+					update_status.put(ob_name, "FAIL, wrong input string, available value: 0~" + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				}
+				break;
+			case "pool_maximum_size":
+				if (data_check.num_scope_check(optin_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE )){
+					this.pool_maximum_size = Integer.valueOf(optin_value);
+					update_status.put(ob_name, "PASS");
+				} else {
+					update_status.put(ob_name, "FAIL, wrong input string, available value: 0~" + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				}
+				break;
+			case "pool_reserved_threads":
+				if (data_check.num_scope_check(optin_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE )){
+					this.pool_reserved_threads = Integer.valueOf(optin_value);
+					update_status.put(ob_name, "PASS");
+				} else {
+					update_status.put(ob_name, "FAIL, wrong input string, available value: 0~" + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				}
+				break;
+			default:
+				update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+			}
+		}
+		return update_status;
 	}
 	
 	public synchronized void initialize_thread_pool(int pool_size){

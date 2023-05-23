@@ -26,8 +26,8 @@ public enum top_cmd {
 	THREAD(11, "Show linked Client threads status."),
 	L(12, "Link to remote machine, default is localhost."),
 	LINK(13, "Link to remote machine, default is localhost."),
-	IT(14, "Insert data into client database, default is localhost"),
-	INSERT(15, "Insert data into client database, default is localhost"),
+	IT(14, "Insert data into client database."),
+	INSERT(15, "Insert data into client database."),
 	E(16, "Exit Client Inteactive Mode."),
 	EXIT(17, "Exit Client Inteactive Mode.");
 	private int index;
