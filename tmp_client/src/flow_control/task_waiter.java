@@ -1520,7 +1520,8 @@ public class task_waiter extends Thread {
 			greed_value = admin_data.get("Preference").get("greed_mode");
 		}
 		if (greed_value.equals("auto")) {
-			if (admin_data.get("LaunchCommand").containsKey("cmd_1") || admin_data.get("LaunchCommand").containsKey("cmd_2")) {
+			//if (admin_data.get("LaunchCommand").containsKey("cmd_1") || admin_data.get("LaunchCommand").containsKey("cmd_2")) {
+			if (get_valid_launch_cmd_num(admin_data) > 1) {
 				greed_value = "true";
 			} else {
 				greed_value = "false";
@@ -1528,6 +1529,32 @@ public class task_waiter extends Thread {
 		}
 		task_info.update_admin_queue_attribute_value(queue_name, queue_attr.GREED_MODE, greed_value);
 		return greed_value;
+	}
+	
+	private int get_valid_launch_cmd_num(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		int launch_num = 0;
+		HashMap<String, String> cmd_data = new HashMap<String, String>();
+		if (admin_data.containsKey("LaunchCommand")) {
+			cmd_data.putAll(admin_data.get("LaunchCommand"));
+		}
+		HashMap<String, String> env_data = new HashMap<String, String>();
+		if (admin_data.containsKey("Environment")) {
+			env_data.putAll(admin_data.get("Environment"));
+		}
+		Iterator<String> cmd_data_it = cmd_data.keySet().iterator();
+		while (cmd_data_it.hasNext()) {
+			String cmd_option = cmd_data_it.next();
+			if(!data_check.str_regexp_check(cmd_option, "cmd_\\d*")) {
+				continue;
+			}
+			if(env_data.getOrDefault("FORCE_" + cmd_option.toUpperCase(), "NA").equals("0")) {
+				continue;
+			}
+			launch_num +=1;
+		}
+		return launch_num;
 	}
 	
 	private String get_admin_queue_greed_mode(
