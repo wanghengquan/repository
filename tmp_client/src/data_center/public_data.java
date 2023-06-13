@@ -28,9 +28,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.63"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21463; //version for code use
-	public final static String BASE_BUILDDATE = "2023/06/05";
+	public final static String BASE_CURRENTVERSION = "2.14.64"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21464; //version for code use
+	public final static String BASE_BUILDDATE = "2023/06/13";
 	public final static String BASE_SUITEFILEVERSION = "1.28";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -425,5 +425,9 @@ public class public_data {
         available.intValue();
         DecimalFormat decimalformat = new DecimalFormat("0.00");
         System.out.println(decimalformat.format(rate)); 
+        long tt = (long) 2.0854263E9;
+        float rs = tt / (float)1024 / (float)1024 / (float)1024;
+        System.out.println(rs);
+        
 	}
 }

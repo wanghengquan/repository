@@ -9,7 +9,6 @@
  */
 package flow_control;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +41,6 @@ public class pool_data {
 	// private function
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<pool_attr, Object>> call_map = new HashMap<String, HashMap<pool_attr, Object>>();
-	private HashMap<String, Thread> space_check_thread_map = new HashMap<String, Thread>();
 	private int pool_reserved_threads = 0;
 	private int pool_current_size = public_data.PERF_POOL_CURRENT_SIZE;
 	private int pool_maximum_size = public_data.PERF_POOL_MAXIMUM_SIZE;
@@ -274,45 +271,8 @@ public class pool_data {
 				if (cur_mem > max_mem) {
 					hash_data.put(pool_attr.call_maxmem, cur_mem);
 				}
-				update_call_sapce_usage(call_index, (String) hash_data.get(pool_attr.call_casedir));
 			}
 		}
-	}
-	
-	private void update_call_sapce_usage(
-			String call_index,
-			String case_path
-			) {
-		if (get_space_check_thread(call_index)!= null && get_space_check_thread(call_index).isAlive()) {//previous threads still working
-			THREAD_POOL_LOGGER.warn("Previous space checking thread working, skip this launch.");
-			return;
-		}
-		Thread size_checker = new Thread() {
-			HashMap<pool_attr, Object> space_data = new HashMap<pool_attr, Object>();
-			public void run() {
-				float cur_space = 0.0f;
-				try {
-					cur_space = get_current_task_space_usage(case_path);
-					space_data.put(pool_attr.call_space, cur_space);
-					update_sys_call(call_index, space_data);
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					//System.out.println("Thread done, size_checker:" + String.valueOf(cur_space));
-				}
-			}
-		};
-		size_checker.start();
-		update_space_check_thread(call_index, size_checker);
-	}
-	
-	private float get_current_task_space_usage(
-			String case_path
-			) {
-        float used_space = 0.0f;
-		File file = new File(case_path);
-		used_space = FileUtils.sizeOfDirectory(file);
-		return used_space / 1024 / 1024 / 1024;
 	}
 	
 	private float get_current_task_memory_usage(
@@ -484,24 +444,6 @@ public class pool_data {
 			remove_status = true;
 		}
 		return remove_status;
-	}
-	
-	
-	public synchronized Thread get_space_check_thread(
-			String case_index
-			){
-		Thread check_thread = null;
-		if (space_check_thread_map.containsKey(case_index)){
-			check_thread = space_check_thread_map.get(case_index);
-		}
-		return check_thread;
-	}
-	
-	public synchronized void update_space_check_thread(
-			String case_index,
-			Thread thread_obj
-			){
-		space_check_thread_map.put(case_index, thread_obj);
 	}
 	
 	public void shutdown_pool() {
