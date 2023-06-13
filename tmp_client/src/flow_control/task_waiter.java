@@ -485,15 +485,15 @@ public class task_waiter extends Thread {
 		Boolean book_status = Boolean.valueOf(true);		
 		//system ready? CPU, MEM, Space
 		if (!system_cpu_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.debug(waiter_name + ":System CPU not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.info(waiter_name + ":System CPU not available, skipping:" + queue_name);
 			return false;
 		}
 		if (!system_mem_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.debug(waiter_name + ":System MEM not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.info(waiter_name + ":System MEM not available, skipping:" + queue_name);
 			return false;
 		}
 		if (!system_space_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.debug(waiter_name + ":System Space not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.info(waiter_name + ":System Space not available, skipping:" + queue_name);
 			return false;
 		}
 		//

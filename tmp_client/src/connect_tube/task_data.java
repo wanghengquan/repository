@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.public_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
 import utility_funcs.deep_clone;
@@ -1479,8 +1480,8 @@ public class task_data {
 				space_data.putAll(client_run_case_summary_space_map.get(queue_name));
 			}
 			Float min = space_data.getOrDefault("min", 0.0f);
-			Float max = space_data.getOrDefault("max", 1.0f);
-			Float avg = space_data.getOrDefault("avg", 1.0f);
+			Float max = space_data.getOrDefault("max", public_data.TASK_DEF_ESTIMATE_SPACE);
+			Float avg = space_data.getOrDefault("avg", public_data.TASK_DEF_ESTIMATE_SPACE);
 			Float num = space_data.getOrDefault("num", 0.0f);
 			if (new_data.compareTo(min) < 0) {
 				min = new_data;

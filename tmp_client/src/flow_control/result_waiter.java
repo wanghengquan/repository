@@ -155,7 +155,9 @@ public class result_waiter extends Thread {
 			post_report_list.add("[PostRun]");				
 			// task 1: add new post processes
 			postrun_call call_obj = new postrun_call(
+					queue_name,
 					case_path,
+					task_info,
 					report_path,
 					work_space,
 					work_suite,
@@ -165,7 +167,8 @@ public class result_waiter extends Thread {
 					cmd_status,
 					"keep",
 					result_keep,
-					client_info.get_client_tools_data());
+					client_info.get_client_tools_data()
+					);
 			Boolean create_status = post_info.add_postrun_call(call_obj, queue_name, case_id, public_data.DEF_CLEANUP_TASK_TIMEOUT);
 			if (!create_status){
 				post_report_list.add("Post run task skipped, no post run system/disk cleanup will be run.");
@@ -432,7 +435,6 @@ public class result_waiter extends Thread {
 			) {
 		update_client_run_case_status_summary(case_report_map);
 		update_client_run_case_memory_summary();
-		update_client_run_case_space_summary();
 	}
 	
 	private Boolean update_client_run_case_memory_summary() {
@@ -450,25 +452,6 @@ public class result_waiter extends Thread {
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
 			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM_MIN);
 			task_info.update_client_run_case_summary_memory_map(queue_name, call_mem);
-		}
-		return update_status;
-	}
-	
-	private Boolean update_client_run_case_space_summary() {
-		Boolean update_status = Boolean.valueOf(true);
-		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
-		call_data.putAll(pool_info.get_sys_call_copy());		
-		Iterator<String> call_map_it = call_data.keySet().iterator();
-		while (call_map_it.hasNext()) {
-			String call_index = call_map_it.next();
-			HashMap<pool_attr, Object> one_call_data = call_data.get(call_index);
-			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);			
-			if (!call_status.equals(call_state.DONE)) {
-				continue;
-			}
-			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			float call_space = (float) one_call_data.getOrDefault(pool_attr.call_space, public_data.TASK_DEF_ESTIMATE_SPACE);
-			task_info.update_client_run_case_summary_space_map(queue_name, call_space);
 		}
 		return update_status;
 	}
