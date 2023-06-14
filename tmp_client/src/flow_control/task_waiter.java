@@ -1677,9 +1677,9 @@ public class task_waiter extends Thread {
 			) {
 		//reporting
 		if (switch_info.get_local_console_mode()){
-			TASK_WAITER_LOGGER.debug(waiter_name + ":Try change queue to finished status:" + queue_name);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Moving queue to finished status:" + queue_name);
 		} else {
-			TASK_WAITER_LOGGER.info(waiter_name + ":Try change queue to finished status:" + queue_name);
+			TASK_WAITER_LOGGER.info(waiter_name + ":Moving queue to finished status:" + queue_name);
 		}
 		// move queue form received to processed admin queue treemap
 		move_emptied_admin_queue_from_tube(queue_name);
