@@ -286,7 +286,7 @@ public class hall_manager extends Thread {
 		int show_queue_number = 6;
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
-		HALL_MANAGER_LOGGER.info(">>>Current Time:" + time_info.get_date_time());
+		HALL_MANAGER_LOGGER.info(">>>Local Time:" + time_info.get_date_time());
 		HALL_MANAGER_LOGGER.info(">>>Run Time:" + get_client_runtime());		
 		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		//HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
@@ -331,9 +331,10 @@ public class hall_manager extends Thread {
 			HALL_MANAGER_LOGGER.info(">>>Finished Queue:" + finished_queue_list.toString());
 		}
 		// report thread using
+		String thread_mode = new String(auto_adjust ? "(A)" : "(M)");
 		String max_thread = String.valueOf(pool_info.get_pool_current_size());
 		String used_thread = String.valueOf(pool_info.get_pool_used_threads());
-		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread);
+		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread + thread_mode);
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary());
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
