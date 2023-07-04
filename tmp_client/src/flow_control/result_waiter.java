@@ -620,21 +620,20 @@ public class result_waiter extends Thread {
         String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
         String lin_href = "<a href=file:///%s  target='_blank'>%s";		
         String[] ori_paths = save_paths.split("\\s*,\\s*");
+        Pattern smb_patt = Pattern.compile("^\\\\\\\\lsh-smb\\d\\d\\\\",Pattern.CASE_INSENSITIVE);
         //get effective and unique paths
         ArrayList<String> uniq_paths = new ArrayList<String>();
         for(String path: ori_paths) {
         	String ori_path = new String(path);
         	String match_str1 = new String("");
         	String match_str2 = new String("");
+        	Matcher smb_match = smb_patt.matcher(path);
         	if (path.startsWith("/lsh/")) {
         		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("/lsh/", "//lsh-smb02/").replace("\\", "/");
-        	} else if (path.startsWith("\\\\lsh-smb01\\")){
+        		match_str2 = ori_path.replace("/lsh/", "//lsh-smb03/").replace("\\", "/");
+        	} else if (smb_match.find()){
         		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
-        	} else if (path.startsWith("\\\\lsh-smb02\\")){
-        		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");        		
+        		match_str2 = smb_match.replaceAll("/lsh/");        		
         	} else if (path.startsWith("/disks/")){
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("/disks/", "//ldc-smb01/").replace("\\", "/");
@@ -661,10 +660,11 @@ public class result_waiter extends Thread {
         int i = 1;
         for(String path: uniq_paths) {
             path = path.trim();
+            Matcher smb_match = smb_patt.matcher(path);
             String site = new String("");
-            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb01\\") || path.startsWith("\\\\lsh-smb02\\")) {
+            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb")) {
             	site = "(LSH)";
-            } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb01\\")) {
+            } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb")) {
             	site = "(LSV)";
             } else {
             	site = "";
@@ -673,26 +673,18 @@ public class result_waiter extends Thread {
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("/lsh/", "//lsh-smb02/");
+            	path = path.replace("/lsh/", "//lsh-smb03/");
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
-            } else if (path.startsWith("\\\\lsh-smb01\\")) {
+            } else if (smb_match.find()) {	
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
             	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
+            	path = smb_match.replaceAll("/lsh/").replace("\\", "/");
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
-            	loc_rpt.append("</a>" + line_separator);
-            } else if (path.startsWith("\\\\lsh-smb02\\")) {
-            	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
-            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
-            	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
-            	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
-            	loc_rpt.append(String.format(lin_href, path, path));
-            	loc_rpt.append("</a>" + line_separator);            	
+            	loc_rpt.append("</a>" + line_separator);	          	
             } else if (path.startsWith("/disks/")){
             	//for LSV path, passed case will not be copy, so don't show link
             	if (status.equals(task_enum.PASSED)) {
