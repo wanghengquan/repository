@@ -1009,15 +1009,22 @@ public class task_prepare {
 			) {
 		task_prepare_info.add(line_separator + ">Prepare Launch CMDs(LCs):");
 		TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>(new cmdid_compare());
+		String cmd_all = new String("");
+		if (task_data.get("LaunchCommand").containsKey("cmd_all")) {
+			cmd_all = task_data.get("LaunchCommand").get("cmd_all");
+		}
 		Iterator<String> option_it  = task_data.get("LaunchCommand").keySet().iterator();
 		while (option_it.hasNext()) {
 			String option_name = option_it.next();
 			if(!option_name.startsWith("cmd_") && !option_name.equalsIgnoreCase("cmd")) {
 				continue;
 			}
+			if (option_name.equalsIgnoreCase("cmd_all")) {
+				continue;
+			}
 			//job command line prepare
 			HashMap<cmd_attr, List<String>> cmd_data = new HashMap<cmd_attr, List<String>>();
-			String cmd_string  = new String(task_data.get("LaunchCommand").get(option_name));
+			String cmd_string  = new String(task_data.get("LaunchCommand").get(option_name) + " " + cmd_all);
 			cmd_data.put(cmd_attr.command, Arrays.asList(get_launch_cmd(cmd_string, python_version, corescript_link_status, client_tools, task_data)));
 			//job environment prepare
 			HashMap<String, String> cmd_env = new HashMap<String, String>();
