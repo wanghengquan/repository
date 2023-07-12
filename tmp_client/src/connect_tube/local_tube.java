@@ -592,8 +592,8 @@ public class local_tube {
 			) {
 		List<List<String>> one_macro_data = new ArrayList<List<String>>(); 
 		one_macro_data.addAll(macro_data);
-		// condition check
-		Boolean condition = true;
+		// all condition check
+		Boolean condition = Boolean.valueOf(true);
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
 				LOCAL_TUBE_LOGGER.warn("Skip macro line:" + line.toString());
@@ -601,18 +601,25 @@ public class local_tube {
 			}
 			String behavior = line.get(0).trim();
 			String column = line.get(1).trim();
-			//String value = line.get(2).trim().replaceAll("=", "");
-			List<String> value_list = new ArrayList<String>();
-			value_list.addAll(Arrays.asList(line.get(2).trim().replaceAll("=", "").split("\\s*,\\s*")));
 			if (!behavior.equals("condition")) {
 				continue;
+			}			
+			//get suite sheet macro value list
+			List<String> value_list = new ArrayList<String>();
+			value_list.addAll(Arrays.asList(line.get(2).trim().replaceAll("=", "").split("\\s*,\\s*")));
+			//get case sheet raw value list
+			List<String> raw_list = new ArrayList<String>();
+			raw_list.addAll(Arrays.asList(raw_data.getOrDefault(column, "").split("\\s*,\\s*")));
+			//match check
+			Boolean current_condition = Boolean.valueOf(false);
+			for (String macro_value : value_list) {
+				if(raw_list.contains(macro_value)) {
+					current_condition = true;
+					break;
+				}
 			}
-			String raw_value = raw_data.get(column);
-			//if (!raw_value.equals(value)) {
-			//	condition = false;
-			//	break;
-			//}
-			if(!value_list.contains(raw_value)) {
+			//final check
+			if(!current_condition) {
 				condition = false;
 				break;
 			}
