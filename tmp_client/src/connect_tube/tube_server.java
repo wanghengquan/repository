@@ -94,7 +94,7 @@ public class tube_server extends Thread {
 		Iterator<String> system_require_it = system_require_data.keySet().iterator();
 		while (system_require_it.hasNext()) {
 			String request_key = system_require_it.next();
-			String request_value = system_require_data.get(request_key);
+			String request_value = system_require_data.get(request_key).toLowerCase();
 			if (!client_hash.get("System").containsKey(request_key)){
 				system_match = false;
 				break;
@@ -116,7 +116,7 @@ public class tube_server extends Thread {
 					request_value_list.add(request_value);
 				}
 				//get available value list
-				String client_value = new String(client_hash.get("System").get(request_key));
+				String client_value = new String(client_hash.get("System").get(request_key).toLowerCase());
 				ArrayList<String> client_value_list = new ArrayList<String>();		
 				if (client_value.contains(",")){
 					client_value_list.addAll(Arrays.asList(client_value.split("\\s*,\\s*")));
@@ -173,7 +173,7 @@ public class tube_server extends Thread {
 		Iterator<String> machine_require_it = machine_require_data.keySet().iterator();
 		while (machine_require_it.hasNext()) {
 			String request_key = machine_require_it.next();
-			String request_value = machine_require_data.get(request_key);
+			String request_value = machine_require_data.get(request_key).toLowerCase();
 			ArrayList<String> request_value_list = new ArrayList<String>();		
 			if (request_value.contains(",")){
 				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
@@ -186,7 +186,7 @@ public class tube_server extends Thread {
 				machine_match = false;
 				break;
 			}
-			String client_value = new String(client_hash.get("Machine").get(request_key));
+			String client_value = new String(client_hash.get("Machine").get(request_key).toLowerCase());
 			ArrayList<String> client_value_list = new ArrayList<String>();		
 			if (client_value.contains(",")){
 				client_value_list.addAll(Arrays.asList(client_value.split("\\s*,\\s*")));
@@ -264,7 +264,8 @@ public class tube_server extends Thread {
 	public ArrayList<String> admin_queue_mismatch_list_check(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> queue_data,
-			Map<String, HashMap<String, String>> client_hash) {
+			Map<String, HashMap<String, String>> client_hash
+			) {
 		ArrayList<String> mismatch_list = new ArrayList<String>();
 		String ignore_request = new String("");
 		if (client_hash.containsKey("preference")){
