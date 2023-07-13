@@ -1022,28 +1022,7 @@ public class local_tube {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
 			Matcher cmd_match = cmd_patt.matcher(local_key);
-			if (local_key.equalsIgnoreCase("cmd_all")) {
-				Iterator<String> globle_it = globle_data.keySet().iterator();
-				while (globle_it.hasNext()) {
-					String globle_key = globle_it.next();
-					String globle_value = globle_data.get(globle_key);
-					if(!globle_key.startsWith("cmd")) {
-						continue;
-					}
-					if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
-						merge_data.put(globle_key, local_value);
-					} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
-						continue;
-					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
-						merge_data.put(globle_key, local_value);
-					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
-						continue;
-					} else {
-						String overall_cmd = globle_value + " " + local_value;
-						merge_data.put(globle_key, overall_cmd.trim());
-					}
-				}
-			} else if (cmd_match.find() && !local_value.equals("")) {
+			if (cmd_match.find() && !local_value.equals("")) {
 				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
 					merge_data.put(local_key, local_value);
 				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
@@ -2304,10 +2283,10 @@ public class local_tube {
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
 		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
-		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
+		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/qinhai_suite", "D:/tmp_work", imported_data);
+		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*
