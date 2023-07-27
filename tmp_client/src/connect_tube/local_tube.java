@@ -2283,9 +2283,9 @@ public class local_tube {
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
 		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
-		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
-		//System.out.println(task_info.get_received_task_queues_map().toString());
-		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
+		System.out.println(task_info.get_received_task_queues_map().toString());
+		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
