@@ -1327,48 +1327,62 @@ public class task_prepare {
 	
 	private String get_correct_build_path(
 			String software_name,
-			String available_builds,
+			String request_builds,
 			String cmd_index,
 			HashMap<String, HashMap<String, String>> client_data
 			) {
 		String software_path = new String("");
-		if (available_builds == null || available_builds.equals("")) {
+		if (request_builds == null || request_builds.equals("")) {
 			return software_path;
 		}
-		ArrayList<String> available_builds_list = new ArrayList<String>();		
-		if (available_builds.contains(",")){
-			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*,\\s*")));
-		} else if (available_builds.contains(";")){
-			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*;\\s*")));
+		ArrayList<String> request_builds_list = new ArrayList<String>();		
+		if (request_builds.contains(",")){
+			request_builds_list.addAll(Arrays.asList(request_builds.split("\\s*,\\s*")));
+		} else if (request_builds.contains(";")){
+			request_builds_list.addAll(Arrays.asList(request_builds.split("\\s*;\\s*")));
 		} else{
-			available_builds_list.add(available_builds);
+			request_builds_list.add(request_builds);
 		}
-		if (available_builds_list.size() == 1) {
-			if (available_builds.contains("@cmd")) {
-				if (available_builds.contains(cmd_index)) {
-					software_path = client_data.get(software_name).get(available_builds.replaceAll("@.*$", ""));
+		if (request_builds_list.size() == 1) {
+			if (request_builds.contains("@cmd")) {
+				if (request_builds.contains(cmd_index)) {
+					software_path = get_software_path_with_exception(software_name, request_builds, client_data);
 				}
 			} else {
-				software_path = client_data.get(software_name).get(available_builds);
+				software_path = get_software_path_with_exception(software_name, request_builds, client_data);
 			}
-		} else if (available_builds_list.size() > 1) {
+		} else if (request_builds_list.size() > 1) {
 			//search by location 
 			int cmd_index_int = get_cmd_index(cmd_index);
-			if (cmd_index_int > 0 && cmd_index_int <= available_builds_list.size()) {
-				String index_build = new String(available_builds_list.get(cmd_index_int - 1));
+			if (cmd_index_int > 0 && cmd_index_int <= request_builds_list.size()) {
+				String index_build = new String(request_builds_list.get(cmd_index_int - 1));
 				if (!index_build.contains("@cmd")) {
-					software_path = client_data.get(software_name).get(index_build);
+					software_path = get_software_path_with_exception(software_name, index_build, client_data);
 				}
 			}
 			//override with explicit instruction
-			for(String build_string:available_builds_list) {
+			for(String build_string:request_builds_list) {
 				if (build_string.endsWith("@" + cmd_index)) {
-					software_path = client_data.get(software_name).get(build_string.replaceAll("@.*$", ""));
+					software_path = get_software_path_with_exception(software_name, build_string, client_data);
 					break;
 				}
 			}
 		} else {
 			;
+		}
+		return software_path;
+	}
+	
+	private String get_software_path_with_exception(
+			String software_name,
+			String request_build,
+			HashMap<String, HashMap<String, String>> client_data
+			) {
+		String software_path = new String("");
+		if(software_name.equalsIgnoreCase("xrun") || software_name.equalsIgnoreCase("vcs")) {
+			software_path = request_build.replaceAll("@.*$", "");
+		} else {
+			software_path = client_data.get(software_name).get(request_build.replaceAll("@.*$", ""));
 		}
 		return software_path;
 	}
