@@ -128,7 +128,7 @@ public class tools_dialog extends JDialog implements ActionListener {
 		JLabel empty_line = new JLabel("");
 		tools_panel.add(empty_line);		
 		//step 8 : note line
-		JLabel note_line = new JLabel("*:Optional, If your case/script need to export/run with this tool.");
+		JLabel note_line = new JLabel("*:Optional, If your case/script need to export/run with these tools.");
 		tools_panel.add(note_line);		
 		//================================================
 		//constraint them
