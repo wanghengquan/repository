@@ -118,7 +118,7 @@ public class file_action {
 			}
 		};
 		if (!path_dobj.exists()) {
-			FILE_ACTION_LOGGER.warn("Path doesn't exists:" + path);
+			FILE_ACTION_LOGGER.debug("Del1:Path doesn't exists:" + path);
 			return false;
 		}
 		if (!path_dobj.canWrite()) {
@@ -149,11 +149,11 @@ public class file_action {
 			}
 		};
 		if (!path_dobj.exists()) {
-			FILE_ACTION_LOGGER.warn("Path doesn't exists:" + path);
+			FILE_ACTION_LOGGER.debug("Del2:Path doesn't exists:" + path);
 			return false;
 		}
 		if (!path_dobj.canWrite()) {
-			FILE_ACTION_LOGGER.warn("Path doesn't writeable:" + path);
+			FILE_ACTION_LOGGER.warn("Del2:Path doesn't writeable:" + path);
 			return false;
 		}
 		for(File file_obj:path_dobj.listFiles(filter)) {
