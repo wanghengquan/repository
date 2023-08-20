@@ -84,8 +84,8 @@ public class client_data {
 					if (data_check.str_regexp_check(optin_value, ".+\\..+=.+" )){
 						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
 						String value_str = new String(optin_value.split("\\s*=\\s*")[1]);
-						String optin_str1 = new String(optin_str.split("\\s*\\.\\s*")[0]);
-						String optin_str2 = new String(optin_str.split("\\s*\\.\\s*")[1]);
+						String optin_str1 = new String(optin_str.split("\\s*\\.\\s*", 2)[0]);
+						String optin_str2 = new String(optin_str.split("\\s*\\.\\s*", 2)[1]);
 						if(client_hash.containsKey(optin_str1)) {
 							HashMap<String, String> option_hash = client_hash.get(optin_str1);
 							option_hash.put(optin_str2, value_str);
