@@ -28,9 +28,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.73"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21473; //version for code use
-	public final static String BASE_BUILDDATE = "2023/08/20";
+	public final static String BASE_CURRENTVERSION = "2.14.74"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21474; //version for code use
+	public final static String BASE_BUILDDATE = "2023/08/26";
 	public final static String BASE_SUITEFILEVERSION = "1.28";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -299,7 +299,7 @@ public class public_data {
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_SPACE = "";
 	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb03/sw/qa/qadata";
-	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/"};
+	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/swrd_archive"};
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 1000;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 600;
 	//look and feel
@@ -425,17 +425,8 @@ public class public_data {
         available.intValue();
         DecimalFormat decimalformat = new DecimalFormat("0.00");
         System.out.println(decimalformat.format(rate)); 
-        long tt = (long) 2.0854263E9;
-        float rs = tt / (float)1024 / (float)1024 / (float)1024;
-        System.out.println(rs);
-        
-        String url_tt = new String("\\\\lsh-smb02\\sw\\qa\\qauser");
-        Pattern smb_patt = Pattern.compile("^\\\\\\\\lsh-smb\\d\\d\\\\",Pattern.CASE_INSENSITIVE);
-        Matcher smb_match = smb_patt.matcher(url_tt);
-        if (smb_match.find()) {
-        	System.out.println(smb_match.replaceAll("/lsh/"));
-        } else {
-        	System.out.println("False");
-        }
+        //long tt = (long) 2.0854263E9;
+        //float rs = tt / (float)1024 / (float)1024 / (float)1024;
+        System.out.println(public_data.DEF_LSV_STORAGE_ID[1]);
 	}
 }

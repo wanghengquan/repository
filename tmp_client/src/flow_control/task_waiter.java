@@ -433,10 +433,16 @@ public class task_waiter extends Thread {
 			} else {
 				status = false;
 			}
+			TASK_WAITER_LOGGER.debug(waiter_name + ":======Memory Booking Report======");
 			TASK_WAITER_LOGGER.debug(waiter_name + ":memory_free:" + decimalformat.format(memory_free));
 			TASK_WAITER_LOGGER.debug(waiter_name + ":available_memory:" + decimalformat.format(available_memory));
+			TASK_WAITER_LOGGER.debug(waiter_name + ":est_mem:" + decimalformat.format(est_mem));
+			TASK_WAITER_LOGGER.debug(waiter_name + ":reg_request:" + decimalformat.format(reg_request));
+			TASK_WAITER_LOGGER.debug(waiter_name + ":run_request:" + decimalformat.format(run_request));
 			TASK_WAITER_LOGGER.debug(waiter_name + ":estimate_total:" + decimalformat.format(estimate_total));
 			TASK_WAITER_LOGGER.debug(waiter_name + ":status:" + status.toString());
+			TASK_WAITER_LOGGER.debug("");
+			TASK_WAITER_LOGGER.debug("");
 			//TASK_WAITER_LOGGER.warn(waiter_name + ":status:" + status.toString());
 		}
 		return status;
