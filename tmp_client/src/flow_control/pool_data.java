@@ -282,13 +282,16 @@ public class pool_data {
 		float current_mem = 0.0f;
 		String scan_value = new String("0.0");
 		//System.out.println(mem_info);
+		//System.out.println("Memory report:======pool_data:line285");
 		for (String line: mem_info) {
 			line = line.replace(")", "");//for python2.7 compatibility
 			if(line.contains("T" + case_id) && line.contains(" ")) {
 				scan_value = line.split("\\s+")[1];
 				current_mem = Float.valueOf(scan_value).floatValue();
+				//System.out.println("T" + case_id + ":" + current_mem);
 			}
 		}
+		//System.out.println("");
 		return current_mem;
 	}
 	
@@ -363,7 +366,7 @@ public class pool_data {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_map.get(call_index);
 			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);
-			if (!call_status.equals(call_state.DONE)) {
+			if (call_status.equals(call_state.DONE)) {
 				continue;
 			}
 			float est_mem = (float) one_call_data.get(pool_attr.call_estmem);
@@ -371,6 +374,10 @@ public class pool_data {
 			if (est_mem > cur_mem) {
 				total_estimate_extra_usage = total_estimate_extra_usage +  est_mem - cur_mem;
 			}
+			//System.out.println("Extra memory Report:======" + call_index);
+			//System.out.println("est_mem:" + est_mem);
+			//System.out.println("cur_mem:" + cur_mem);
+			//System.out.println("");
 		}
 		return total_estimate_extra_usage;
 	}
