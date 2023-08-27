@@ -1575,11 +1575,32 @@ public class task_waiter extends Thread {
 		return greed_mode;
 	}
 	
+	private float get_task_queue_history_avg_memory(
+			String queue_name
+			) {
+		float max_avg = 0.0f;
+		float avg_mem = (float) task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("avg", 0.0f);
+		float av5_mem = (float) task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("av5", 0.0f);
+		float av1_mem = (float) task_info.get_client_run_case_summary_memory_map(queue_name).getOrDefault("av1", 0.0f);
+		if (avg_mem > max_avg) {
+			max_avg = avg_mem;
+		}
+		if (av5_mem > max_avg) {
+			max_avg = av5_mem;
+		}
+		if (av1_mem > max_avg) {
+			max_avg = av1_mem;
+		}
+		return max_avg;
+	}
+	
 	private float get_task_estimated_memory(
 			String queue_name,
 			HashMap<String, HashMap<String, String>> admin_data
 			) {
 		float est_mem = 0.0f;
+		float his_mem = 0.0f;
+		float usr_mem = 0.0f;
 		//1. default memory requirement:available memory * 0.6
 		float sys_mem_avi = 0.0f;
 		sys_mem_avi = Float.valueOf(client_info.get_client_system_data().get("mem_free")).floatValue();
@@ -1592,25 +1613,24 @@ public class task_waiter extends Thread {
 			est_mem = max_est_mem;
 		}
 		//2. history memory requirement
-		if(task_info.get_client_run_case_summary_memory_map(queue_name).containsKey("avg")) {
-			est_mem = task_info.get_client_run_case_summary_memory_map(queue_name).get("avg");
-		}
+		his_mem = get_task_queue_history_avg_memory(queue_name);
 		//3. user memory requirement
 		if(admin_data.get("CaseInfo").containsKey("est_mem")) {
-			float usr_est_mem = 0;
 			try {
-				usr_est_mem = Float.valueOf(admin_data.get("CaseInfo").get("est_mem"));
+				usr_mem = Float.valueOf(admin_data.get("CaseInfo").get("est_mem"));
 			} catch (NumberFormatException e) {
 				TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_mem") + ", wrong number format, ignored.");
 			}
-			if(usr_est_mem > 0) {
-				if(usr_est_mem > 32) {
-					est_mem = 32.0f;
-					TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_mem") + "> 32G, use 32G instead.");
-				} else {
-					est_mem = usr_est_mem;
-				}
+			if(usr_mem > 64) {
+				usr_mem = 64.0f;
+				TASK_WAITER_LOGGER.debug(admin_data.get("CaseInfo").get("est_mem") + "> 64G, use 64G instead.");
 			}
+		}
+		if(his_mem > 0) {
+			est_mem = his_mem;
+		}
+		if(usr_mem > 0 && usr_mem > his_mem) {
+			est_mem = usr_mem;
 		}
 		return est_mem;
 	}
