@@ -11,6 +11,7 @@ package data_center;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,9 +29,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.74"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21474; //version for code use
-	public final static String BASE_BUILDDATE = "2023/08/26";
+	public final static String BASE_CURRENTVERSION = "2.14.75"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21475; //version for code use
+	public final static String BASE_BUILDDATE = "2023/08/27";
 	public final static String BASE_SUITEFILEVERSION = "1.28";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -428,5 +429,16 @@ public class public_data {
         //long tt = (long) 2.0854263E9;
         //float rs = tt / (float)1024 / (float)1024 / (float)1024;
         System.out.println(public_data.DEF_LSV_STORAGE_ID[1]);
+        
+        ArrayList<Float> float_list = new ArrayList<Float>();
+        ArrayList<Float> sub_list = new ArrayList<Float>();
+        float_list.add(1.0f);
+        float_list.add(1.2f);
+        float_list.add(2.0f);
+        float_list.add(3.0f);
+        float_list.add(1.5f);
+        
+        sub_list.addAll(float_list.subList(float_list.size() - 4, float_list.size()));
+        System.out.println(sub_list.toString());
 	}
 }

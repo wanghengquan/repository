@@ -76,7 +76,7 @@ public class task_data {
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();	
 	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_status_map = new HashMap<String, HashMap<task_enum, Integer>>();
-	private HashMap<String, HashMap<String, Float>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Float>>();
+	private HashMap<String, HashMap<String, Object>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Object>>();
 	private HashMap<String, HashMap<String, Float>> client_run_case_summary_space_map = new HashMap<String, HashMap<String, Float>>();
 	private HashMap<String,Integer> finished_queue_dump_delay_counter = new HashMap<String,Integer>();
 	//====data not used====
@@ -1341,9 +1341,9 @@ public class task_data {
 		}
 	}
 	
-	public HashMap<String, HashMap<String, Float>> get_client_run_case_summary_memory_map() {
+	public HashMap<String, HashMap<String, Object>> get_client_run_case_summary_memory_map() {
 		rw_lock.readLock().lock();
-		HashMap<String, HashMap<String, Float>> temp = new HashMap<String, HashMap<String, Float>>();
+		HashMap<String, HashMap<String, Object>> temp = new HashMap<String, HashMap<String, Object>>();
 		try {
 			temp.putAll(client_run_case_summary_memory_map);
 		} finally {
@@ -1351,10 +1351,12 @@ public class task_data {
 		}
 		return temp;
 	}
-
-	public HashMap<String, Float> get_client_run_case_summary_memory_map(String queue_name) {
+	
+	public HashMap<String, Object> get_client_run_case_summary_memory_map(
+			String queue_name
+			) {
 		rw_lock.readLock().lock();
-		HashMap<String, Float> temp = new HashMap<String, Float>();
+		HashMap<String, Object> temp = new HashMap<String, Object>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)) {
 				temp.putAll(client_run_case_summary_memory_map.get(queue_name));
@@ -1376,9 +1378,10 @@ public class task_data {
 	
 	public void update_client_run_case_summary_memory_map(
 			String queue_name, 
-			HashMap<String, Float> memory_map) {
+			HashMap<String, Object> memory_map
+			) {
 		rw_lock.writeLock().lock();
-		HashMap<String, Float> memory_data = new HashMap<String, Float>();
+		HashMap<String, Object> memory_data = new HashMap<String, Object>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
@@ -1392,33 +1395,62 @@ public class task_data {
 	
 	public void update_client_run_case_summary_memory_map(
 			String queue_name, 
-			Float new_data) {
+			Float new_data
+			) {
 		rw_lock.writeLock().lock();
-		HashMap<String, Float> memory_data = new HashMap<String, Float>();
+		HashMap<String, Object> memory_data = new HashMap<String, Object>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
 			}
-			Float min = memory_data.getOrDefault("min", 0.0f);
-			Float max = memory_data.getOrDefault("max", 1.0f);
-			Float avg = memory_data.getOrDefault("avg", 1.0f);
-			Float num = memory_data.getOrDefault("num", 0.0f);
+			Float min = (Float) memory_data.getOrDefault("min", 0.0f);
+			Float max = (Float) memory_data.getOrDefault("max", 1.0f);
+			Float num = (Float) memory_data.getOrDefault("num", 0.0f);
+			@SuppressWarnings("unchecked")
+			ArrayList<Float> lst = (ArrayList<Float>) memory_data.getOrDefault("lst", new ArrayList<Float>());
 			if (new_data.compareTo(min) < 0) {
 				min = new_data;
 			}
 			if (new_data.compareTo(max) > 0) {
 				max = new_data;
 			}
-			avg = (avg * num + new_data) / (num + 1);
+			lst.add(new_data);
+			if(lst.size()>20) {
+				lst.remove(0);
+			}
 			num = num + 1;
 			memory_data.put("min", min);
 			memory_data.put("max", max);
-			memory_data.put("avg", avg);
 			memory_data.put("num", num);
+			memory_data.put("avg", get_float_list_recent_data_average(lst, lst.size()));
+			memory_data.put("av5", get_float_list_recent_data_average(lst, 5));
+			memory_data.put("av1", get_float_list_recent_data_average(lst, 1));
+			memory_data.put("lst", lst);
 			client_run_case_summary_memory_map.put(queue_name, memory_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
+	}
+	
+	private float get_float_list_recent_data_average(
+			ArrayList<Float> float_list,
+			int cal_num
+			) {
+		ArrayList<Float> sub_list = new ArrayList<Float>();
+		if(float_list.size() < cal_num) {
+			sub_list.addAll(float_list);
+		} else {
+			sub_list.addAll(float_list.subList(float_list.size() - cal_num, float_list.size()));
+		}
+		float total = 0.0f;
+		float avg = 1.0f;
+		for(Float data: sub_list) {
+			total += data;
+		}
+		if (sub_list.size() > 0) {
+			avg = total / sub_list.size(); 
+		}
+		return avg;
 	}
 	
 	public HashMap<String, HashMap<String, Float>> get_client_run_case_summary_space_map() {
