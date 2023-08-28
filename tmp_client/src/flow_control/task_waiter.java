@@ -426,7 +426,7 @@ public class task_waiter extends Thread {
 			float estimate_total = est_mem + reg_request + run_request;
 			float memory_free = 0.0f;
 			memory_free = Float.valueOf(client_info.get_client_system_data().get("mem_free")).floatValue();
-			float available_memory = memory_free * public_data.PERF_GOOD_MEM_USAGE_RATE;
+			float available_memory = memory_free * public_data.PERF_FREE_MEM_USAGE_RATE;
 			if (available_memory >= estimate_total) {
 				status = true;
 				client_info.increase_registered_memory(est_mem);
