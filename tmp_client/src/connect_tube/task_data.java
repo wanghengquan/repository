@@ -1403,8 +1403,8 @@ public class task_data {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
 			}
-			Float min = (Float) memory_data.getOrDefault("min", 0.0f);
-			Float max = (Float) memory_data.getOrDefault("max", 1.0f);
+			Float min = (Float) memory_data.getOrDefault("min", 99.0f);
+			Float max = (Float) memory_data.getOrDefault("max", 0.0f);
 			Float num = (Float) memory_data.getOrDefault("num", 0.0f);
 			@SuppressWarnings("unchecked")
 			ArrayList<Float> lst = (ArrayList<Float>) memory_data.getOrDefault("lst", new ArrayList<Float>());
@@ -1511,7 +1511,7 @@ public class task_data {
 			if (client_run_case_summary_space_map.containsKey(queue_name)){
 				space_data.putAll(client_run_case_summary_space_map.get(queue_name));
 			}
-			Float min = space_data.getOrDefault("min", 0.0f);
+			Float min = space_data.getOrDefault("min", 99.0f);
 			Float max = space_data.getOrDefault("max", public_data.TASK_DEF_ESTIMATE_SPACE);
 			Float avg = space_data.getOrDefault("avg", public_data.TASK_DEF_ESTIMATE_SPACE);
 			Float num = space_data.getOrDefault("num", 0.0f);
