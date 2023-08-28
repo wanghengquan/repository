@@ -244,7 +244,7 @@ public class public_data {
 	public final static int PERF_AUTO_MAXIMUM_CPU = 80;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 6;
-	public final static float PERF_GOOD_MEM_USAGE_RATE = 0.80f;
+	public final static float PERF_FREE_MEM_USAGE_RATE = 0.60f;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 60;
 	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
