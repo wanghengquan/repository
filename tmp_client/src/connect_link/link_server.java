@@ -297,7 +297,8 @@ public class link_server extends Thread {
 			int max_thread = pool_info.get_pool_current_size();
 			int use_thread = pool_info.get_pool_used_threads();
 			int remote_num = post_info.get_postrun_call_size();
-			String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
+			String thread_mode = new String(pool_info.get_pool_threads_auto_adjust() ? "(A)" : "(M)");
+			String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread) + thread_mode;
 			detail_data.put(current_status, switch_info.get_client_run_state().toString());
 			detail_data.put(pool_status, show_info);
 			detail_data.put(post_status, String.valueOf(remote_num));
