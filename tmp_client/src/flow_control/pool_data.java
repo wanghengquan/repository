@@ -42,6 +42,7 @@ public class pool_data {
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<pool_attr, Object>> call_map = new HashMap<String, HashMap<pool_attr, Object>>();
 	private int pool_reserved_threads = 0;
+	private Boolean pool_threads_auto_adjust = Boolean.valueOf(false);
 	private int pool_current_size = public_data.PERF_POOL_CURRENT_SIZE;
 	private int pool_maximum_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 	private HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>> ();
@@ -58,6 +59,7 @@ public class pool_data {
 		HashMap<String, String> result = new HashMap<String, String>();
 		result.put("call_map", call_map.toString());
 		result.put("pool_reserved_threads", String.valueOf(pool_reserved_threads));
+		result.put("pool_threads_auto_adjust", String.valueOf(pool_threads_auto_adjust));
 		result.put("pool_current_size", String.valueOf(pool_current_size));
 		result.put("pool_maximum_size", String.valueOf(pool_maximum_size));
 		result.put("history_send_data", history_send_data.toString());
@@ -137,6 +139,16 @@ public class pool_data {
 		return temp;
 	}
 
+	public synchronized void set_pool_threads_auto_adjust(Boolean new_value) {
+		this.pool_threads_auto_adjust = new_value;
+	}
+
+	public synchronized Boolean get_pool_threads_auto_adjust() {
+		Boolean temp = Boolean.valueOf(false);
+		temp = pool_threads_auto_adjust;
+		return temp;
+	}
+	
 	public synchronized int get_pool_used_threads() {
 		int temp = 0;
 		temp = call_map.size();
