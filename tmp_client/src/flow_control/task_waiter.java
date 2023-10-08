@@ -1858,7 +1858,9 @@ public class task_waiter extends Thread {
 		title_list.add("[Setup]");
 		report_obj.dump_disk_task_report_data(report_path, title_list);
 		report_obj.dump_disk_task_report_data(report_path, task_prepare_info_list);
-		//task 3 send case report to tube
+		//task 3 dump case task data
+		report_obj.dump_disk_task_data_info(report_path, case_id, task_data);
+		//task 4 send case report to tube
 		HashMap<String, HashMap<String, Object>> report_data = new HashMap<String, HashMap<String, Object>>();
 		HashMap<String, Object> hash_data = new HashMap<String, Object>();
 		String task_index = case_id + "#" + queue_name;
