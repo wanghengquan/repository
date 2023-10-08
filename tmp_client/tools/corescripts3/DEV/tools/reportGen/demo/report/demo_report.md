@@ -121,3 +121,11 @@ optional arguments:
    ```sh
    python ../../reportgen.py report -a143145 -b143039 --compare-titles lse_carry,lse_even,lse_lut4,lse_odd,lse_reg  --titles  lse_carry,lse_even,lse_lut4,lse_odd,lse_reg -e compare_lse_only
    ```
+
+8. use all data for split flow
+
+   ```sh
+   python DEV\tools\reportGen\reportgen.py report -a 224749 --src-name D2LSE --dst-name D2SYN --src-section Jedi_D2_E30_lse  --dst-section Jedi_D2_E30_syn   -b 224749 --add-test-id --compare-titles Register,LUT,Slice,IO,fmax,geo_fmax --best-fmax --force --use-all-data
+   ```
+
+   

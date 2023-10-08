@@ -85,14 +85,17 @@ class ParserIP(object):
             xTools.say_it("    XML files are: {}".format(self.xml_files))
 
     def get_all_xml(self, ip_path):
-        dfs = os.listdir(ip_path)
-        if self.xml_file in dfs:
-            self.xml_files.append(os.path.join(ip_path, self.xml_file))
-        else:
-            for foo in dfs:
-                abs_foo = os.path.join(ip_path, foo)
-                if os.path.isdir(abs_foo):
-                    self.get_all_xml(abs_foo)
+        try:
+            dfs = os.listdir(ip_path)
+            if self.xml_file in dfs:
+                self.xml_files.append(os.path.join(ip_path, self.xml_file))
+            else:
+                for foo in dfs:
+                    abs_foo = os.path.join(ip_path, foo)
+                    if os.path.isdir(abs_foo):
+                        self.get_all_xml(abs_foo)
+        except FileNotFoundError:
+            return
 
 
 class UpdateRadiantIP(object):

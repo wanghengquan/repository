@@ -5,4 +5,18 @@ RADIANT_POSTSYN_FILE:
     fields:
       - { names: [ 'postsyn_cpu_time', 'postsyn_real_time', 'postsyn_peak_memory' ], func: 'get_time_and_memory' }
 
+RADIANT_UDB2SV_RTL_SHA1:
+  name_pattern: 'test_udb2sv_rtl.v$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'udb2sv_rtl_sha1', func: 'get_text_file_sha1' }
+
+RADIANT_UDB2SV_SYN_SHA1:
+  name_pattern: 'test_udb2sv_syn.v$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'udb2sv_syn_sha1', func: 'get_text_file_sha1' }
+
 # END OF FILE

@@ -26,6 +26,7 @@ optional arguments:
   --sort-key {id,fmax}  specify sort key for case data, default is id
   -CDI CUSTOM_DUMP_INI, --custom-dump-ini CUSTOM_DUMP_INI
                         specify custom dump.ini file
+  --sha                 generate SHA1-Comparison sheets                        
 ```
 
 ## Description
@@ -51,6 +52,7 @@ optional arguments:
 6. "-a", "--apart-by-section": Data in one sheet or one csv file are in the same section.
 7. if sort key is `id`, means use the last one result as final results; if sort key is `fmax`, means use the case data which fmax is the max one.
 8. "-CDI",  "--custom-dump-ini":  You can define your own "dump_titles.ini" and use it by "--fields"
+9. "--sha": will dump simple sheets with comparison data for synthesis/map/placer/router/par udb2sv files SHA1 code
 
 
 ## Typical application 

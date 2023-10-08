@@ -169,11 +169,13 @@ def get_exist_file(file_basename, folder1, folder2=None):
 
 
 class FindFiles(object):
-    def __init__(self, abs_tag, vendor_name, info):
+    def __init__(self, abs_tag, vendor_name, info, scan_step, scan_step_synthesis):
         self.report_files_odict = OrderedDict()
         self.abs_tag = abs_tag
         self.vendor_name = vendor_name
         self.info = info
+        self.scan_step = scan_step
+        self.scan_step_synthesis = scan_step_synthesis
 
     def get_report_files_dict(self):
         return self.report_files_odict
@@ -212,36 +214,49 @@ class FindFiles(object):
                 console_file = get_exist_file("runtime_console.log", foo, pd2)
                 if console_file:
                     this_list.append(console_file)
-                # result files
-                _filename_prj = self.x_project.get("@title")
-                _filename_impl = self.y_impl.get("@dir")
-                _filename_only = "{}_{}".format(_filename_prj, _filename_impl)
-                synthesis_name = self.y_impl.get("@synthesis")
-                if synthesis_name == "synplify":
-                    for fext in (".srr", ".vm", "_syn.psn"):
-                        one_file = get_exist_file("{}/{}{}".format(_filename_impl, _filename_only, fext), foo, pd2)
+                pwr_report_file = get_exist_file("auto_power_result.pwr", foo, pd2)
+                if pwr_report_file:
+                    this_list.append(pwr_report_file)
+                if self.scan_step:
+                    udb2sv_files = glob.glob(os.path.join(foo, "step_*", "test_udb2sv*.v"))
+                    this_list.extend(udb2sv_files)
+                elif self.scan_step_synthesis:
+                    udb2sv_files = glob.glob(os.path.join(foo, "step_*", "test_udb2sv*.v"))
+                    this_list.extend(udb2sv_files)
+                    # vm files are different when hdl files have encryption lines, so skip them.
+                    # vm_files = glob.glob(os.path.join(foo, "step_synthesis*", "*.vm"))
+                    # this_list.extend(vm_files)
+                else:
+                    # result files
+                    _filename_prj = self.x_project.get("@title")
+                    _filename_impl = self.y_impl.get("@dir")
+                    _filename_only = "{}_{}".format(_filename_prj, _filename_impl)
+                    synthesis_name = self.y_impl.get("@synthesis")
+                    if synthesis_name == "synplify":
+                        for fext in (".srr", ".vm", "_syn.psn"):
+                            one_file = get_exist_file("{}/{}{}".format(_filename_impl, _filename_only, fext), foo, pd2)
+                            if one_file:
+                                this_list.append(one_file)
+                    else:  # LSE
+                        one_file = get_exist_file("{}/synthesis.log".format(_filename_impl), foo, pd2)
                         if one_file:
                             this_list.append(one_file)
-                else:  # LSE
-                    one_file = get_exist_file("{}/synthesis.log".format(_filename_impl), foo, pd2)
-                    if one_file:
-                        this_list.append(one_file)
-                    for fext in (".vm", "_syn.psn"):
-                        one_file = get_exist_file("{}/{}{}".format(_filename_impl, _filename_only, fext), foo, pd2)
+                        for fext in (".vm", "_syn.psn"):
+                            one_file = get_exist_file("{}/{}{}".format(_filename_impl, _filename_only, fext), foo, pd2)
+                            if one_file:
+                                this_list.append(one_file)
+                    for fext in (".mrp", ".par", ".twr", ".pad", ".udb", "_map.udb", "_vo.vo"):
+                        one_file = get_exist_file('{}/{}{}'.format(_filename_impl, _filename_only, fext), foo)
                         if one_file:
                             this_list.append(one_file)
-                for fext in (".mrp", ".par", ".twr", ".pad", ".udb", "_map.udb"):
-                    one_file = get_exist_file('{}/{}{}'.format(_filename_impl, _filename_only, fext), foo)
-                    if one_file:
-                        this_list.append(one_file)
-                for udb2sv_file in ("test_udb2sv_map.v", "test_udb2sv_par.v"):
-                    one_file = get_exist_file('{}/{}'.format(_filename_impl, udb2sv_file), foo)
-                    if one_file:
-                        this_list.append(one_file)
-                for sim_type in ("rtl", "syn_vlg", "map_vlg", "par_vlg", "bit_vlg"):
-                    one_file = get_exist_file("sim_{0}/run_sim_{0}.log".format(sim_type), foo)
-                    if one_file:
-                        this_list.append(one_file)
+                    for udb2sv_file in ("test_udb2sv_rtl.v", "test_udb2sv_syn.v", "test_udb2sv_map.v", "test_udb2sv_par.v"):
+                        one_file = get_exist_file('{}/{}'.format(_filename_impl, udb2sv_file), foo)
+                        if one_file:
+                            this_list.append(one_file)
+                    for sim_type in ("rtl", "syn_vlg", "map_vlg", "par_vlg", "bit_vlg"):
+                        one_file = get_exist_file("sim_{0}/run_sim_{0}.log".format(sim_type), foo)
+                        if one_file:
+                            this_list.append(one_file)
                 self.report_files_odict[pushbutton_or_target_name] = this_list
 
     def append_vivado_files(self):
@@ -265,7 +280,14 @@ class FindFiles(object):
             for name_pattern in ("*.runs/impl_1/*utilization_placed.rpt",
                                  "*.runs/impl_1/*timing_summary_routed.rpt",
                                  "*.runs/impl_1/runme.log",
-                                 "*.runs/synth_1/runme.log"):
+                                 "*.runs/synth_1/runme.log",
+                                 "*.runs/impl_1/*power_routed.rpt",
+                                 "*.sim/sim_1/behav/*/behav.elapsed",
+                                 "*.sim/sim_1/impl/timing/*/*.elapsed",
+                                 "*.sim/sim_1/impl/func/*/*.elapsed",
+                                 "*.sim/sim_1/synth/timing/*/*.elapsed",
+                                 "*.sim/sim_1/synth/func/*/*.elapsed",
+                                 ):
                 abs_pattern = os.path.join(foo, name_pattern)
                 files = glob.glob(abs_pattern)
                 if files:
@@ -381,8 +403,9 @@ class ScanVivadoTimingReport(object):
 
 
 class ScanRadiantTimingReport(YieldLines):
-    def __init__(self):
+    def __init__(self, use_ht_data="yes"):
         super(ScanRadiantTimingReport, self).__init__()
+        self.use_ht_data = use_ht_data
         self.twr_data = dict()
         self.p_check_start_message_list = (re.compile(r"\d+\s+Setup at Speed Grade.+at\s+([-\d]+)\s+Degrees"),
                                            re.compile(r"([.\d]+)\s+(Setup)\s+Summary\s+Report"))
@@ -432,7 +455,9 @@ class ScanRadiantTimingReport(YieldLines):
             return ""
         _keys = list(start_dict.keys())
         _keys.sort()
-        return start_dict[_keys[0]]
+        ht_or_lt = _keys[-1] if self.use_ht_data == "yes" else _keys[0]   # High-Temperature or Low-Temperature
+        self.twr_data["special_ht_and_lt"] = dict(ht_degree=_keys[-1], lt_degree=_keys[0])
+        return start_dict[ht_or_lt]
 
     def get_raw_twr_data(self, twr_file, start_message_line, report_type=1):
         clock_value_dict = dict()
@@ -506,21 +531,68 @@ class ScanRadiantTimingReport(YieldLines):
                 else:
                     _target = v.get("Target", "")
                     _actual = v.get("Frequency", "")
+                    _slack = v.get("Slack", "")
                     _target_list = _target.split()
                     _actual_list = _actual.split()
+                    _slack_list = _slack.split()
                     this_clk_data = dict()
-                    if len(_target_list) == 2 and len(_actual_list) == 2:
-                        if _target_list[-1] == "ns" and _actual_list[-1] == "MHz":
-                            df = "{:.3f}".format(1000/float(_target_list[0]))
-                            this_clk_data = dict(targetFmax=df, fmax=_actual_list[0])
-                    else:
+                    # Target: -----, Frequency: 200.000MHz
+                    # Target: 50.000 ns, Frequency: 18.230 MHz
+                    # Target: 12.5000 ns, Slack: -1.461 ns, Frequency: ----
+                    if len(_target_list) == 1 and len(_actual_list) == 2:
+                        this_clk_data["fmax"] = _actual_list[0]
+                        this_clk_data["targetFmax"] = _target
+                    elif len(_target_list) == 2:
+                        df = "{:.3f}".format(1000 / float(_target_list[0]))
                         if len(_actual_list) == 2:
-                            this_clk_data["fmax"] = _actual_list[0]
-                            this_clk_data["targetFmax"] = _target
+                            this_clk_data = dict(targetFmax=df, fmax=_actual_list[0])
+                        elif len(_slack_list) == 2:
+                            this_clk_data = dict(targetFmax=df, fmax=1000/(float(_target_list[0]) - float(_slack_list[0])))
                     if this_clk_data:
                         this_clk_data["logic_level"] = v.get("Levels")
                         this_clk_data["Slack"] = re.sub(r"\sns", "", v.get("Slack", ""))
                         self.twr_data[clk_name] = this_clk_data
+
+
+class ScanDiamondTimingReport(YieldLines):
+    def __init__(self):
+        super(ScanDiamondTimingReport, self).__init__()
+        self.twr_data = dict()
+        self.p_start = re.compile("Report Summary")
+        self.p_name_target_fmax_level = re.compile(r'''FREQUENCY.+"([^"]+)".+
+                                                       \|\s+([\d.]+)\s+MHz\s*
+                                                       \|\s+([\d.]+)\s+MHz\s*
+                                                       \|\s+(\d+)''', re.X)
+
+    def get_twr_data(self):
+        return self.twr_data
+
+    def process(self, twr_file):
+        raw_lines = list()
+        single_line = ""
+        for line in self.yield_lines(twr_file):
+            if not raw_lines:
+                if self.p_start.search(line):
+                    raw_lines.append(line)
+            else:
+                if not line:
+                    break
+                line = line.strip(" |")
+                if line:
+                    single_line += line
+                else:
+                    raw_lines.append(single_line)
+                    single_line = ""
+        for item in raw_lines:
+            m_values = self.p_name_target_fmax_level.search(item)
+            if not m_values:
+                continue
+            clk_name = m_values.group(1)
+            clk_name = re.sub(r"\s", "", clk_name)
+            target_fmax = m_values.group(2)
+            fmax = m_values.group(3)
+            logic_level = m_values.group(4)
+            self.twr_data[clk_name] = dict(targetFmax=target_fmax, fmax=fmax, logic_level=logic_level)
 
 
 class ElapsedTime:
@@ -628,3 +700,50 @@ def get_vivado_utilization_data(data_file, table_name, report_name_and_site_type
             if p_next.search(next_line):
                 start_table = True
     return ud
+
+
+def get_par_data(tag_name, par_file):
+    """
+    Total CPU time 1 mins 20 secs
+    Total REAL time: 1 mins 21 secs
+    Completely routed.
+    ...
+    Total CPU  Time: 3 mins 22 secs
+    Total REAL Time: 3 mins 22 secs
+    Peak Memory Usage: 1298.37 MB
+    """
+    router_dict = dict(router_cpu_time=re.compile(r"Total\s+CPU\s+time\s+(.+)"),
+                       router_real_time=re.compile(r"Total\s+REAL\s+time:\s+(.+)"))
+    par_dict = dict(par_peak_memory=re.compile(r"Peak\s+Memory\s+Usage:\s+(\S+)"),
+                    par_real_time=re.compile(r"Total\s+REAL\s+time:\s+(.+)", re.I),
+                    par_cpu_time=re.compile(r"Total\s+CPU\s+Time:\s+(.+)"))
+    p_tag_router = re.compile("Completely routed")
+    tag_index = 0
+    with open(par_file) as ob:
+        for i, line in enumerate(ob):
+            if p_tag_router.search(line):
+                tag_index = i
+                break
+    par_data = dict()
+    if tag_index:
+        with open(par_file) as ob:
+            for i, line in enumerate(ob):
+                pattern_dict = par_dict if i > tag_index else router_dict
+                if i > tag_index - 10:
+                    for k, p in list(pattern_dict.items()):
+                        m = p.search(line)
+                        if m:
+                            par_data["{}_{}".format(tag_name, k)] = time2secs(m.group(1))
+    return par_data
+
+
+def get_real_key(data_file):
+    p_is_name = re.compile(r"step_(lse|syn)")
+    real_key = os.path.dirname(data_file)
+    real_key = os.path.basename(real_key)
+    if p_is_name.search(real_key):
+        real_key += "_"
+    else:
+        real_key = ""
+    return real_key
+

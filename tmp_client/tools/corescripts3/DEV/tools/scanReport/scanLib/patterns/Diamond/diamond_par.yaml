@@ -1,0 +1,31 @@
+DIAMOND_PAR_REPORT:
+  content_pattern: 'PAR: Place And Route Diamond'
+  group_1:
+    greedy: true
+    tail: 100
+    fields:
+      - { name: 'milestone_par',          pattern: 'PAR_SUMMARY::Run status = (\w+)',
+          alias: { Completed: 'PASS', default: 'FAIL' } }
+      - { name: 'par_timing_score_setup', pattern: 'PAR_SUMMARY::Timing score<setup.+= ([.\d]+)' }
+      - { name: 'par_timing_score_hold',  pattern: 'PAR_SUMMARY::Timing score<hold.+= ([.\d]+)' }
+  group_2:
+    greedy: false
+    fields:
+      - { name: 'par_signals',     pattern: 'Number of Signals: (\d+)' }
+      - { name: 'par_connections', pattern: 'Number of Connections: (\d+)' }
+      - { name: 'par_congestion_level',     pattern: 'Info: Initial congestion level.+usage is ([.\d]+)' }
+      - { names: [ 'par_congestion_area', 'par_congestion_area_per' ],
+          pattern: 'Info: Initial congestion area.+usage is ([.\d]+) \(([.\d]+)%\)' }
+      - { names: 'placer_cpu_time', pattern: 'Total placer CPU time: (\d+)' }
+  group_3:
+    greedy: false
+    hook: { before: 10, after: 0, pattern: 'End of route.' }
+    fields:
+      - { name: 'router_cpu_time', pattern: 'Total CPU time (.+)' }
+      - { name: 'router_real_time', pattern: 'Total  REAL time: (.+)' }
+  group_5:
+    fields:
+      - { name: 'par_cpu_time', pattern: 'Total CPU  time to completion: (.+)' }
+      - { name: 'par_real_time', pattern: 'Total REAL time to completion: (.+)' }
+
+# END OF FILE

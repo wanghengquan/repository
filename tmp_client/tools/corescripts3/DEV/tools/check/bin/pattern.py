@@ -39,7 +39,7 @@ def get_impl_lse(args):
             return 1
         if __run_scuba_only(args):
             return 0
-        if "+lse+" in args:
+        if "+lse" in args:
             return 1
 
 
@@ -49,7 +49,7 @@ def get_impl_synplify(args):
             return 1
         if __run_scuba_only(args):
             return 0
-        if "+synplify+" in args:
+        if "+synplify" in args:
             return 1
 
 

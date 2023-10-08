@@ -601,9 +601,21 @@ def run_command(cmd, log_file, time_file):
         time.sleep(3.14)
         if not sts:
             break
+        # workaround for run_pb.log when valid lines number are less than 10 lines
+        workaround_empty_run_pb_log = False
+        if "run_pb.tcl" in cmd:
+            workaround_empty_run_pb_log = True
+            valid_line_number = 0
+            for raw_line in text:
+                raw_line = raw_line.strip()
+                if raw_line:
+                    valid_line_number += 1
+                if valid_line_number > 10:
+                    workaround_empty_run_pb_log = False
+                    break
         # flow failed!
         have_license_error = simple_parser(log_file, p_license_error, 100)
-        if have_license_error:
+        if have_license_error or workaround_empty_run_pb_log:
             # backup log file and re-launch the command after 1 minute
             backup_log_file = log_file+str(try_times)
             if os.path.isfile(backup_log_file):
@@ -742,7 +754,18 @@ def head_announce():
     lines.append("* Welcome to Lattice Batch-queuing System Test Suite")
     lines.append("* Hostname: {1}({0})".format(getpass.getuser(), get_machine_name()))
     lines.append("* Platform: %s" % get_os_version())
-    lines.append("* Scripts Version: %s" % revision_record.REVISION[0])
+    version_1 = revision_record.REVISION[0]
+    version_2 = ""
+    sts, text = get_status_output("svn info {}".format(os.path.abspath(__file__)))
+    if not sts:
+        p_v = re.compile(r"Revision:\s+(\d+)")
+        for raw_line in text:
+            m_v = p_v.search(raw_line)
+            if m_v:
+                version_2 = m_v.group(1)
+                break
+    version = version_2 if version_2 else version_1
+    lines.append("* Scripts Version: %s" % version)
     for foo in lines:
         say_it(foo)
     return lines

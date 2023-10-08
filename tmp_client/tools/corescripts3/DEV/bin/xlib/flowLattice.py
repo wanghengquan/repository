@@ -17,6 +17,7 @@ from . import xiCEcube2
 from . import xDMSsta
 from . import qas
 from . import utils
+from . import xStepFlow
 
 __author__ = 'syan'
 
@@ -69,7 +70,26 @@ class FlowLattice(XOptions):
         if not sts:
             sts = self.copy_update_conf_file()
         xTools.say_it(dict(os.environ), "Original Environments:", self.debug)
+        if self.run_step:
+            final_sts = self.wrapper_step_flow(play_time)
+        else:
+            final_sts = self.wrapper_normal_flow(sts, play_time)
 
+        if self.scan_rpt or self.scan_pap_rpt:
+            self.scan_report()
+        self.run_final_closing_flow()
+        _recov.comeback()
+        return final_sts
+
+    def wrapper_step_flow(self, play_time):
+        self.run_check_flow(dump_only=1)
+        self.scan_report(dump_only=1)
+        s_flow = xStepFlow.StepFlow(self.run_step, self.step_times, self.par_threads)
+        my_sts = s_flow.process()
+        xTools.stop_announce(play_time)
+        return my_sts
+
+    def wrapper_normal_flow(self, sts, play_time):
         self.pre_process = self.scripts_options.get("pre_process")
         self.post_process = self.scripts_options.get("post_process")
 
@@ -133,10 +153,6 @@ class FlowLattice(XOptions):
                 else:
                     self.print_check_standard_output(cmd_ret)
                     final_sts = 201 if cmd_ret else 200
-        if self.scan_rpt or self.scan_pap_rpt:
-            self.scan_report()
-        self.run_final_closing_flow()
-        _recov.comeback()
         return final_sts
 
     def run_final_closing_flow(self):
@@ -251,6 +267,10 @@ class FlowLattice(XOptions):
             if raw_cc:
                 args += " --care-clock {}".format(" ".join(raw_cc))
             cmd_line = "{} {} {}".format(sys.executable, scan_py, args)
+        if self.run_step:
+            cmd_line += " --scan-step"
+        if self.run_step_synthesis:
+            cmd_line += " --scan-step-synthesis"
         #
         cmd_line = xTools.win2unix(cmd_line, 0)
         if dump_only:
@@ -572,7 +592,7 @@ class FlowLattice(XOptions):
         xTools.say_it(self.scripts_options, "Final Options", self.debug)
         if self.is_ng_flow:
             gen_ip_sts = None
-            if self.is_ng_flow and self.run_ipgen:
+            if self.is_ng_flow and self.run_ipgen and (not self.skip_ipgen):
                 _info = self.scripts_options.get("info")
                 rdf_file = self.scripts_options.get("rdf_file", "NotFound_rdf")
                 info_dir = os.path.dirname(_info) if os.path.isfile(_info) else os.getcwd()
@@ -580,7 +600,6 @@ class FlowLattice(XOptions):
                 gen_ip_sts = self.run_ipgen_for_radiant(abs_rdf_file)
             if gen_ip_sts:
                 return 1
-
 
     def generate_check_conf_file(self, real_info_file):
         """
@@ -645,8 +664,7 @@ class FlowLattice(XOptions):
 
     def run_simulation_flow(self):
         xTools.say_it("-- Will launch simulation flow ...")
-        if self.create_final_ldf_file():
-            pass  # do Not care the implementation flow status, will run simulation flow straightly
+        first_step_status = self.create_final_ldf_file()
         if self.dry_run:
             return
         if self.synthesis_only:
@@ -655,11 +673,15 @@ class FlowLattice(XOptions):
         sts = my_tcl_flow.process_tcl_flow_only()
         if sts:
             return sts
-        my_sim_flow = xSimulation.RunSimulationFlow(self.scripts_options, self.final_ldf_file, self.final_ldf_dict)
+        my_sim_flow = xSimulation.RunSimulationFlow(self.scripts_options, self.final_ldf_file, self.final_ldf_dict, first_step_status)
         sts = my_sim_flow.process()
         return sts
 
     def run_tcl_flow(self):
+        custom_tcl_file = self.scripts_options.get("tcl_file")
+        if custom_tcl_file:
+            sts = self.run_custom_tcl_file(custom_tcl_file)
+            return sts
         if self.create_final_ldf_file():
             return 1
         if self.dry_run:
@@ -669,6 +691,20 @@ class FlowLattice(XOptions):
         my_tcl_flow = xLattice.RunTclFlow(self.scripts_options, self.final_ldf_file, self.final_ldf_dict,
                                           self.special_frequency)
         sts = my_tcl_flow.process()
+        return sts
+
+    def run_custom_tcl_file(self, custom_tcl_file):
+        real_tcl_file = xTools.get_abs_path(custom_tcl_file, os.path.dirname(self.scripts_options.get("info")))
+        if not os.path.isfile(real_tcl_file):
+            xTools.say_it("Error. Not found tcl file {}".format(real_tcl_file))
+            return 1
+        src_root_path = os.path.dirname(real_tcl_file)
+        log_file = os.path.abspath("run_pb.log")
+        time_file = os.path.abspath("run_pb.time")
+        _loc = xTools.ChangeDir(src_root_path)
+        cmd_line = "pnmainc {}".format(real_tcl_file)
+        sts = xTools.run_command(cmd_line, log_file, time_file)
+        _loc.comeback()
         return sts
 
     def create_final_ldf_file(self):

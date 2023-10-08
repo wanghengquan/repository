@@ -1,0 +1,10 @@
+RADIANT_POWER_REPORT:
+  name_pattern: 'auto_power_result.pwr$'
+  group_1:
+    greedy: false
+    fields:
+      # Total Power Est. Design  : 0.182144 W, 1.742425 W, 1.924569 W
+      - { names: [ 'StaticPower', 'DynamicPower', 'TotalPower' ],
+          pattern: '^Total Power Est. Design  : ([\.\d]+) W, ([\.\d]+) W, ([\.\d]+) W' }
+
+# END OF FILE

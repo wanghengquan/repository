@@ -192,6 +192,8 @@ class DataReport(DeployOptions):
             sheet_data["default_conf_path"] = self.default_conf_path
             sheet_data["report_conf"] = self.report_conf
             sheet_data["output"] = self.output
+            sheet_data["use_all_data"] = self.use_all_data
+            sheet_data["best_fmax"] = self.best_fmax
             sd = sheet_data["src_data"] = xUtils.get_raw("SRC", sheet_data, processed_data, self.force, self.say_error)
             dd = sheet_data["dst_data"] = xUtils.get_raw("DST", sheet_data, processed_data, self.force, self.say_error)
             x_g = sheet_data.get("case_group_name")
@@ -242,7 +244,7 @@ class DataReport(DeployOptions):
         if self.row_number == 1:
             _mr = dict(start_row=self.row_number, end_row=self.row_number, start_column=1, end_column=2)
             cell_data["go_home"] = dict(merge_range=_mr, value="Go Home")
-            cell_data["go_home"]["hyperlink"] = "#'{}'!A1".format(self.this_summary_sheet_name)
+            cell_data["go_home"]["hyperlink"] = "#'Content'!A1"
             cell_data["go_home"]["font"] = self.ew.font_link_home
             # cell_data["blank_1"] = dict(cell_range=dict(row=self.row_number, column=1), value="")
             # cell_data["blank_2"] = dict(cell_range=dict(row=self.row_number, column=2), value="='{}'")

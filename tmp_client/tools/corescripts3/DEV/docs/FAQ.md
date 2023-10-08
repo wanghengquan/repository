@@ -29,3 +29,31 @@
 > Clock MUST BE PORT/PIN
 > Radiant/Vivado: Done.
 > Diamond: TODO.
+
+# step flow 
+
+```text
+  --run-step {map,placer,router,par} [{map,placer,router,par} ...]
+                        run single step flow
+  --par-threads {-1,0,1,2,4,8} [{-1,0,1,2,4,8} ...]
+                        specify step par threads
+  --run-step-synthesis  run step synthesis flow
+  --step-times STEP_TIMES
+                        times number for running a step
+```
+
+1. run 3 times for synthesis flow
+
+   `--run-step-synthesis --step-times 3`
+
+2. run 2 times for step flow of map, placer router or par
+
+   `--run-step map placer router par --step-times 2`
+
+3. run 3 times for step flow of par with dedicated threads
+
+   `--run-step par --par-threads 0 --step-times 3`
+
+4. run different threads
+
+   `--run-step par --par-threads -1 0 1 4`

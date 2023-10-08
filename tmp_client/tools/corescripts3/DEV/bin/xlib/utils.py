@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import time
-import string
 import getpass
 from . import xTools
 import glob
@@ -10,6 +9,7 @@ import shlex
 import shutil
 from collections import OrderedDict
 from .scanLib import utils as scan_utils
+from .scanLib import xml2dict
 
 __author__ = 'syan'
 
@@ -819,6 +819,9 @@ def generate_bit2sim_vo_file(impl_path, udb_file, foundry_path):
     else:
         build_name = os.path.basename(os.path.dirname(foundry_path))
     new_values = dict()
+    x = "ng2023_1p.43"
+    if x in build_name:
+        build_name = x
     _env = new_values["ENV"] = "/home/rel/{}/env/fpga".format(build_name)
     bin_lin = "{}/bin/lin64".format(_env)
     new_values["LD_LIBRARY_PATH"] = "{}:{}:{}".format(verific_lib, bin_lin, os.getenv("LD_LIBRARY_PATH"))
@@ -1003,3 +1006,107 @@ def compare_timing_data(old_data, new_data):
     old_string = __dict2string(old_data)
     new_string = __dict2string(new_data)
     return old_string == new_string
+
+
+def get_dev_pac_pdc_from_mrp_file(mrp_file):
+    """
+    get dev, pac and pdc file for sso flow
+    """
+    dpp_pattern = dict(dev=re.compile(r"Device:\s+(\S+)"),
+                       pac=re.compile(r"Package:\s+(\S+)"),
+                       pdc=re.compile(r"Command\s+line:.+\s+-pdc\s+(.+?)\s+-\w"))
+    dpp = dict.fromkeys(dpp_pattern.keys(), "")
+    raw_lines = list()
+    with open(mrp_file) as ob:
+        for line in ob:
+            line = line.strip()
+            line += " "
+            raw_lines.append(line)
+            if "Design Summary" in line:
+                break
+    raw_long_line = "".join(raw_lines)
+    for k, p in list(dpp_pattern.items()):
+        m = p.search(raw_long_line)
+        if m:
+            real_data = m.group(1)
+            if k == "pdc":
+                real_data = re.sub(r"\s", "", real_data)
+                real_data = "-c {}".format(xTools.win2unix(real_data, 0))
+            dpp[k] = real_data
+    return dpp
+
+
+def get_power_tcl_lines(power_settings, impl_name, project_name):
+    if not power_settings.get('run_power'):
+        return None
+    lines = list()
+    lines.append("pwc_new_project auto_power.pcf -udb {0}/{1}_{0}.udb".format(impl_name, project_name))
+    lines.append('pwc_set_processtype "{pwr_type}"'.format(**power_settings))
+    lines.append('pwc_set_ambienttemp {pwr_at}'.format(**power_settings))
+    lines.append('pwc_set_thetaja {pwr_etga}'.format(**power_settings))
+    # lines.append('pwc_set_af {pwr_af} -keepClkAF 1'.format(**power_settings))
+    lines.append('pwc_set_af {pwr_af} '.format(**power_settings))
+    x_twr_mode = power_settings.get("pwr_fre_twr")
+    power_settings["twr_opt"] = ' -usefreqtwr 1 -freqtwropt {}'.format(x_twr_mode) if x_twr_mode else ""
+    lines.append('pwc_set_freq -freq {pwr_fre}{twr_opt}'.format(**power_settings))
+    lines.append('pwc_calculate')
+    lines.append('pwc_gen_report auto_power_result.pwr')
+    lines.append('pwc_gen_htmlreport auto_power_result.html')
+    lines.append('pwc_save_project auto_power.pcf')
+    return lines
+
+
+def run_encryption(lattice_project_file, encryption_key_file, encryption_factor):
+    p_is_model_file = re.compile(r"models\W")
+    if not os.path.isfile(lattice_project_file):
+        print("Error. Not found {}".format(lattice_project_file))
+        return
+    if not os.path.isfile(encryption_key_file):
+        print("Error. Not found {}".format(encryption_key_file))
+        return
+    if encryption_factor is None:
+        return
+    hdl_files = dict()
+    with open(lattice_project_file) as ob:
+        project_data = xml2dict.parse(ob)
+        for k, v in list(project_data.items()):  # RadiantProject or BaliProject
+            _impl = v.get("Implementation")
+            next_impl = [_impl] if isinstance(_impl, dict) else _impl  # to a list
+            for a_impl in next_impl:
+                _source = a_impl.get("Source")
+                next_source = [_source] if isinstance(_source, dict) else _source
+                for foo in next_source:
+                    _type_short, hdl_file = foo.get("@type_short"), foo.get("@name")
+                    _is_sim_file = foo.get("@syn_sim")
+                    if _is_sim_file == "SimOnly":
+                        continue
+                    if not _type_short:
+                        continue
+                    _type_short = _type_short.lower()
+                    if p_is_model_file.search(hdl_file):
+                        continue
+                    hdl_files.setdefault(_type_short, list())
+                    hdl_files[_type_short].append(xTools.get_abs_path(hdl_file, os.path.dirname(lattice_project_file)))
+    for hdl_type in ("verilog", "vhdl"):
+        hello_files = hdl_files.get(hdl_type)
+        if not hello_files:
+            continue
+        hello_files.sort()
+        min_number, max_number = 6, 20
+        if len(hello_files) < min_number:
+            deal_files = hello_files[:]
+        else:
+            deal_files = hello_files[::encryption_factor]
+            if len(deal_files) < min_number:  # -2, -1, 0, 1, 2
+                deal_files = list()
+                for i in range(-2, 3):
+                    deal_files.append(hello_files[i])
+        for i, a_file in enumerate(deal_files):
+            if i > max_number:
+                break
+            ori_file = a_file + ".bak"
+            if not os.path.isfile(ori_file):
+                shutil.copy2(a_file, ori_file)
+            # add "" for the file like "05_ELSA_48E/source/(ELSA_48E)_ELSA_48E_TOP_mod_sap.v"
+            enc_cmd = 'encrypt_hdl -k "{}" -l {} -o "{}" "{}"'.format(encryption_key_file, hdl_type, a_file, ori_file)
+            xTools.run_command(enc_cmd, "run_encrypt_hdl_flow.log", "run_encrypt_hdl_flow.time")

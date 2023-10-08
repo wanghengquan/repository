@@ -9,6 +9,7 @@ Description:
 
 """
 import os
+import re
 import json
 from collections import OrderedDict
 from capuchin import xTools
@@ -32,7 +33,10 @@ class DataDump(DeployOptions):
         self.get_plan_run_id_name_dict()
         self.query_data()
         if self.output_excel:
-            self.export2xlsx()
+            if self.sha:
+                self.sha_export2xlsx()
+            else:
+                self.export2xlsx()
         else:
             self.export2csv()
 
@@ -72,8 +76,9 @@ class DataDump(DeployOptions):
         """
         query data by run_id, if not found lrf.run_x, will try to execute another sql command
         """
+        sql_one = xUtils.SELECT_WITH_DETAIL_ALL if self.use_all_data else xUtils.SELECT_WITH_DETAIL
         for run_id, v in list(self.plan_run_dict.items()):
-            sql_commands = (xUtils.SELECT_WITH_DETAIL.format(sort_key=self.sort_key, run_id=run_id),
+            sql_commands = (sql_one.format(sort_key=self.sort_key, run_id=run_id),
                             xUtils.SELECT_WITHOUT_DETAIL.format(run_id=run_id))
             for _cmd in sql_commands:
                 try:
@@ -174,6 +179,92 @@ class DataDump(DeployOptions):
         output_excel_file = os.path.splitext(self.output_excel)[0]
         output_excel_file = xTools.get_real_path(output_excel_file, self.output)
         self.local_excel.save_to_excel(output_excel_file + ".xlsx")
+
+    def sha_export2xlsx(self):
+        self.local_excel = BasicExcel()
+        self.font_bold = self.local_excel.font_bold
+        self.font_link = self.local_excel.font_link
+        self.alignment_center = self.local_excel.alignment_center
+        sheet_row_dict = OrderedDict()
+        for n_d in self._yield_name_and_data(for_csv=False):
+            sheet_name, titles, values = n_d.get("name"), n_d.get("titles"), n_d.get("values")
+            new_titles, new_values = self.get_new_titles_values(titles, values)
+            now_ws_list = sheet_row_dict.get(sheet_name)
+            if not now_ws_list:
+                now_ws = self.local_excel.wb.create_sheet(sheet_name)
+                row_data = list()
+                for i, t in enumerate(new_titles):
+                    row_data.append(dict(value=t, cell_range=dict(row=1, column=i + 1),
+                                         font=self.font_bold, alignment=self.alignment_center))
+                    if t.startswith("status_"):
+                        new_width = 18
+                    elif t.startswith("step_"):
+                        new_width = 25
+                    elif t.startswith("xTestID"):
+                        new_width = None
+                    else:
+                        new_width = 20
+                    if new_width:
+                        self.local_excel.set_column_width(now_ws, i + 1, new_width)
+                self.local_excel.write_row_cells(now_ws, row_data)
+                now_ws.freeze_panes = "F2"
+                sheet_row_dict[sheet_name] = [now_ws, n_d.get("content_data"), n_d.get("section_name")]
+            else:
+                now_ws = now_ws_list[0]
+            now_ws.append(new_values)
+        self._write_content_sheet(sheet_row_dict)
+        output_excel_file = os.path.splitext(self.output_excel)[0]
+        output_excel_file = xTools.get_real_path(output_excel_file, self.output)
+        self.local_excel.save_to_excel(output_excel_file + ".xlsx")
+
+    def get_new_titles_values(self, titles, values):
+        raw_dict = dict(zip(titles, values))
+        # step_synthesis_1_synplify_vm_sha1, step_synthesis_1_lse_vm_sha1
+        p_step_synthesis = re.compile(r"step_synthesis_(\d+)_(\w+?)_.+sha1")
+        # step_placer_1_udb2sv_sha1
+        p_step = re.compile(r"step_(\w+?)_.+sha1")
+        step_data_dict = dict()
+        for k, v in list(raw_dict.items()):
+            m_step = p_step.search(k)
+            m_step_synthesis = p_step_synthesis.search(k)
+            if m_step_synthesis:
+                sk = m_step_synthesis.group(2)
+                raw_dict["step_{}_{}_vm_sha1".format(sk, m_step_synthesis.group(1))] = v
+            elif m_step:
+                sk = m_step.group(1)
+            else:
+                continue
+            step_data_dict.setdefault(sk, list())
+            step_data_dict[sk].append(v)
+        for kk, vv in list(step_data_dict.items()):
+            simple_vv = list(set(vv))
+            if len(simple_vv) > 1:
+                new_status = "Diff(with None)" if None in simple_vv else "Diff"
+            else:
+                if not simple_vv[0]:
+                    new_status = " - "
+                else:
+                    new_status = " = "
+            raw_dict["status_{}".format(kk)] = new_status   # update self
+        # flow_list in order
+        flow_list = ("lse", "synplify", "map", "placer", "router", "par")
+        this_titles = ["xTestID", "xSectionName", "Design", "hostname", "os_name"]
+        for foo in flow_list:
+            my_key = "status_{}".format(foo)
+            if my_key in raw_dict:
+                this_titles.append(my_key)
+        for flow_name in flow_list:
+            temp_flow_titles = list()
+            for k, v in list(raw_dict.items()):
+                if k.startswith("step_{}".format(flow_name)):
+                    if self.simple:
+                        if k.endswith("_time") or k.endswith("_memory"):
+                            continue
+                    temp_flow_titles.append(k)
+            temp_flow_titles.sort()
+            this_titles.extend(temp_flow_titles)
+        this_values = [raw_dict.get(key) for key in this_titles]
+        return this_titles, this_values
 
     def _write_content_sheet(self, sheet_row_dict):
         if len(sheet_row_dict) == 1:

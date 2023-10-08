@@ -14,6 +14,6 @@ RADIANT_SYNPLIFY_VM_FILE:
     use_func: true
     fields:
       - { name: 'synplify_vm_size', func: 'get_file_size' }
-      - { name: 'synplify_vm_sha1', func: 'get_text_file_sha1' }
+      - { uncertain_name: 'do-not-care', func: 'get_synplify_vm_sha1' }
 
 # END OF FILE

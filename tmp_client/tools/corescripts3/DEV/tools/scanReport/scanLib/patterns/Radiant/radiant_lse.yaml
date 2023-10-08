@@ -20,6 +20,6 @@ RADIANT_LSE_VM_FILE:
     use_func: true
     fields:
       - { name: 'lse_vm_size', func: 'get_file_size' }
-      - { name: 'lse_vm_sha1', func: 'get_text_file_sha1' }
+      - { uncertain_name: 'do-not-care', func: 'get_lse_vm_sha1' }
 
 # END OF FILE

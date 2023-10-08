@@ -24,6 +24,10 @@ active_output = nselect
 active_input_1 = sel_2 : bidi_1, bidi_3[4:0]
 active_output_1 = sel_1 : bidi_2
 active_output_2 = sel_3 : bidi_3[9:5]
+active_input_19 = ddr_dqs_oe[0]:ddr_dqs_io[0]+
+active_input_20 = ddr_dqs_oe[1]:ddr_dqs_io[1]+
+active_input_21 = ddr_dqs_oe[0]:ddr_dqs_io[0]-
+active_input_22 = ddr_dqs_oe[1]:ddr_dqs_io[1]-
 
 ; one port CANNOT be in both active_input and active_output at the same time
 ; sel_1 = 1, bidi_2 ports are output

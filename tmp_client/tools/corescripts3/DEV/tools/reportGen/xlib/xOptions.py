@@ -39,6 +39,8 @@ class XOptions(object):
         x.add_argument("-a", "--apart-by-section", action="store_true", help=_h)
         x.add_argument("--sort-key", choices=("id", "fmax"), help="specify sort key for case data, default is id")
         x.add_argument("-CDI", "--custom-dump-ini", help="specify custom dump.ini file")
+        x.add_argument("--sha", action="store_true", help="generate SHA1-Comparison sheets")
+        x.add_argument("--simple", action="store_true", help="do not dump runtime/memory data for checking SHA1 code")
         x.set_defaults(op_dump=True, op_report=False, export_type="csv", sort_key='id')
 
     def _set_report_parser(self):
@@ -82,6 +84,8 @@ class XOptions(object):
         branch_parser.add_argument("-d", "--debug", action="store_true", help="print debug message")
         branch_parser.add_argument("-o", "--output", default=os.getcwd(), help="specify output directory")
         branch_parser.add_argument("-e", "--output-excel", help="specify output Excel file name")
+        branch_parser.add_argument("--use-all-data", action="store_true", help="try to use all available result data")
+        branch_parser.add_argument("--best-fmax", action="store_true", help="select the best fmax value for a design")
 
 
 class DeployOptions(xLogger.Voice):
@@ -97,6 +101,8 @@ class DeployOptions(xLogger.Voice):
         self.default_conf_path = self.opts.default_conf_path
         if self._get_default_conf_options():
             return 1
+        self.use_all_data = self.opts.use_all_data
+        self.best_fmax = self.opts.best_fmax
         if self.opts.op_dump:
             self.plan_run_id = self.opts.plan_run_id
             self.section = self.opts.section
@@ -106,6 +112,11 @@ class DeployOptions(xLogger.Voice):
             self.custom_dump_ini = self.opts.custom_dump_ini
             self.sort_key = self.opts.sort_key
             self.report_conf_file_list = None  # for report only
+            self.sha = self.opts.sha
+            self.simple = self.opts.simple
+            if self.sha:
+                if not self.output_excel:
+                    self.output_excel = "Raw_SHA1_sheets"
             if self.__reset_fields():
                 return 1
         if self.opts.op_report:

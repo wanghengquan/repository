@@ -54,7 +54,11 @@ class DevkitParser:
             family_name = item.get("name")
             family_text = item.get("text")
             t_family = dict(family=family_name, text=family_text)
-            for part_table in item.getchildren():
+            try:
+                real_data = item.getchildren()  # python 3.8
+            except AttributeError:
+                real_data = item  # python 3.10
+            for part_table in real_data:
                 part_name = part_table.get("name")
                 part_dict = dict()
                 part_dict.update(t_family)

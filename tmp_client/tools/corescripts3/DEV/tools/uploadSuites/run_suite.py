@@ -148,6 +148,8 @@ class FlowSuite(FlowOptions):
 
     def extract_excel_to_csv_files(self):
         self.say_info("Try to extract suite Excel file {} to csv files ...".format(os.path.basename(self.suite_file)))
+        if self.clean:
+            xTools.wrap_rm_rf(self.csv_folder, "Temporary Suite Data Path")
         if self.clean or not os.path.isdir(self.csv_folder):
             extractor = xExcel.Excel2csv(max_row_size=100000, max_column_size=100)
             extractor.process(self.suite_file)
@@ -380,6 +382,16 @@ class FlowSuite(FlowOptions):
         description_list = [self.p_quota.sub('"', item) for item in description_list]
         return '\n'.join(description_list)
 
+    @staticmethod
+    def string2set(raw_string):
+        raw_list = re.split("[,;]", raw_string)
+        new_set = set()
+        for foo in raw_list:
+            foo = foo.strip()
+            if foo:
+                new_set.add(foo)
+        return new_set
+
     def _build_input_section_and_case_data(self, raw_suite_data):
         copy_of_cases = copy.deepcopy(self.very_first_case_data)
         all_cases = list()
@@ -393,8 +405,9 @@ class FlowSuite(FlowOptions):
                 for condition_dict in condition_list:
                     for field_name, raw_compare_value in list(condition_dict.items()):
                         value_golden = re.sub(r"^=\s*", "", raw_compare_value)
-                        values_in_case = re.split(r";\s*", perhaps_case_data.get(field_name, ""))
-                        if value_golden not in values_in_case:
+                        set_golden = self.string2set(value_golden)
+                        set_case = self.string2set(perhaps_case_data.get(field_name, ""))
+                        if not (set_golden & set_case):
                             tag_matched = False
                             break
                     if not tag_matched:
@@ -497,7 +510,7 @@ class FlowSuite(FlowOptions):
             for k, v in list(old_lc_odict.items()):
                 old_value = old_lc_odict.get(k)
                 new_value = new_lc_odict.get(k, "")
-                if k == "cmd":
+                if k.startswith("cmd"):
                     if old_value:  # operation is appending for cmd
                         new_value = "{} {}".format(new_value, old_value)
                         new_value = new_value.strip()

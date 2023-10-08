@@ -158,6 +158,24 @@ class BetaOptions(AlphaOptions):
         self.path_gcc = self.opts.path_gcc
         self.run_simulation = self.opts.run_simulation
 
+    def add_vivado_power_options(self, group_name):
+        pwr_group = self.parser.add_argument_group(group_name)
+        _h = "specify Power Calculator Process Type, default is Typical"
+        pwr_group.add_argument("--pwr-type", choices=("typical", "maximum"), help=_h)
+        pwr_group.add_argument("--pwr-at", type=float, help="specify Power Ambient Temperature, default is 25")
+        pwr_group.add_argument("--pwr-etga", type=float, help="specify Power Effective Theta-JA, default is 4.25")
+        pwr_group.add_argument("--pwr-af", type=float,
+                               help="specify Power Activity Factor (Keep Clock AF Settings), default is 12.5")
+        pwr_group.add_argument("--run-power", action="store_true", help="run Power Calculator flow")
+        pwr_group.set_defaults(pwr_type="typical", pwr_at=25, pwr_etga=4.25, pwr_af=12.5)
+
+    def pick_vivado_power_options(self):
+        self.pwr_type = self.opts.pwr_type
+        self.pwr_at = self.opts.pwr_at
+        self.pwr_etga = self.opts.pwr_etga
+        self.pwr_af = self.opts.pwr_af
+        self.run_power = self.opts.run_power
+
     def pick_vivado_infer_options(self):
         if self.scan_report_only:
             self.run_synthesis = False
@@ -196,7 +214,8 @@ class FlowOptions(EpsilonOptions):
         super(FlowOptions, self).__init__()
         self.vendor = vendor
         self.arg_groups = ("general", f"{vendor}_general", f"{vendor}_synthesis",
-                           f"{vendor}_implementation", f"{vendor}_simulation", f"{vendor}_infer")
+                           f"{vendor}_implementation", f"{vendor}_simulation", 
+                           f"{vendor}_power", f"{vendor}_infer")
 
     def parse_command_options(self, args=None):
         if self._eval_add_pick_functions("self.add_{0}('{1}')", self.arg_groups[:-1]):
