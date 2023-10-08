@@ -1,0 +1,13 @@
+VIVADO_POWER_REPORT:
+  name_pattern: 'power_routed.rpt$'
+  group_1:
+    head: 100
+    fields:
+      # | Total On-Chip Power (W)  | 2.768        |
+      # | Dynamic (W)              | 2.568        |
+      # | Device Static (W)        | 0.200
+      - { name: 'DynamicPower', pattern: '\| Dynamic.+?\| ([\d.]+)' }
+      - { name: 'StaticPower', pattern: '\| Device Static.+?\| ([\d.]+)' }
+      - { name: 'TotalPower', pattern: '\| Total On-Chip Power.+?\| ([\d.]+)' }
+
+# END OF FILE

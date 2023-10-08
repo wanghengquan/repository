@@ -103,11 +103,12 @@ def get_new_real_path(do_file, line):
 
 
 class RunSimulationFlow:
-    def __init__(self, flow_options, final_ldf_file, final_ldf_dict):
+    def __init__(self, flow_options, final_ldf_file, final_ldf_dict, first_status):
         self.flow_options = flow_options
         self.is_ng_flow = flow_options.get("is_ng_flow")
         self.final_ldf_dict = final_ldf_dict
         self.final_ldf_file = final_ldf_file
+        self.first_status = first_status
         self.conf = flow_options.get("conf")
         self.run_scuba = flow_options.get("run_scuba")
         self.sim_with_sdf = flow_options.get("sim_with_sdf")
@@ -172,7 +173,7 @@ class RunSimulationFlow:
             if user_options.get("run_export_vhd") or user_options.get("run_export_vlg"):
                 user_options["run_par_trace"] = 1
         task_list = xLattice.get_task_list(self.flow_options, user_options, donot_infer_options=dnio)
-        if task_list:
+        if task_list and (not self.first_status):
             sts = xLattice.run_ldf_file("run_pb.tcl", self.final_ldf_file, task_list, list(), self.is_ng_flow)
             if sts:
                 xTools.say_it("-Warning. errors found in normal implementation flow")
@@ -278,14 +279,14 @@ class RunSimulationFlow:
     def get_user_options(self):
         user_options = dict()
         for (sim_type, flow_opt) in (
-                (self.sim_syn_vlg, "run_syn_backanno"),
+                (self.sim_syn_vlg, "run_syn_backanno" if self.is_ng_flow else ""),
                 (self.sim_map_vhd, "run_map_vhd"),
                 (self.sim_map_vlg, "run_map_vlg"),
                 (self.sim_par_vhd, "run_export_vhd"),
                 (self.sim_par_vlg, "run_export_vlg"),
                 (self.sim_bit_vlg, "run_export_vlg"),
         ):
-            if sim_type:
+            if sim_type and flow_opt:   # Diamond do not have syn_backanno process
                 user_options[flow_opt] = 1
         return user_options
 
@@ -816,7 +817,7 @@ class RunSimulationFlow:
         raw_line_list = raw_line.split()
         new_line_list = list()
         for foo in raw_line_list:
-            if os.path.exists(foo):
+            if os.path.isfile(foo):
                 modified, real_hdl_file = get_real_hdl_file(foo, self.run_scuba)
                 cur_fext = xTools.get_fext_lower(real_hdl_file)
                 if modified:
@@ -893,14 +894,17 @@ class RunSimulationFlow:
         else:
             self.is_thunder_plus = False
         is_ap6a00 = self.do_args.get("dev_name", "") == "ap6a00"
-        if is_ap6a00:
+        is_ap6a00b = self.do_args.get("dev_name", "") == "ap6a00b"
+        if is_ap6a00 or is_ap6a00b:
             if re.search("conf.sim.vcs_do.template", self.do_vcs):
-                self.do_vcs = os.path.join(os.path.dirname(self.do_vcs), "vcs_do_ap6a00.template")
+                new_tmpl = "vcs_do_ap6a00.template" if is_ap6a00 else "vcs_do_ap6a00b.template"
+                self.do_vcs = os.path.join(os.path.dirname(self.do_vcs), new_tmpl)
         self.do_args["source_files"] = self.get_vcs_lines(source_files, is_source_file=True)
         self.do_args["tb_files"] = self.get_vcs_lines(self.final_tb_files)
         x = "do_{}".format(sim_path)
         y = "run_{}".format(sim_path)
         sh_file = "{}.sh".format(x)
+        vcs_version_string = os.getenv("EXTERNAL_VCS_PATH")
         with open(sh_file, "w", newline="\n") as wob:
             with open(self.do_vcs) as rob:
                 for line in rob:
@@ -911,7 +915,10 @@ class RunSimulationFlow:
                         new_line = re.sub(r"-sverilog", "-v2005 ", new_line)
                     else:
                         new_line = line
-                    print(new_line % self.do_args, file=wob)
+                    new_line = new_line % self.do_args
+                    if vcs_version_string:
+                        new_line = re.sub("-v_T-2022.06", "-v_{}".format(vcs_version_string), new_line)
+                    print(new_line, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
 
     def run_simulation_flow_with_xrun(self, sim_path, source_files, user_options):
@@ -1146,7 +1153,24 @@ class RunSimulationFlow:
             if rerun_sim_cmd:
                 xTools.append_file(time_file, ["REM For debugging only", "REM %s" % rerun_sim_cmd], append=True)
             more_cmd = "TRIAL_AND_ERROR_" if os.getenv("trial_and_error") else ""
-            return xTools.run_command(more_cmd + sim_cmd, log_file, time_file)
+            for ii in range(3):  # workaround for UnicodeDecodeError
+                sim_status = xTools.run_command(more_cmd + sim_cmd, log_file, time_file)
+                time.sleep(3 + ii * 3)
+                got_decode_error = False
+                with open(log_file) as ob:
+                    for log_line in ob:
+                        if "UnicodeDecodeError" in log_line:
+                            got_decode_error = True
+                            break
+                if not got_decode_error:
+                    return sim_status
+                else:
+                    try:
+                        shutil.copy2(log_file, "{}.{}".format(log_file, ii))
+                    except:  # do not care
+                        pass
+                    with open(log_file, "w") as wob:   # empty it
+                        pass
 
         yose_timeout = os.getenv("YOSE_TIMEOUT")
         if yose_timeout:

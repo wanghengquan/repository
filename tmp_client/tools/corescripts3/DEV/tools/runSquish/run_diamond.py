@@ -27,7 +27,7 @@ RUN_SQUISH = '''#!/bin/sh
 %(run_server)s
 %(sleep)s
 %(squishserver)s --config addAUT %(name_of_aut)s "%(path_to_aut)s"
-%(squishrunner)s --config setAUTTimeout 60
+%(squishrunner)s --config setAUTTimeout 300
 %(squishrunner)s --config setResponseTimeout 60
 %(squishrunner)s --testcase %(testcase)s --lang %(language)s --wrapper %(wrapper)s --objectmap %(objectmap)s --cwd %(cwd)s --reportgen stdout,console.log --aut %(name_of_aut)s
 %(squishserver)s --stop

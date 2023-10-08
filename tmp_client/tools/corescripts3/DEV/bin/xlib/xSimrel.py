@@ -56,7 +56,7 @@ probe -create -database waves fc_tb.xfc            -depth 1   -waveform
 #probe -create -database waves fc_tb.xfc.xgpiot2    -depth all -waveform
 
 run
-exit 
+exit
 """
 
 TCL_NCV_JEDI_D1 = """#NC Verilog command file
@@ -74,7 +74,7 @@ probe -create -database waves fc_tb.xfc            -depth 1   -waveform
 force fc_tb.xfc.gbuf_core.es_o_1 = 1'b0;
 
 run
-exit 
+exit
 """
 
 TCL_NCV_APOLLO = """alias . run
@@ -132,6 +132,10 @@ CHANGE_AVC_DICT = {"5": "01", "0.5": "11", "1000": "00"}
 AVC_CHANGE_FREQ_AVC_JEDI_D1 = """format avc_freq2 avc_freq1 avc_freq0;
 r1 name %s"""
 CHANGE_AVC_DICT_JEDI_D1 = {"5": "001", "0.5": "011", "1000": "100"}
+
+AVC_CHANGE_FREQ_AVC_AVANT_02A = """format avc_freq2 avc_freq1 avc_freq0;
+r1 ts1 %s"""
+CHANGE_AVC_DICT_AVANT_02A = {"2.5": "000", "0.25": "001", "500": "010"}
 
 
 def hex2bin_character(hex_char):
@@ -200,29 +204,72 @@ def get_lst_dict(lst_file):
             yield dict(list(zip(keys, line_list)))
 
 
-def _get_pad_dict(pad_file, p_start, p_split, title):
-    titles = list()
-    pad_dict = dict()
-    with open(pad_file) as pad_ob:
-        for line in pad_ob:
-            line = line.strip()
-            line_list = p_split.split(line)
-            if not titles:
-                if p_start.search(line):
-                    titles = line_list
-                continue
+def get_text_table_data(report_file, table_name, first_field):
+    """
+    +------------------+----------+--------------+--------------+-----------------------------+
+    | Port Name        | Pin/Bank | Buffer Type  | Site         | Properties                  |
+    +------------------+----------+--------------+--------------+-----------------------------+
+    | cmpfail_o        | U28/11   | LVCMOS18_OUT | HPIO11_2B    | DRIVE:50RSmA SLEWRATE:S... |
+    | dummy            | U22/11   | LVCMOS18_OUT | HPIO11_22B   | DRIVE:50RSmA SLEWRATE:S... |
+    | patgen_done_o    | U25/11   | LVCMOS18_OUT | HPIO11_14A   | DRIVE:50RSmA SLEWRATE:S... |
+
+    """
+    table_dict_list = list()
+    table_lines = None
+    with open(report_file) as ob:
+        for line in ob:
+            if table_lines is None:
+                if table_name in line:
+                    table_lines = list()
             else:
+                line = line.strip()
                 if not line:
                     break
-                t_dict = dict(list(zip(titles, line_list)))
-                item = t_dict.get(title)
-                if item:
-                    if "used," in item:  # used, PULL:DOWN; unused, PULL:DOWN
-                        continue
-                    elif "Reserved" in item:  # Reserved: sysCONFIG; Prohibited/Reserved
-                        continue
-                    else:
-                        pad_dict[item] = t_dict
+                table_lines.append(line)
+    fields = list()
+    for line in table_lines:
+        line_list = re.split(r"\|", line)
+        line_list = [item.strip() for item in line_list]
+        if len(line_list) > 3:
+            if not fields:
+                if line_list[1] == first_field:
+                    fields = line_list
+            else:
+                line_dict = dict(zip(fields, line_list))
+                table_dict_list.append(line_dict)
+    return table_dict_list
+
+
+def _get_pad_dict(pad_file):
+    table_port_name = get_text_table_data(pad_file, "Pinout by Port Name", "Port Name")
+    table_pin_name = get_text_table_data(pad_file, "Pinout by Pin Number", "Pin/Bank")
+    b_t = "Buffer Type"
+    pinout_by_port_name_dict = dict()  # key: port name, value: buffer type
+    for foo in table_port_name:
+        _port_name = foo.get("Port Name")
+        _buffer_a = foo.get(b_t)
+        if not _port_name:
+            continue
+        pinout_by_port_name_dict[_port_name] = _buffer_a
+    pad_dict = dict()
+    for bar in table_pin_name:
+        key = bar.get("Pin Info")
+        if not key:
+            continue
+        if "used," in key:
+            continue
+        if "Reserved" in key:
+            continue
+        _buffer_b = bar.get(b_t)
+        if not _buffer_b:
+            _buffer_b = pinout_by_port_name_dict.get(key, "")
+            bar[b_t] = _buffer_b
+        pad_dict[key] = bar
+        if _buffer_b in ("HSI", "HSO"):
+            new_key = re.sub("_pad$", "", key)
+            new_bar = dict(**bar)
+            new_bar["Pin Info"] = new_key
+            pad_dict[new_key] = new_bar
     return pad_dict
 
 
@@ -232,21 +279,17 @@ def get_pad_dict(pad_file):
                         'Site': 'PL14A', 'Pin/Bank': 'D4/7', 'Port Name': 'Q[10]',
                         'Properties': 'DRIVE:8mA CLAMP:ON SLEW:SLOW'}
     """
-    p_start = re.compile("^\|\s+Pin/Bank")
-    p_split = re.compile("\s*\|\s*")
-    return _get_pad_dict(pad_file, p_start, p_split, "Pin Info")
+    return _get_pad_dict(pad_file)
 
 
 def get_diff_pad_dict(pad_file, pad_dict):
-    p_start = re.compile("^\|\s+Pin/Bank")
-    p_split = re.compile("\s*\|\s*")
-    _diff_pad_dict = _get_pad_dict(pad_file, p_start, p_split, "Pin Info")
+    _diff_pad_dict = _get_pad_dict(pad_file)
     t = dict()
     for pin_bank, pb_dict in list(_diff_pad_dict.items()):
         pin_info = pb_dict.get("Pin Info")
         buffer_type = pb_dict.get("Buffer Type")
         site = pb_dict.get("Site")
-        if buffer_type != "LVDS25_IN":
+        if buffer_type not in ("LVDS25_IN", "HSI"):
             continue
         for a, b in list(pad_dict.items()):
             if b.get("Buffer Type") == buffer_type:
@@ -312,10 +355,12 @@ def get_in_out_bidi_vref(sorted_ports, pad_dict, simrel_options):
     for port_name in sorted_ports:
         pad_content = pad_dict.get(port_name)
         buffer_type = pad_content.get("Buffer Type")
-        if re.search("_IN$", buffer_type):
-            ports_in.append(port_name)
-        elif re.search("_OUT$", buffer_type):
-            ports_out.append(port_name)
+        if re.search("(_IN|HSI)$", buffer_type):
+            x = re.sub("_pad$", "", port_name) if buffer_type == "HSI" else port_name
+            ports_in.append(x)
+        elif re.search("(_OUT|HSO)$", buffer_type):
+            y = re.sub("_pad$", "", port_name) if buffer_type == "HSO" else port_name
+            ports_out.append(y)
         elif re.search("_BIDI$", buffer_type):
             if bidi_in:
                 if "__all__" in bidi_in:
@@ -748,7 +793,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     if not os.path.isfile(original_fc_ctl):
         shutil.copy2("fc.ctl", original_fc_ctl)
 
-    ''' 
+    '''
     if "sentry" in simrel_dir or "snow" in simrel_dir:
         src_files = ("fc.avc", "fc.rbt", "fc.ctl", "avc_change_freq.avc", "tcl_ncv")
     else:
@@ -1084,9 +1129,12 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
     if p_avant.search(device_in_rdf):
         update_avc_for_apollo(avc_file)
         update_svwf_for_apollo(svwf_file)
-    _is_jedi_d1 = "jedi_d1_80k" in simrel_family
-    _avc_dict = CHANGE_AVC_DICT_JEDI_D1 if _is_jedi_d1 else CHANGE_AVC_DICT
-    _avc_template = AVC_CHANGE_FREQ_AVC_JEDI_D1 if _is_jedi_d1 else AVC_CHANGE_FREQ_AVC
+    if "jedi_d1_80k" in simrel_family:
+        _avc_dict, _avc_template = CHANGE_AVC_DICT_JEDI_D1, AVC_CHANGE_FREQ_AVC_JEDI_D1
+    elif "apollo_400_02A" in simrel_family:
+        _avc_dict, _avc_template = CHANGE_AVC_DICT_AVANT_02A, AVC_CHANGE_FREQ_AVC_AVANT_02A
+    else:
+        _avc_dict, _avc_template = CHANGE_AVC_DICT, AVC_CHANGE_FREQ_AVC
     code = _avc_dict.get(lst_precision)
     if code:
         change_string = "{};  # change delay to {}ns"

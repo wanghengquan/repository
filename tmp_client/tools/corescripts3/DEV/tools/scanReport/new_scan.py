@@ -9,6 +9,7 @@ Description:
 
 """
 import os
+import re
 import csv
 import json
 import argparse
@@ -55,7 +56,13 @@ class ScanResultData(object):
         parser.add_argument("-f", "--file", nargs="+", help="shortcut for scanning a report file(s)")
         parser.add_argument("--ignore-clock", nargs="+", help="specify ignored custom clock(s) when scanning timing data")
         parser.add_argument("--care-clock", nargs="+", help="specify cared custom clock(s) when scanning timing data")
-        parser.set_defaults(vendor=self._default_vendor, tag=self._default_tag, output=self._default_output)
+        parser.add_argument("--scan-step", action="store_true", help="scan step data only")
+        parser.add_argument("--scan-step-synthesis", action="store_true", help="scan synthesis step data only")
+        parser.add_argument("--fmax-opt", choices=("ht", "lt", "max", "min"), help="select setup fmax option name")
+        parser.add_argument("--more", nargs="+", help="specify more fields")
+
+        parser.set_defaults(vendor=self._default_vendor, tag=self._default_tag, output=self._default_output,
+                            fmax_opt="min")
         opts = parser.parse_args(args)
         self.debug = opts.debug
         self.verbose = opts.verbose
@@ -68,11 +75,15 @@ class ScanResultData(object):
         self.file_list = opts.file
         self.ignore_clock = opts.ignore_clock
         self.care_clock = opts.care_clock
+        self.scan_step = opts.scan_step
+        self.scan_step_synthesis = opts.scan_step_synthesis
+        self.fmax_opt = opts.fmax_opt
+        self.more = opts.more
         return self._options_sanity_check()
 
     def _options_sanity_check(self):
         self.source_data_files = dict()
-        if self.file_list:
+        if self.file_list:   # scan some files ONLY
             inner_check_list = list()
             for a_file in self.file_list:
                 if not os.path.isfile(a_file):
@@ -124,7 +135,7 @@ class ScanResultData(object):
         if not os.path.isdir(abs_tag):
             print("Error. Not found tag path: {}".format(abs_tag))
             return
-        files_finder = utils.FindFiles(abs_tag, self.vendor, self.info)
+        files_finder = utils.FindFiles(abs_tag, self.vendor, self.info, self.scan_step, self.scan_step_synthesis)
         files_finder.process()
         self.source_data_files = files_finder.get_report_files_dict()
 
@@ -145,7 +156,9 @@ class ScanResultData(object):
             self.tidy_file_data_dict[foo] = file_data
 
     def transfer_report_data(self):
-        compressor = compressData.CompressData(self.source_data_files, self.tidy_file_data_dict, self.ignore_clock, self.care_clock)
+        compressor = compressData.CompressData(self.source_data_files, self.tidy_file_data_dict,
+                                               self.ignore_clock, self.care_clock,
+                                               self.fmax_opt)
         compressor.process()
         self.single_line_data = compressor.get_compressed_data()
 
@@ -155,6 +168,13 @@ class ScanResultData(object):
         print(json.dumps(tmp_json_dict))
         first_field_name = "Design"
         self.single_line_data["Design"] = self.raw_design
+        if self.more:
+            for x_eq_y in self.more:
+                x_y = re.split("=", x_eq_y)
+                if len(x_y) == 2:
+                    self.single_line_data[x_y[0]] = x_y[1]
+                else:
+                    print("WRONG more={}".format(x_eq_y))
         self.output = os.path.abspath(self.output)  # for exception when --file
         report_path = os.path.dirname(self.output)
         if not os.path.isdir(report_path):

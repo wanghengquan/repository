@@ -18,7 +18,8 @@ RADIANT_MAPPING_REPORT:
       - { names: [ 'IO',       'IO_per' ],       pattern: 'Number of PIOs used:  (\d+) out of.+\(([^\)]+)\)' }
       - { names: [ 'IO',       'IO_per' ],       pattern: 'Number of PIOs used/reserved:  (\d+) out of.+\(([^\)]+)\)' }
       - { names: [ 'IO',       'IO_per' ],       pattern: 'Number of IO sites used:  (\d+) out of.+\(([^\)]+)\)' }
-      - { name: 'DSP', pattern: 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)' }
+      - { name: 'DSP', patterns: [ 'Number of (?P<mark>DSPs|DSP\s+Blocks):\s+(?P<DSP>\d+)',
+                                   'Number of Multipliers \(18x18\): (?P<DSP>\S+)' ] }
       - { name: 'EBR', pattern: 'Number of (?:EBRs|Block\s+RAMs|block\s+RAMs|32K\s+Block\s+RAMs): ([\d.]+)' }
       - { name: 'DSP_PREADD9',   pattern: 'Number of PREADD9:  (\d+)' }
       - { name: 'DSP_MULT9',     pattern: 'Number of MULT9:  (\d+)' }

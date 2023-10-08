@@ -79,10 +79,16 @@ class ScanData(object):
     def _get_group_data_by_function(self, temp_group_data, fields_dict_list):
         for one_field_dict in fields_dict_list:
             field_func = one_field_dict.get("func")
+            field_func_kw = one_field_dict.get("func_kw")  # dictionary or None
             if not field_func:
                 print("Warning. No func name specified for {}".format(one_field_dict))
                 continue
-            func_string = "adapters.{}('{}')".format(field_func, utils.dos2unix(self.report_file))
+            kw_list = list()
+            kw_list.append("'{}'".format(utils.dos2unix(self.report_file)))
+            if field_func_kw:
+                kw_list.extend(['{}="{}"'.format(k, v) for k, v in list(field_func_kw.items())])
+            kw_string = ", ".join(kw_list)
+            func_string = "adapters.{}({})".format(field_func, kw_string)
             func_res = eval(func_string)
             self.enrich_data(temp_group_data, one_field_dict, func_res)
 
@@ -105,6 +111,7 @@ class ScanData(object):
                 f_name = one_field_dict.get("name")
                 f_names = one_field_dict.get("names")
                 f_pattern = one_field_dict.get("pattern")
+                f_patterns = one_field_dict.get("patterns")
                 perhaps_names = [f_name] if f_name else f_names
                 # initialize them
                 already_searched = False
@@ -113,10 +120,18 @@ class ScanData(object):
                     already_searched = temp_group_data.get(x)
                 if already_searched and (not greedy_bool):
                     continue
-                f_match = f_pattern.search(line)
-                if f_match:
-                    re_match_res = self.get_re_match_res_dict(f_match)
-                    self.enrich_data(temp_group_data, one_field_dict, re_match_res)
+                if f_pattern:
+                    x_patterns = [f_pattern]
+                elif f_patterns:
+                    x_patterns = f_patterns[:]
+                else:
+                    print("Warning. No pattern/patterns specified for {}".format(f_name))
+                    continue
+                for p in x_patterns:
+                    f_match = p.search(line)
+                    if f_match:
+                        re_match_res = self.get_re_match_res_dict(f_match)
+                        self.enrich_data(temp_group_data, one_field_dict, re_match_res)
 
     @staticmethod
     def enrich_data(data_dict, one_field_dict, result_data):

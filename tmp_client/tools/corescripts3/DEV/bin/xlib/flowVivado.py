@@ -43,7 +43,7 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
             self.say_error("Error. Not specify xpr file in {}".format(self.info_file))
             return 1
         self.kwargs["xpr_file"] = self.xpr_file
-        if self.run_synthesis or self.run_impl or self.run_simulation or self.run_bitstream \
+        if self.run_synthesis or self.run_impl or self.run_simulation or self.run_bitstream or self.run_power \
                 or (self.solo and self.fmax_sweep):
             self.kwargs["vivado_path"] = self.path_vivado
         if self.run_synthesis and self.synthesis == "synplify":
@@ -138,7 +138,37 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
             self.prepare_synthesis_lines()
             self.prepare_impl_lines()
             self.prepare_simulation_lines()
+            if self.run_power:
+                self.add_power_settings_to_xdc_file()
             self.run_vivado_tcl("run_test_flow")
+
+    def add_power_settings_to_xdc_file(self):
+        p_xdc = re.compile(r'<File Path="(.+\.xdc)">')
+        p_dollar = re.compile(r"^\$\w+/")
+        base_dir = os.path.dirname(self.xpr_file)
+        xdc_files = list()
+        with open(self.xpr_file) as ob:
+            for line in ob:
+                m_xdc = p_xdc.search(line)
+                if m_xdc:
+                    xdc_files.append(m_xdc.group(1))
+        for xdc_file in xdc_files:
+            xdc_file = p_dollar.sub(base_dir + "/", xdc_file)
+            if os.path.isfile(xdc_file):
+                xdc_file = os.path.abspath(xdc_file)
+                xdc_lines = open(xdc_file).readlines()
+
+                with open(xdc_file, "w", newline="\n") as xdc_ob:
+                    for line in xdc_lines:
+                        line = line.rstrip()
+                        simple_line = line.strip()
+                        if simple_line.startswith("set_operating") or simple_line.startswith("set_switching"):
+                            continue
+                        print(line, file=xdc_ob)
+                    print('set_operating_conditions -process {}'.format(self.pwr_type), file=xdc_ob)
+                    print('set_operating_conditions -ambient_temp {}'.format(self.pwr_at), file=xdc_ob)
+                    print('set_operating_conditions -thetaja {}'.format(self.pwr_etga), file=xdc_ob)
+                    print('set_switching_activity -default_toggle_rate {}'.format(self.pwr_af), file=xdc_ob)
 
     def get_clock_custom_hdl_dict_and_original_xdc_lines(self):
         self.clock_custom_hdc_dict = dict()
@@ -191,9 +221,12 @@ class FlowVivado(vivadoBasicFlow.BasicFlow):
         return sts
 
     def prepare_impl_lines(self):
-        if self.run_impl or self.run_bitstream:
+        if self.run_impl or self.run_bitstream or self.run_power:
             self.kwargs["impl_to_bitstream"] = "-to_step write_bitstream" if self.run_bitstream else ""
             self.tcl_lines.append(CONSTANTS.FMT_LAUNCH_IMPLEMENTATION.format(**self.kwargs))
+            if self.run_power:
+                self.tcl_lines.append('open_run impl_1')
+                self.tcl_lines.append('report_power -file {./power_result.txt}')
 
     def prepare_simulation_lines(self):
         if not self.run_simulation:

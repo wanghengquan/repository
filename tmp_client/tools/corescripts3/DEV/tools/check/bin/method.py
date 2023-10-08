@@ -1,4 +1,3 @@
-
 from .__default__ import ALL_METHODS, Default, SectionInfo, ConfigIssue
 import os
 import zlib
@@ -23,6 +22,7 @@ class Method(object):
         section is a dict contains specific info, such as {'file': './', 'check_1': 'PASS'}, etc.
         task must start with func_name.
     """
+
     def __init__(self):
         self.__name__ = None
         self.section_infos = []
@@ -48,7 +48,7 @@ class Method(object):
             log(e, logging.ERROR)
 
     def do(self, queue, env):
-        #empty = queue.empty()
+        # empty = queue.empty()
         self.section_infos = OrderedDict()
         self.env = env
         self.conf = env.conf_file
@@ -104,13 +104,14 @@ class Method(object):
 
 class PollMethods:
     """ Schedule """
+
     def __init__(self, env):
         self.env = env
 
     def do(self):
         check_data_section = OrderedDict()
         for task_method, task_queue in list(self.env.conf_tasks.items()):
-            #r, empty = task_method.do(task_queue, self.env)
+            # r, empty = task_method.do(task_queue, self.env)
             if not task_queue.empty():
                 r = task_method.do(task_queue, self.env)
                 check_data_section.update(r)
@@ -129,6 +130,116 @@ def get_using_simulation_tool(log_file):
                 if v.search(line):
                     return k
     return "modelsim"
+
+
+class CheckMacroArea(Method):
+    def __init__(self):
+        super(CheckMacroArea, self).__init__()
+        self.__name__ = "check_macro_area"
+
+    def handle(self, task, section):
+        self.ret = Default.FAIL
+        filename = os.path.abspath(section['file'])
+        files = glob.glob(filename)
+        if not files:
+            self.log_error('file ' + filename + 'not found!')
+            self.ret = Default.FAIL
+            return
+        row_set, column_set = [self._string2range(section.get(item)) for item in ("row", "column")]
+        if not (row_set and column_set):
+            self.log_error("Cannot get necessary data for area's column or/and row")
+            return
+        self._get_row_column_data(files[0], section.get("wire"))
+        match_once_at_least = 0
+        for row_number, column_data_list in list(self.row_column_data_dict.items()):
+            if row_number not in row_set:
+                continue
+            match_once_at_least = 1
+            this_column_set = set([item.get("column") for item in column_data_list])
+            if not (this_column_set - column_set):  # ALL IN column_set
+                pass
+            else:
+                for c_d in column_data_list:
+                    if c_d.get("column") not in column_set:
+                        args = (c_d.get("line_number"), files[0], row_number, c_d.get("column"),)
+                        self.log_error("Check line {} in file {} for R{}C{}".format(*args))
+                        return
+        if not match_once_at_least:
+            self.log_error("Please check row settings in check config file since NOT ANY DATA matched!")
+            return
+        self.ret = Default.PASS
+
+    def _get_row_column_data(self, report_file, wire_string):
+        p_start = re.compile(r"\(\*")
+        p_stop = re.compile(r"\*\)")
+        p_content = re.compile(r"R(\d+)C(\d+)_")
+        # wire \inst_dsp.xxx.ow_dut.net_MULT18_0_p36_14 ;
+        # wire \wr_data_i_c[15] ;
+        p_wire_list = (re.compile(r"^\s+wire\s+\\([^.]+)\s+;"), re.compile(r"^\s+wire.+\.(\S+)\s+;"))
+        self.row_column_data_dict = dict()
+        if wire_string:
+            wire_list = re.split(",", re.sub(r"\s", "", wire_string))
+        else:
+            wire_list = None
+        with open(report_file) as ob:
+            start = False
+            wire_data = dict()
+            line_number = 0
+            while True:
+                line_number += 1
+                line = ob.readline()
+                if not line:
+                    break
+                if not start:
+                    start = p_start.search(line)
+                if start:
+                    m_content = p_content.search(line)
+                    if m_content:
+                        row_number = int(m_content.group(1))
+                        column_number = int(m_content.group(2))
+                        new_data = dict(column=column_number, line_number=line_number + 1)
+                        wire_data.setdefault(row_number, list())
+                        wire_data[row_number].append(new_data)
+                    if p_stop.search(line):
+                        next_line = ob.readline()
+                        for pw in p_wire_list:
+                            m_wire = pw.search(next_line)
+                            if m_wire:
+                                self._decide_update_final_data(wire_data, m_wire, wire_list)
+                                break
+                        else:
+                            start, wire_data = False, dict()
+
+    def _decide_update_final_data(self, wire_data, m_wire, wire_list):
+        update_yes = False
+        if not wire_list:
+            update_yes = True
+        else:
+            raw_wire_name = m_wire.group(1)
+            short_wire_name = re.sub(r"\[.+", "", raw_wire_name)
+            if (raw_wire_name in wire_list) or (short_wire_name in wire_list):
+                update_yes = True
+        if update_yes:
+            for k, v in list(wire_data.items()):
+                self.row_column_data_dict.setdefault(k, list())
+                self.row_column_data_dict[k].extend(v)
+
+    def _string2range(self, raw_string):
+        if not raw_string:
+            raw_string = str(raw_string)
+        raw_string = re.sub(r"\s", "", raw_string)
+        raw_list = re.split(",", raw_string)
+        if len(raw_list) != 2:
+            self.log_error("Cannot infer the range from {}".format(raw_string))
+            return
+        try:
+            raw_list = [int(item) for item in raw_list]
+            range_list = list()
+            for i in range(min(raw_list), max(raw_list) + 1):
+                range_list.append(i)
+            return set(range_list)
+        except:
+            self.log_error("Cannot infer the range from {}".format(raw_string))
 
 
 class CheckSimulationFlow(Method):
@@ -304,7 +415,7 @@ class CheckSdfSimulation(Method):
                 self.log_error("Found failed message {} in {}".format(two, this_file))
                 self.ret = Default.FAIL
                 return
-        self.ret = Default.PASS   # Finally pass :)
+        self.ret = Default.PASS  # Finally pass :)
 
 
 class CheckLines(Method):
@@ -357,12 +468,12 @@ class CheckLines(Method):
 
         if len(check_keys) > 1:  # check_2, check_3, ...
             if raw_times:
-                perhaps_offsets = matched_line_numbers[raw_times-1:]
+                perhaps_offsets = matched_line_numbers[raw_times - 1:]
             else:
                 perhaps_offsets = [matched_line_numbers[-1]]
             got_it = 1
             for more_check_key in check_keys[1:]:
-                sub_offset = get_index(check_keys[0], more_check_key)   # check_1, check_2, return 1
+                sub_offset = get_index(check_keys[0], more_check_key)  # check_1, check_2, return 1
                 this_check = "{} : {}".format(more_check_key, section.get(more_check_key))
                 for my_offset in perhaps_offsets:
                     line_index = my_offset + sub_offset
@@ -397,6 +508,7 @@ get_twr.8.regexp = Common Path Skew : ([\d\.]+) ns
 get_par.0.regexp = from .+gclk_cent2trunk        to .+: cip cnt=0
 get_par.1.regexp = rc delay:.+?<(.+?)>
     """
+
     def __init__(self):
         super(CheckClockSkew, self).__init__()
         self.__name__ = "check_clock_skew"
@@ -439,7 +551,8 @@ get_par.1.regexp = rc delay:.+?<(.+?)>
         digital_number = len(m_twr.group(2))
         final_twr_data_in_ns = round(float(real_twr_data), 6)
 
-        final_par_data_string = "({} - {}) * {} / 1000".format(real_par_data_list[1], real_par_data_list[0], section.get("trunk"))
+        final_par_data_string = "({} - {}) * {} / 1000".format(real_par_data_list[1], real_par_data_list[0],
+                                                               section.get("trunk"))
         final_par_data_string = re.sub(r"\s", "", final_par_data_string)
         final_par_data_in_ns = str(eval(final_par_data_string))
         m_par = p.search(final_par_data_in_ns)
@@ -479,6 +592,7 @@ get_par.1.regexp = rc delay:.+?<(.+?)>
                 except:
                     pass
 
+
 class CheckNo(Method):
     def __init__(self):
         Method.__init__(self)
@@ -499,7 +613,7 @@ class CheckNo(Method):
             else:
                 self.log_info('check_no pass!')
         else:
-            self.log_error(task + (20-len(task)) * ' ' + ': FAIL  : ' + filename + ' is not a file!')
+            self.log_error(task + (20 - len(task)) * ' ' + ': FAIL  : ' + filename + ' is not a file!')
             self.ret = Default.FAIL
 
 
@@ -579,7 +693,8 @@ class CheckRadiantFlow(Method):
             'map': {'sub_path': '_scratch/*/*.mrp', 'check_string': 'Number of errors:  0'},
             'par': {'sub_path': '_scratch/*/*.par', 'check_string': 'All signals are completely routed'},
             'ibis': {'sub_path': '_scratch/*/IBIS/*.ibs', 'check_string': 'FILE_EXISTS'},
-            'bitstream': {'sub_path': '_scratch/*/*.bit;_scratch/*/*.bin;_scratch/*/*.rbt', 'check_string': 'FILE_EXISTS'},
+            'bitstream': {'sub_path': '_scratch/*/*.bit;_scratch/*/*.bin;_scratch/*/*.rbt',
+                          'check_string': 'FILE_EXISTS'},
             'jedec': {'sub_path': '_scratch/*/*.jed', 'check_string': 'FILE_EXISTS'},
             'download': {
                 'sub_path': '_scratch/*/*.bit;_scratch/*/*.rbt;_scratch/*/*.jed;_scratch/*/*.bin;'
@@ -689,7 +804,8 @@ class CheckDiamondFlow(CheckRadiantFlow):
             'map': {'sub_path': '_scratch/*/*.mrp', 'check_string': 'Number of errors:  0'},
             'par': {'sub_path': '_scratch/*/*.par', 'check_string': 'All signals are completely routed'},
             'ibis': {'sub_path': '_scratch/*/IBIS/*.ibs;_scratch/*/IBIS/*', 'check_string': 'IBIS'},
-            'bitstream': {'sub_path': '_scratch/*/*.bit;_scratch/*/*.bin;_scratch/*/*.rbt', 'check_string': 'FILE_EXISTS'},
+            'bitstream': {'sub_path': '_scratch/*/*.bit;_scratch/*/*.bin;_scratch/*/*.rbt',
+                          'check_string': 'FILE_EXISTS'},
             'jedec': {'sub_path': '_scratch/*/*.jed', 'check_string': 'FILE_EXISTS'},
             'download': {
                 'sub_path': '_scratch/*/*.bit;_scratch/*/*.rbt;_scratch/*/*.jed;_scratch/*/*.bin;'
@@ -764,7 +880,8 @@ class CheckRbt(Method):
         if old_crc32 == new_crc32:
             self.log_info('check rbt pass!')
         else:
-            self.log_error(r"Diff CRC32 value: {}({}) and {}({})".format(old_crc32, old_rbt_file, new_crc32, new_rbt_file))
+            self.log_error(
+                r"Diff CRC32 value: {}({}) and {}({})".format(old_crc32, old_rbt_file, new_crc32, new_rbt_file))
             self.ret = Default.FAIL
 
     def handle(self, task, section):
@@ -904,7 +1021,7 @@ class CheckData(Method):
         start_line = section['start_line']
         times = section['times'] if 'times' in section else None
         result = section['result']
-        lines = sorted([i for i in section if re.match(r'line\d+', i)], key=lambda i:int(i[4:]))
+        lines = sorted([i for i in section if re.match(r'line\d+', i)], key=lambda i: int(i[4:]))
 
         anchor = find_str_in_file(start_line, filename)
         if anchor is None:
@@ -913,7 +1030,7 @@ class CheckData(Method):
             return
         self.log_info('start_line: ' + start_line + ' found!')
         if times:
-            for _ in range(int(times)-1):
+            for _ in range(int(times) - 1):
                 _offset = find_str_in_file(start_line, filename, start=anchor)
                 if _offset is None:
                     self.log_error('start_line do not appear enough times')
@@ -1125,7 +1242,7 @@ class CheckClkReference(Method):
         pattern = section['check_pattern']
         init_result = float(section['init_result'])
         allowance = float(section['allowance'])
-#       clk_name = section['clk_name']
+        #       clk_name = section['clk_name']
         comp = re.compile(pattern, re.I)
 
         with open(filename, 'r') as f:
@@ -1291,7 +1408,7 @@ class CheckParSim(CheckSim):
         self.language = 'verilog'
         self.passkey = 'PASS'
         self.failkey = 'FAIL'
-        
+
 
 class CheckBitSim(CheckSim):
     def __init__(self):
@@ -1301,7 +1418,7 @@ class CheckBitSim(CheckSim):
         self.filename = 'outlog.log'
         self.language = 'verilog'
         self.passkey = 'PASS'
-        self.failkey = 'FAIL'        
+        self.failkey = 'FAIL'
 
 
 class CheckResource(Method):
@@ -1321,7 +1438,7 @@ class CheckResource(Method):
             filename = filename[0]
 
         ret = []
-        for resource in section :
+        for resource in section:
             if re.match(r'^check\d$', resource):
                 if find_str_in_file(section[resource], filename):
                     ret.append(True)
@@ -1445,7 +1562,7 @@ class CheckSta(Method):
             raise ConfigIssue(self.__name__ + ' fail, twr file not exist!')
 
         ret = []
-        for sta_check in section :
+        for sta_check in section:
             if re.match(r'^check\d$', sta_check):
                 s = section[sta_check].split('@')
                 times = None
@@ -1616,7 +1733,7 @@ class CheckSimrel(Method):
             nshift = 0
             if shift:
                 if self.signal_shift:
-                    if  column in self.signal_shift:
+                    if column in self.signal_shift:
                         nshift = self.signal_shift[column]
                 elif self.shift:
                     nshift = self.shift
@@ -1732,7 +1849,7 @@ class CheckNumber(Method):
                         if pattern_window_wid > pattern_window_max:
                             pattern_window_wid = 0
                 else:
-                    pattern_window_wid = 1   # always 1
+                    pattern_window_wid = 1  # always 1
                 if not pattern_window_wid:
                     continue
                 p = pattern.search(line)

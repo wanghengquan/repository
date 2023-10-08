@@ -126,7 +126,7 @@ def wrap_run_tcl(tcl_mark_name, tcl_lines, log_tag=None):
         sts = _func()
     return sts
 
-def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_flow=False):
+def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_flow=False, pwr_lines=None):
     """
     run test flow with ldf file
     use flow_settings can change any strategy settings
@@ -184,6 +184,8 @@ def run_ldf_file(tcl_file, ldf_file, process_task, flow_settings=list(), is_ng_f
             # tcl_lines.append('puts "$msg"')
         else:
             tcl_lines.append(_line)
+    if pwr_lines:
+        tcl_lines.extend(pwr_lines)
     tcl_lines.append('%s "%s"' % (tcl_cmd.get("save"), ldf_file))
     tcl_lines.append(tcl_cmd.get("close"))
     tcl_lines.append("exit $r")
@@ -394,8 +396,10 @@ class LatticeEnvironment:
             tcl_tk = os.path.join(rtf_value, "tcltk")
         tcl_tk_os = "windows" if self.on_win else "linux"
         real_tcl_tk = os.path.join(tcl_tk, tcl_tk_os)
+        if not os.path.exists(real_tcl_tk):
+            real_tcl_tk = tcl_tk
         if os.path.isdir(real_tcl_tk):
-            chk_files = glob.glob(os.path.join(real_tcl_tk, "lib", "*", "init.tcl"))
+            chk_files = glob.glob(os.path.join(real_tcl_tk, "lib", "tcl*", "init.tcl"))
             if chk_files:
                 os.environ["TCL_LIBRARY"] = os.path.dirname(chk_files[0])
 
@@ -589,13 +593,16 @@ class LatticeEnvironment:
         os.environ["MY_EXE"] = os.path.join(diamond, "ispfpga", "userware", exe_path, "bin", self.nt_lin)
         os.environ["FOUNDRY"] = _foundry
         os.environ["PATH"] = os.pathsep.join(path_list)
-        tcl_lib_path = os.path.join(diamond, "tcltk", "windows" if self.on_win else "linux", "lib")
+        x = os.path.join(diamond, "tcltk")
+        y = os.path.join(x, "windows" if self.on_win else "linux")
+        z = y if os.path.isdir(y) else x
+        tcl_lib_path = os.path.join(z, "lib")
         ll_paths = path_list[:-1] + [tcl_lib_path]
         unix_lib_path = '/tools/gnu4/i386/lib'
         if os.path.isdir(unix_lib_path):
             ll_paths.append(unix_lib_path)
         os.environ["LD_LIBRARY_PATH"] = os.pathsep.join(ll_paths)
-        chk_files = glob.glob(os.path.join(tcl_lib_path, "*", "init.tcl"))
+        chk_files = glob.glob(os.path.join(tcl_lib_path, "tcl*", "init.tcl"))
         if chk_files:
             os.environ["TCL_LIBRARY"] = os.path.dirname(chk_files[0])
 
@@ -730,13 +737,14 @@ def update_synthesis_tool(is_ng_flow, ldf_file, synthesis, devkit, performance):
 
 
 class UpdateLDF:
-    def __init__(self, ldf_file, final_ldf_file, empty_lpf, lpf_factor, copy_all=""):
+    def __init__(self, ldf_file, final_ldf_file, empty_lpf, lpf_factor, copy_all="", disable_pdc=False):
         self.ldf_file = ldf_file
         self.ldf_dir = os.path.dirname(self.ldf_file)
         self.final_ldf_file = final_ldf_file
         self.empty_lpf = empty_lpf
         self.lpf_factor = lpf_factor
         self.copy_all = copy_all
+        self.disable_pdc = disable_pdc
         self.p_source = re.compile('source\s+name="([^"]+)"', re.I)
         self.p_user_constraint = re.compile('user_constraint="([^"]+)"', re.I)
         # self.p_strategy = re.compile('strategy\s+name.+\s+file="([^"]+)"', re.I)
@@ -777,12 +785,19 @@ class UpdateLDF:
                         self.update_lpf_file(real_src_file, _t)
                     real_src_file = _t
 
-                if re.search("\(", src_file):
+                if re.search(r"\(", src_file):
                     # <Source name="../import/PCK_CRC32_D8_(AAL5).vhd" type="VHDL" type_short="VHDL">
-                    src_file = re.sub("\(", r"\(", src_file)
-                    src_file = re.sub("\)", r"\)", src_file)
-                src_file = re.sub(r'\\', r"\\\\", src_file)
-                line = re.sub(src_file, real_src_file, line)
+                    src_file = re.sub(r"\(", r"\(", src_file)
+                    src_file = re.sub(r"\)", r"\)", src_file)
+                # line = re.sub(src_file, real_src_file, line)
+                line = re.sub(r'Source\s+name=".+?"', 'Source name="{}"'.format(real_src_file), line)
+                line = re.sub(r'user_constraint=".+?"', 'user_constraint="{}"'.format(real_src_file), line)
+                if self.disable_pdc:
+                    x, y = 'excluded="TRUE"', 'type_short="PDC"'
+                    if x in line:
+                        pass
+                    else:
+                        line = re.sub(y, '{} {}'.format(y, x), line)
             else:
                 line = self.update_inc_path(line)
             line = line.rstrip()
@@ -1025,6 +1040,7 @@ class CreateDiamondProjectFile:
         self.dst_design = flow_options.get("dst_design")
         self.change_names = flow_options.get("change_names")
         self.trace_report_format = flow_options.get("trace_report_format")
+        self.run_power = xTools.get_true(flow_options, "run_power")
 
         self.strategy = flow_options.get("strategy")
         self.goal = flow_options.get("goal")
@@ -1035,6 +1051,7 @@ class CreateDiamondProjectFile:
         self.mixed_drivers = xTools.get_true(flow_options, "mixed_drivers")
         self.block_lpf = xTools.get_true(flow_options, "block_lpf")
         self.empty_lpf = xTools.get_true(flow_options, "empty_lpf")
+        self.disable_pdc = xTools.get_true(flow_options, "disable_pdc")
         self.lpf_factor = flow_options.get("lpf_factor")
         self.set_strategy = flow_options.get("set_strategy")
         self.pmi = xTools.get_true(flow_options, "pmi")
@@ -1042,6 +1059,10 @@ class CreateDiamondProjectFile:
         self.synthesis_done = xTools.get_true(flow_options, "synthesis_done")
         self.synthesis_only = xTools.get_true(flow_options, "synthesis_only")
         self.run_synthesis = xTools.get_true(flow_options, "run_synthesis")
+        self.run_step_synthesis = xTools.get_true(flow_options, "run_step_synthesis")
+        self.step_times = flow_options.get("step_times")
+        if self.run_step_synthesis:
+            self.synthesis_only = True
         if self.synthesis_only:
             self.run_synthesis = True
         self.clean = xTools.get_true(flow_options, "clean")
@@ -1104,6 +1125,9 @@ class CreateDiamondProjectFile:
                     sts = self.generate_ldf_file()
                 if sts:
                     return 1
+            key_file = os.path.join(self.flow_options.get("conf"), "encryption", "enc.key")
+            key_file = xTools.win2unix(key_file)
+            utils.run_encryption(os.path.abspath(self.final_ldf_file), key_file, self.flow_options.get("encryption_factor"))
             self.ldf_dict = parse_ldf_file(self.final_ldf_file, self.is_ng_flow)
             if not self.ldf_dict:
                 return 1
@@ -1195,7 +1219,8 @@ class CreateDiamondProjectFile:
         real_ldf_file = xTools.get_abs_path(self.ldf_file, self.src_design)
         if xTools.not_exists(real_ldf_file, "Source LDF file"):
             return 1
-        my_update = UpdateLDF(real_ldf_file, self.final_ldf_file, self.empty_lpf, self.lpf_factor, self.copy_all)
+        my_update = UpdateLDF(real_ldf_file, self.final_ldf_file, self.empty_lpf,
+                              self.lpf_factor, self.copy_all, self.disable_pdc)
         if my_update.process():
             return 1
         if os.getenv("INNER_APB_FLOW"):
@@ -1449,7 +1474,7 @@ class CreateDiamondProjectFile:
                 new_str = ""
             add_lines.append('%s {lse_cmdline_args=%s%s}' % (pre_set, old_str, new_str))
             # set syn/map/par trce report format
-            if self.trace_report_format == "diamond":
+            if self.trace_report_format == "diamond" and (not self.run_power):
                 add_lines.append('%s {syntrce_report_format=Diamond Style}' % pre_set)
                 add_lines.append('%s {maptrce_report_format=Diamond Style}' % pre_set)
                 add_lines.append('%s {partrce_report_format=Diamond Style}' % pre_set)
@@ -1483,8 +1508,30 @@ class CreateDiamondProjectFile:
 
         # if wrap_run_tcl("set_strategy_and_run", add_lines):
         # updated for new log name
-        if wrap_run_tcl("synthesis_flow", add_lines, log_tag="run_pb"):
-            return 1
+        if self.run_step_synthesis:
+            for i in range(self.step_times):
+                sts = wrap_run_tcl("synthesis_flow", add_lines, log_tag="run_pb")
+                if sts:
+                    return 1
+                now_impl_path = os.path.abspath(self.impl_name)
+                new_impl_path = os.path.abspath("step_{}_{}".format(self.synthesis, i))
+                if os.path.isdir(new_impl_path):
+                    shutil.rmtree(new_impl_path)
+                os.rename(now_impl_path, new_impl_path)
+                self.run_udb2sv_for_synthesis(new_impl_path)
+        else:
+            sts = wrap_run_tcl("synthesis_flow", add_lines, log_tag="run_pb")
+            if sts:
+                return 1
+
+    def run_udb2sv_for_synthesis(self, new_impl_path):
+        x = xTools.ChangeDir(new_impl_path)
+        syn_udb_files = glob.glob("*_syn.udb")
+        if syn_udb_files:
+            uv_cmd = "udb2sv -w -view logical {} -o test_udb2sv_{}.v".format(syn_udb_files[0], self.synthesis)
+            basic_name = "run_step_{}".format(self.synthesis)
+            xTools.run_command(uv_cmd, basic_name + ".log", basic_name + ".time")
+        x.comeback()
 
 
 def parse_ldf_file(ldf_file, for_radiant):
@@ -1743,6 +1790,9 @@ class RunTclFlow:
         self.synthesis = self.flow_options.get("synthesis")
         self.pushbutton = xTools.get_true(self.flow_options, "pushbutton")
         self.synthesis_only = xTools.get_true(self.flow_options, "synthesis_only")
+        self.run_step_synthesis = xTools.get_true(self.flow_options, "run_step_synthesis")
+        if self.run_step_synthesis:
+            self.synthesis_only = True
         if self.synthesis_only:
             self.run_synthesis = 1
         else:
@@ -1850,10 +1900,12 @@ class RunTclFlow:
             user_options = dict(run_par_trace=1)
             task_list = get_task_list(dict(), user_options, donot_infer_options=dnio)
         # User must specify which flow will be executed!
-        sts = run_ldf_file("run_pb.tcl", self.final_ldf_file, task_list, flow_settings, is_ng_flow=self.is_ng_flow)
+        power_tcl_lines = utils.get_power_tcl_lines(self.flow_options, self.impl_name, self.project_name)
+        sts = run_ldf_file("run_pb.tcl", self.final_ldf_file, task_list, flow_settings, is_ng_flow=self.is_ng_flow, pwr_lines=power_tcl_lines)
         self.run_ncl_flow()
         self.run_bitmap_flow()
         self.run_udb2sv_flow()
+        self.run_sso_flow()
         self.run_udb2_flow()
         return sts
 
@@ -1919,6 +1971,25 @@ class RunTclFlow:
         for x in udb2sv_cmd_list:
             my_cmd = cmd_tmpl.format(*cmd_args.get(x))
             xTools.run_command(my_cmd, "udb2sv_%s.log" % x, "udb2sv_%s.time" % x)  # Do not care return code
+        _recov.comeback()
+
+    def run_sso_flow(self):
+        if not self.is_ng_flow:
+            return
+        sso_opr = self.flow_options.get("run_sso")
+        if not sso_opr:
+            return
+        _recov = xTools.ChangeDir(self.impl_name)
+        filename_only = "{}_{}".format(self.project_name, self.impl_name)
+        mrp_file = filename_only + ".mrp"
+        udb_file = filename_only + ".udb"
+        if os.path.isfile(udb_file):
+            dpp_dict = utils.get_dev_pac_pdc_from_mrp_file(mrp_file)
+            dpp_dict["filename"] = filename_only
+            my_cmd = "ssoana -d {dev} -p {pac} -v phy {pdc} {filename}.udb -o {filename}.sso".format(**dpp_dict)
+            xTools.run_command(my_cmd, "flow_sso.log", "flow_sso.time")
+        else:
+            print("Error. Not found SSO udb file: {}".format(os.path.abspath(udb_file)))
         _recov.comeback()
 
     def run_fmax_seed_flow(self):
@@ -2250,7 +2321,7 @@ class RunTclFlow:
         my_flow_settings = list()
         if self.is_ng_flow and self.fmax_sweep:
             #  disable sdc/ldc file
-            my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict, True)
+            my_flow_settings = utils.disable_sdc_ldc_file(self.final_ldf_dict, False)  # False: DO not use original pdc
         sts = run_ldf_file("run_till_map.tcl", self.final_ldf_file, process_task, my_flow_settings, is_ng_flow=self.is_ng_flow)
         self.run_ncl_flow()
         mrp_file = os.path.join(".", self.impl_dir, "%s_%s.mrp" % (self.project_name, self.impl_name))
@@ -2259,7 +2330,7 @@ class RunTclFlow:
         if self.is_ng_flow:
             clk_data = scan_radiant.get_clk_loads_net_from_mrp(mrp_file)
             self.pdc_file = "sweeping_flow.pdc"
-            utils.write_pdc_file(self.pdc_file, clk_data, os.getcwd(), self.final_ldf_dict)
+            utils.write_pdc_file(self.pdc_file, clk_data, os.getcwd(), dict(source=list()))  # Do not use original pdc
         else:
             clks = get_clocks_from_mrp_file(mrp_file)
             update_lpf_file(self.lpf_file, 88, clks)
@@ -2532,7 +2603,7 @@ def run_scuba_by_file(src_file, run_scuba):
 def update_mem_fdc_path(scuba_cmd):
     scuba_cmd_list = scuba_cmd.split()
     for i, foo in enumerate(scuba_cmd_list):
-        if foo in ("-mem", "-fdc"):
+        if foo in ("-mem", "-fdc", "-memfile"):
             this_file = os.path.basename(scuba_cmd_list[i+1])
             this_file = xTools.get_relative_path(this_file, os.getcwd())
             scuba_cmd_list[i+1] = this_file

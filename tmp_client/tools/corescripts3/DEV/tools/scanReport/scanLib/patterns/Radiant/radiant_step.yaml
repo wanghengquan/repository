@@ -1,0 +1,9 @@
+RADIANT_UDB2SV_STEP_SHA1:
+  name_pattern: 'test_udb2sv_.+\.v$'
+  group_1:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_text_file_tag_and_sha1' }
+  group_2:
+    fields:
+      - { name: 'version', pattern: 'Radiant Version: (.+)' }

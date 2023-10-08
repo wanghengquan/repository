@@ -29,7 +29,11 @@ endmodule
 
 
 def make_line_has_opt_for_xun(raw_line):
-    v_x = "-v_XCELIUM20.09.012"
+    v_x = os.getenv("EXTERNAL_XRUN_PATH")
+    if v_x:
+        v_x = "-v_{}".format(v_x)
+    else:
+        v_x = "-v_XCELIUM22.09.001"
     raw_line = raw_line.replace(v_x, "")
     raw_line = re.sub("xrun ", "xrun {} -vlog_ext +.h,.vh1 ".format(v_x), raw_line)
     return raw_line
@@ -285,7 +289,9 @@ def change_dot_lib_name(new_lib):
 def update_lines_for_ap6a00(bat_lines):
     new_lines = list()
     p_file = re.compile(r"-f\s+(\S+)")
+    set_environment_lines = list()
     for foo in bat_lines:
+        foo = xTools.win2unix(foo, 0)
         m_file = p_file.search(foo)
         if not m_file:
             new_lines.append(foo)
@@ -304,12 +310,30 @@ def update_lines_for_ap6a00(bat_lines):
                     with open(new_f_file, "w") as new_ob:
                         for line in oem_lines:
                             start_atm = start_atm if start_atm else re.search(r"#####\s+ATM\s+####", line)
-                            line = "// {}".format(line) if start_atm else line
+                            if start_atm:
+                                if "setenv" in line:
+                                    set_environment_lines.append(line)
+                                    line = "// {}".format(line)
+                                else:
+                                    short_line = line.strip()
+                                    if short_line.startswith("#"):
+                                        line = "// {}".format(line)
                             print(line, file=new_ob, end="")
                 #
-                foo = re.sub("-incdir", "{} -incdir".format(" ".join(more_inc_dirs)), foo)
-                foo = re.sub(f_file, new_f_file, foo)
+                x = xTools.win2unix(" ".join(more_inc_dirs), 0)
+                y = xTools.win2unix(new_f_file, 0)
+                foo = re.sub("-incdir", "{} -incdir".format(x), foo)
+                foo = re.sub(f_file, y, foo)
                 new_lines.append(foo)
+    _set = "set {}={}" if sys.platform.startswith("win") else "setenv {} {}"
+    if set_environment_lines:
+        set_environment_lines.reverse()
+        p_env_key_value = re.compile(r"setenv\s+(\S+)\s+(\S+)")
+        for item in set_environment_lines:
+            m_env_key_value = p_env_key_value.search(item.strip())
+            if not m_env_key_value:
+                continue
+            new_lines.insert(1, _set.format(m_env_key_value.group(1), m_env_key_value.group(2)))
     return new_lines
 
 
@@ -438,19 +462,19 @@ def set_apollo_sim_flow_env(apollo_f_file):
     apollo_environments["MOORTEC_ROOT"] = tec_root = "{}/MR75514_PVT_controller_series_3plus/moortec_ip".format(atm_path)
     apollo_environments["ATM_SW_MODEL"] = "{}/sw_model".format(atm_path)
     apollo_environments["MR76003"] = "{}/MR76003_voltage_monitor_prescaler".format(atm_path)
-    other_keys = """DIR_DIGI_BLK   
-                    DIR_DIGI_SLV   
-                    DIR_DIGI_IP    
-                    DIR_DIGI_WRAP  
+    other_keys = """DIR_DIGI_BLK
+                    DIR_DIGI_SLV
+                    DIR_DIGI_IP
+                    DIR_DIGI_WRAP
                     DIR_DIGI_MODELS
-                    DIR_STD_DESIGN 
+                    DIR_STD_DESIGN
                     DIR_STD_IP"""
     for foo in other_keys.splitlines():
         foo = foo.strip()
         if foo:
             apollo_environments[foo] = tec_root
     return apollo_environments
-            
+
 
 def add_apollo_lines(bat_lines, family):
     apollo_xx_environment = OrderedDict()
