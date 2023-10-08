@@ -290,15 +290,11 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 			return;
 		}
 		if(cpu_used_int > public_data.RUN_LIMITATION_CPU) {
-			jt_cpu.setBackground(Color.RED);
-		} else if (cpu_used_int > 50) {
-			jt_cpu.setBackground(Color.RED);
+			jt_cpu.setBackground(Color.ORANGE);
 		} else {
 			jt_cpu.setBackground(Color.WHITE);
 		}
 		if(mem_used_int > public_data.RUN_LIMITATION_MEM) {
-			jt_mem.setBackground(Color.ORANGE);
-		} else if (mem_used_int > 50) {
 			jt_mem.setBackground(Color.ORANGE);
 		} else {
 			jt_mem.setBackground(Color.WHITE);
