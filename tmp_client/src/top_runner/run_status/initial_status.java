@@ -234,9 +234,10 @@ class initial_status extends abstract_status {
 		client.misc_timer.scheduleAtFixedRate(new env_checker(this.client.switch_info, this.client.client_info), 1000*0, 1000*10);
 		//task 2: dev check only vaild on remote svn linked
 		client.misc_timer.scheduleAtFixedRate(new dev_checker(this.client.switch_info, this.client.client_info), 1000*3, 1000*10);
-		//task 1: kill process
+		//task 3: kill process
+		String interface_mode = new String(client.client_info.get_client_preference_data().get("interface_mode"));
 		String os = System.getProperty("os.name").toLowerCase();
-		if (os.contains("windows")) {
+		if (os.contains("windows") && !interface_mode.equals("int")) {
 			client.misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info, this.client.client_info), 1000*6, 1000*10);
 		}
 	}
