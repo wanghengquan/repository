@@ -29,9 +29,9 @@ public class public_data {
 	// ========================
 	// base 
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.14.77"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21477; //version for code use
-	public final static String BASE_BUILDDATE = "2023/08/29";
+	public final static String BASE_CURRENTVERSION = "2.14.78"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21478; //version for code use
+	public final static String BASE_BUILDDATE = "2023/10/08";
 	public final static String BASE_SUITEFILEVERSION = "1.28";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -245,10 +245,10 @@ public class public_data {
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
 	public final static int PERF_AUTO_ADJUST_CYCLE = 10;
 	public final static float PERF_FREE_MEM_USAGE_RATE = 0.60f;
-	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
+	public final static int PERF_SQUISH_WIN_MAX_CPU = 50;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 60;
-	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
-	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
+	public final static int PERF_SQUISH_LIN_MAX_CPU = 30;
+	public final static int PERF_SQUISH_LIN_MAX_MEM = 60;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
 	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
