@@ -130,11 +130,13 @@ public class public_data {
 	public final static String CASE_REPORT_NAME = "case_report.txt";
 	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
 	public final static String CASE_USER_PATTERN = "^run\\..*";
-	public final static String CASE_STANDARD_PATTERN = "run_info.ini";
+	public final static String CASE_STANDARD_PATTERN = "^run_info.ini$";
+	public final static String CASE_RUN_FILE = "run_info.ini";
 	public final static String CASE_INFO_FILE = "bqs.info";
 	public final static String CASE_EXEC_FILE = "DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";
 	public final static String CASE_DATA_FILE = "bqs.data";
+	
 	
 	// ========================
 	// external tools based on software bin path
