@@ -1925,7 +1925,7 @@ public class local_tube {
 		case_enum case_type = case_enum.FREESTYLE;
 		int standard_num = 0;
 		for (String case_name:case_list) {
-			String run_info = new String(suite_path + "/" + case_name + "/" + public_data.CASE_STANDARD_PATTERN);
+			String run_info = new String(suite_path + "/" + case_name + "/" + public_data.CASE_RUN_FILE);
 			File info_fobj = new File(run_info);
 			if(info_fobj.exists()) {
 				standard_num ++;
@@ -2208,7 +2208,7 @@ public class local_tube {
 			HashMap<String, String> preference_data = new HashMap<String, String>();
 			one_case_data.put("Preference", preference_data);			
 			//get ini file data, override previously
-			String info_file = new String(suite_path + "/" + design_name + "/" +  public_data.CASE_STANDARD_PATTERN);
+			String info_file = new String(suite_path + "/" + design_name + "/" +  public_data.CASE_RUN_FILE);
 			ini_parser ini_runner = new ini_parser(info_file);
 			HashMap<String, HashMap<String, String>> raw_ini_data = new HashMap<String, HashMap<String, String>>();
 			try {
@@ -2285,8 +2285,9 @@ public class local_tube {
 		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
 		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
 		System.out.println(task_info.get_received_task_queues_map().toString());
-		System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
+		System.out.println(task_info.get_received_admin_queues_treemap().toString()); 
+		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
+		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "D:/work_space/tcl_suite/aa/pn_00_tcl_plus/msg/msg_suppress", "D:/tmp_work", imported_data);
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*
