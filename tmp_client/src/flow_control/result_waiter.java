@@ -1130,7 +1130,8 @@ public class result_waiter extends Thread {
 
 	private void generate_console_report(
 			String waiter_name,
-			HashMap<String, HashMap<String, Object>> case_report_map){
+			HashMap<String, HashMap<String, Object>> case_report_map
+			){
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -1151,8 +1152,9 @@ public class result_waiter extends Thread {
 			String case_id = (String) one_call_data.get(pool_attr.call_case);
 			task_enum status = (task_enum) case_report_map.get(call_index).get("status");
 			String location = (String) case_report_map.get(call_index).get("location");
+			String design_name = (String) case_report_map.get(call_index).get("design");
 			if (switch_info.get_local_console_mode()){
-				RESULT_WAITER_LOGGER.info(waiter_name + ": " + case_id + "," + status.get_description() + "," + location);
+				RESULT_WAITER_LOGGER.info(case_id + ": " + design_name + "," + status.get_description() + "," + location);
 			} else {
 				RESULT_WAITER_LOGGER.info(waiter_name + ": " + queue_name + "," + case_id + "," + status.get_description());
 			}
