@@ -169,8 +169,13 @@ public class cmd_parser {
 		if (commandline_obj.hasOption('t')) {
 			cmd_hash.put("max_threads", commandline_obj.getOptionValue('t'));
 		}
+		if (commandline_obj.hasOption('P')) {
+			cmd_hash.put("pool_size", commandline_obj.getOptionValue('P'));
+		}
 		if (commandline_obj.hasOption('T')) {
-			cmd_hash.put("pool_size", commandline_obj.getOptionValue('T'));
+			cmd_hash.put("timeout", commandline_obj.getOptionValue('T'));
+		} else {
+			cmd_hash.put("timeout", "0");
 		}
 		if (commandline_obj.hasOption('A')) {
 			cmd_hash.put("thread_mode", "auto");
@@ -288,7 +293,13 @@ public class cmd_parser {
 					CMD_PARSER_LOGGER.warn("Command line: Invalid sorting rule setting");
 					check_satus = false;
 				}
-				break;				
+				break;
+			case "timeout":
+				if (!data_check.num_str_check(option_value)){
+					CMD_PARSER_LOGGER.warn("Command line: Invalid timeout number string setting");
+					check_satus = false;
+				}
+				break;
 			default:
 				break;
 			}
@@ -361,8 +372,11 @@ public class cmd_parser {
 				Option.builder("t").longOpt("max-threads").hasArg()
 				.desc("Client will launch $t threads, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
 		options_obj.addOption(
-				Option.builder("T").longOpt("pool-size").hasArg()
+				Option.builder("P").longOpt("pool-size").hasArg()
 				.desc("Top size for Thread Pool initial setting, available value:0 ~ " + public_data.PERF_POOL_MAXIMUM_SIZE).build());
+		options_obj.addOption(
+				Option.builder("T").longOpt("timeout").hasArg()
+				.desc("Time to terminate client, in seconds. 0(default): no termination, 1~300:consider as 300s, >300:terminate Client in given seconds").build());
 		options_obj.addOption(Option.builder("d").longOpt("dat-file").hasArg()
 				.desc("The data file to record test case detail info, json format, i.e. {\"level\": 1}, Work with -p(suite path), default value:" + public_data.CASE_DATA_FILE)
 				.build());
@@ -388,7 +402,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h|-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S option1=value1] [-d dat-file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all, software,system,machine>] [-G <auto, true, false>] [-t 3|-A] [-T 6]  [-w <work path>] [-s <save path>][--python <python path> | --perl <perl path> | --ruby <ruby path>] [--svn <svn path> | --git <git path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h] [-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S <option1=value1>] [-d dat_file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all,software,system,machine>] [-G <auto,true,false>] [-t <thread_num>|-A] [-P <pool_size>] [-T <termination_time>] [-w <work_path>] [-s <save_path>][--python <python_path> | --perl <perl_path> | --ruby <ruby_path>] [--svn <svn_path> | --git <git_path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nIssue report : Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
