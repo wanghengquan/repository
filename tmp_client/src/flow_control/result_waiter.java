@@ -1154,7 +1154,7 @@ public class result_waiter extends Thread {
 			String location = (String) case_report_map.get(call_index).get("location");
 			String design_name = (String) case_report_map.get(call_index).get("design");
 			if (switch_info.get_local_console_mode()){
-				RESULT_WAITER_LOGGER.info(case_id + ": " + design_name + "," + status.get_description() + "," + location);
+				RESULT_WAITER_LOGGER.info(case_id + ":" + status.get_description() + "," + design_name + "," + location);
 			} else {
 				RESULT_WAITER_LOGGER.info(waiter_name + ": " + queue_name + "," + case_id + "," + status.get_description());
 			}

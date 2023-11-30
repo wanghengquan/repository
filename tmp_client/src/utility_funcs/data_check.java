@@ -20,6 +20,20 @@ public class data_check {
 
 	}
 	
+	public static Boolean num_str_check(
+			String input_data
+			) {
+		Boolean check_result = Boolean.valueOf(true);
+		@SuppressWarnings("unused")
+		int input_int = 0;
+		try {
+			input_int = Integer.valueOf(input_data);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		return check_result;
+	}
+	
 	public static Boolean num_scope_check(
 			String input_data,
 			int min_value,

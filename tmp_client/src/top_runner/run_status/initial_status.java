@@ -10,6 +10,7 @@
 package top_runner.run_status;
 
 import java.util.HashMap;
+import java.util.TimerTask;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -239,6 +240,33 @@ class initial_status extends abstract_status {
 		String os = System.getProperty("os.name").toLowerCase();
 		if (os.contains("windows") && !interface_mode.equals("int")) {
 			client.misc_timer.scheduleAtFixedRate(new kill_winpop(this.client.switch_info, this.client.client_info), 1000*6, 1000*10);
+		}
+		//task 4: add client timeout thread
+		String client_timeout = new String(client.client_info.get_client_preference_data().get("timeout"));
+		TimerTask timeout_request = new TimerTask(){
+			@Override
+			public void run() {
+				client.switch_info.set_client_stop_request(exit_enum.TASK3);
+			}
+		};
+		client.misc_timer.schedule(timeout_request, num_str_update(client_timeout) * 1000);
+	}
+	
+	private long num_str_update(
+			String input_str
+			) {
+		Long time_secs = Long.valueOf(0);
+		try {
+			time_secs = Long.valueOf(input_str);
+		} catch (NumberFormatException e){
+			return 0;
+		}
+		if (time_secs.longValue() > 0 && time_secs.longValue() <300) {
+			return 300;
+		} else if (time_secs.longValue() > Long.MAX_VALUE / 1000) {
+			return Long.MAX_VALUE / 1000;
+		} else {
+			return time_secs.longValue();
 		}
 	}
 	

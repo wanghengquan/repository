@@ -401,7 +401,7 @@ public class xml_parser {
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
 		if (!time_create.contains(time_modified1) && !time_create.contains(time_modified2)) {
-			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
+			XML_PARSER_LOGGER.info("xml modified outside, ignore:" + xml_path);
 			return admin_queue_data;
 		}
 		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
@@ -431,7 +431,7 @@ public class xml_parser {
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
 		if (!time_create.contains(time_modified1) && !time_create.contains(time_modified2)) {
-			XML_PARSER_LOGGER.warn("xml modified outside, ignore:" + xml_path);
+			XML_PARSER_LOGGER.info("xml modified outside, ignore:" + xml_path);
 			return task_queue_data;
 		}
 		for (Iterator<?> i = level1_element.elementIterator(); i.hasNext();) {
