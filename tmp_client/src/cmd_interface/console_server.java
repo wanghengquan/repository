@@ -285,7 +285,7 @@ public class console_server extends Thread {
 		if(cmd_list[1].equalsIgnoreCase(link_cmd.HELP.toString())){
 			link_help_command_output();
 		} else {
-			link_ok = linked_client.channel_cmd_link_request(cmd_list[1]);
+			link_ok = linked_client.channel_cmds_link_request(cmd_list[1]);
 			if (link_ok){
 				System.out.println("Client linked to:" + cmd_list[1]);
 			} else {
@@ -338,7 +338,7 @@ public class console_server extends Thread {
 			){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.channel_cmd_database_update(db_name, ob_name, option_value);
+			outputs = linked_client.channel_push_data_update(db_name, ob_name, option_value);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -433,7 +433,7 @@ public class console_server extends Thread {
 	private void info_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.channel_cmd_data_request(top_cmd.INFO.toString(), request_info);
+			outputs = linked_client.channel_pull_data_request(top_cmd.INFO.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -456,7 +456,7 @@ public class console_server extends Thread {
 			request = request_info + "." + request_detail;
 		}
 		try {
-			outputs = linked_client.channel_cmd_data_request(top_cmd.INFO.toString(), request);
+			outputs = linked_client.channel_pull_data_request(top_cmd.INFO.toString(), request);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -493,10 +493,19 @@ public class console_server extends Thread {
 			break;
 		case EXECUTING:
 			task_other_command_output(task_cmd.EXECUTING.toString());
-			break;			
+			break;
+		case PENDING:
+			task_other_command_output(task_cmd.PENDING.toString());
+			break;
 		case RUNNING:
 			task_other_command_output(task_cmd.RUNNING.toString());
 			break;
+		case WAITING:
+			task_other_command_output(task_cmd.WAITING.toString());
+			break;
+		case EMPTIED:
+			task_other_command_output(task_cmd.EMPTIED.toString());
+			break;			
 		case FINISHED:
 			task_other_command_output(task_cmd.FINISHED.toString());
 			break;			
@@ -510,7 +519,7 @@ public class console_server extends Thread {
 	private void task_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.channel_cmd_data_request(top_cmd.TASK.toString(), request_info);
+			outputs = linked_client.channel_pull_data_request(top_cmd.TASK.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -560,7 +569,7 @@ public class console_server extends Thread {
 	private void action_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.channel_cmd_action_request(top_cmd.ACTION.toString(), request_info);
+			outputs = linked_client.channel_cmds_action_request(top_cmd.ACTION.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -635,7 +644,7 @@ public class console_server extends Thread {
 	private void database_other_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.channel_cmd_data_request(top_cmd.DATABASE.toString(), request_info);
+			outputs = linked_client.channel_pull_data_request(top_cmd.DATABASE.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -692,7 +701,19 @@ public class console_server extends Thread {
 		}
 		System.out.println("Available threads:");
 		for(thread_enum thread : thread_enum.values()) {
-			System.out.format("  %8s" + line_separator, thread.toString());
+			switch (thread) {
+			case machine_runner:
+				break;
+			case config_runner:
+				break;
+			case task_runner:
+				break;
+			case result_runner:
+				break;
+			default:
+				System.out.format("  %8s" + line_separator, thread.toString());
+				break;
+			}
 		}
 		System.out.println("You may type: 'THREAD <command>' Get the detail background thread info");		
 	}
@@ -700,7 +721,7 @@ public class console_server extends Thread {
 	private void thread_command_output(String request_info){
 		String outputs = new String("");
 		try {
-			outputs = linked_client.channel_cmd_data_request(top_cmd.THREAD.toString(), request_info);
+			outputs = linked_client.channel_cmds_action_request(top_cmd.THREAD.toString(), request_info);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

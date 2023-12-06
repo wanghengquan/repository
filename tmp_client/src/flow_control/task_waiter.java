@@ -201,7 +201,7 @@ public class task_waiter extends Thread {
 	}
 	
 	private String get_right_task_queue() {
-		String queue_name = new String();
+		String queue_name = new String("");
 		// pending_queue_list = processing_admin_queue - executing_queue_list
 		ArrayList<String> executing_queue_list = task_info.get_executing_admin_queue_list();
 		ArrayList<String> runable_queue_list = get_runable_queue_list(executing_queue_list);
@@ -210,6 +210,16 @@ public class task_waiter extends Thread {
 		if (queue_list_size == 0) {
 			return queue_name;
 		}
+		//run local high priority admin queue
+		ArrayList<String> local_priority_queue_list = task_info.get_local_priority_queue_list();
+		ArrayList<String> local_priority_runid_list = task_info.get_local_priority_runid_list();
+		if(local_priority_queue_list.size() > 0 || local_priority_runid_list.size() > 0) {
+			queue_name = get_local_priority_queue_name(runable_queue_list, local_priority_queue_list, local_priority_runid_list);
+			if (runable_queue_list.indexOf(queue_name) >= 0) {
+				return queue_name;
+			}
+		}
+		//run normal priority admin queue
 		String queue_work_mode = client_info.get_client_data().get("preference").get("task_mode");
 		if (queue_work_mode.equalsIgnoreCase("serial")) {
 			queue_name = get_highest_queue_name(runable_queue_list);
@@ -297,6 +307,36 @@ public class task_waiter extends Thread {
 		return record_priority;
 	}
 
+	private String get_local_priority_queue_name(
+			ArrayList<String> runable_queue_list,
+			ArrayList<String> priority_queue_list,
+			ArrayList<String> priority_runid_list
+			) {
+		//highest priority with earlier received time will be taken(sorted full_list)
+		ArrayList<String> queue_list = new ArrayList<String>();
+		for (String priority_queue : priority_queue_list) {
+			if (runable_queue_list.contains(priority_queue)) {
+				if (!queue_list.contains(priority_queue)) {
+					queue_list.add(priority_queue);
+				}
+			}
+		}
+		for (String priority_runid : priority_runid_list) {
+			for (String runable_queue : runable_queue_list) {
+				if(runable_queue.contains(priority_runid) && !queue_list.contains(runable_queue)) {
+					queue_list.add(runable_queue);
+				}
+			}
+		}
+		if (queue_list.isEmpty()) {
+			return "";
+		} else {
+			Random random_inst = new Random();
+			int index = random_inst.nextInt(queue_list.size());
+			return queue_list.get(index);
+		}
+	}
+	
 	private String get_highest_queue_name(ArrayList<String> full_list) {
 		//highest priority with earlier received time will be taken(sorted full_list)
 		int record_priority = 999;
@@ -1717,7 +1757,8 @@ public class task_waiter extends Thread {
 			TASK_WAITER_LOGGER.info(waiter_name + ":Sleep error out");
 		}
 		task_info.decrease_executing_admin_queue_list(queue_name);	
-		task_info.decrease_processing_admin_queue_list(queue_name);				
+		task_info.decrease_processing_admin_queue_list(queue_name);
+		task_info.decrease_local_priority_queue_list(queue_name);
 		task_info.increase_emptied_admin_queue_list(queue_name);
 		// release booking info
 		if(!greed_mode.equals("true")) {

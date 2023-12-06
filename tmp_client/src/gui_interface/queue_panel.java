@@ -451,6 +451,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 	private JMenuItem show;
 	private JMenuItem sort_priority, sort_runid, sort_time, sort_status;
 	private JMenuItem run_play, run_pause, run_stop;
+	private JMenuItem priority, priority_red, priority_def;
 	private JMenuItem details, results, submit;
 	private JMenuItem delete;
 	private main_frame main_view;
@@ -496,7 +497,16 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		run.add(run_pause);
 		run.add(run_stop);
 		this.add(run);
-		this.addSeparator();
+		this.addSeparator();		
+		priority = new JMenu("Priority");
+		priority_red = new JMenuItem("Red");
+		priority_red.setToolTipText("High priority for this run, only happens on this Client.");
+		priority_red.addActionListener(this);
+		priority_def = new JMenuItem("Def");
+		priority_def.setToolTipText("Default priority from server/local.");
+		priority_def.addActionListener(this);
+		priority.add(priority_red);
+		priority.add(priority_def);
 		details = new JMenuItem("Details");
 		details.addActionListener(this);
 		results = new JMenuItem("Results");
@@ -504,6 +514,7 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 		submit = new JMenuItem("Submit");
 		submit.addActionListener(this);		
 		this.add(details);
+		this.add(priority);
 		this.add(results);
 		this.add(submit);
 		this.addSeparator();
@@ -668,6 +679,16 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
 			view_info.update_run_action_request(queue_name, queue_enum.STOPPED);
 		}
+		if (arg0.getSource().equals(priority_red)) {
+			//System.out.println("priority_red clicked");
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			task_info.increase_local_priority_queue_list(queue_name);
+		}
+		if (arg0.getSource().equals(priority_def)) {
+			//System.out.println("priority_red clicked");
+			String queue_name = (String) table.getValueAt(table.getSelectedRow(), 0);
+			task_info.decrease_local_priority_queue_list(queue_name);
+		}
 		if (arg0.getSource().equals(details)) {
 			//System.out.println("detail clicked");
 			String select_queue = (String) table.getValueAt(table.getSelectedRow(), 0);
@@ -697,5 +718,4 @@ class capture_pop_memu extends JPopupMenu implements ActionListener {
 			view_info.add_request_delete_queue(queue_name);
 		}		
 	}
-
 }
