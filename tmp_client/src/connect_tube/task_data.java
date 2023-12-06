@@ -70,6 +70,9 @@ public class task_data {
 	private ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> local_priority_queue_list = new ArrayList<String>();
+	// update by console
+	private ArrayList<String> local_priority_runid_list = new ArrayList<String>();
 	// ====updated by result waiter====
 	//private ArrayList<String> thread_pool_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
@@ -111,6 +114,8 @@ public class task_data {
 			result.put("executing_admin_queue_list", executing_admin_queue_list.toString());
 			result.put("pending_admin_queue_list", pending_admin_queue_list.toString());
 			result.put("waiting_admin_queue_list", waiting_admin_queue_list.toString());
+			result.put("local_priority_queue_list", local_priority_queue_list.toString());
+			result.put("local_priority_runid_list", local_priority_runid_list.toString());
 			result.put("emptied_admin_queue_list", emptied_admin_queue_list.toString());
 			result.put("watching_admin_queue_list", watching_admin_queue_list.toString());
 			result.put("running_admin_queue_list", running_admin_queue_list.toString());
@@ -135,8 +140,24 @@ public class task_data {
 		try {
 			Iterator<String> update_it = update_data.keySet().iterator();
 			while (update_it.hasNext()) {
-				String ob_name = update_it.next();
-				update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+				String obj_name = update_it.next();
+				String optin_value = update_data.get(obj_name);
+				switch(obj_name) {
+				case "local_priority_queue_list":
+				    if (!local_priority_queue_list.contains(optin_value)) {
+				    	local_priority_queue_list.add(optin_value);
+				    }
+				    update_status.put(obj_name, "PASS");
+				    break;
+				case "local_priority_runid_list":
+				    if (!local_priority_runid_list.contains(optin_value)) {
+				    	local_priority_runid_list.add(optin_value);
+				    }
+				    update_status.put(obj_name, "PASS");
+				    break;				    
+				default:
+					update_status.put(obj_name, "FAIL, " + obj_name + " console update not supported yet.");
+				}
 			}
 		} finally {
 			rw_lock.writeLock().unlock();
@@ -1320,6 +1341,72 @@ public class task_data {
 		}
 	}
 
+	public ArrayList<String> get_local_priority_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(local_priority_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void increase_local_priority_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if (!local_priority_queue_list.contains(queue_name)) {
+				local_priority_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void decrease_local_priority_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if (local_priority_queue_list.contains(queue_name)) {
+				local_priority_queue_list.remove(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public ArrayList<String> get_local_priority_runid_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(local_priority_runid_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void increase_local_priority_runid_list(String run_id) {
+		rw_lock.writeLock().lock();
+		try {
+			if (!local_priority_runid_list.contains(run_id)) {
+				local_priority_runid_list.add(run_id);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void decrease_local_priority_runid_list(String run_id) {
+		rw_lock.writeLock().lock();
+		try {
+			if (local_priority_runid_list.contains(run_id)) {
+				local_priority_runid_list.remove(run_id);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public ArrayList<String> get_thread_pool_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();

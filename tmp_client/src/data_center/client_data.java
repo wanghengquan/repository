@@ -77,9 +77,9 @@ public class client_data {
 		try {
 			Iterator<String> update_it = update_data.keySet().iterator();
 			while (update_it.hasNext()) {
-				String ob_name = update_it.next();
-				String optin_value = update_data.get(ob_name);
-				switch(ob_name) {
+				String obj_name = update_it.next();
+				String optin_value = update_data.get(obj_name);
+				switch(obj_name) {
 				case "client_hash":
 					if (data_check.str_regexp_check(optin_value, ".+\\..+=.+" )){
 						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
@@ -89,12 +89,12 @@ public class client_data {
 						if(client_hash.containsKey(optin_str1)) {
 							HashMap<String, String> option_hash = client_hash.get(optin_str1);
 							option_hash.put(optin_str2, value_str);
-							update_status.put(ob_name, "PASS");
+							update_status.put(obj_name, "PASS");
 						} else {
-							update_status.put(ob_name, "FAIL, " + optin_str1 + " doesn't exists.");
+							update_status.put(obj_name, "FAIL, " + optin_str1 + " doesn't exists.");
 						}
 					} else {
-						update_status.put(ob_name, "FAIL, Wrong input string format, should be: sss.sss=sss");
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: sss.sss=sss");
 					}
 					break;
 				case "use_soft_insts":
@@ -102,31 +102,31 @@ public class client_data {
 						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
 						String value_str = new String(optin_value.split("\\s*=\\s*")[1]);
 						use_soft_insts.put(optin_str, Integer.valueOf(value_str));
-						update_status.put(ob_name, "PASS");
+						update_status.put(obj_name, "PASS");
 					} else {
-						update_status.put(ob_name, "FAIL, Wrong input string format, should be: sss=d");
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: sss=d");
 					}
 					break;					
 				case "registered_memory":	
 					if (data_check.str_regexp_check(optin_value, "\\d+\\.\\d+" )){
 						String value_str = new String(optin_value.trim());
 						registered_memory = Float.valueOf(value_str);
-						update_status.put(ob_name, "PASS");
+						update_status.put(obj_name, "PASS");
 					} else {
-						update_status.put(ob_name, "FAIL, Wrong input string format, should be: dd.dd");
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: dd.dd");
 					}
 					break;
 				case "registered_space":	
 					if (data_check.str_regexp_check(optin_value, "\\d+\\.\\d+" )){
 						String value_str = new String(optin_value.trim());
 						registered_space = Float.valueOf(value_str);
-						update_status.put(ob_name, "PASS");
+						update_status.put(obj_name, "PASS");
 					} else {
-						update_status.put(ob_name, "FAIL, Wrong input string format, should be: dd.dd");
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: dd.dd");
 					}
-					break;					
+					break;	
 				default:
-					update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+					update_status.put(obj_name, "FAIL, " + obj_name + " console update not supported yet.");
 				}
 			}
 		} finally {

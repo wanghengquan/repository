@@ -249,7 +249,10 @@ class initial_status extends abstract_status {
 				client.switch_info.set_client_stop_request(exit_enum.TASK3);
 			}
 		};
-		client.misc_timer.schedule(timeout_request, num_str_update(client_timeout) * 1000);
+		long timeout = num_str_update(client_timeout);
+		if (timeout > 0) {
+			client.misc_timer.schedule(timeout_request, timeout * 1000);
+		}
 	}
 	
 	private long num_str_update(
