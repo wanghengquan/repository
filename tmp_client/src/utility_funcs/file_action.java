@@ -122,7 +122,7 @@ public class file_action {
 			return false;
 		}
 		if (!path_dobj.canWrite()) {
-			FILE_ACTION_LOGGER.warn("Path doesn't writeable:" + path);
+			FILE_ACTION_LOGGER.warn("Del1:Path doesn't writeable:" + path);
 			return false;
 		}
 		for(File file_obj:path_dobj.listFiles(filter)) {

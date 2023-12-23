@@ -164,7 +164,8 @@ class HandleExceptionProcess:
             process_work_path = process_work_path.lower()
             kill_work_path = kill_work_path.replace('\\', '/')
             process_work_path = process_work_path.replace('\\', '/')            
-        if kill_work_path in process_work_path:
+        kill_patt = re.compile(kill_work_path + "(/|$)", re.I)
+        if kill_patt.search(process_work_path):
             return 1
         else:
             return 0 

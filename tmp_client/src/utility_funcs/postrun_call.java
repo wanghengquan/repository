@@ -339,8 +339,9 @@ public class postrun_call implements Callable<Object> {
 	}
 	
 	private Boolean run_process_cleanup(String clean_work_path) {
-		String pyton_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
-		String cmd = pyton_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String cmd = python_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		run_msg.add("Process cleanup cmd: " + cmd);
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
 			excute_retruns = system_cmd.run(cmd);
