@@ -520,7 +520,7 @@ public class task_waiter extends Thread {
 		return status;
 	}
 	
-	private Boolean system_resource_booking(
+	private ArrayList<String> system_resource_booking_issue_array(
 			String queue_name,
 			float est_mem,
 			float est_space,
@@ -528,22 +528,24 @@ public class task_waiter extends Thread {
 			String greed_mode,
 			HashMap<String, HashMap<String, String>> admin_data
 			){
-		Boolean book_status = Boolean.valueOf(true);		
+		//Boolean book_status = Boolean.valueOf(true);
+		ArrayList<String> booking_issue = new ArrayList<String>();
 		//system ready? CPU, MEM, Space
 		if (!system_cpu_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":System CPU not available, skipping:" + queue_name);
-			return false;
+			TASK_WAITER_LOGGER.info(waiter_name + ":Required CPU not available, skipping:" + queue_name);
+			booking_issue.add("req_cpu");
 		}
 		if (!system_mem_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":System MEM not available, skipping:" + queue_name);
-			return false;
+			TASK_WAITER_LOGGER.info(waiter_name + ":Required MEM not available, skipping:" + queue_name);
+			booking_issue.add("req_mem");
 		}
 		if (!system_space_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":System Space not available, skipping:" + queue_name);
-			return false;
+			TASK_WAITER_LOGGER.info(waiter_name + ":Required Space not available, skipping:" + queue_name);
+			booking_issue.add("req_space");
 		}
-		//
-		//
+		if (booking_issue.size()> 0) {
+			return booking_issue;
+		}
 		//=======booking=======
 		//1. software available check
 		//greed = true,do not reserve any quota
@@ -553,13 +555,15 @@ public class task_waiter extends Thread {
 			Boolean software_available = client_info.software_available_check(admin_data.get("Software"), cmds_parallel);
 			if (!software_available) {
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
-				return false;
+				booking_issue.add("sys_sw");
+				return booking_issue;
 			}
 		} else {
 			Boolean software_booking = client_info.booking_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 			if (!software_booking) {
 				TASK_WAITER_LOGGER.debug(waiter_name + ":No SW resource available, skipping:" + queue_name);
-				return false;
+				booking_issue.add("sys_sw");
+				return booking_issue;
 			}
 		}
 		//2. memory ready for launch another thread
@@ -568,7 +572,8 @@ public class task_waiter extends Thread {
 			if(!greed_mode.equals("true")) {
 				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 			}
-			return false;
+			booking_issue.add("est_mem");
+			return booking_issue;
 		}
 		//3. space ready for launch another thread
 		if (!system_space_booking(est_space)) {
@@ -577,7 +582,8 @@ public class task_waiter extends Thread {
 				client_info.release_used_soft_insts(admin_data.get("Software"), cmds_parallel);
 			}
 			client_info.decrease_registered_memory(est_mem);
-			return false;
+			booking_issue.add("est_space");
+			return booking_issue;
 		} 
 		//3. thread booking
 		Boolean thread_booking = pool_info.booking_reserved_threads(1);
@@ -588,9 +594,10 @@ public class task_waiter extends Thread {
 			}
 			client_info.decrease_registered_space(est_space);
 			client_info.decrease_registered_memory(est_mem);
-			return false;
+			booking_issue.add("est_thread");
+			return booking_issue;
 		}
-		return book_status;
+		return booking_issue;
 	}
 	
 	private HashMap<String, HashMap<String, String>> get_final_admin_data(
@@ -1723,13 +1730,14 @@ public class task_waiter extends Thread {
 	}
 	
 	private void run_invalid_resource_booking_jobs(
-			String queue_name
+			String queue_name,
+			ArrayList<String> issue_array
 			) {
 		//reporting
 		if (waiter_name.equalsIgnoreCase("tw_0") && !switch_info.get_local_console_mode()){
-			TASK_WAITER_LOGGER.info(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+			TASK_WAITER_LOGGER.info(waiter_name + ":System resource limitation:" + issue_array.toString() + ", Skipping:" + queue_name);
 		} else {
-			TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation, Skipping:" + queue_name);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":System resource limitation:" + issue_array.toString() + ", Skipping:" + queue_name);
 		}
 	}
 	
@@ -1990,8 +1998,11 @@ public class task_waiter extends Thread {
 			String greed_mode = get_admin_queue_greed_mode(queue_name, admin_data);
 			Boolean cmds_parallel = Boolean.valueOf(admin_data.get("LaunchCommand").getOrDefault("parallel", public_data.TASK_DEF_CMD_PARALLEL).trim());
 			// task 4 : resource booking (memory, thread, software)
-			if (!system_resource_booking(queue_name, est_mem, est_space, cmds_parallel, greed_mode, admin_data)) {
-				run_invalid_resource_booking_jobs(queue_name);
+			
+			ArrayList<String> issue_array = new ArrayList<String>();
+			issue_array.addAll(system_resource_booking_issue_array(queue_name, est_mem, est_space, cmds_parallel, greed_mode, admin_data));
+			if (issue_array.size() > 0) {
+				run_invalid_resource_booking_jobs(queue_name, issue_array);
 				continue;
 			}
 			// task 5 : get task data =>key variable 3: task_data OK now

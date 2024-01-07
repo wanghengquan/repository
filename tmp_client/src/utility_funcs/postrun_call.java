@@ -114,8 +114,8 @@ public class postrun_call implements Callable<Object> {
 		try {
 			used_space = FileUtils.sizeOfDirectory(file) / (float)1024 / (float)1024 / (float)1024; ;
 		} catch (Exception e) {
-			System.out.println("Space check error out:" + case_path);
-			e.printStackTrace();
+			run_msg.add("Case space check error.");
+			//e.printStackTrace();
 		} finally {
 			;
 		}
