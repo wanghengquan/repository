@@ -400,7 +400,10 @@ public class xml_parser {
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.contains(time_modified1) && !time_create.contains(time_modified2)) {
+		String time_create_plus10 = time_info.get_user_time_plus_seconds(time_create, 10);
+		if (time_create.contains(time_modified1) || time_create.contains(time_modified2) || time_create_plus10.contains(time_modified1) || time_create_plus10.contains(time_modified2)) {
+			XML_PARSER_LOGGER.info("xml modify time check pass:" + xml_path);
+		} else {
 			XML_PARSER_LOGGER.info("xml modified outside, ignore:" + xml_path);
 			return admin_queue_data;
 		}
@@ -430,7 +433,10 @@ public class xml_parser {
 		Document document = reader.read(xml_fobj);
 		Element level1_element = document.getRootElement();
 		String time_create = level1_element.attributeValue("time");
-		if (!time_create.contains(time_modified1) && !time_create.contains(time_modified2)) {
+		String time_create_plus10 = time_info.get_user_time_plus_seconds(time_create, 10);
+		if (time_create.contains(time_modified1) || time_create.contains(time_modified2) || time_create_plus10.contains(time_modified1) || time_create_plus10.contains(time_modified2)) {
+			XML_PARSER_LOGGER.info("xml modify time check pass:" + xml_path);
+		} else {
 			XML_PARSER_LOGGER.info("xml modified outside, ignore:" + xml_path);
 			return task_queue_data;
 		}
@@ -457,8 +463,9 @@ public class xml_parser {
 
 	public static void main(String[] args) {
 		HashMap<String, HashMap<String, String>> queue_data = new HashMap<String, HashMap<String, String>>();
+		//TreeMap<String, HashMap<String, HashMap<String, String>>> task_data = new TreeMap<String, HashMap<String, HashMap<String, String>>>();
 		try {
-			queue_data = xml_parser.get_xml_file_admin_queue_data("D:/tmp_work_space/logs/retrieve/received_admin/511@run_997_041817_141406.xml");
+			queue_data = xml_parser.get_xml_file_admin_queue_data("D:/tmp_work/logs/retrieve/received_admin/611@t0r0_rerun_240657_1_20231026_135601.xml");
 		} catch (DocumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

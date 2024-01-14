@@ -83,16 +83,18 @@ public class task_waiter extends Thread {
 		return waiter_thread;
 	}
 
-	private void retrieve_queues_into_memory() {
+	private void retrieve_queues_into_memory(
+			String waiter_name
+			) {
 		synchronized (this.getClass()) {
 			task_info.update_received_admin_queues_treemap(
-					import_data.retrieve_disk_dumped_received_admin_data(client_info));
+					import_data.retrieve_disk_dumped_received_admin_data(client_info, waiter_name));
 			task_info.update_processed_admin_queues_treemap(
-					import_data.retrieve_disk_dumped_processed_admin_data(client_info));
+					import_data.retrieve_disk_dumped_processed_admin_data(client_info, waiter_name));
 			task_info.update_received_task_queues_map(
-					import_data.retrieve_disk_dumped_received_task_data(client_info));
+					import_data.retrieve_disk_dumped_received_task_data(client_info, waiter_name));
 			task_info.update_processed_task_queues_map(
-					import_data.retrieve_disk_dumped_processed_task_data(client_info));
+					import_data.retrieve_disk_dumped_processed_task_data(client_info, waiter_name));
 		}
 	}
 
@@ -1945,7 +1947,7 @@ public class task_waiter extends Thread {
 		// initial 1 : import_history_finished_admin_queue
 		task_info.update_finished_admin_queue_list(import_data.import_disk_finished_admin_queue_list(client_info));
 		// initial 2 : retrieve previously dumping working queues
-		retrieve_queues_into_memory();
+		retrieve_queues_into_memory(waiter_name);
 		// initial end
 		task_report report_obj = new task_report(pool_info, client_info);
 		waiter_thread = Thread.currentThread();
