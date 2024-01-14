@@ -156,7 +156,8 @@ public class time_info {
 	}
 	
 	public static long get_timestamp_yyMMdd_HHmmss(
-			String time_date) {
+			String time_date
+			) {
 		long timestamp = 0;
 		SimpleDateFormat format = new SimpleDateFormat("yyMMdd_HHmmss");
 		Date date = null;
@@ -168,6 +169,18 @@ public class time_info {
 			// e.printStackTrace();
 		}
 		return timestamp;
+	}
+	
+	public static String get_user_time_plus_seconds(
+			String time_date, 
+			long plus_secs
+			){
+		long timestamp = 0;
+		long new_timestamp = 0;
+		timestamp = get_timestamp_yyMMdd_HHmmss(time_date);
+		new_timestamp = timestamp + plus_secs;
+		Date date_obj = new Date(new_timestamp *1000);
+		return get_year_date_hhmm(date_obj);
 	}
 	
 	public static void main(String[] argv) {

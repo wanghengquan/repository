@@ -81,7 +81,8 @@ public class config_sync extends Thread {
 	// private function
 
 	private HashMap<String, HashMap<String, String>> import_data_verification(
-			HashMap<String, HashMap<String, String>> ini_data) {
+			HashMap<String, HashMap<String, String>> ini_data
+			) {
 		HashMap<String, HashMap<String, String>> verified_data = new HashMap<String, HashMap<String, String>>();
 		Iterator<String> section_it = ini_data.keySet().iterator();
 		while(section_it.hasNext()){
@@ -325,6 +326,9 @@ public class config_sync extends Thread {
 		HashMap<String, String> cfg_preference_data = new HashMap<String, String>();
 		HashMap<String, String> tmp_machine_data = new HashMap<String, String>();
 		HashMap<String, String> cfg_machine_data = new HashMap<String, String>();
+		HashMap<String, String> tmp_tools_data = new HashMap<String, String>();
+		HashMap<String, String> cfg_tools_data = new HashMap<String, String>();
+		//tmp_preference update
 		tmp_preference_data.put("interface_mode", write_data.get("preference").get("interface_mode"));
 		tmp_preference_data.put("link_mode", write_data.get("preference").get("link_mode"));
 		tmp_preference_data.put("ignore_request", write_data.get("preference").get("ignore_request"));
@@ -346,30 +350,45 @@ public class config_sync extends Thread {
 		tmp_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		tmp_preference_data.put("debug_mode", write_data.get("preference").get("debug_mode"));
 		tmp_preference_data.put("greed_mode", write_data.get("preference").get("greed_mode"));
-		cfg_preference_data.putAll(ini_data.get("tmp_preference"));
+		if (ini_data.containsKey("tmp_preference")) {
+			cfg_preference_data.putAll(ini_data.get("tmp_preference"));
+		}
 		cfg_preference_data.put("work_space", write_data.get("preference").get("work_space"));
 		cfg_preference_data.put("save_space", write_data.get("preference").get("save_space"));
 		cfg_preference_data.put("interface_mode", write_data.get("preference").get("interface_mode"));
+		//tmp_machine update
 		tmp_machine_data.put("terminal", write_data.get("Machine").get("terminal"));
 		tmp_machine_data.put("group", write_data.get("Machine").get("group"));
 		tmp_machine_data.put("private", write_data.get("Machine").get("private"));
 		tmp_machine_data.put("unattended", write_data.get("Machine").get("unattended"));
-		cfg_machine_data.putAll(ini_data.get("tmp_machine"));
-		if (write_data.containsKey("tools")) {
-			write_data.put("tmp_tools", write_data.get("tools"));
+		if (ini_data.containsKey("tmp_machine")) {
+			cfg_machine_data.putAll(ini_data.get("tmp_machine"));
 		}
+		//tmp_tools update
+		tmp_tools_data.put("python", write_data.get("tools").get("python"));
+		tmp_tools_data.put("perl", write_data.get("tools").get("perl"));
+		tmp_tools_data.put("ruby", write_data.get("tools").get("ruby"));
+		tmp_tools_data.put("svn", write_data.get("tools").get("svn"));
+		tmp_tools_data.put("git", write_data.get("tools").get("git"));
+		if (ini_data.containsKey("tmp_tools")) {
+			cfg_tools_data.putAll(ini_data.get("tmp_tools"));
+		}
+		//confirm the data for different mode
+		if (interface_mode.equalsIgnoreCase("gui")){
+			write_data.put("tmp_preference", tmp_preference_data);
+			write_data.put("tmp_machine", tmp_machine_data);
+			write_data.put("tmp_tools", tmp_tools_data);
+		} else {
+			write_data.put("tmp_preference", cfg_preference_data);
+			write_data.put("tmp_machine", cfg_machine_data);
+			write_data.put("tmp_tools", cfg_tools_data);
+		}
+		//remove others
 		write_data.remove("preference");
 		write_data.remove("Machine");
 		write_data.remove("System");
 		write_data.remove("tools");
 		write_data.remove("CoreScript");
-		if (interface_mode.equalsIgnoreCase("gui")){
-			write_data.put("tmp_preference", tmp_preference_data);
-			write_data.put("tmp_machine", tmp_machine_data);
-		} else {
-			write_data.put("tmp_preference", cfg_preference_data);
-			write_data.put("tmp_machine", cfg_machine_data);
-		}
 		CONFIG_SYNC_LOGGER.info(write_data.toString());
 		try {
 			ini_runner.write_ini_data(write_data);
