@@ -593,7 +593,7 @@ public class local_tube {
 		List<List<String>> one_macro_data = new ArrayList<List<String>>(); 
 		one_macro_data.addAll(macro_data);
 		// all condition check
-		Boolean condition = Boolean.valueOf(true);
+		Boolean macro_match = Boolean.valueOf(true);
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
 				LOCAL_TUBE_LOGGER.warn("Skip macro line:" + line.toString());
@@ -603,28 +603,50 @@ public class local_tube {
 			String column = line.get(1).trim();
 			if (!behavior.equals("condition")) {
 				continue;
-			}			
-			//get suite sheet macro value list
-			List<String> value_list = new ArrayList<String>();
-			value_list.addAll(Arrays.asList(line.get(2).trim().replaceAll("=", "").split("\\s*,\\s*")));
-			//get case sheet raw value list
+			}
+			//Start match check
+			String condition_value = line.get(2).trim();
 			List<String> raw_list = new ArrayList<String>();
 			raw_list.addAll(Arrays.asList(raw_data.getOrDefault(column, "").split("\\s*,\\s*")));
-			//match check
 			Boolean current_condition = Boolean.valueOf(false);
-			for (String macro_value : value_list) {
-				if(raw_list.contains(macro_value)) {
-					current_condition = true;
-					break;
+			if(data_check.str_regexp_check(condition_value, "^=")) {
+				current_condition = false;
+				List<String> condition_list = new ArrayList<String>();
+				condition_list.addAll(Arrays.asList(condition_value.replaceAll("^=", "").split("\\s*,\\s*")));
+				for (String condition : condition_list) {
+					if(raw_list.contains(condition)) {
+						current_condition = true;
+						break;
+					}
 				}
+			} else if (data_check.str_regexp_check(condition_value, "^!=")) {
+				current_condition = true;
+				List<String> condition_list = new ArrayList<String>();
+				condition_list.addAll(Arrays.asList(condition_value.replaceAll("^!=", "").split("\\s*,\\s*")));
+				for (String condition : condition_list) {
+					if(raw_list.contains(condition)) {
+						current_condition = false;
+						break;
+					}
+				}
+			} else if (data_check.str_regexp_check(condition_value, "^>=")) {
+				current_condition = data_check.num_not_less_check(raw_list.get(0), condition_value.replaceAll("^>=", ""));
+			} else if (data_check.str_regexp_check(condition_value, "^<=")) {
+				current_condition = data_check.num_not_greater_check(raw_list.get(0), condition_value.replaceAll("^<=", ""));
+			} else if (data_check.str_regexp_check(condition_value, "^>")) {
+				current_condition = data_check.num_greater_check(raw_list.get(0), condition_value.replaceAll("^>", ""));
+			} else if (data_check.str_regexp_check(condition_value, "^<")) {
+				current_condition = data_check.num_less_check(raw_list.get(0), condition_value.replaceAll("^<", ""));
+			} else {
+				LOCAL_TUBE_LOGGER.warn("Unsupported macro condition, mismatch considered:" + line.toString());
 			}
 			//final check
 			if(!current_condition) {
-				condition = false;
+				macro_match = false;
 				break;
 			}
 		}
-		return condition;
+		return macro_match;
 	}
 
 	private HashMap<String, String> get_case_element_value_map(
@@ -1118,8 +1140,10 @@ public class local_tube {
 		return globle_data;
 	}
 
-	private Boolean is_request_match(HashMap<String, HashMap<String, String>> queue_data,
-			HashMap<String, HashMap<String, String>> design_data) {
+	private Boolean is_request_match(
+			HashMap<String, HashMap<String, String>> queue_data,
+			HashMap<String, HashMap<String, String>> design_data
+			) {
 		// compare sub map data Software, System, Machine
 		Boolean is_match = Boolean.valueOf(true);
 		List<String> check_items = new ArrayList<String>();
@@ -2287,9 +2311,9 @@ public class local_tube {
 		System.out.println(task_info.get_received_task_queues_map().toString());
 		System.out.println(task_info.get_received_admin_queues_treemap().toString()); 
 		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
-		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "D:/work_space/tcl_suite/aa/pn_00_tcl_plus/msg/msg_suppress", "D:/tmp_work", imported_data);
-		System.out.println(task_info.get_received_task_queues_map().toString());
-		System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "D:/work_space/tcl_suite/aa/pn_00_tcl_plus/msg/msg_suppress", "D:/tmp_work", imported_data);
+		//System.out.println(task_info.get_received_task_queues_map().toString());
+		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*
 		xml_parser xml_parser2 = new xml_parser();
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
