@@ -402,7 +402,7 @@ public class cmd_parser {
 	 * print help message
 	 */
 	private void get_help(Options options_obj) {
-		String usage = "[clientc.exe|client|java -jar client.jar] [-h] [-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S <option1=value1>] [-d dat_file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all,software,system,machine>] [-G <auto,true,false>] [-t <thread_num>|-A] [-P <pool_size>] [-T <termination_time>] [-w <work_path>] [-s <save_path>][--python <python_path> | --perl <perl_path> | --ruby <ruby_path>] [--svn <svn_path> | --git <git_path>]";
+		String usage = "[clientc.exe|client|java -jar client.jar] [-h] [-D] [-c|-g|-I] [-U] [-r | -l (-f <file_path1,file_path2>|-p <dir_path1,dir_path2> [-k <key_pattern>] [-x <exe_file>] [-a arguments] [-S <option1=value1>] [-d dat_file] | -L <list_file>)] [-H|-C [-K|-Z]] [-e|E <env1=value1,env2=value2...>] [-i <all,software,system,machine>] [-G <auto,true,false>] [-t <thread_num>|-A] [-P <pool_size>] [-T <termination_time>] [-w <work_space>] [-s <save_space>][--python <python_path> | --perl <perl_path> | --ruby <ruby_path>] [--svn <svn_path> | --git <git_path>]";
 		String header = "Here is the details:\n\n";
 		String footer = "\nIssue report : Jason.Wang@latticesemi.com";
 		HelpFormatter formatter = new HelpFormatter();
