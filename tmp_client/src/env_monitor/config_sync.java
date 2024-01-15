@@ -64,7 +64,7 @@ public class config_sync extends Thread {
 	private client_data client_info;
 	private switch_data switch_info;
 	//private String line_separator = System.getProperty("line.separator");
-	private String user_home_dir = System.getProperty("user.home");
+	private String user_home_dir = System.getProperty("user.home").replaceAll("\\\\", "/");
 	private String user_name = System.getProperty("user.name");
 	private int base_interval = public_data.PERF_THREAD_BASE_INTERVAL;
 
