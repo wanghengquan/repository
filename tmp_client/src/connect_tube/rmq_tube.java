@@ -341,7 +341,7 @@ public class rmq_tube {
 			threads = public_data.TASK_DEF_MAX_THREADS;
 		} else {
 			threads = msg_data.get("Preference").get("max_threads");
-			Pattern p = Pattern.compile("^\\d$");
+			Pattern p = Pattern.compile("^\\d+$");
 			Matcher m = p.matcher(threads);
 			if (!m.find()) {
 				threads = public_data.TASK_DEF_MAX_THREADS;
