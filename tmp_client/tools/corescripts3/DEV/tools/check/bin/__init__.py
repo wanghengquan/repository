@@ -81,3 +81,5 @@ CheckSimulationFlow().plugin()
 CheckValue().plugin()
 
 CheckClockSkew().plugin()
+
+CheckMacroArea().plugin()

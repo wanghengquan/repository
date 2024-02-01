@@ -908,9 +908,26 @@ def _remove_console_log_file(design_path):
         rm_with_error(log_file)
 
 
+def _add_disable_gpu_in_public_pl_file(design_path):
+    p_add = re.compile(r'(startApplication)\("(pnmain|radiant)"\);')
+    f_add = lambda x: p_add.sub(r'\1("\2 --disable-gpu");', x)
+    for a, b, c in os.walk(design_path):
+        public_pl_file = os.path.join(a, "public.pl")
+        if os.path.isfile(public_pl_file):
+            old_lines = open(public_pl_file).readlines()
+            new_lines = list()
+            for foo in old_lines:
+                new_foo = f_add(foo)
+                new_foo = new_foo.rstrip()
+                new_lines.append(new_foo)
+            update_file(public_pl_file, new_lines)
+            return
+
+
 def very_first_process(design_path):
     _update_test_pl_file(design_path)
     _remove_console_log_file(design_path)
+    # _add_disable_gpu_in_public_pl_file(design_path)
 
 
 def sort_by_num(raw_string):

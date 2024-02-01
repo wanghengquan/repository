@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import utility_funcs.data_check;
 import utility_funcs.deep_clone;
 
 public class client_data {
@@ -34,6 +35,7 @@ public class client_data {
 	private HashMap<String, Integer> max_soft_insts = new HashMap<String, Integer>();
 	private HashMap<String, Integer> use_soft_insts = new HashMap<String, Integer>();
 	private float registered_memory = 0.0f;
+	private float registered_space = 0.0f;
 	/*
 	 * private String task_assign_mode = public_data.DEF_TASK_ASSIGN_MODE;
 	 * private String thread_work_mode = public_data.DEF_MAX_THREAD_MODE;
@@ -60,12 +62,79 @@ public class client_data {
 			result.put("max_soft_insts", max_soft_insts.toString());
 			result.put("use_soft_insts", use_soft_insts.toString());
 			result.put("registered_memory", String.valueOf(registered_memory) + "(G)");
+			result.put("registered_space", String.valueOf(registered_space) + "(G)");
 		} finally {
 			rw_lock.readLock().unlock();
 		}
 		return result;
 	}
 	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String obj_name = update_it.next();
+				String optin_value = update_data.get(obj_name);
+				switch(obj_name) {
+				case "client_hash":
+					if (data_check.str_regexp_check(optin_value, ".+\\..+=.+" )){
+						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
+						String value_str = new String(optin_value.split("\\s*=\\s*")[1]);
+						String optin_str1 = new String(optin_str.split("\\s*\\.\\s*", 2)[0]);
+						String optin_str2 = new String(optin_str.split("\\s*\\.\\s*", 2)[1]);
+						if(client_hash.containsKey(optin_str1)) {
+							HashMap<String, String> option_hash = client_hash.get(optin_str1);
+							option_hash.put(optin_str2, value_str);
+							update_status.put(obj_name, "PASS");
+						} else {
+							update_status.put(obj_name, "FAIL, " + optin_str1 + " doesn't exists.");
+						}
+					} else {
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: sss.sss=sss");
+					}
+					break;
+				case "use_soft_insts":
+					if (data_check.str_regexp_check(optin_value, ".+=\\d+" )){
+						String optin_str = new String(optin_value.split("\\s*=\\s*")[0]);
+						String value_str = new String(optin_value.split("\\s*=\\s*")[1]);
+						use_soft_insts.put(optin_str, Integer.valueOf(value_str));
+						update_status.put(obj_name, "PASS");
+					} else {
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: sss=d");
+					}
+					break;					
+				case "registered_memory":	
+					if (data_check.str_regexp_check(optin_value, "\\d+\\.\\d+" )){
+						String value_str = new String(optin_value.trim());
+						registered_memory = Float.valueOf(value_str);
+						update_status.put(obj_name, "PASS");
+					} else {
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: dd.dd");
+					}
+					break;
+				case "registered_space":	
+					if (data_check.str_regexp_check(optin_value, "\\d+\\.\\d+" )){
+						String value_str = new String(optin_value.trim());
+						registered_space = Float.valueOf(value_str);
+						update_status.put(obj_name, "PASS");
+					} else {
+						update_status.put(obj_name, "FAIL, Wrong input string format, should be: dd.dd");
+					}
+					break;	
+				default:
+					update_status.put(obj_name, "FAIL, " + obj_name + " console update not supported yet.");
+				}
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
+
 	public HashMap<String, HashMap<String, String>> get_client_data() {
 		rw_lock.readLock().lock();
 		HashMap<String, HashMap<String, String>> temp = new HashMap<String, HashMap<String, String>>();
@@ -76,7 +145,7 @@ public class client_data {
 		}
 		return temp;
 	}
-
+	
 	public void set_client_data(HashMap<String, HashMap<String, String>> update_data) {
 		rw_lock.writeLock().lock();
 		try {
@@ -397,7 +466,10 @@ public class client_data {
 		}
 	}
 	
-	public void update_scan_build_data(String section, HashMap<String, String> update_data) {
+	public void update_scan_build_data(
+			String section, 
+			HashMap<String, String> update_data
+			) {
 		rw_lock.writeLock().lock();
 		try {
 			HashMap<String, String> temp_data = new HashMap<String, String>();
@@ -799,6 +871,56 @@ public class client_data {
 			rw_lock.writeLock().unlock();
 		}
 	}
+	
+	//test_waiter registered_space
+	public void clean_registered_space() {
+		rw_lock.writeLock().lock();
+		try {
+			registered_space = 0.0f;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public float get_registered_space() {
+		rw_lock.readLock().lock();
+		float temp = 0.0f;
+		try {
+			temp = registered_space;
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void decrease_registered_space(
+			float value
+			) {
+		rw_lock.writeLock().lock();
+		float new_value = 0.0f;
+		try {
+			new_value = registered_space - value;
+			if (new_value < 0) {
+				registered_space = 0.0f;
+			} else {
+				registered_space = new_value;
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void increase_registered_space(
+			float value
+			) {
+		rw_lock.writeLock().lock();
+		try {
+			registered_space = registered_space + value;
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	/*
 	 * main entry for test
 	 */

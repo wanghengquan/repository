@@ -48,7 +48,7 @@ public class hall_manager extends Thread {
 	private static final Logger HALL_MANAGER_LOGGER = LogManager.getLogger(hall_manager.class.getName());
 	private boolean stop_request = false;
 	private boolean wait_request = false;
-	private boolean auto_adjust = false;
+	//private boolean auto_adjust = false;
 	private boolean auto_adjust_thread_match = false;
 	private Integer auto_adjust_prvious_finish = 0;
 	private Thread current_thread;
@@ -286,7 +286,7 @@ public class hall_manager extends Thread {
 		int show_queue_number = 6;
 		HALL_MANAGER_LOGGER.info("");
 		HALL_MANAGER_LOGGER.info(">>>==========Console Report==========");
-		HALL_MANAGER_LOGGER.info(">>>Current Time:" + time_info.get_date_time());
+		HALL_MANAGER_LOGGER.info(">>>Local Time:" + time_info.get_date_time());
 		HALL_MANAGER_LOGGER.info(">>>Run Time:" + get_client_runtime());		
 		//HALL_MANAGER_LOGGER.info(">>>Run  mode:" + client_info.get_client_preference_data().get("interface_mode"));
 		//HALL_MANAGER_LOGGER.info(">>>link mode:" + client_info.get_client_preference_data().get("link_mode"));
@@ -331,9 +331,10 @@ public class hall_manager extends Thread {
 			HALL_MANAGER_LOGGER.info(">>>Finished Queue:" + finished_queue_list.toString());
 		}
 		// report thread using
+		String thread_mode = new String(pool_info.get_pool_threads_auto_adjust() ? "(A)" : "(M)");
 		String max_thread = String.valueOf(pool_info.get_pool_current_size());
 		String used_thread = String.valueOf(pool_info.get_pool_used_threads());
-		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread);
+		HALL_MANAGER_LOGGER.info(">>>Used Thread:" + used_thread + "/" + max_thread + thread_mode);
 		HALL_MANAGER_LOGGER.info(">>>Run Summary:" + get_client_run_case_summary());
 		HALL_MANAGER_LOGGER.info(">>>==================================");
 		HALL_MANAGER_LOGGER.info("");
@@ -395,7 +396,7 @@ public class hall_manager extends Thread {
 		String title = title_sb.toString();
 		//generate message line
 		String thread_mode = new String();
-		thread_mode = auto_adjust ? "A" : "M";
+		thread_mode = pool_info.get_pool_threads_auto_adjust() ? "A" : "M";
 		int use_thread = pool_info.get_pool_used_threads();
 		int max_thread = pool_info.get_pool_current_size();
 		HashMap<String, String> system_data = new HashMap<String, String>();
@@ -416,12 +417,12 @@ public class hall_manager extends Thread {
 	}
 	
 	private void thread_auto_adjustment_str_check() {
-		if (auto_adjust) {
+		if (pool_info.get_pool_threads_auto_adjust()) {
 			return;//already in auto adjustment status
 		}
 		String def_thread_str = client_info.get_client_preference_data().get("max_threads");
 		int def_thread = Integer.parseInt(def_thread_str);		
-		//condition1: used thread = max_threads setting
+		//condition1: used_thread = max_threads setting
 		if (!auto_adjust_thread_match) {
 			int used_thread = pool_info.get_pool_used_threads();
 			if (used_thread < def_thread) {
@@ -436,17 +437,17 @@ public class hall_manager extends Thread {
 		int new_finished_number = get_client_current_run_case_number() - auto_adjust_prvious_finish;
 		int half_def_thread_num = def_thread / 2;
 		if (new_finished_number >= half_def_thread_num) {
-			auto_adjust = true;
+			pool_info.set_pool_threads_auto_adjust(true);
 		}
 	}
 	
 	private void thread_auto_adjustment_end_check() {
-		if (!auto_adjust) {
+		if (!pool_info.get_pool_threads_auto_adjust()) {
 			return;//already in non-auto adjustment status
 		}
 		int used_thread = pool_info.get_pool_used_threads();
 		if (used_thread <= 0) {
-			auto_adjust = false;
+			pool_info.set_pool_threads_auto_adjust(false);
 			auto_adjust_thread_match = false;
 			auto_adjust_prvious_finish = 0;
 		}
@@ -487,7 +488,7 @@ public class hall_manager extends Thread {
 		}
 		thread_auto_adjust_counter += 1;
 		if(thread_auto_adjust_counter <= public_data.PERF_AUTO_ADJUST_CYCLE){
-			return;// adjust cycle = 12 * 10 seconds
+			return;// adjust cycle = 6 * 10 seconds
 		}
 		//only when used thread >= pool_curent_size, this feature work
 		String def_thread_str = client_info.get_client_preference_data().get("max_threads");
@@ -871,11 +872,11 @@ public class hall_manager extends Thread {
 		if (pool_info.get_pool_current_size() != limit_threads) {
 			if (limit_threads > 0 && limit_threads <= pool_info.get_pool_maximum_size()) {
 				pool_info.set_pool_current_size(limit_threads);
-				auto_adjust = false;
+				pool_info.set_pool_threads_auto_adjust(false);
 				auto_adjust_thread_match = false;
 				auto_adjust_prvious_finish = 0;
 			} else {
-				if (!auto_adjust) {
+				if (!pool_info.get_pool_threads_auto_adjust()) {
 					reset_default_max_thread();
 				}
 			}
@@ -960,7 +961,7 @@ public class hall_manager extends Thread {
 	private void job_implementation_monitor() {
 		thread_auto_adjustment_status_check();
 		// task 1 : Maximum threads adjustment
-		if(auto_adjust) {
+		if(pool_info.get_pool_threads_auto_adjust()) {
 			implement_thread_auto_adjustment();
 		}
 		// task 2 : Send mail for task queue with too many blockers

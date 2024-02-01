@@ -144,11 +144,12 @@ class FlowSuite(FlowOptions):
                 self.upload_cases(agile_input_data, agile_tmp_data)
             elif self.operation == "upload":
                 self.upload_cases(self.input_data, formal_tmp_data)
+        self.say_info("Done.")
 
     def extract_excel_to_csv_files(self):
         self.say_info("Try to extract suite Excel file {} to csv files ...".format(os.path.basename(self.suite_file)))
         if self.clean or not os.path.isdir(self.csv_folder):
-            extractor = xExcel.Excel2csv()
+            extractor = xExcel.Excel2csv(max_row_size=100000, max_column_size=100)
             extractor.process(self.suite_file)
             extractor.dump_to_file(self.csv_folder)
         self.raw_csv_files = glob.glob(os.path.join(self.csv_folder, "Sheet*.csv"))
@@ -252,7 +253,7 @@ class FlowSuite(FlowOptions):
                             section_dict[this_title].extend(self.split_with_semicolon(item_list[1]))
         if self._get_very_first_suite_data_sanity_check():
             return 1
-        # self.say_debug(self.very_first_suite_data, "Very First suite data: ", self.debug)
+        self.say_debug(self.very_first_suite_data, "Very First suite data: ", self.debug)
 
     @staticmethod
     def split_with_semicolon(raw_string):
@@ -334,7 +335,7 @@ class FlowSuite(FlowOptions):
                         self.say_error("Error. Duplicated design: {}".format(unique_key))
                         return 1
                     self.very_first_case_data[unique_key] = line_dict
-        # self.say_debug(self.very_first_case_data, "Very First case data: ", self.debug)
+        self.say_debug(self.very_first_case_data, "Very First case data: ", self.debug)
 
     def get_input_data(self):
         self.titles_for_case_custom_config = ("CaseInfo", "Environment", "System",
@@ -515,6 +516,14 @@ class FlowSuite(FlowOptions):
                 else:
                     x_dict = field_basic_data.get("items")
                     if x_dict:
+                        # when v is 1.0, 2.0, 3.0, should be integer string 1, 2, 3
+                        try:
+                            v_float = float(v)
+                            v_int = int(v_float)
+                            if v_int == v_float:
+                                v = str(v_int)
+                        except ValueError:
+                            pass
                         vv = x_dict.get(v)
                         if vv is None:
                             self.say_error("Error. Unknown string {} in {}".format(v, raw_case_dict))
@@ -641,6 +650,8 @@ class FlowSuite(FlowOptions):
         return _is_diff
 
     def upload_cases(self, new_data, old_data):
+        if self.debug:
+            return 
         # ----- SUITE
         new_suite_dict, old_suite_dict = new_data.get("suite"), old_data.get("suite")
         for suite_key, new_suite_data in list(new_suite_dict.items()):

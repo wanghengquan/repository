@@ -1,0 +1,37 @@
+DIAMOND_MAPPING_REPORT:
+  content_pattern: 'Mapper:.+version:  Diamond '
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'clkNumber', 'clkMaxLoadNum', 'clkMaxLoadName' ],         func: 'get_clk_data_from_mrp' }
+      - { names: [ 'clkEnNumber', 'clkEnMaxLoadNum', 'clkEnMaxLoadName' ],   func: 'get_clken_data_from_mrp' }
+      - { names: [ 'LSRNumber', 'LSRMaxLoadNum', 'LSRMaxLoadName' ],         func: 'get_lsr_data_from_mrp' }
+      - { names: [ 'mapper_cpu_time', 'mapper_real_time', 'mapper_peak_memory' ], func: 'get_time_and_memory' }
+      - { name: 'CARRY',   func: 'get_carry_from_mrp' }
+  group_2:
+    head: 1000
+    fields:
+      - { name: 'version',     pattern: 'Mapper:.+version: (.+)' }
+      - { names: [ 'Register', 'Register_per' ], pattern: 'Number of registers:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'Slice', 'Slice_per' ], pattern: 'Number of SLICEs:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'LUT', 'LUT_per' ], pattern: 'Number of LUT4s:  (\d+) out of.+\(([^\)]+)\)' }
+      - { names: [ 'IO',  'IO_per' ],  pattern: 'Number of PIO sites used:  (\d+) out of.+\(([^\)]+)\)' }
+      - { name: 'DSP', pattern: 'Number of Used DSP Sites:  (\d+)' }
+      - { name: 'distributed_RAM',     pattern: 'Number used as distributed RAM:  (\d+)' }
+      - { name: 'EBR',                 pattern: 'Number of block RAMs:  (\d+)' }
+      - { name: 'MULT36X36B',          pattern: 'MULT36X36B          (\d+)' }
+      - { name: 'MULT18X18B',          pattern: 'MULT18X18B          (\d+)' }
+      - { name: 'MULT18X18MACB',       pattern: 'MULT18X18MACB       (\d+)' }
+      - { name: 'MULT18X18ADDSUBB',    pattern: 'MULT18X18ADDSUBB    (\d+)' }
+      - { name: 'MULT18X18ADDSUBSUMB', pattern: 'MULT18X18ADDSUBSUMB (\d+)' }
+      - { name: 'MULT9X9B',            pattern: 'MULT9X9B            (\d+)' }
+      - { name: 'MULT9X9ADDSUBB',      pattern: 'MULT9X9ADDSUBB      (\d+)' }
+      - { name: 'MULT9X9ADDSUBSUMB',   pattern: 'MULT9X9ADDSUBSUMB   (\d+)' }
+      - { name: 'MULT18X18D', pattern: 'MULT18X18D (\d+)' }
+      - { name: 'MULT9X9D',   pattern: 'MULT9X9D   (\d+)' }
+      - { name: 'ALU54B',   pattern: 'ALU54B     (\d+)' }
+      - { name: 'ALU24B',   pattern: 'ALU24B     (\d+)' }
+      - { name: 'PRADD18A', pattern: 'PRADD18A   (\d+)' }
+      - { name: 'PRADD9A',  pattern: 'PRADD9A    (\d+)' }
+
+# END OF FILE

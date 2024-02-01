@@ -153,8 +153,10 @@ public class env_checker extends TimerTask {
 		svn_path = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
 		if(svn_version_check(svn_path) && remote_corescript_available(svn_path)) {
 			switch_info.set_remote_corescript_linked(true);
+			ENV_CHECKER_LOGGER.info("Remote Corescript linked:" + String.valueOf(true));
 		} else {
 			switch_info.set_remote_corescript_linked(false);
+			ENV_CHECKER_LOGGER.info("Remote Corescript linked:" + String.valueOf(false));
 		}
 	}
 	

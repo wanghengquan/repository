@@ -9,6 +9,7 @@
  */
 package gui_interface;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -257,6 +258,11 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		int use_thread = pool_info.get_sys_call_copy().size();
 		String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
 		jt_thread.setText(show_info);
+		if(pool_info.get_pool_threads_auto_adjust()) {
+			jt_thread.setBackground(Color.GREEN);
+		} else {
+			jt_thread.setBackground(Color.WHITE);
+		}
 	}
 	
 	private void update_system_data(){
@@ -273,7 +279,27 @@ public class status_bar extends JPanel implements Runnable, MouseListener{
 		}
 		jt_cpu.setText(cpu_info);
 		jt_mem.setText(mem_info);
-	}	
+		int cpu_used_int = 0;
+		int mem_used_int = 0;
+		try{
+			cpu_used_int = Integer.parseInt(cpu_info);
+			mem_used_int = Integer.parseInt(mem_info);
+		} catch (Exception e) {
+			jt_cpu.setBackground(Color.WHITE);
+			jt_mem.setBackground(Color.WHITE);
+			return;
+		}
+		if(cpu_used_int > public_data.RUN_LIMITATION_CPU) {
+			jt_cpu.setBackground(Color.ORANGE);
+		} else {
+			jt_cpu.setBackground(Color.WHITE);
+		}
+		if(mem_used_int > public_data.RUN_LIMITATION_MEM) {
+			jt_mem.setBackground(Color.ORANGE);
+		} else {
+			jt_mem.setBackground(Color.WHITE);
+		}
+	}
 	
 	private void update_attended_data(){
 		HashMap<String, HashMap<String, String>> client_hash = new HashMap<String, HashMap<String, String>>();

@@ -1,0 +1,21 @@
+VIVADO_UTILIZATION_PLACED_REPORT_FILE:
+  name_pattern: 'utilization_placed.rpt'
+  group_1:
+    head: 30
+    fields:
+      - { name: 'version', pattern: '\| Tool Version : (\S+\s+\S+)' }
+      - { name: 'device',  pattern: '\| Device       : (\S+)' }
+
+  group_2:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_vivado_utilization_slice_logic' }
+      - { uncertain_name: 'do-not-care', func: 'get_vivado_utilization_slice_logic_distribution' }
+      - { uncertain_name: 'do-not-care', func: 'get_vivado_utilization_dsp' }
+      - { uncertain_name: 'do-not-care', func: 'get_vivado_utilization_memory' }
+
+  group_3:
+    fields:
+      - { names: [ 'IO', 'IO_per' ], pattern: 'Bonded IOB \| (\d+) \|.+\| ([\d.]+) \|$' }
+
+# END OF FILE

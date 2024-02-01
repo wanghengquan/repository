@@ -1,0 +1,62 @@
+RADIANT_PLACE_AND_ROUTE_REPORT:
+  content_pattern: 'PAR: Place And Route Radiant Software'
+
+  group_1:
+    greedy: true
+    tail: 100
+    fields:
+      - { name: 'milestone_par',          pattern: 'PAR_SUMMARY::Run status = (\w+)',
+          alias: { Completed: 'PASS', default: 'FAIL' } }
+      - { name: 'par_timing_pap',         pattern: 'PAR_SUMMARY::Timing   PAP<setup.+= ([.\d]+)' }
+      - { name: 'par_timing_score_setup', pattern: 'PAR_SUMMARY::Timing score<setup.+= ([.\d]+)' }
+      - { name: 'par_timing_score_hold',  pattern: 'PAR_SUMMARY::Timing score<hold.+= ([.\d]+)' }
+  group_2:
+    greedy: false
+    fields:
+      - { name: 'par_signals',     pattern: 'Number of Signals: (\d+)' }
+      - { name: 'par_connections', pattern: 'Number of Connections: (\d+)' }
+      - { name: 'par_congestion_level',     pattern: 'Info: Initial congestion level.+usage is ([.\d]+)' }
+      - { names: [ 'par_congestion_area', 'par_congestion_area_per' ],
+          pattern: 'Info: Initial congestion area.+usage is ([.\d]+) \(([.\d]+)%\)' }
+      - { names: [ 'placer_cpu_time', 'placer_real_time' ],
+          pattern: 'Total Placer CPU time: ([^,]+), REAL time: (.+)' }
+  group_3:
+    greedy: false
+    hook: { before: 10, after: 0, pattern: 'End of route.' }
+    fields:
+      - { name: 'router_cpu_time', pattern: 'Total CPU time (.+)' }
+      - { name: 'router_real_time', pattern: 'Total  REAL time: (.+)' }
+  group_4:
+    hook: { before: 1, after: 80, pattern: 'Device utilization summary' }
+    greedy: false
+    fields:
+      - { names: [ 'Slice',    'Slice_per' ],    pattern: 'SLICE  (\d+)/\d+ (\S+) used' }
+      - { names: [ 'Slice',    'Slice_per' ],    pattern: 'SLICE.+est.+ (\d+)/\d+ (\S+) used' }
+      - { names: [ 'LUT',      'LUT_per' ],      pattern: 'LUT  (\d+)/\d+ (\S+) used' }
+  group_5:
+    use_func: true
+    fields:
+      - { names: [ 'par_cpu_time', 'par_real_time', 'par_peak_memory' ], func: 'get_time_and_memory' }
+
+RADIANT_UDB2SV_PAR_SHA1:
+  name_pattern: 'test_udb2sv_par.v$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'udb2sv_par_sha1', func: 'get_text_file_sha1' }
+
+RADIANT_PAR_UDB_SIZE:
+  name_pattern: '((?!(syn|map)).{3})(\.udb)$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'par_udb_size', func: 'get_file_size' }
+
+RADIANT_PAD_FILE:
+  name_pattern: '\.pad'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'pad_file_sha1', func: 'get_text_file_sha1' }
+
+# END OF FILE

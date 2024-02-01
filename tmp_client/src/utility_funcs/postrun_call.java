@@ -17,13 +17,16 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.io.FileUtils;
 
+import connect_tube.task_data;
 import data_center.public_data;
 import flow_control.task_enum;
 //import utility_funcs.system_cmd;
 
 public class postrun_call implements Callable<Object> {
 	private long start_time = 0;
+	private String queue_name;
 	private String case_path;
+	private task_data task_info;
 	private String report_path;
 	private String save_space;
 	private String work_space;
@@ -38,7 +41,9 @@ public class postrun_call implements Callable<Object> {
 	private String line_separator = System.getProperty("line.separator");
 
 	public postrun_call(
+			String queue_name,
 			String case_path,
+			task_data task_info,
 			String report_path,
 			String work_space,
 			String work_suite,
@@ -48,8 +53,11 @@ public class postrun_call implements Callable<Object> {
 			task_enum cmd_status,
 			String local_clean,
 			String result_keep,
-			HashMap<String, String> tools_data) {
+			HashMap<String, String> tools_data
+			) {
+		this.queue_name = queue_name;
 		this.case_path = case_path;
+		this.task_info = task_info;
 		this.report_path = report_path;
 		this.save_space = save_space;
 		this.work_space = work_space;
@@ -67,6 +75,10 @@ public class postrun_call implements Callable<Object> {
 		start_time = System.currentTimeMillis() / 1000;
 		//cleanup run processes
 		if (!run_process_cleanup(case_path)){
+			run_status = false;
+		}
+		//generate case space usage info
+		if (!run_case_space_update(queue_name, case_path)) {
 			run_status = false;
 		}
 		//generate local scan report
@@ -92,6 +104,25 @@ public class postrun_call implements Callable<Object> {
 		return this.report_path;
 	}	
 	
+	private Boolean run_case_space_update(
+			String queue_name,
+			String case_path
+			) {
+		Boolean run_status = Boolean.valueOf(true);
+        float used_space = public_data.TASK_DEF_ESTIMATE_SPACE;
+		File file = new File(case_path);
+		try {
+			used_space = FileUtils.sizeOfDirectory(file) / (float)1024 / (float)1024 / (float)1024; ;
+		} catch (Exception e) {
+			run_msg.add("Case space check error.");
+			//e.printStackTrace();
+		} finally {
+			;
+		}
+		task_info.update_client_run_case_summary_space_map(queue_name, used_space);
+		return run_status;
+	}
+	
 	private Boolean run_disk_cleanup(
 			String report_path,
 			String save_space,
@@ -99,7 +130,8 @@ public class postrun_call implements Callable<Object> {
 			String save_suite,
 			String save_path,
 			String local_clean,
-			String result_keep){
+			String result_keep
+			){
 		Boolean run_status = Boolean.valueOf(true);
 		//task 1: copy run results
         String[] tmp_space = save_space.split("\\s*,\\s*");
@@ -307,8 +339,9 @@ public class postrun_call implements Callable<Object> {
 	}
 	
 	private Boolean run_process_cleanup(String clean_work_path) {
-		String pyton_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
-		String cmd = pyton_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
+		String cmd = python_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		run_msg.add("Process cleanup cmd: " + cmd);
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
 			excute_retruns = system_cmd.run(cmd);

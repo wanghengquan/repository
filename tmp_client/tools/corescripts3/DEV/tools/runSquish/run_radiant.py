@@ -6,7 +6,7 @@ import getpass
 import optparse
 
 from xlib import xTools
-
+from xlib import scanHardwareData
 __author__ = 'syan'
 
 RADIANT_EXTERNAL_ENV_KEY = "EXTERNAL_RADIANT_PATH"
@@ -27,7 +27,7 @@ SQUISH_EXTERNAL_ENV_KEY = "EXTERNAL_SQUISH_PATH"
 # %(run_server)s
 # %(sleep)s
 # %(squishserver)s --config addAUT %(name_of_aut)s "%(path_to_aut)s"
-# %(squishrunner)s --config setAUTTimeout 60
+# %(squishrunner)s --config setAUTTimeout 300
 # %(squishrunner)s --config setResponseTimeout 60
 # %(squishrunner)s --testcase %(testcase)s --lang %(language)s --wrapper %(wrapper)s --objectmap %(objectmap)s --cwd %(cwd)s --aut %(name_of_aut)s
 # %(squishserver)s --stop
@@ -42,7 +42,7 @@ RUN_SQUISH = '''#!/bin/sh
 %(squishserver)s --config addAUT %(name_of_aut)s "%(path_to_aut)s"
 %(squishserver)s --config setHardExitTimeout 600
 %(squishserver)s --config setSoftExitTimeout 4000
-%(squishrunner)s --config setAUTTimeout 60
+%(squishrunner)s --config setAUTTimeout 300
 %(squishrunner)s --config setResponseTimeout 60
 %(squishrunner)s --testcase %(testcase)s --lang %(language)s --wrapper %(wrapper)s --objectmap %(objectmap)s --cwd %(cwd)s --reportgen stdout,console.log
 %(squishserver)s --stop
@@ -65,7 +65,7 @@ set parentPath=%parentPath%%front%\
 goto begin
 
 :end
-@echo on 
+@echo on
 """
 
 
@@ -110,6 +110,8 @@ class RunSquishCase:
         xTools.set_lm_license_environment(__file__)
         sts = self._process()
         xTools.say_it("---- End of running Squish test case ...")
+        if self.scan_report == "hardware":
+            scanHardwareData.scan_hardware_data(self.design)
         xTools.ultimate_process(self.design)
         return sts
 
@@ -129,6 +131,8 @@ class RunSquishCase:
         parser.add_option("--squish", help="specify Squish path")
         parser.add_option("--dev-path", help="specify DEV(core scripts) path")
         parser.add_option("--x86", action="store_true", help="run with x86 build")
+        parser.add_option("--scan-report", choices=("NA", "hardware"), help="specify report type, such as hardware")
+        parser.add_option("--test-id", help="show test id in command line")
         opts, args = parser.parse_args()
         self.top_dir = opts.top_dir
         self.design = opts.design
@@ -137,6 +141,7 @@ class RunSquishCase:
         self.squish = opts.squish
         self.dev_path = opts.dev_path
         self.x86 = opts.x86
+        self.scan_report = opts.scan_report
         self.on_win, self.nt_lin = xTools.get_os_name(self.x86)
         return self._check_options()
 
@@ -174,12 +179,23 @@ class RunSquishCase:
         testdata_path = os.path.join(self.design, "testdata")
         if xTools.not_exists(testdata_path, "testdata path"):
             return 1
-        if self.on_win:            
+        if self.on_win:
             layout_path = os.path.join(r"C:\Users\%s\AppData\Roaming\LatticeSemi\DiamondNG" % user)
         else:
             layout_path = "/users/%s/.config/LatticeSemi/DiamondNG" % user
+        for i in range(3):
+            try:
+                self._copy_them(testdata_path, layout_path)
+                return
+            except:
+                time.sleep(3)
+                continue
+        return 1  # when failed
+
+    @staticmethod
+    def _copy_them(testdata_path, layout_path):
         for foo in os.listdir(testdata_path):
-            if xTools.get_fext_lower(foo) == ".ini": # found layout file
+            if xTools.get_fext_lower(foo) == ".ini":  # found layout file
                 src_foo = os.path.join(testdata_path, foo)
                 dst_foo = os.path.join(layout_path, foo)
                 if xTools.wrap_cp_file(src_foo, dst_foo):

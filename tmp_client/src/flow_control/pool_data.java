@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import utility_funcs.data_check;
 import utility_funcs.screen_record;
 import utility_funcs.system_cmd;
 
@@ -41,6 +42,7 @@ public class pool_data {
 	private ExecutorService run_pool;
 	private HashMap<String, HashMap<pool_attr, Object>> call_map = new HashMap<String, HashMap<pool_attr, Object>>();
 	private int pool_reserved_threads = 0;
+	private Boolean pool_threads_auto_adjust = Boolean.valueOf(false);
 	private int pool_current_size = public_data.PERF_POOL_CURRENT_SIZE;
 	private int pool_maximum_size = public_data.PERF_POOL_MAXIMUM_SIZE;
 	private HashMap<String, HashMap<String, Object>> history_send_data = new HashMap<String, HashMap<String, Object>> ();
@@ -57,10 +59,51 @@ public class pool_data {
 		HashMap<String, String> result = new HashMap<String, String>();
 		result.put("call_map", call_map.toString());
 		result.put("pool_reserved_threads", String.valueOf(pool_reserved_threads));
+		result.put("pool_threads_auto_adjust", String.valueOf(pool_threads_auto_adjust));
 		result.put("pool_current_size", String.valueOf(pool_current_size));
 		result.put("pool_maximum_size", String.valueOf(pool_maximum_size));
 		result.put("history_send_data", history_send_data.toString());
 		return result;
+	}
+	
+	public synchronized HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		Iterator<String> update_it = update_data.keySet().iterator();
+		while (update_it.hasNext()) {
+			String ob_name = update_it.next();
+			String optin_value = update_data.get(ob_name);
+			switch(ob_name) {
+			case "pool_current_size":
+				if (data_check.num_scope_check(optin_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE )){
+					this.pool_current_size = Integer.valueOf(optin_value);
+					update_status.put(ob_name, "PASS");
+				} else {
+					update_status.put(ob_name, "FAIL, wrong input string, available value: 0~" + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				}
+				break;
+			case "pool_maximum_size":
+				if (data_check.num_scope_check(optin_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE )){
+					this.pool_maximum_size = Integer.valueOf(optin_value);
+					update_status.put(ob_name, "PASS");
+				} else {
+					update_status.put(ob_name, "FAIL, wrong input string, available value: 0~" + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				}
+				break;
+			case "pool_reserved_threads":
+				if (data_check.num_scope_check(optin_value, 0, public_data.PERF_POOL_MAXIMUM_SIZE )){
+					this.pool_reserved_threads = Integer.valueOf(optin_value);
+					update_status.put(ob_name, "PASS");
+				} else {
+					update_status.put(ob_name, "FAIL, wrong input string, available value: 0~" + String.valueOf(public_data.PERF_POOL_MAXIMUM_SIZE));
+				}
+				break;
+			default:
+				update_status.put(ob_name, "FAIL, " + ob_name + " console update not supported yet.");
+			}
+		}
+		return update_status;
 	}
 	
 	public synchronized void initialize_thread_pool(int pool_size){
@@ -96,6 +139,16 @@ public class pool_data {
 		return temp;
 	}
 
+	public synchronized void set_pool_threads_auto_adjust(Boolean new_value) {
+		this.pool_threads_auto_adjust = new_value;
+	}
+
+	public synchronized Boolean get_pool_threads_auto_adjust() {
+		Boolean temp = Boolean.valueOf(false);
+		temp = pool_threads_auto_adjust;
+		return temp;
+	}
+	
 	public synchronized int get_pool_used_threads() {
 		int temp = 0;
 		temp = call_map.size();
@@ -141,6 +194,7 @@ public class pool_data {
 			String case_path,
 			String case_url,
 			float est_mem,
+			float est_space,
 			int time_out,
 			Boolean call_recorded,
 			screen_record video_object
@@ -161,6 +215,8 @@ public class pool_data {
 		sys_call_data.put(pool_attr.call_estmem, est_mem);
 		sys_call_data.put(pool_attr.call_curmem, 0.0f);
 		sys_call_data.put(pool_attr.call_maxmem, 0.0f);
+		sys_call_data.put(pool_attr.call_estspace, est_space);
+		sys_call_data.put(pool_attr.call_space, 0.0f);
 		sys_call_data.put(pool_attr.call_timeout, false);
 		sys_call_data.put(pool_attr.call_terminate, false);
 		sys_call_data.put(pool_attr.call_status, call_state.INITIATE);
@@ -238,13 +294,16 @@ public class pool_data {
 		float current_mem = 0.0f;
 		String scan_value = new String("0.0");
 		//System.out.println(mem_info);
+		//System.out.println("Memory report:======pool_data:line285");
 		for (String line: mem_info) {
 			line = line.replace(")", "");//for python2.7 compatibility
 			if(line.contains("T" + case_id) && line.contains(" ")) {
 				scan_value = line.split("\\s+")[1];
 				current_mem = Float.valueOf(scan_value).floatValue();
+				//System.out.println("T" + case_id + ":" + current_mem);
 			}
 		}
+		//System.out.println("");
 		return current_mem;
 	}
 	
@@ -313,17 +372,47 @@ public class pool_data {
 	}
 	
 	public synchronized float get_sys_call_extra_memory() {
-		float total_estimate_usage = 0.0f;		
+		float total_estimate_extra_usage = 0.0f;		
 		Iterator<String> call_map_it = call_map.keySet().iterator();
 		while (call_map_it.hasNext()) {
 			String call_index = call_map_it.next();
 			HashMap<pool_attr, Object> one_call_data = call_map.get(call_index);
+			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);
+			if (call_status.equals(call_state.DONE)) {
+				continue;
+			}
 			float est_mem = (float) one_call_data.get(pool_attr.call_estmem);
 			float cur_mem = (float) one_call_data.get(pool_attr.call_curmem);
-			total_estimate_usage = total_estimate_usage +  est_mem - cur_mem;
+			if (est_mem > cur_mem) {
+				total_estimate_extra_usage = total_estimate_extra_usage +  est_mem - cur_mem;
+			}
+			//System.out.println("Extra memory Report:======" + call_index);
+			//System.out.println("est_mem:" + est_mem);
+			//System.out.println("cur_mem:" + cur_mem);
+			//System.out.println("");
 		}
-		return total_estimate_usage;
+		return total_estimate_extra_usage;
 	}
+	
+	public synchronized float get_sys_call_extra_space() {
+		float total_estimate_extra_usage = 0.0f;		
+		Iterator<String> call_map_it = call_map.keySet().iterator();
+		while (call_map_it.hasNext()) {
+			String call_index = call_map_it.next();
+			HashMap<pool_attr, Object> one_call_data = call_map.get(call_index);
+			call_state call_status = (call_state) one_call_data.get(pool_attr.call_status);
+			if (!call_status.equals(call_state.DONE)) {
+				continue;
+			}
+			float est_space = (float) one_call_data.get(pool_attr.call_estspace);
+			float cur_space = (float) one_call_data.get(pool_attr.call_space);
+			if (est_space > cur_space) {
+				total_estimate_extra_usage = total_estimate_extra_usage +  est_space - cur_space;
+			}
+		}
+		return total_estimate_extra_usage;
+	}	
+	
 	
 	public synchronized HashMap<String, HashMap<pool_attr, Object>> get_sys_call_link() {
 		return this.call_map;

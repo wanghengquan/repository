@@ -532,7 +532,8 @@ public class local_tube {
 
 	private Boolean case_data_match_task_sort(
 			Map<String, String> case_data, 
-			String task_sort){
+			String task_sort
+			){
 		Boolean case_match = Boolean.valueOf(true);
 		if (task_sort == null || task_sort.trim().equals("")){
 			return case_match;
@@ -591,8 +592,8 @@ public class local_tube {
 			) {
 		List<List<String>> one_macro_data = new ArrayList<List<String>>(); 
 		one_macro_data.addAll(macro_data);
-		// condition check
-		Boolean condition = true;
+		// all condition check
+		Boolean macro_match = Boolean.valueOf(true);
 		for (List<String> line : one_macro_data) {
 			if (line.size() < 3) {
 				LOCAL_TUBE_LOGGER.warn("Skip macro line:" + line.toString());
@@ -600,17 +601,52 @@ public class local_tube {
 			}
 			String behavior = line.get(0).trim();
 			String column = line.get(1).trim();
-			String value = line.get(2).trim().replaceAll("=", "");
 			if (!behavior.equals("condition")) {
 				continue;
 			}
-			String raw_value = raw_data.get(column);
-			if (!raw_value.equals(value)) {
-				condition = false;
+			//Start match check
+			String condition_value = line.get(2).trim();
+			List<String> raw_list = new ArrayList<String>();
+			raw_list.addAll(Arrays.asList(raw_data.getOrDefault(column, "").split("\\s*,\\s*")));
+			Boolean current_condition = Boolean.valueOf(false);
+			if(data_check.str_regexp_check(condition_value, "^=")) {
+				current_condition = false;
+				List<String> condition_list = new ArrayList<String>();
+				condition_list.addAll(Arrays.asList(condition_value.replaceAll("^=", "").split("\\s*,\\s*")));
+				for (String condition : condition_list) {
+					if(raw_list.contains(condition)) {
+						current_condition = true;
+						break;
+					}
+				}
+			} else if (data_check.str_regexp_check(condition_value, "^!=")) {
+				current_condition = true;
+				List<String> condition_list = new ArrayList<String>();
+				condition_list.addAll(Arrays.asList(condition_value.replaceAll("^!=", "").split("\\s*,\\s*")));
+				for (String condition : condition_list) {
+					if(raw_list.contains(condition)) {
+						current_condition = false;
+						break;
+					}
+				}
+			} else if (data_check.str_regexp_check(condition_value, "^>=")) {
+				current_condition = data_check.num_not_less_check(raw_list.get(0), condition_value.replaceAll("^>=", ""));
+			} else if (data_check.str_regexp_check(condition_value, "^<=")) {
+				current_condition = data_check.num_not_greater_check(raw_list.get(0), condition_value.replaceAll("^<=", ""));
+			} else if (data_check.str_regexp_check(condition_value, "^>")) {
+				current_condition = data_check.num_greater_check(raw_list.get(0), condition_value.replaceAll("^>", ""));
+			} else if (data_check.str_regexp_check(condition_value, "^<")) {
+				current_condition = data_check.num_less_check(raw_list.get(0), condition_value.replaceAll("^<", ""));
+			} else {
+				LOCAL_TUBE_LOGGER.warn("Unsupported macro condition, mismatch considered:" + line.toString());
+			}
+			//final check
+			if(!current_condition) {
+				macro_match = false;
 				break;
 			}
 		}
-		return condition;
+		return macro_match;
 	}
 
 	private HashMap<String, String> get_case_element_value_map(
@@ -1008,28 +1044,7 @@ public class local_tube {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
 			Matcher cmd_match = cmd_patt.matcher(local_key);
-			if (local_key.equalsIgnoreCase("cmd_all")) {
-				Iterator<String> globle_it = globle_data.keySet().iterator();
-				while (globle_it.hasNext()) {
-					String globle_key = globle_it.next();
-					String globle_value = globle_data.get(globle_key);
-					if(!globle_key.startsWith("cmd")) {
-						continue;
-					}
-					if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
-						merge_data.put(globle_key, local_value);
-					} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
-						continue;
-					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
-						merge_data.put(globle_key, local_value);
-					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
-						continue;
-					} else {
-						String overall_cmd = globle_value + " " + local_value;
-						merge_data.put(globle_key, overall_cmd.trim());
-					}
-				}
-			} else if (cmd_match.find() && !local_value.equals("")) {
+			if (cmd_match.find() && !local_value.equals("")) {
 				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
 					merge_data.put(local_key, local_value);
 				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
@@ -1125,8 +1140,10 @@ public class local_tube {
 		return globle_data;
 	}
 
-	private Boolean is_request_match(HashMap<String, HashMap<String, String>> queue_data,
-			HashMap<String, HashMap<String, String>> design_data) {
+	private Boolean is_request_match(
+			HashMap<String, HashMap<String, String>> queue_data,
+			HashMap<String, HashMap<String, String>> design_data
+			) {
 		// compare sub map data Software, System, Machine
 		Boolean is_match = Boolean.valueOf(true);
 		List<String> check_items = new ArrayList<String>();
@@ -1932,7 +1949,7 @@ public class local_tube {
 		case_enum case_type = case_enum.FREESTYLE;
 		int standard_num = 0;
 		for (String case_name:case_list) {
-			String run_info = new String(suite_path + "/" + case_name + "/" + public_data.CASE_STANDARD_PATTERN);
+			String run_info = new String(suite_path + "/" + case_name + "/" + public_data.CASE_RUN_FILE);
 			File info_fobj = new File(run_info);
 			if(info_fobj.exists()) {
 				standard_num ++;
@@ -2215,7 +2232,7 @@ public class local_tube {
 			HashMap<String, String> preference_data = new HashMap<String, String>();
 			one_case_data.put("Preference", preference_data);			
 			//get ini file data, override previously
-			String info_file = new String(suite_path + "/" + design_name + "/" +  public_data.CASE_STANDARD_PATTERN);
+			String info_file = new String(suite_path + "/" + design_name + "/" +  public_data.CASE_RUN_FILE);
 			ini_parser ini_runner = new ini_parser(info_file);
 			HashMap<String, HashMap<String, String>> raw_ini_data = new HashMap<String, HashMap<String, String>>();
 			try {
@@ -2290,13 +2307,14 @@ public class local_tube {
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
 		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
-		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\standard_suite2\\radiant_regression.xlsx", imported_data, current_terminal);
+		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
+		System.out.println(task_info.get_received_task_queues_map().toString());
+		System.out.println(task_info.get_received_admin_queues_treemap().toString()); 
+		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
+		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "D:/work_space/tcl_suite/aa/pn_00_tcl_plus/msg/msg_suppress", "D:/tmp_work", imported_data);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
 		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/qinhai_suite", "D:/tmp_work", imported_data);
-		System.out.println(task_info.get_received_task_queues_map().toString());
-		System.out.println(task_info.get_received_admin_queues_treemap().toString());
-		/*		
+		/*
 		xml_parser xml_parser2 = new xml_parser();
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
 		String queue_name = dump_queue_it.next();

@@ -26,6 +26,7 @@ import cmd_interface.action_cmd;
 import cmd_interface.console_server;
 import cmd_interface.database_cmd;
 import cmd_interface.info_cmd;
+import cmd_interface.insert_cmd;
 import cmd_interface.task_cmd;
 import cmd_interface.thread_cmd;
 import cmd_interface.top_cmd;
@@ -109,28 +110,52 @@ public class link_server extends Thread {
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		msg_hash.putAll(xml_parser.get_common_xml_data(new_data.toString()));
 		String return_string = new String("");
-		if (msg_hash.containsKey("channel_cmd")){
-			HashMap<String, HashMap<String, String>> cmd_data = new HashMap<String, HashMap<String, String>>();
-			cmd_data.putAll(msg_hash.get("channel_cmd"));
-			if (cmd_data.containsKey(top_cmd.TASK.toString())){
-				return_string = channel_cmd_task_return_data(ip, machine, cmd_data.get(top_cmd.TASK.toString()).get("request"));
-			} else if (cmd_data.containsKey(top_cmd.INFO.toString())){
-				return_string = channel_cmd_info_return_data(ip, machine, cmd_data.get(top_cmd.INFO.toString()).get("request"));
-			} else if (cmd_data.containsKey(top_cmd.ACTION.toString())){
-				return_string = channel_cmd_action_return_data(ip, machine, cmd_data.get(top_cmd.ACTION.toString()).get("request"));
-			} else if (cmd_data.containsKey(top_cmd.LINK.toString())){
-				return_string = channel_cmd_link_return_data(ip, machine);
-			} else if (cmd_data.containsKey(top_cmd.DATABASE.toString())){
-				return_string = channel_cmd_database_return_data(ip, machine, cmd_data.get(top_cmd.DATABASE.toString()).get("request"));
-			} else if (cmd_data.containsKey(top_cmd.THREAD.toString())){
-				return_string = channel_cmd_thread_return_data(ip, machine, cmd_data.get(top_cmd.THREAD.toString()).get("request"));				
-			}else {
-				return_string = channel_cmd_default_return_data(ip, machine);
+		if (msg_hash.containsKey("channel_cmds")){
+			HashMap<String, HashMap<String, String>> cmds_data = new HashMap<String, HashMap<String, String>>();
+			cmds_data.putAll(msg_hash.get("channel_cmds"));
+			if (cmds_data.containsKey(top_cmd.ACTION.toString())){
+				return_string = channel_cmds_action_return_data(ip, machine, cmds_data.get(top_cmd.ACTION.toString()).get("request"));
+			} else if (cmds_data.containsKey(top_cmd.LINK.toString())){
+				return_string = channel_cmds_link_return_data(ip, machine);
+			} else if (cmds_data.containsKey(top_cmd.THREAD.toString())){
+				return_string = channel_cmds_thread_return_data(ip, machine, cmds_data.get(top_cmd.THREAD.toString()).get("request"));				
+			} else {
+				return_string = channel_cmds_default_return_data(ip, machine);
 			}
-		} else if (msg_hash.containsKey("channel_job")){
-			HashMap<String, HashMap<String, String>> job_data = new HashMap<String, HashMap<String, String>>();
-			job_data.putAll(msg_hash.get("channel_job"));
-			return_string = channel_job_default_return_data(ip, machine);
+		} else if (msg_hash.containsKey("channel_pull")){
+				HashMap<String, HashMap<String, String>> pull_data = new HashMap<String, HashMap<String, String>>();
+				pull_data.putAll(msg_hash.get("channel_pull"));
+				if (pull_data.containsKey(top_cmd.TASK.toString())){
+					return_string = channel_pull_task_return_data(ip, machine, pull_data.get(top_cmd.TASK.toString()).get("request"));
+				} else if (pull_data.containsKey(top_cmd.INFO.toString())){
+					return_string = channel_pull_info_return_data(ip, machine, pull_data.get(top_cmd.INFO.toString()).get("request"));
+				} else if (pull_data.containsKey(top_cmd.DATABASE.toString())){
+					return_string = channel_pull_database_return_data(ip, machine, pull_data.get(top_cmd.DATABASE.toString()).get("request"));
+				} else {
+					return_string = channel_pull_default_return_data(ip, machine);
+				}
+		} else if (msg_hash.containsKey("channel_push")){
+			HashMap<String, HashMap<String, String>> push_data = new HashMap<String, HashMap<String, String>>();
+			push_data.putAll(msg_hash.get("channel_push"));
+			if (push_data.containsKey(insert_cmd.SWITCH.toString())){
+				return_string = channel_push_database_return_data(ip, machine, insert_cmd.SWITCH, push_data.get(insert_cmd.SWITCH.toString()));				
+			} else if (push_data.containsKey(insert_cmd.CLIENT.toString())){
+				return_string = channel_push_database_return_data(ip, machine, insert_cmd.CLIENT, push_data.get(insert_cmd.CLIENT.toString()));				
+			} else if (push_data.containsKey(insert_cmd.VIEW.toString())){
+				return_string = channel_push_database_return_data(ip, machine, insert_cmd.VIEW, push_data.get(insert_cmd.VIEW.toString()));				
+			} else if (push_data.containsKey(insert_cmd.TASK.toString())){
+				return_string = channel_push_database_return_data(ip, machine, insert_cmd.TASK, push_data.get(insert_cmd.TASK.toString()));				
+			} else if (push_data.containsKey(insert_cmd.POOL.toString())){
+				return_string = channel_push_database_return_data(ip, machine, insert_cmd.POOL, push_data.get(insert_cmd.POOL.toString()));				
+			} else if (push_data.containsKey(insert_cmd.POST.toString())){
+				return_string = channel_push_database_return_data(ip, machine, insert_cmd.POST, push_data.get(insert_cmd.POST.toString()));				
+			} else {
+				return_string = channel_push_default_return_data(ip, machine);
+			}
+		} else if (msg_hash.containsKey("channel_jobs")){
+			HashMap<String, HashMap<String, String>> jobs_data = new HashMap<String, HashMap<String, String>>();
+			jobs_data.putAll(msg_hash.get("channel_jobs"));
+			return_string = channel_jobs_default_return_data(ip, machine);
 		} else {
 			return_string = default_return_data(ip, machine);
 		}
@@ -140,25 +165,47 @@ public class link_server extends Thread {
         socket.close();
 	}
 	
-	private String channel_cmd_default_return_data(
+	private String channel_cmds_default_return_data(
 			String ip,
 			String machine){
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
 		detail_data.put("default", public_data.SOCKET_DEF_ACKNOWLEDGE);
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_cmds", xml_data, ip, machine);
 		return return_str;
 	}
 	
-	private String channel_job_default_return_data(
+	private String channel_push_default_return_data(
 			String ip,
 			String machine){
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
 		detail_data.put("default", public_data.SOCKET_DEF_ACKNOWLEDGE);
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_job", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_push", xml_data, ip, machine);
+		return return_str;
+	}
+	
+	private String channel_pull_default_return_data(
+			String ip,
+			String machine){
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> detail_data = new HashMap<String, String>();
+		detail_data.put("default", public_data.SOCKET_DEF_ACKNOWLEDGE);
+		xml_data.put("results", detail_data);
+		String return_str = xml_parser.create_common_xml_string("channel_pull", xml_data, ip, machine);
+		return return_str;
+	}
+	
+	private String channel_jobs_default_return_data(
+			String ip,
+			String machine){
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> detail_data = new HashMap<String, String>();
+		detail_data.put("default", public_data.SOCKET_DEF_ACKNOWLEDGE);
+		xml_data.put("results", detail_data);
+		String return_str = xml_parser.create_common_xml_string("channel_jobs", xml_data, ip, machine);
 		return return_str;
 	}
 	
@@ -173,21 +220,23 @@ public class link_server extends Thread {
 		return return_str;
 	}
 	
-	private String channel_cmd_link_return_data(
+	private String channel_cmds_link_return_data(
 			String ip,
-			String machine){
+			String machine
+			){
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
 		detail_data.put("default", public_data.SOCKET_LINK_ACKNOWLEDGE);
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_cmds", xml_data, ip, machine);
 		return return_str;
 	}	
 	
-	private String channel_cmd_action_return_data(
+	private String channel_cmds_action_return_data(
 			String ip,
 			String machine,
-			String req_action){
+			String req_action
+			){
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
 		switch(action_cmd.valueOf(req_action)){
@@ -236,14 +285,15 @@ public class link_server extends Thread {
 			break;
 		}
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_cmds", xml_data, ip, machine);
 		return return_str;		
 	}	
 	
-	private String channel_cmd_info_return_data(
+	private String channel_pull_info_return_data(
 			String ip,
 			String machine,
-			String req_area){
+			String req_area
+			){
 		String req_section = new String("");
 		String req_option = new String("");
 		if (req_area.contains(".")){
@@ -284,7 +334,8 @@ public class link_server extends Thread {
 			int max_thread = pool_info.get_pool_current_size();
 			int use_thread = pool_info.get_pool_used_threads();
 			int remote_num = post_info.get_postrun_call_size();
-			String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread);
+			String thread_mode = new String(pool_info.get_pool_threads_auto_adjust() ? "(A)" : "(M)");
+			String show_info = String.valueOf(use_thread) + "/" + String.valueOf(max_thread) + thread_mode;
 			detail_data.put(current_status, switch_info.get_client_run_state().toString());
 			detail_data.put(pool_status, show_info);
 			detail_data.put(post_status, String.valueOf(remote_num));
@@ -298,14 +349,15 @@ public class link_server extends Thread {
 			break;
 		}
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_pull", xml_data, ip, machine);
 		return return_str;		
 	}
 	
-	private String channel_cmd_task_return_data(
+	private String channel_pull_task_return_data(
 			String ip,
 			String machine,
-			String req_area){
+			String req_area
+			){
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> detail_data = new HashMap<String, String>();
 		switch(task_cmd.valueOf(req_area)){
@@ -350,11 +402,11 @@ public class link_server extends Thread {
 			break;
 		}
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_pull", xml_data, ip, machine);
 		return return_str;		
 	}
 	
-	private String channel_cmd_database_return_data(
+	private String channel_pull_database_return_data(
 			String ip,
 			String machine,
 			String req_area){
@@ -384,11 +436,11 @@ public class link_server extends Thread {
 			break;
 		}
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_pull", xml_data, ip, machine);
 		return return_str;
 	}
 	
-	private String channel_cmd_thread_return_data(
+	private String channel_cmds_thread_return_data(
 			String ip,
 			String machine,
 			String req_area){
@@ -423,7 +475,7 @@ public class link_server extends Thread {
 			break;
 		}
 		xml_data.put("results", detail_data);
-		String return_str = xml_parser.create_common_xml_string("channel_cmd", xml_data, ip, machine);
+		String return_str = xml_parser.create_common_xml_string("channel_cmds", xml_data, ip, machine);
 		return return_str;
 	}
 	
@@ -519,6 +571,42 @@ public class link_server extends Thread {
 		default:
 			break;
 		}
+	}
+	
+	private String channel_push_database_return_data(
+			String ip,
+			String machine,
+			insert_cmd db_name,
+			HashMap<String, String> update_data
+			){
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> detail_data = new HashMap<String, String>();
+		switch(db_name){
+		case SWITCH:
+			detail_data.putAll(switch_info.console_database_update(update_data));
+			break;
+		case CLIENT:
+			detail_data.putAll(client_info.console_database_update(update_data));
+			break;
+		case VIEW:
+			detail_data.putAll(view_info.console_database_update(update_data));
+			break;
+		case TASK:
+			detail_data.putAll(task_info.console_database_update(update_data));
+			break;
+		case POOL:
+			detail_data.putAll(pool_info.console_database_update(update_data));
+			break;
+		case POST:
+			detail_data.putAll(post_info.console_database_update(update_data));
+			break;		
+		default:
+			detail_data.put("default", "NA");
+			break;
+		}
+		xml_data.put("results", detail_data);
+		String return_str = xml_parser.create_common_xml_string("channel_push", xml_data, ip, machine);
+		return return_str;
 	}
 	
 	public void run() {

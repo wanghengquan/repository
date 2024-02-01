@@ -1,0 +1,25 @@
+RADIANT_LSE_SYNTHESIS_LOG_FILE:
+  name_pattern: 'synthesis.log'
+  group_1:
+    use_func: true
+    fields:
+      - { names: [ 'lse_cpu_time', 'lse_real_time', 'lse_peak_memory' ], func: 'get_time_and_memory' }
+      - { names: [ 'lse_lut4', 'lse_carry', 'lse_io' ], func: 'get_lse_lut4_carry_io' }
+  group_2:
+    hook: { before: 1, after: 100, pattern: 'Begin Area Report' }
+    greedy: false
+    fields:
+      - { name: 'lse_reg',   pattern: 'Number of register bits => (\d+)' }
+      - { name: 'lse_odd',   pattern: 'Number of odd-length carry chains : (\d+)' }
+      - { name: 'lse_even',  pattern: 'Number of even-length carry chains : (\d+)' }
+
+RADIANT_LSE_VM_FILE:
+  name_pattern: '.vm$'
+  content_pattern: 'version Radiant Software'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'lse_vm_size', func: 'get_file_size' }
+      - { uncertain_name: 'do-not-care', func: 'get_lse_vm_sha1' }
+
+# END OF FILE

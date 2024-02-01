@@ -1,0 +1,66 @@
+RUNTIME_CONSOLE_FILE:
+  name_pattern: 'runtime_console.log'
+  group_1:
+    # greedy to use the last one
+    greedy: true
+    fields:
+      - { name: 'flow_runtime', pattern: '^\* Elapsed time: ([.\d]+)' }
+      - { name: 'hostname', pattern: '\* Hostname: (.+)' }
+      - { name: 'os_name',  pattern: '\* Platform: (.+)' }
+
+RADIANT_DIAMOND_PROJECT_FILE:
+  name_pattern: '\.[lr]df$'
+  group_1:
+    greedy: false
+    fields:
+      - { name: 'device', pattern: '(?P<blank>BaliProject|RadiantProject).+ device="(?P<device>[^"]+)"' }
+  group_2:
+    use_func: true
+    fields:
+      - { names: [ 'HDL_type', 'synthesis' ] , func: 'get_project_hdl_type_and_synthesis' }
+
+# old Diamond want to get the _vo.vo file size (in MB)
+PAR_VO_FILE:
+  name_pattern: '_vo.vo$'
+  group_1:
+    use_func: true
+    fields:
+      - { name: 'par_vo_size', func: 'get_file_size'}
+
+# get_simulation_data() return dict(index0=xxx, index1=yyy, index2=zzz)
+RTL_SIMULATION:
+  name_pattern: 'run_sim_rtl.log'
+  group_1:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_simulation_data' }
+
+POSTSYN_SIMULATION:
+  name_pattern: 'run_sim_syn_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_simulation_data' }
+
+MAP_SIMULATION:
+  name_pattern: 'run_sim_map_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_simulation_data' }
+
+PAR_SIMULATION:
+  name_pattern: 'run_sim_par_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_simulation_data' }
+
+BIT_SIMULATION:
+  name_pattern: 'run_sim_bit_vlg.log'
+  group_1:
+    use_func: true
+    fields:
+      - { uncertain_name: 'do-not-care', func: 'get_simulation_data' }
+
+# END OF FILE

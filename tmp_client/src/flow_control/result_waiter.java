@@ -155,7 +155,9 @@ public class result_waiter extends Thread {
 			post_report_list.add("[PostRun]");				
 			// task 1: add new post processes
 			postrun_call call_obj = new postrun_call(
+					queue_name,
 					case_path,
+					task_info,
 					report_path,
 					work_space,
 					work_suite,
@@ -165,7 +167,8 @@ public class result_waiter extends Thread {
 					cmd_status,
 					"keep",
 					result_keep,
-					client_info.get_client_tools_data());
+					client_info.get_client_tools_data()
+					);
 			Boolean create_status = post_info.add_postrun_call(call_obj, queue_name, case_id, public_data.DEF_CLEANUP_TASK_TIMEOUT);
 			if (!create_status){
 				post_report_list.add("Post run task skipped, no post run system/disk cleanup will be run.");
@@ -429,7 +432,8 @@ public class result_waiter extends Thread {
 	}
 	
 	private void update_client_run_case_summary(
-			HashMap<String, HashMap<String, Object>> case_report_map) {
+			HashMap<String, HashMap<String, Object>> case_report_map
+			) {
 		update_client_run_case_status_summary(case_report_map);
 		update_client_run_case_memory_summary();
 	}
@@ -447,7 +451,7 @@ public class result_waiter extends Thread {
 				continue;
 			}
 			String queue_name = (String) one_call_data.get(pool_attr.call_queue);
-			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM);
+			float call_mem = (float) one_call_data.getOrDefault(pool_attr.call_maxmem, public_data.TASK_DEF_ESTIMATE_MEM_MIN);
 			task_info.update_client_run_case_summary_memory_map(queue_name, call_mem);
 		}
 		return update_status;
@@ -617,21 +621,20 @@ public class result_waiter extends Thread {
         String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
         String lin_href = "<a href=file:///%s  target='_blank'>%s";		
         String[] ori_paths = save_paths.split("\\s*,\\s*");
+        Pattern smb_patt = Pattern.compile("^\\\\\\\\lsh-smb\\d\\d\\\\",Pattern.CASE_INSENSITIVE);
         //get effective and unique paths
         ArrayList<String> uniq_paths = new ArrayList<String>();
         for(String path: ori_paths) {
         	String ori_path = new String(path);
         	String match_str1 = new String("");
         	String match_str2 = new String("");
+        	Matcher smb_match = smb_patt.matcher(path);
         	if (path.startsWith("/lsh/")) {
         		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("/lsh/", "//lsh-smb02/").replace("\\", "/");
-        	} else if (path.startsWith("\\\\lsh-smb01\\")){
+        		match_str2 = ori_path.replace("/lsh/", "//lsh-smb03/").replace("\\", "/");
+        	} else if (smb_match.find()){
         		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
-        	} else if (path.startsWith("\\\\lsh-smb02\\")){
-        		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");        		
+        		match_str2 = smb_match.replaceAll("/lsh/");        		
         	} else if (path.startsWith("/disks/")){
         		match_str1 = ori_path.replace("\\", "/");
         		match_str2 = ori_path.replace("/disks/", "//ldc-smb01/").replace("\\", "/");
@@ -658,10 +661,11 @@ public class result_waiter extends Thread {
         int i = 1;
         for(String path: uniq_paths) {
             path = path.trim();
+            Matcher smb_match = smb_patt.matcher(path);
             String site = new String("");
-            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb01\\") || path.startsWith("\\\\lsh-smb02\\")) {
+            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb")) {
             	site = "(LSH)";
-            } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb01\\")) {
+            } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb")) {
             	site = "(LSV)";
             } else {
             	site = "";
@@ -670,26 +674,18 @@ public class result_waiter extends Thread {
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("/lsh/", "//lsh-smb02/");
+            	path = path.replace("/lsh/", "//lsh-smb03/");
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
-            } else if (path.startsWith("\\\\lsh-smb01\\")) {
+            } else if (smb_match.find()) {	
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
             	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("\\\\lsh-smb01\\", "/lsh/").replace("\\", "/");
+            	path = smb_match.replaceAll("/lsh/").replace("\\", "/");
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
-            	loc_rpt.append("</a>" + line_separator);
-            } else if (path.startsWith("\\\\lsh-smb02\\")) {
-            	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
-            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
-            	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("\\\\lsh-smb02\\", "/lsh/").replace("\\", "/");
-            	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
-            	loc_rpt.append(String.format(lin_href, path, path));
-            	loc_rpt.append("</a>" + line_separator);            	
+            	loc_rpt.append("</a>" + line_separator);	          	
             } else if (path.startsWith("/disks/")){
             	//for LSV path, passed case will not be copy, so don't show link
             	if (status.equals(task_enum.PASSED)) {
@@ -799,6 +795,7 @@ public class result_waiter extends Thread {
 			String scan_result = "";
 			float used_mem = 0.0f;
 			float peak_mem = 0.0f;
+			float used_space = 0.0f;
 			HashMap<String, String> detail_report = new HashMap<String, String>();
 			if (call_status.equals(call_state.DONE)) {
 				if(call_timeout){
@@ -817,11 +814,12 @@ public class result_waiter extends Thread {
                 scan_result = get_scan_result((ArrayList<String>) one_call_data.get(pool_attr.call_output));
 				detail_report.putAll(get_detail_report((ArrayList<String>) one_call_data.get(pool_attr.call_output)));
 				used_mem = (float) one_call_data.get(pool_attr.call_maxmem);
+				peak_mem = (float) one_call_data.get(pool_attr.call_maxmem);
+				used_space = (float) one_call_data.get(pool_attr.call_space);
 			}  else {
 				task_status = task_enum.PROCESSING;
 				used_mem = (float) one_call_data.get(pool_attr.call_curmem);
 			}
-			peak_mem = (float) one_call_data.get(pool_attr.call_maxmem);
 			hash_data.putAll(detail_report);
             hash_data.put("scan_result", scan_result);
 			hash_data.put("defects", defects);
@@ -836,6 +834,7 @@ public class result_waiter extends Thread {
 			hash_data.put("run_time", time_info.get_runtime_string_hms(start_time, current_time));
 			hash_data.put("used_mem", decimalformat.format(used_mem));
 			hash_data.put("peak_mem", decimalformat.format(peak_mem));
+			hash_data.put("used_space", decimalformat.format(used_space));
 			hash_data.put("update_time", time_info.get_man_date_time());
 			case_data.put(call_index, hash_data);
 		}
@@ -1132,7 +1131,8 @@ public class result_waiter extends Thread {
 
 	private void generate_console_report(
 			String waiter_name,
-			HashMap<String, HashMap<String, Object>> case_report_map){
+			HashMap<String, HashMap<String, Object>> case_report_map
+			){
 		HashMap<String, HashMap<pool_attr, Object>> call_data = new HashMap<String, HashMap<pool_attr, Object>>();
 		call_data.putAll(pool_info.get_sys_call_copy());
 		Iterator<String> call_map_it = call_data.keySet().iterator();
@@ -1153,10 +1153,11 @@ public class result_waiter extends Thread {
 			String case_id = (String) one_call_data.get(pool_attr.call_case);
 			task_enum status = (task_enum) case_report_map.get(call_index).get("status");
 			String location = (String) case_report_map.get(call_index).get("location");
+			String design_name = (String) case_report_map.get(call_index).get("design");
 			if (switch_info.get_local_console_mode()){
-				RESULT_WAITER_LOGGER.info(waiter_name + ": " + case_id + "," + status.get_description() + "," + location);
+				RESULT_WAITER_LOGGER.info(String.format("%3s", case_id) + ":" + status.get_description() + "," + design_name + "," + location);
 			} else {
-				RESULT_WAITER_LOGGER.info(waiter_name + ": " + queue_name + "," + case_id + "," + status.get_description());
+				RESULT_WAITER_LOGGER.info(waiter_name + ":" + queue_name + "," + case_id + "," + status.get_description());
 			}
 		}
 	}

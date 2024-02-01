@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import cmd_interface.insert_cmd;
 import cmd_interface.top_cmd;
 import connect_tube.task_data;
 import data_center.client_data;
@@ -55,7 +56,7 @@ public class link_client {
 	}
 	
 	//Channel CMD related tasks
-	public Boolean channel_cmd_link_request(
+	public Boolean channel_cmds_link_request(
 			String host){
 		Boolean link_status = Boolean.valueOf(true);
 		Socket socket = null;
@@ -67,7 +68,7 @@ public class link_client {
 			HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 			request_data.put("request", top_cmd.LINK.toString());
 			xml_data.put(top_cmd.LINK.toString(), request_data);
-			String output = xml_parser.create_common_xml_string("channel_cmd", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+			String output = xml_parser.create_common_xml_string("channel_cmds", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
 			socket_out.write(output);
 			socket_out.flush();
 			socket.shutdownOutput();
@@ -87,19 +88,19 @@ public class link_client {
 		}
 		Map<String, HashMap<String, HashMap<String, String>>> msg_hash = new HashMap<String, HashMap<String, HashMap<String, String>>>();
 		msg_hash.putAll(xml_parser.get_common_xml_data(return_data.toString()));
-		if (!msg_hash.containsKey("channel_cmd")){
+		if (!msg_hash.containsKey("channel_cmds")){
 			link_status = false;
 			return link_status;
 		}
-		if (!msg_hash.get("channel_cmd").containsKey("results")){
+		if (!msg_hash.get("channel_cmds").containsKey("results")){
 			link_status = false;
 			return link_status;
 		}
-		if (!msg_hash.get("channel_cmd").get("results").containsKey("default")){
+		if (!msg_hash.get("channel_cmds").get("results").containsKey("default")){
 			link_status = false;
 			return link_status;
 		}	
-		if (!msg_hash.get("channel_cmd").get("results").get("default").equalsIgnoreCase(public_data.SOCKET_LINK_ACKNOWLEDGE)){
+		if (!msg_hash.get("channel_cmds").get("results").get("default").equalsIgnoreCase(public_data.SOCKET_LINK_ACKNOWLEDGE)){
 			link_status = false;
 			return link_status;
 		}
@@ -108,18 +109,45 @@ public class link_client {
 		LINK_CLIENT_LOGGER.warn("linked client: " + host);
 		//return link status
 		return link_status;
-	}	
+	}
 	
-	public String channel_cmd_data_request(
+	public String channel_cmds_action_request(
 			String category,
-			String request_info) throws IOException{
+			String request_action) throws IOException{
 		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_LINK_PORT);
 		BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> request_data = new HashMap<String, String>();
-		request_data.put("request", request_info);
+		request_data.put("request", request_action);
 		xml_data.put(category, request_data);
-		String output = xml_parser.create_common_xml_string("channel_cmd", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+		String output = xml_parser.create_common_xml_string("channel_cmds", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+		socket_out.write(output);
+		socket_out.flush();
+		socket.shutdownOutput();
+		//get the return
+		StringBuilder return_data = new StringBuilder("");
+		BufferedReader socket_in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		String line = null;
+		while((line = socket_in.readLine()) != null){
+			return_data.append(line);
+		}
+		socket.shutdownInput();
+		socket.close();
+		return return_data.toString();
+	}	
+	
+	public String channel_push_data_update(
+			insert_cmd db_name,
+			String ob_name,
+			String option_value
+			) throws IOException{
+		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_LINK_PORT);
+		BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
+		HashMap<String, String> request_data = new HashMap<String, String>();
+		request_data.put(ob_name, option_value);
+		xml_data.put(db_name.toString(), request_data);
+		String output = xml_parser.create_common_xml_string("channel_push", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
 		socket_out.write(output);
 		socket_out.flush();
 		socket.shutdownOutput();
@@ -135,16 +163,16 @@ public class link_client {
 		return return_data.toString();
 	}
 	
-	public String channel_cmd_action_request(
+	public String channel_pull_data_request(
 			String category,
-			String request_action) throws IOException{
+			String request_info) throws IOException{
 		Socket socket = new Socket(linked_host, public_data.SOCKET_DEF_LINK_PORT);
 		BufferedWriter socket_out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		HashMap<String, HashMap<String, String>> xml_data = new HashMap<String, HashMap<String, String>>();
 		HashMap<String, String> request_data = new HashMap<String, String>();
-		request_data.put("request", request_action);
+		request_data.put("request", request_info);
 		xml_data.put(category, request_data);
-		String output = xml_parser.create_common_xml_string("channel_cmd", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
+		String output = xml_parser.create_common_xml_string("channel_pull", xml_data, socket.getInetAddress().getHostAddress(), linked_host);
 		socket_out.write(output);
 		socket_out.flush();
 		socket.shutdownOutput();
@@ -158,7 +186,8 @@ public class link_client {
 		socket.shutdownInput();
 		socket.close();
 		return return_data.toString();
-	}	
+	}
+
 	
 	//Channel JOB related tasks
 	

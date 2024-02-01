@@ -27,7 +27,7 @@ RUN_SQUISH = '''#!/bin/sh
 %(run_server)s
 %(sleep)s
 %(squishserver)s --config addAUT %(name_of_aut)s "%(path_to_aut)s"
-%(squishrunner)s --config setAUTTimeout 60
+%(squishrunner)s --config setAUTTimeout 300
 %(squishrunner)s --config setResponseTimeout 60
 %(squishrunner)s --testcase %(testcase)s --lang %(language)s --wrapper %(wrapper)s --objectmap %(objectmap)s --cwd %(cwd)s --reportgen stdout,console.log --aut %(name_of_aut)s
 %(squishserver)s --stop
@@ -89,6 +89,7 @@ class RunSquishCase:
         parser.add_option("--squish", help="specify Squish path")
         parser.add_option("--dev-path", help="specify DEV(core scripts) path")
         parser.add_option("--x86", action="store_true", help="run with x86 build")
+        parser.add_option("--test-id", help="show test id in command line")
         opts, args = parser.parse_args()
         self.top_dir = opts.top_dir
         self.design = opts.design

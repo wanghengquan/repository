@@ -26,9 +26,11 @@ public enum pool_attr {
 	call_estmem(13, "call_estimate_memory"),
 	call_curmem(14, "call_current_memory"),
 	call_maxmem(15, "call_maximum_memory"),
-    call_output(16, "call_output"),
-    call_recorded(17, "call_recorded"),
-    call_videoobj(18, "call_videoobj");
+	call_estspace(16, "call_estimate_space"),
+	call_space(17, "call_maximum_space"),
+    call_output(18, "call_output"),
+    call_recorded(19, "call_recorded"),
+    call_videoobj(20, "call_videoobj");
 	private int index;
 	private String description;
 	

@@ -11,6 +11,7 @@ Description:
 import os
 import re
 import csv
+import copy
 from openpyxl.utils import get_column_letter
 from collections import OrderedDict
 from capuchin import xTools
@@ -44,9 +45,9 @@ LEFT JOIN(
     FROM
         lrf.run_{run_id}
     WHERE
-        id IN(
+        {sort_key} IN(
         SELECT
-            MAX(id)
+            MAX({sort_key})
         FROM
             lrf.run_{run_id}
         GROUP BY
@@ -54,6 +55,33 @@ LEFT JOIN(
     )
 ) E
 ON
+    E.testId = A.id
+WHERE
+    A.run_id = {run_id} AND A.is_selected = 1 AND(
+        B.`custom_nouse` = 1 OR B.`custom_nouse` IS NULL
+    )
+ORDER BY
+    xSectionID,
+    xTestID
+"""
+SELECT_WITH_DETAIL_ALL = """
+SELECT
+    CONCAT('T', A.id) AS xTestID,
+    A.case_id AS xCaseID,
+    B.section_id AS xSectionID,
+    C.name AS xSectionName,
+    B.title AS xRawCase,
+    D.label AS xStatusName,
+    E.*
+FROM
+    tests A
+LEFT JOIN cases B ON
+    B.id = A.case_id
+LEFT JOIN sections C ON
+    C.id = B.section_id
+LEFT JOIN statuses D ON
+    A.status_id = D.id
+LEFT JOIN lrf.run_{run_id} E ON
     E.testId = A.id
 WHERE
     A.run_id = {run_id} AND A.is_selected = 1 AND(
@@ -173,13 +201,15 @@ def get_design_names(original_data, case_group_name, src_designs, dst_designs):
 
 
 def string_2_int_float_percentage(raw_string):
-    if not raw_string:
+    if raw_string == 0:
+        return 0, False
+    elif not raw_string:
         return "NA", False
-    if raw_string == "None":
+    elif raw_string == "None":
         return "NA", False
     if not isinstance(raw_string, str):
         return raw_string, False
-    p_float = re.compile(r"^\d+\.\d+$")
+    p_float = re.compile(r"^-*\d+\.\d+$")
     p_percentage = re.compile(r"^([\d.]+)%$")
     raw_string = raw_string.strip()
     m_percentage = p_percentage.search(raw_string)
@@ -201,6 +231,8 @@ def get_raw(data_name, whole_dict, all_data, force_dump, say_error, raw_only=Fal
             self.default_conf_path = whole_dict.get("default_conf_path")
             self.report_conf = whole_dict.get("report_conf")
             self.output = whole_dict.get("output")
+            self.best_fmax = whole_dict.get("best_fmax")
+            self.use_all_data = whole_dict.get("use_all_data")
 
         def get_csv_data_alike(self):
             file_root_path = os.path.dirname(self.report_conf) if self.report_conf else ""
@@ -224,7 +256,7 @@ def get_raw(data_name, whole_dict, all_data, force_dump, say_error, raw_only=Fal
                     for foo in csv_dict:
                         new_data.append(foo)
             else:
-                excel_reader = xExcel.Excel2csv()
+                excel_reader = xExcel.Excel2csv(max_row_size=100000)
                 excel_reader.process(file_name, sheet_name)
                 raw_return_data = excel_reader.get_csv_dict_alike()
                 assert len(raw_return_data) == 1, "Get more than 1 sheet data from {}::{}".format(file_name, sheet_name)
@@ -256,6 +288,8 @@ def get_raw(data_name, whole_dict, all_data, force_dump, say_error, raw_only=Fal
         def dump_data_from_db(self, run_id, temp_xlsx):
             dump_options = xOptions.XOptions(self.default_conf_path)
             dump_args = ["dump", "-i", str(run_id), "-o", os.path.join(self.output, "temp_files"), "-e", temp_xlsx]
+            if self.use_all_data:
+                dump_args.append("--use-all-data")
             dump_options_ns = dump_options.get_options_ns(dump_args)
             dump_options_ns.root_file = ""  # for debug only, previous dump_args DO NOT has --debug
             dump_flow = xDump.DataDump(dump_options_ns)
@@ -264,7 +298,7 @@ def get_raw(data_name, whole_dict, all_data, force_dump, say_error, raw_only=Fal
         def process(self, csv_data_alike):
             if raw_only:
                 return csv_data_alike
-            design_data = OrderedDict()
+            design_data = OrderedDict()   # value is design data dict list
             for foo in csv_data_alike:
                 if self.now_sections:
                     my_section = foo.get("xSectionName")
@@ -275,11 +309,47 @@ def get_raw(data_name, whole_dict, all_data, force_dump, say_error, raw_only=Fal
                     say_error("@E: Failed to get data from {}".format(foo))
                     continue
                 my_design = os.path.basename(my_design)
-                if my_design in design_data:
-                    say_error("@W: duplicated {} in {}:{}".format(my_design, self.now_name, self.now_sections))
+                design_data.setdefault(my_design, list())
+                design_data[my_design].append(foo)
+            #
+            new_design_data = OrderedDict()
+            for k, v in list(design_data.items()):
+                if self.best_fmax:
+                    new_design_data[k] = self.get_fmax_geo_data(v)
                 else:
-                    design_data[my_design] = foo
-            return design_data
+                    new_design_data[k] = v[-1]
+            #
+            return new_design_data
+
+        @staticmethod
+        def get_fmax_geo_data(raw_result_list):
+            if len(raw_result_list) == 1:
+                return raw_result_list[0]
+            #
+            more_key_dict = dict(fmax="KEY_FMAX", geo_fmax="KEY_GEO")
+            result_list_with_more = list()
+            for foo in raw_result_list:
+                this_foo = copy.copy(foo)
+                for key, more_key in list(more_key_dict.items()):
+                    raw_value = this_foo.get(key)
+                    try:
+                        more_value = float(raw_value)
+                    except:
+                        more_value = -1
+                    this_foo[more_key] = more_value
+                result_list_with_more.append(this_foo)
+            #
+            sorted_by_fmax = sorted(result_list_with_more, key=lambda v: v.get(more_key_dict.get("fmax")))
+            sorted_by_geo = sorted(result_list_with_more, key=lambda v: v.get(more_key_dict.get("geo_fmax")))
+            fmax_geo_data = sorted_by_fmax[-1]  # initialize
+            for k in ("geo_fmax", "best_geo_point"):
+                fmax_geo_data[k] = sorted_by_geo[-1].get(k)
+            for k, v in list(more_key_dict.items()):
+                try:
+                    fmax_geo_data.pop(v)
+                except:
+                    pass
+            return fmax_geo_data
 
     extractor = GetRealData()
     full_csv_data = extractor.get_csv_data_alike()

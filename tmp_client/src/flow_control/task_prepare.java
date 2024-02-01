@@ -98,7 +98,8 @@ public class task_prepare {
 	
 	protected Boolean get_case_path_ready(
 			HashMap<String, String> client_tools,
-			HashMap<String, HashMap<String, String>> task_data){
+			HashMap<String, HashMap<String, String>> task_data
+			){
 		task_prepare_info.add(line_separator + ">Prepare case path:");
 		String source_url = task_data.get("Paths").get("design_url").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
@@ -1008,15 +1009,22 @@ public class task_prepare {
 			) {
 		task_prepare_info.add(line_separator + ">Prepare Launch CMDs(LCs):");
 		TreeMap<String, HashMap<cmd_attr, List<String>>> launch_cmds = new TreeMap<String, HashMap<cmd_attr, List<String>>>(new cmdid_compare());
+		String cmd_all = new String("");
+		if (task_data.get("LaunchCommand").containsKey("cmd_all")) {
+			cmd_all = task_data.get("LaunchCommand").get("cmd_all");
+		}
 		Iterator<String> option_it  = task_data.get("LaunchCommand").keySet().iterator();
 		while (option_it.hasNext()) {
 			String option_name = option_it.next();
 			if(!option_name.startsWith("cmd_") && !option_name.equalsIgnoreCase("cmd")) {
 				continue;
 			}
+			if (option_name.equalsIgnoreCase("cmd_all")) {
+				continue;
+			}
 			//job command line prepare
 			HashMap<cmd_attr, List<String>> cmd_data = new HashMap<cmd_attr, List<String>>();
-			String cmd_string  = new String(task_data.get("LaunchCommand").get(option_name));
+			String cmd_string  = new String(task_data.get("LaunchCommand").get(option_name) + " " + cmd_all);
 			cmd_data.put(cmd_attr.command, Arrays.asList(get_launch_cmd(cmd_string, python_version, corescript_link_status, client_tools, task_data)));
 			//job environment prepare
 			HashMap<String, String> cmd_env = new HashMap<String, String>();
@@ -1082,6 +1090,7 @@ public class task_prepare {
 		String work_space = task_data.get("Paths").get("work_space").trim();
 		String case_path = task_data.get("Paths").get("case_path").trim();
 		String case_name = task_data.get("Paths").get("case_name").trim();
+		String task_name = "T" + task_data.get("ID").get("id_index").trim();
 		//String base_name = task_data.get("Paths").get("base_name").trim();
 		String design_path = new String("");
 		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
@@ -1178,19 +1187,19 @@ public class task_prepare {
 		if (launch_path.equalsIgnoreCase(case_path))
 			cmd_list = launch_cmd.split("\\s+");
 		else if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_vivado.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
 		else
 			cmd_list = launch_cmd.split("\\s+");
 		// replace the @#@
@@ -1229,10 +1238,12 @@ public class task_prepare {
 		String python_path = new String();
 		python_path = client_data.get("tools").getOrDefault("python", public_data.DEF_PYTHON_PATH);
 		File python_fobj = new File(python_path);
-		if(python_fobj.isDirectory()) {
+		if (python_path.equalsIgnoreCase("python")) {
 			run_env.put("EXTERNAL_PYTHON_PATH",  python_path);
-		} else {
+		} else if(python_fobj.isFile()) {
 			run_env.put("EXTERNAL_PYTHON_PATH", python_fobj.getParent().replaceAll("\\\\", "/"));
+		} else {
+			run_env.put("EXTERNAL_PYTHON_PATH", python_path.replaceAll("\\\\", "/"));
 		}
 		// put external core script path
 		String work_space = task_data.get("Paths").get("work_space").trim();
@@ -1316,48 +1327,62 @@ public class task_prepare {
 	
 	private String get_correct_build_path(
 			String software_name,
-			String available_builds,
+			String request_builds,
 			String cmd_index,
 			HashMap<String, HashMap<String, String>> client_data
 			) {
 		String software_path = new String("");
-		if (available_builds == null || available_builds.equals("")) {
+		if (request_builds == null || request_builds.equals("")) {
 			return software_path;
 		}
-		ArrayList<String> available_builds_list = new ArrayList<String>();		
-		if (available_builds.contains(",")){
-			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*,\\s*")));
-		} else if (available_builds.contains(";")){
-			available_builds_list.addAll(Arrays.asList(available_builds.split("\\s*;\\s*")));
+		ArrayList<String> request_builds_list = new ArrayList<String>();		
+		if (request_builds.contains(",")){
+			request_builds_list.addAll(Arrays.asList(request_builds.split("\\s*,\\s*")));
+		} else if (request_builds.contains(";")){
+			request_builds_list.addAll(Arrays.asList(request_builds.split("\\s*;\\s*")));
 		} else{
-			available_builds_list.add(available_builds);
+			request_builds_list.add(request_builds);
 		}
-		if (available_builds_list.size() == 1) {
-			if (available_builds.contains("@cmd")) {
-				if (available_builds.contains(cmd_index)) {
-					software_path = client_data.get(software_name).get(available_builds.replaceAll("@.*$", ""));
+		if (request_builds_list.size() == 1) {
+			if (request_builds.contains("@cmd")) {
+				if (request_builds.contains(cmd_index)) {
+					software_path = get_software_path_with_exception(software_name, request_builds, client_data);
 				}
 			} else {
-				software_path = client_data.get(software_name).get(available_builds);
+				software_path = get_software_path_with_exception(software_name, request_builds, client_data);
 			}
-		} else if (available_builds_list.size() > 1) {
+		} else if (request_builds_list.size() > 1) {
 			//search by location 
 			int cmd_index_int = get_cmd_index(cmd_index);
-			if (cmd_index_int > 0 && cmd_index_int <= available_builds_list.size()) {
-				String index_build = new String(available_builds_list.get(cmd_index_int - 1));
+			if (cmd_index_int > 0 && cmd_index_int <= request_builds_list.size()) {
+				String index_build = new String(request_builds_list.get(cmd_index_int - 1));
 				if (!index_build.contains("@cmd")) {
-					software_path = client_data.get(software_name).get(index_build);
+					software_path = get_software_path_with_exception(software_name, index_build, client_data);
 				}
 			}
 			//override with explicit instruction
-			for(String build_string:available_builds_list) {
+			for(String build_string:request_builds_list) {
 				if (build_string.endsWith("@" + cmd_index)) {
-					software_path = client_data.get(software_name).get(build_string.replaceAll("@.*$", ""));
+					software_path = get_software_path_with_exception(software_name, build_string, client_data);
 					break;
 				}
 			}
 		} else {
 			;
+		}
+		return software_path;
+	}
+	
+	private String get_software_path_with_exception(
+			String software_name,
+			String request_build,
+			HashMap<String, HashMap<String, String>> client_data
+			) {
+		String software_path = new String("");
+		if(software_name.equalsIgnoreCase("xrun") || software_name.equalsIgnoreCase("vcs")) {
+			software_path = request_build.replaceAll("@.*$", "");
+		} else {
+			software_path = client_data.get(software_name).get(request_build.replaceAll("@.*$", ""));
 		}
 		return software_path;
 	}

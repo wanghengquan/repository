@@ -37,8 +37,11 @@ class XOptions(object):
         x.add_argument("-t", "--fields", help="dump data in fields only. fields list was defined in dump-configuration")
         _h = "dump test data into different file which is apart by section name"
         x.add_argument("-a", "--apart-by-section", action="store_true", help=_h)
+        x.add_argument("--sort-key", choices=("id", "fmax"), help="specify sort key for case data, default is id")
         x.add_argument("-CDI", "--custom-dump-ini", help="specify custom dump.ini file")
-        x.set_defaults(op_dump=True, op_report=False, export_type="csv")
+        x.add_argument("--sha", action="store_true", help="generate SHA1-Comparison sheets")
+        x.add_argument("--simple", action="store_true", help="do not dump runtime/memory data for checking SHA1 code")
+        x.set_defaults(op_dump=True, op_report=False, export_type="csv", sort_key='id')
 
     def _set_report_parser(self):
         y = self.operation_parser.add_parser("report", help="generate Excel report file")
@@ -65,11 +68,12 @@ class XOptions(object):
         y.add_argument("--sub-name", help="specify sub name in summary sheet")
         y.add_argument("--sheet-name", help="specify sheet name, should be less than 31 characters")
 
-        _c_c, _help = ("AVERAGE", "STDEVPA"), "specify statistical method(s)"
+        _c_c, _help = ("AVERAGE", "STDEVPA", "GEOMEAN"), "specify statistical method(s)"
         y.add_argument("-c", "--calculate", choices=_c_c, nargs="+", help=_help)
         y.add_argument("--case-group-name", help="specify ordered cases group name")
         y.add_argument("--force", action="store_true", help="dump report from database by force")
         y.add_argument("--add-test-id", action="store_true", help="add column xTestID in final report")
+        y.add_argument("--no-ad-data", action="store_true", help="Do not show AD_xxx data")
 
         y.set_defaults(op_dump=False, op_report=True, calculate=["AVERAGE"],
                        src_section=list(), dst_section=list(), section=list(),
@@ -80,6 +84,8 @@ class XOptions(object):
         branch_parser.add_argument("-d", "--debug", action="store_true", help="print debug message")
         branch_parser.add_argument("-o", "--output", default=os.getcwd(), help="specify output directory")
         branch_parser.add_argument("-e", "--output-excel", help="specify output Excel file name")
+        branch_parser.add_argument("--use-all-data", action="store_true", help="try to use all available result data")
+        branch_parser.add_argument("--best-fmax", action="store_true", help="select the best fmax value for a design")
 
 
 class DeployOptions(xLogger.Voice):
@@ -95,6 +101,8 @@ class DeployOptions(xLogger.Voice):
         self.default_conf_path = self.opts.default_conf_path
         if self._get_default_conf_options():
             return 1
+        self.use_all_data = self.opts.use_all_data
+        self.best_fmax = self.opts.best_fmax
         if self.opts.op_dump:
             self.plan_run_id = self.opts.plan_run_id
             self.section = self.opts.section
@@ -102,7 +110,13 @@ class DeployOptions(xLogger.Voice):
             self.apart_by_section = self.opts.apart_by_section
             self.output_excel = self.opts.output_excel
             self.custom_dump_ini = self.opts.custom_dump_ini
+            self.sort_key = self.opts.sort_key
             self.report_conf_file_list = None  # for report only
+            self.sha = self.opts.sha
+            self.simple = self.opts.simple
+            if self.sha:
+                if not self.output_excel:
+                    self.output_excel = "Raw_SHA1_sheets"
             if self.__reset_fields():
                 return 1
         if self.opts.op_report:
@@ -137,6 +151,7 @@ class DeployOptions(xLogger.Voice):
             self.force = self.opts.force
             self.add_test_id = self.opts.add_test_id
             self.output_excel = self.opts.output_excel
+            self.no_ad_data = self.opts.no_ad_data
 
         if self._prepare_output_path():
             return 1

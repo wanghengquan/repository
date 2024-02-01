@@ -180,32 +180,32 @@ def get_conf_files(top, args):
         configs = [auto_conf]
 
         if '--run-par-trce' in trunk_cmd or args.partrce_check:
-            conf = os.path.join(sys.path[0], 'config/par_trace_check.conf')
+            conf = os.path.join(sys.path[0], 'config_auto/par_trace_check.conf')
             with open(conf, 'r') as f:
                 lines = f.readlines()
                 lines.append('file=%s/*/*.twr\n' % args.tag)
 
         elif '--run-map ' in trunk_cmd or '--till-map' in trunk_cmd \
                 or '--run-map-trce' in trunk_cmd or args.map_check:
-            conf = os.path.join(sys.path[0], 'config/map_check.conf')
+            conf = os.path.join(sys.path[0], 'config_auto/map_check.conf')
             with open(conf, 'r') as f:
                 lines = f.readlines()
                 lines.append('file=%s/*/*.mrp\n' % args.tag)
 
         elif args.lse_check or '--synthesis=lse' in trunk_cmd:
-            conf = os.path.join(sys.path[0], 'config/lse.conf')
+            conf = os.path.join(sys.path[0], 'config_auto/lse.conf')
             with open(conf, 'r') as f:
                 lines = f.readlines()
                 lines.append('file=%s/*/synthesis.log\n' % args.tag)
 
         elif args.synp_check or '--synthesis-only' in trunk_cmd:
-            conf = os.path.join(sys.path[0], 'config/synp.conf')
+            conf = os.path.join(sys.path[0], 'config_auto/synp.conf')
             with open(conf, 'r') as f:
                 lines = f.readlines()
                 lines.append('file=%s/*/*.srr\n' % args.tag)
 
         else:
-            conf = os.path.join(sys.path[0], 'config/par.conf')
+            conf = os.path.join(sys.path[0], 'config_auto/par.conf')
             with open(conf, 'r') as f:
                 lines = f.readlines()
                 lines.append('file=%s/*/*.par\n' % args.tag)
@@ -313,6 +313,11 @@ def get_logic_result(condition, results):
     priority = Default.PRIORITY
     if not condition:
         condition = '&&'.join(list(results.keys()))
+    else:
+        _cond = re.split(r'(\(|\)|&&|\|\|)', condition.replace(' ', ''))
+        for r_k in list(results.keys()):
+            if r_k not in _cond:
+                condition += " && {}".format(r_k)
     stack_numb = []
     stack_op = []
     stack_tmp = []
@@ -608,7 +613,7 @@ class WriteFinalReport(object):
                 f_number = total_number - p_number
                 x = ',{0},Regression,{0},{1},{2},{3}'.format(total_number, p_number, f_number, time.asctime())
                 print(x, file=wob)
-                
+
     @staticmethod
     def _wrap_md(used_path, error_code):
         if not os.path.isdir(used_path):
@@ -684,7 +689,8 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     :return: line number if str found else None
     """
     string = string.replace(' ', '').strip()
-    lines = try_to_get_lines_from_file(filename)
+    p_message_id = re.compile(r"<\d+>")
+    lines = try_to_get_lines_from_file(filename, p_message_id.search(string))
     if index is not None:
         if grep:
             if re.search(string, lines[index].replace(' ', '').strip()):
@@ -706,20 +712,28 @@ def find_str_in_file(string, filename, index=None, start=-1, grep=False):
     return None
 
 
-def try_to_get_lines_from_file(a_file):
+def try_to_get_lines_from_file(a_file, string_has_message_id=True):
     lines = list()
+    p_bracket = None if string_has_message_id else re.compile(r"<\d+>")
+    p_b_bracket = None if string_has_message_id else re.compile(b"<\d+>")
     try:
         with open(a_file, 'r') as f:
             old_lines = f.readlines()
             for foo in old_lines:
+                if p_bracket:
+                    foo = p_bracket.sub("", foo)
                 lines.append(foo)
     except UnicodeDecodeError:
         with open(a_file, 'rb') as f:
             old_lines = f.readlines()
             for foo in old_lines:
                 try:
-                    x = re.sub(b"\W", b"", foo)
-                    x = str(x, encoding="utf-8")
+                    if p_b_bracket:
+                        x = p_b_bracket.sub(b"", foo)
+                        x = re.sub(b"\W", b"", x)
+                        x = str(x, encoding="utf-8")
+                    else:
+                        x = str(x, encoding="utf-8")
                     lines.append(x)
                 except UnicodeDecodeError:
                     pass
@@ -736,7 +750,8 @@ def get_index_list_from_file_by_string(string, filename, index=None, start=-1, g
     :return: index list
     """
     string = string.replace(' ', '').strip()
-    lines = try_to_get_lines_from_file(filename)
+    p_message_id = re.compile(r"<\d+>")
+    lines = try_to_get_lines_from_file(filename, p_message_id.search(string))
     if index is not None:
         if grep:
             if re.search(string, lines[index].replace(' ', '').strip()):
@@ -888,7 +903,7 @@ class GetStringFromFile(object):
                 for line in ob:
                     self.this_string = self._get_it(line)
                     if self.this_string:
-                        return 
+                        return
         else:
             search_window, start_pattern = self.before_tag[0]
             m_start = None

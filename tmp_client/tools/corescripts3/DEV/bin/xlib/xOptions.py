@@ -123,6 +123,7 @@ class XOptions:
         _choice_scuba_type = ("vhdl", "verilog")
         pub_group = self.parser.add_argument_group("Public Options")
         pub_group.add_argument("-d", "--debug", action="store_true", help="print debug message")
+        pub_group.add_argument("--test-id", help="show test id when executing 'ps -ef | grep python'")
         pub_group.add_argument("--copy-all", action="store_true", help="copy all files in ldf_dir to working directory")
         _hlp = "specify user's environment value (append action)"
         _hlp += ' example: --set-env=a=1 --set-env="b=2;9;x"'
@@ -154,6 +155,7 @@ class XOptions:
         pub_group.add_argument("--check-only", action="store_true", help="check results only")
         pub_group.add_argument("--no-check", action="store_true", help="do not check results, always passed")
         pub_group.add_argument("--scan-only", action="store_true", help="scan and check results only")
+        pub_group.add_argument("--fmax-sort", choices=("max", "geomean"), default="max", help="specify fmax sort way")
         pub_group.add_argument("--check-conf", help="specify the check conf FILE NAME")
         pub_group.add_argument("--pre-process", help="run pre-process for a case")
         pub_group.add_argument("--post-process", help="run post-process for a case")
@@ -165,6 +167,8 @@ class XOptions:
         pub_group.add_argument("--check-smart", action="store_true", help="check results smartly")
         pub_group.add_argument("--check-logic-timing-not", action="store_true", help="DO NOT check logic timing")
         pub_group.add_argument("--toe", action="store_true", help="trial and error")
+        pub_group.add_argument("-C", "--encryption-factor", type=int, choices=(1, 2, 3, 4, 5, 6, 7),
+                               help="encryption selector percentage")
 
         # self.parser.add_argument_group(pub_group)
 
@@ -173,6 +177,7 @@ class XOptions:
         self.add_project_options()
         self.add_impl_options()
         self.add_simulation_options()
+        self.add_power_options()
 
     def add_simulation_options(self):
         sim_group = self.parser.add_argument_group("Simulation Options")
@@ -214,13 +219,13 @@ class XOptions:
         sim_group.add_argument("--sim-par-vlg", action="store_true", help="run PARVerilog simulation")
         sim_group.add_argument("--sim-bit-vlg", action="store_true", help="run BIT Verilog simulation")
         sim_group.add_argument("--sim-all", action="store_true", help="run all simulation flow")
-        lp_choices = ("5", "1000", "0.5")
+        lp_choices = ("5", "1000", "0.5", "0.25", "500", "2.5")
         sim_group.add_argument("--lst-precision", choices=lp_choices,
-                             default="5", help="specify lst precision number, default is 5 ns")
+                               default="5", help="specify lst precision number, default is 5 ns")
         sdf_choices = ("min", "typ", "max")
         sim_group.add_argument("--sim-with-sdf", choices=sdf_choices,
-                             help="specify the type of running post-map/par simulation flow with sdf file,"
-                                  " valid choices are %s" % ",".join(sdf_choices))
+                               help="specify the type of running post-map/par simulation flow with sdf file,"
+                                    " valid choices are %s" % ",".join(sdf_choices))
         simrel_types = ("sim_rtl", "sim_map_vlg", "sim_map_vhd", "sim_par_vlg", "sim_par_vhd")
         _h2 = "run simrel flow and specify the lst file type, valid choices are: %s" % ", ".join(simrel_types)
         sim_group.add_argument("--run-simrel", choices=simrel_types, help=_h2)
@@ -229,8 +234,20 @@ class XOptions:
         sim_group.add_argument("--sim-coverage-args", default="sbecft", help="Questasim coverage flow arguments")
         # self.parser.add_argument_group(sim_group)
 
+    def add_power_options(self):
+        pwr_group = self.parser.add_argument_group("Power Calculator Options")
+        _h = "specify Power Calculator Process Type, default is Typical"
+        pwr_group.add_argument("--pwr-type", choices=("Typical", "Worst"), help=_h)
+        pwr_group.add_argument("--pwr-at", type=float, help="specify Power Ambient Temperature, default is 25")
+        pwr_group.add_argument("--pwr-etga", type=float, help="specify Power Effective Theta-JA, default is 4.25")
+        pwr_group.add_argument("--pwr-af", type=float, help="specify Power Activity Factor (Keep Clock AF Settings), default is 12.5")
+        pwr_group.add_argument("--pwr-fre", type=float, help="specify Power Frequency Setting, default is 0")
+        pwr_group.add_argument("--pwr-fre-twr", choices=("min", "pref", "trace"), help="specify Power Use Frequency TWR mode")
+        pwr_group.add_argument("--run-power", action="store_true", help="run Power Calculator flow")
+        pwr_group.set_defaults(pwr_type="Typical", pwr_at=25, pwr_etga=4.25, pwr_af=12.5, pwr_fre=0)
+
     def add_diamond_options(self):
-        diamond_group = self.parser.add_argument_group("Diamond Options")
+        diamond_group = self.parser.add_argument_group("Diamond/Radiant Options")
         diamond_group.add_argument("-X", "--x86", action="store_true", help="run with x86 vendor tools")
         if not self.is_ng_flow:
             diamond_group.add_argument("--diamond", help="specify Diamond install path")
@@ -244,6 +261,9 @@ class XOptions:
             diamond_group.add_argument("--radiant-sol", help="specify Radiant install path(Solaris)")
             diamond_group.add_argument("--radiant-fe", help="specify Radiant install path for running synthesis")
             diamond_group.add_argument("--radiant-be", help="specify Radiant install path for running mpar")
+            _help = "specify syn/map/par trace report format"
+            diamond_group.add_argument("--trace-report-format", choices=("default", "diamond"), help=_help)
+            diamond_group.set_defaults(trace_report_format="diamond")
         # self.parser.add_argument_group(diamond_group)
 
     def add_project_options(self):
@@ -260,6 +280,7 @@ class XOptions:
         frontend_group.add_argument("--run-scuba", choices=scuba_choice,
                                   help="update models with users definition, valid choices are: %s" % ",".join(scuba_choice))
         frontend_group.add_argument("--run-ipgen", action="store_true", help="run ipgen in models folder for Radiant flow")
+        frontend_group.add_argument("--skip-ipgen", action="store_true", help="DO NOT run ipgen anytime")
         frontend_group.add_argument("--run-ignore-tcl", action="store_true", help="Ignore customer's tcl file")
         frontend_group.add_argument("--devkit", help="specify the devkit name")
         frontend_group.add_argument("--gen-pdc", action="store_true", help="Radiant auto-generate pdc file for QoR")
@@ -272,6 +293,7 @@ class XOptions:
         frontend_group.add_argument("--synthesis", choices=_choice_synthesis,
             help="specify synthesis name, else use default one")
         frontend_group.add_argument("--use-sdc", action="store_true", help="use sdc file for synthesis flow if found it")
+        frontend_group.add_argument("--disable-pdc", action="store_true", help="disable pdc file in project file")
         frontend_group.add_argument("--strategy", choices=_choice_strategy,
             help="specify Diamond strategy name, if None, use Strategy1 or design current strategy")
         frontend_group.add_argument("--goal", choices=_choice_goal,
@@ -281,7 +303,7 @@ class XOptions:
         frontend_group.add_argument("--mixed-drivers", action="store_true", help="set Resolve Mixed Drivers True")
         frontend_group.add_argument("--block-lpf", action="store_true",
             help="Do NOT transmit constraint from sdc/ldc to lpf/prf file")
-        frontend_group.add_argument("--set-strategy", action="append",
+        frontend_group.add_argument("-S", "--set-strategy", action="append",
             help='set strategy, example:--set-strategy="syn_res_sharing=False maptrce_check_unconstrained_connections=True')
         frontend_group.add_argument("--empty-lpf", action="store_true",
             help="use default lpf file to run the first step flow")
@@ -319,6 +341,7 @@ class XOptions:
         _choice_udb2sv = ("rtl", "syn", "map", "par")
         hx = "execute udb2sv command with udb file(s)"
         backend_group.add_argument("--run-udb2sv", choices=_choice_udb2sv, nargs="+", help=hx)
+        backend_group.add_argument("--run-sso", action="store_true", help="run SSO (ssoana) flow")
         backend_group.add_argument("--map-done", action="store_true", help="map flow already done")
         backend_group.add_argument("--run-map", action="store_true", help="run Map flow")
         self.add_old_new_arg(backend_group, "run_map_trace", "--run-map-trce", "--run-map-trace", "Run Map Trace flow")
@@ -344,15 +367,27 @@ class XOptions:
         backend_group.add_argument("--run-export-rbt", action="store_true", help="generate .rbt file instead of .bit file")
         backend_group.add_argument("--till-map", action="store_true", help="run till map trace flow")
         backend_group.add_argument("--synthesis-only", action="store_true", help="run synthesis only")
+        self.step_choices = ["map", "placer", "router", "par"]
+        backend_group.add_argument("--run-step", choices=self.step_choices, nargs='+', help="run single step flow")
+        _thread_choices = (-1, 0, 1, 2, 4, 8)
+        backend_group.add_argument("--par-threads", type=int, choices=_thread_choices, nargs="+", help="specify step par threads")
+        backend_group.add_argument("--run-step-synthesis", action="store_true", help="run step synthesis flow")
+        backend_group.add_argument("--step-times", type=int, default=1, help="times number for running a step")
 
         backend_group.add_argument("--fmax-sweep", metavar="<from,to,step>",
             help="specify fmax sweeping range")
+        _help = "specify fmax iteration setting: (adjust_percentage iteration_number"
+        backend_group.add_argument("--fmax-iteration", type=float, nargs=2, help=_help)
         backend_group.add_argument("--fmax-in-whole", action="store_true", help="use fmax in the whole test flow")
         backend_group.add_argument("--seed-sweep", metavar="<from,to,step>",
             help="specify seed sweeping range")
         backend_group.add_argument("--fmax-seed", action="store_true", help="run seed sweeping for every fmax points")
         backend_group.add_argument("--fmax-center", metavar="<initial_frequency,increase_percentage,total_points>",
                                  help="specify fmax-center arguments")
+        f_c_help = "specify custom clock name and fixed frequency for implementation flow, Example: CLK:10 clk_core:20"
+        backend_group.add_argument("--fixed-clock", nargs="+", help=f_c_help)
+        backend_group.add_argument("--ignore-clock", nargs="+", help="specify ignore custom clocks when scanning timing data")
+        backend_group.add_argument("--care-clock", nargs="+", help="specify care only custom clocks when scanning timing data")
         backend_group.add_argument("--pap-range", type=int, nargs=2, help="specify pap range, for example: 70 80")
         backend_group.add_argument("--pdc4center", action="store_true", help="inner switch for fmax center methodology")
         backend_group.add_argument("--double-step", action="store_true", help="double the running step for running faster")
@@ -381,6 +416,7 @@ class XOptions:
         self.dsp = self.scripts_options.get("dsp")
         self.scuba_type = self.scripts_options.get("scuba_type")
         self.run_ipgen = self.scripts_options.get("run_ipgen")
+        self.skip_ipgen = self.scripts_options.get("skip_ipgen")
         self.run_ignore_tcl = self.scripts_options.get("run_ignore_tcl")
         self.scuba_only = self.scripts_options.get("scuba_only")
         self.check_rpt = self.scripts_options.get("check_rpt")
@@ -398,6 +434,18 @@ class XOptions:
         self.random_devkit = self.scripts_options.get("random_devkit")
         self.run_simrel = self.scripts_options.get("run_simrel")
         self.run_export_rbt = self.scripts_options.get("run_export_rbt")
+        self.run_step = self.scripts_options.get("run_step")
+        self.par_threads = self.scripts_options.get("par_threads")
+        self.run_step_synthesis = False
+        if self.run_step:
+            t = list()
+            for foo in self.step_choices:
+                if foo in self.run_step:
+                    t.append(foo)
+            self.run_step = t[:]
+        else:
+            self.run_step_synthesis = self.scripts_options.get("run_step_synthesis")
+        self.step_times = self.scripts_options.get("step_times")
         if self.run_simrel or self.run_export_rbt:
             _t = "{bit_out_format=Raw Bit File (ASCII)}"
             self.scripts_options["run_export_bitstream"] = 1
@@ -435,8 +483,15 @@ class XOptions:
         cmd_value = self.scripts_options.get(key)
         if cmd_value:
             pass
-        else:
-            self.scripts_options[key] = value
+        else:  # EXTERNAL_SIMREL_PATH=/disks/swrd3/jchen4/simrel_lib,/lsh/sw/qa/qausr/jwang1/simrel_lib
+            value_list = re.split(r"\s*[;,]\s*", value)
+            new_v = value_list[0]
+            if len(value_list) != 1:
+                for foo in value_list:
+                    if os.path.exists(foo):
+                        new_v = foo
+                        break
+            self.scripts_options[key] = new_v
 
     def merge_ex_env(self):
         """Merge environment by user settings.

@@ -1,0 +1,12 @@
+RADIANT_TIMING_REPORT_FILE:
+  name_pattern: '.twr$'
+  content_pattern: 'Lattice TRACE Report.+Diamond'
+  group_1:
+    use_func: true
+    fields:
+      - { nickname: 'twr_data', func: 'get_diamond_twr_data' }
+  group_2:
+    fields:
+      - { name: 'constraint_coverage', pattern: 'Constraints cover .+\((\S+)\s+coverage\)'}
+
+# END OF FILE

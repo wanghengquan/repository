@@ -15,6 +15,7 @@ from . import utils
 from . import filelock
 
 from . import yTimeout
+from .scanLib import xml2dict
 
 from .Verilog_VCD import Verilog_VCD
 
@@ -102,11 +103,12 @@ def get_new_real_path(do_file, line):
 
 
 class RunSimulationFlow:
-    def __init__(self, flow_options, final_ldf_file, final_ldf_dict):
+    def __init__(self, flow_options, final_ldf_file, final_ldf_dict, first_status):
         self.flow_options = flow_options
         self.is_ng_flow = flow_options.get("is_ng_flow")
         self.final_ldf_dict = final_ldf_dict
         self.final_ldf_file = final_ldf_file
+        self.first_status = first_status
         self.conf = flow_options.get("conf")
         self.run_scuba = flow_options.get("run_scuba")
         self.sim_with_sdf = flow_options.get("sim_with_sdf")
@@ -171,7 +173,7 @@ class RunSimulationFlow:
             if user_options.get("run_export_vhd") or user_options.get("run_export_vlg"):
                 user_options["run_par_trace"] = 1
         task_list = xLattice.get_task_list(self.flow_options, user_options, donot_infer_options=dnio)
-        if task_list:
+        if task_list and (not self.first_status):
             sts = xLattice.run_ldf_file("run_pb.tcl", self.final_ldf_file, task_list, list(), self.is_ng_flow)
             if sts:
                 xTools.say_it("-Warning. errors found in normal implementation flow")
@@ -179,6 +181,7 @@ class RunSimulationFlow:
             self.run_udb2_flow()
         if self.get_pmi_file():
             return 1
+        self.get_vhdl_2008_boolean()
 
         for (sim_type, sim_path, sim_func) in (
                 (self.sim_rtl, "sim_rtl", self.run_rtl_simulation),
@@ -209,8 +212,38 @@ class RunSimulationFlow:
             dms_flow.process()
         return sts
 
+    def get_vhdl_2008_boolean(self):
+        yes_patterns = [re.compile("ROP_(LST|SYN)_VHDL2008.+True"), re.compile("PROP_.+_CmdLineArgs.+2008")]
+        self.vhdl_2008_boolean = False
+        with open(self.final_ldf_file) as ob:
+            ldf_dict = xml2dict.parse(ob)
+            x_name = "RadiantProject" if self.is_ng_flow else "BaliProject"
+            x_dict = ldf_dict.get(x_name)
+            x_d_i = x_dict.get("@default_implementation")
+            y_impl = x_dict.get("Implementation")
+            y_impl = [y_impl] if isinstance(y_impl, dict) else y_impl
+            for foo in y_impl:
+                if x_d_i != foo.get("@description"):
+                    continue
+                using_strategy = foo.get("@default_strategy")
+                y_impl_sty = x_dict.get("Strategy")
+                y_impl_sty = [y_impl_sty] if isinstance(y_impl_sty, dict) else y_impl_sty
+                for bar in y_impl_sty:
+                    if bar.get("@name") == using_strategy:
+                        # -------------
+                        sty_file = xTools.get_abs_path(bar.get("@file"), os.path.dirname(os.path.abspath(self.final_ldf_file)))
+                        if os.path.isfile(sty_file):
+                            #     <Property name="PROP_SYN_VHDL2008" value="False" time="0"/>
+                            #     <Property name="PROP_LST_VHDL2008" value="True" time="0"/>
+                            match_status = xTools.simple_parser(sty_file, yes_patterns)
+                            if match_status:
+                                self.vhdl_2008_boolean = True
+                        return
+                        # -------------
+
     def generate_syn_vo_file(self):
-        if not self.is_ng_flow:
+        return
+        '''if not self.is_ng_flow:
             return
         udb_files = glob.glob(os.path.join(os.getcwd(), self.impl_dir, "*_syn.udb"))
         if udb_files:
@@ -219,7 +252,7 @@ class RunSimulationFlow:
             # log2sim -w -o "vhdl_DmTest_syn.vo" "vhdl_DmTest.udb"
             macro_opt = self.final_ldf_dict.get("macro_string")
             cmd = 'log2sim -w -o "{0}/{1}"{3} "{0}/{2}"'.format(self.impl_dir, syn_vo_file, syn_udb_file, macro_opt)
-            xTools.run_command(cmd, "log2sim.log", "log2sim.time")
+            xTools.run_command(cmd, "log2sim.log", "log2sim.time")'''
 
     def run_simrel_flow(self):
         _t = os.path.abspath(os.path.join(os.getcwd(), ".."))
@@ -246,13 +279,14 @@ class RunSimulationFlow:
     def get_user_options(self):
         user_options = dict()
         for (sim_type, flow_opt) in (
+                (self.sim_syn_vlg, "run_syn_backanno" if self.is_ng_flow else ""),
                 (self.sim_map_vhd, "run_map_vhd"),
                 (self.sim_map_vlg, "run_map_vlg"),
                 (self.sim_par_vhd, "run_export_vhd"),
                 (self.sim_par_vlg, "run_export_vlg"),
                 (self.sim_bit_vlg, "run_export_vlg"),
         ):
-            if sim_type:
+            if sim_type and flow_opt:   # Diamond do not have syn_backanno process
                 user_options[flow_opt] = 1
         return user_options
 
@@ -475,11 +509,14 @@ class RunSimulationFlow:
         """
         new_family_name = re.split("-|_", family_name)  # in lower case
         radiant_sim_map_dict = self.flow_options.get("family_radiant_map_sim_lib", dict())
-        perhaps_keys = ("{0}-{1}".format(*new_family_name), new_family_name[0])
+        perhaps_keys = ["{0}-{1}".format(*new_family_name), new_family_name[0]]
+        if len(new_family_name) > 2:
+            perhaps_keys.insert(0, "{0}-{1}-{2}".format(*new_family_name))
         for pk in perhaps_keys:
             v = radiant_sim_map_dict.get(pk)
             if v:
                 break
+
         if v:
             real_name = v
         else:
@@ -670,18 +707,13 @@ class RunSimulationFlow:
         return self._run_simulation(sim_path, source_files, user_options)
 
     def run_syn_vlg_simulation(self, sim_path):
-        if self.synthesis == "lse":
-            search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),
-                            "%s_%s.vm" % (self.project_name, self.impl_name),
+        if self.sim_postsyn_vm:
+            search_order = ("%s_%s.vm" % (self.project_name, self.impl_name),
                             "%s_prim.v" % self.project_name,
                             "*_prim.v")
         else:
-            search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),
-                            "%s_%s.vm" % (self.project_name, self.impl_name))
+            search_order = ("%s_%s_syn.vo" % (self.project_name, self.impl_name),)
         for so in search_order:
-            if self.sim_postsyn_vm:
-                if ".vo" in so:
-                    continue
             files = glob.glob(os.path.join(self.impl_dir, so))
             if files:
                 source_file = files[0]
@@ -785,7 +817,7 @@ class RunSimulationFlow:
         raw_line_list = raw_line.split()
         new_line_list = list()
         for foo in raw_line_list:
-            if os.path.exists(foo):
+            if os.path.isfile(foo):
                 modified, real_hdl_file = get_real_hdl_file(foo, self.run_scuba)
                 cur_fext = xTools.get_fext_lower(real_hdl_file)
                 if modified:
@@ -832,11 +864,11 @@ class RunSimulationFlow:
             else:
                 if self.is_thunder_plus:
                     if is_source_file:
-                        lines.append("vlogan -v2005 -timescale=1ns/1ps %s $VERILOG_READY" % all_files)
+                        lines.append("vlogan -v_T-2022.06 -v2005 -timescale=1ns/1ps %s $VERILOG_READY" % all_files)
                     else:
-                        lines.append("vlogan -v2005 %s $VERILOG_READY" % all_files)
+                        lines.append("vlogan -v_T-2022.06 -v2005 %s $VERILOG_READY" % all_files)
                 else:
-                    lines.append("vlogan -sverilog %s $VERILOG_READY" % all_files)
+                    lines.append("vlogan -v_T-2022.06 -sverilog %s $VERILOG_READY" % all_files)
         return "\n".join(lines)
 
     def get_xrun_lines(self, hdl_files):
@@ -861,12 +893,18 @@ class RunSimulationFlow:
             self.is_thunder_plus = True
         else:
             self.is_thunder_plus = False
-
+        is_ap6a00 = self.do_args.get("dev_name", "") == "ap6a00"
+        is_ap6a00b = self.do_args.get("dev_name", "") == "ap6a00b"
+        if is_ap6a00 or is_ap6a00b:
+            if re.search("conf.sim.vcs_do.template", self.do_vcs):
+                new_tmpl = "vcs_do_ap6a00.template" if is_ap6a00 else "vcs_do_ap6a00b.template"
+                self.do_vcs = os.path.join(os.path.dirname(self.do_vcs), new_tmpl)
         self.do_args["source_files"] = self.get_vcs_lines(source_files, is_source_file=True)
         self.do_args["tb_files"] = self.get_vcs_lines(self.final_tb_files)
         x = "do_{}".format(sim_path)
         y = "run_{}".format(sim_path)
         sh_file = "{}.sh".format(x)
+        vcs_version_string = os.getenv("EXTERNAL_VCS_PATH")
         with open(sh_file, "w", newline="\n") as wob:
             with open(self.do_vcs) as rob:
                 for line in rob:
@@ -877,7 +915,10 @@ class RunSimulationFlow:
                         new_line = re.sub(r"-sverilog", "-v2005 ", new_line)
                     else:
                         new_line = line
-                    print(new_line % self.do_args, file=wob)
+                    new_line = new_line % self.do_args
+                    if vcs_version_string:
+                        new_line = re.sub("-v_T-2022.06", "-v_{}".format(vcs_version_string), new_line)
+                    print(new_line, file=wob)
         xTools.run_command("sh {} {}".format(sh_file, self.do_args["diamond"]), "{}.log".format(y), "{}.time".format(y))
 
     def run_simulation_flow_with_xrun(self, sim_path, source_files, user_options):
@@ -1112,7 +1153,24 @@ class RunSimulationFlow:
             if rerun_sim_cmd:
                 xTools.append_file(time_file, ["REM For debugging only", "REM %s" % rerun_sim_cmd], append=True)
             more_cmd = "TRIAL_AND_ERROR_" if os.getenv("trial_and_error") else ""
-            return xTools.run_command(more_cmd + sim_cmd, log_file, time_file)
+            for ii in range(3):  # workaround for UnicodeDecodeError
+                sim_status = xTools.run_command(more_cmd + sim_cmd, log_file, time_file)
+                time.sleep(3 + ii * 3)
+                got_decode_error = False
+                with open(log_file) as ob:
+                    for log_line in ob:
+                        if "UnicodeDecodeError" in log_line:
+                            got_decode_error = True
+                            break
+                if not got_decode_error:
+                    return sim_status
+                else:
+                    try:
+                        shutil.copy2(log_file, "{}.{}".format(log_file, ii))
+                    except:  # do not care
+                        pass
+                    with open(log_file, "w") as wob:   # empty it
+                        pass
 
         yose_timeout = os.getenv("YOSE_TIMEOUT")
         if yose_timeout:
@@ -1271,8 +1329,8 @@ class RunSimulationFlow:
                         my_work_lib = custom_lib_dict.get(item)
                         if my_work_lib:
                             x = "-work {} ".format(my_work_lib)
-
-                    v_v_lines.append("vcom {}{}".format(x, item))
+                    vhdl2008_arg = "-2008 " if self.vhdl_2008_boolean else ""
+                    v_v_lines.append("vcom {}{}{}".format(x, vhdl2008_arg, item))
                     if not self.use_vhd:
                         self.use_vhd = 1
                 elif fext == ".lpf":
@@ -1331,18 +1389,19 @@ class RunSimulationFlow:
                 self.dev_lib = os.path.join(self.original_library_path, _name)
                 self.pmi_lib = os.path.join(self.original_library_path, "pmi_work")
             return  # use it!
-        self.create_lock_file_folder()
+        # self.create_lock_file_folder()
 
         def try_to_compile_local_lib():
+            self.create_lock_file_folder()
             _lock_file = os.path.join(self.lock_file_folder, "compile_{}_library.lock".format(map_lib_name))
             filelock.safe_run_function(self.create_dev_lib, args=(map_lib_name, self.lock_file_folder),
                                        func_lock_file=_lock_file,
-                                       timeout=3600)
+                                       timeout=7000)
 
             _lock_file = os.path.join(self.lock_file_folder, "compile_pmi_library.lock")
             filelock.safe_run_function(self.create_pmi_lib, args=(self.lock_file_folder,),
                                        func_lock_file=_lock_file,
-                                       timeout=3600)
+                                       timeout=7000)
 
         ###########
         closest_path = os.getenv("CLOSEST_SIM_LIB", "NO_CLOSEST_SIM_LIB")

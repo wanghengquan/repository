@@ -56,7 +56,7 @@ probe -create -database waves fc_tb.xfc            -depth 1   -waveform
 #probe -create -database waves fc_tb.xfc.xgpiot2    -depth all -waveform
 
 run
-exit 
+exit
 """
 
 TCL_NCV_JEDI_D1 = """#NC Verilog command file
@@ -74,7 +74,7 @@ probe -create -database waves fc_tb.xfc            -depth 1   -waveform
 force fc_tb.xfc.gbuf_core.es_o_1 = 1'b0;
 
 run
-exit 
+exit
 """
 
 TCL_NCV_APOLLO = """alias . run
@@ -132,6 +132,10 @@ CHANGE_AVC_DICT = {"5": "01", "0.5": "11", "1000": "00"}
 AVC_CHANGE_FREQ_AVC_JEDI_D1 = """format avc_freq2 avc_freq1 avc_freq0;
 r1 name %s"""
 CHANGE_AVC_DICT_JEDI_D1 = {"5": "001", "0.5": "011", "1000": "100"}
+
+AVC_CHANGE_FREQ_AVC_AVANT_02A = """format avc_freq2 avc_freq1 avc_freq0;
+r1 ts1 %s"""
+CHANGE_AVC_DICT_AVANT_02A = {"2.5": "000", "0.25": "001", "500": "010"}
 
 
 def hex2bin_character(hex_char):
@@ -200,25 +204,72 @@ def get_lst_dict(lst_file):
             yield dict(list(zip(keys, line_list)))
 
 
-def _get_pad_dict(pad_file, p_start, p_split, title):
-    titles = list()
-    pad_dict = dict()
-    with open(pad_file) as pad_ob:
-        for line in pad_ob:
-            line = line.strip()
-            line_list = p_split.split(line)
-            if not titles:
-                if p_start.search(line):
-                    titles = line_list
-                continue
+def get_text_table_data(report_file, table_name, first_field):
+    """
+    +------------------+----------+--------------+--------------+-----------------------------+
+    | Port Name        | Pin/Bank | Buffer Type  | Site         | Properties                  |
+    +------------------+----------+--------------+--------------+-----------------------------+
+    | cmpfail_o        | U28/11   | LVCMOS18_OUT | HPIO11_2B    | DRIVE:50RSmA SLEWRATE:S... |
+    | dummy            | U22/11   | LVCMOS18_OUT | HPIO11_22B   | DRIVE:50RSmA SLEWRATE:S... |
+    | patgen_done_o    | U25/11   | LVCMOS18_OUT | HPIO11_14A   | DRIVE:50RSmA SLEWRATE:S... |
+
+    """
+    table_dict_list = list()
+    table_lines = None
+    with open(report_file) as ob:
+        for line in ob:
+            if table_lines is None:
+                if table_name in line:
+                    table_lines = list()
             else:
+                line = line.strip()
                 if not line:
                     break
-                t_dict = dict(list(zip(titles, line_list)))
-                item = t_dict.get(title)
-                if item:
-                    if "Reserved:" not in item:  # | AA21/2 | Reserved: sysCONFIG | | LVCMOS25_BIDI | PB46B | SI/SISPI
-                        pad_dict[item] = t_dict
+                table_lines.append(line)
+    fields = list()
+    for line in table_lines:
+        line_list = re.split(r"\|", line)
+        line_list = [item.strip() for item in line_list]
+        if len(line_list) > 3:
+            if not fields:
+                if line_list[1] == first_field:
+                    fields = line_list
+            else:
+                line_dict = dict(zip(fields, line_list))
+                table_dict_list.append(line_dict)
+    return table_dict_list
+
+
+def _get_pad_dict(pad_file):
+    table_port_name = get_text_table_data(pad_file, "Pinout by Port Name", "Port Name")
+    table_pin_name = get_text_table_data(pad_file, "Pinout by Pin Number", "Pin/Bank")
+    b_t = "Buffer Type"
+    pinout_by_port_name_dict = dict()  # key: port name, value: buffer type
+    for foo in table_port_name:
+        _port_name = foo.get("Port Name")
+        _buffer_a = foo.get(b_t)
+        if not _port_name:
+            continue
+        pinout_by_port_name_dict[_port_name] = _buffer_a
+    pad_dict = dict()
+    for bar in table_pin_name:
+        key = bar.get("Pin Info")
+        if not key:
+            continue
+        if "used," in key:
+            continue
+        if "Reserved" in key:
+            continue
+        _buffer_b = bar.get(b_t)
+        if not _buffer_b:
+            _buffer_b = pinout_by_port_name_dict.get(key, "")
+            bar[b_t] = _buffer_b
+        pad_dict[key] = bar
+        if _buffer_b in ("HSI", "HSO"):
+            new_key = re.sub("_pad$", "", key)
+            new_bar = dict(**bar)
+            new_bar["Pin Info"] = new_key
+            pad_dict[new_key] = new_bar
     return pad_dict
 
 
@@ -228,21 +279,17 @@ def get_pad_dict(pad_file):
                         'Site': 'PL14A', 'Pin/Bank': 'D4/7', 'Port Name': 'Q[10]',
                         'Properties': 'DRIVE:8mA CLAMP:ON SLEW:SLOW'}
     """
-    p_start = re.compile("^\|\s+Pin/Bank")
-    p_split = re.compile("\s*\|\s*")
-    return _get_pad_dict(pad_file, p_start, p_split, "Pin Info")
+    return _get_pad_dict(pad_file)
 
 
 def get_diff_pad_dict(pad_file, pad_dict):
-    p_start = re.compile("^\|\s+Pin/Bank")
-    p_split = re.compile("\s*\|\s*")
-    _diff_pad_dict = _get_pad_dict(pad_file, p_start, p_split, "Pin Info")
+    _diff_pad_dict = _get_pad_dict(pad_file)
     t = dict()
     for pin_bank, pb_dict in list(_diff_pad_dict.items()):
         pin_info = pb_dict.get("Pin Info")
         buffer_type = pb_dict.get("Buffer Type")
         site = pb_dict.get("Site")
-        if buffer_type != "LVDS25_IN":
+        if buffer_type not in ("LVDS25_IN", "HSI"):
             continue
         for a, b in list(pad_dict.items()):
             if b.get("Buffer Type") == buffer_type:
@@ -308,10 +355,12 @@ def get_in_out_bidi_vref(sorted_ports, pad_dict, simrel_options):
     for port_name in sorted_ports:
         pad_content = pad_dict.get(port_name)
         buffer_type = pad_content.get("Buffer Type")
-        if re.search("_IN$", buffer_type):
-            ports_in.append(port_name)
-        elif re.search("_OUT$", buffer_type):
-            ports_out.append(port_name)
+        if re.search("(_IN|HSI)$", buffer_type):
+            x = re.sub("_pad$", "", port_name) if buffer_type == "HSI" else port_name
+            ports_in.append(x)
+        elif re.search("(_OUT|HSO)$", buffer_type):
+            y = re.sub("_pad$", "", port_name) if buffer_type == "HSO" else port_name
+            ports_out.append(y)
         elif re.search("_BIDI$", buffer_type):
             if bidi_in:
                 if "__all__" in bidi_in:
@@ -715,7 +764,7 @@ def make_sure_make_flow_done():
         time.sleep(30)
 
 
-def create_simrel_run_shell(wrap_simrel_file):
+def create_simrel_run_shell(wrap_simrel_file, device_in_rdf):
     with open(wrap_simrel_file, "w") as wob:
         try:
             with open("simenv.cshrc") as rob:
@@ -723,10 +772,12 @@ def create_simrel_run_shell(wrap_simrel_file):
                     print(line.rstrip(), file=wob)
         except:
             print("#!/usr//bin/csh -f", file=wob)
-        print("/usr/bin/make x_sim", file=wob)
+        p_avant_gx = re.compile(r"LAV-AT-\d+[GX]", re.I)
+        special_apollo_arg = "wakeup_seq " if p_avant_gx.search(device_in_rdf) else ""
+        print("/usr/bin/make {}x_sim".format(special_apollo_arg), file=wob)
 
 
-def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use_original_ctl):
+def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use_original_ctl, device_in_rdf):
     """ Since the remote workstation cannot read local file, link is unused.
         copy it!
     """
@@ -742,7 +793,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     if not os.path.isfile(original_fc_ctl):
         shutil.copy2("fc.ctl", original_fc_ctl)
 
-    ''' 
+    '''
     if "sentry" in simrel_dir or "snow" in simrel_dir:
         src_files = ("fc.avc", "fc.rbt", "fc.ctl", "avc_change_freq.avc", "tcl_ncv")
     else:
@@ -789,7 +840,7 @@ def run_sim_ncv(general_options, simrel_dir, rbt_avc_folder, simrel_options, use
     use_make_for_simrel = False
     if not os.path.isfile(real_ncv):
         wrap_simrel_file = "simrel_wrapper.csh"
-        create_simrel_run_shell(wrap_simrel_file)
+        create_simrel_run_shell(wrap_simrel_file, device_in_rdf)
         real_ncv = "/usr/bin/csh {}".format(wrap_simrel_file)
         use_make_for_simrel = True
     xTools.say_it("Running {}".format(real_ncv))
@@ -870,14 +921,14 @@ def get_simrel_path(general_options, simrel_dirname, device):
     i = 0
     while True:
         xTools.say_it(" -- <{}> Searching real simrel path in {} for {} ...".format(i, simrel_root, simrel_family))
-        time.sleep(5)
+        time.sleep(12)
         i += 1
         for foo in set(os.listdir(simrel_root)):
             abs_foo = os.path.join(simrel_root, foo)
             if os.path.isdir(abs_foo):
                 check_file = os.path.join(abs_foo, "check_running.log")
                 try:
-                    if time.time() - os.path.getctime(check_file) > 212000:
+                    if time.time() - os.path.getmtime(check_file) > 600:
                         xTools.rm_with_error(check_file)
                 except:
                     pass
@@ -892,7 +943,7 @@ def get_simrel_path(general_options, simrel_dirname, device):
                     return simrel_root, foo, simrel_family
 
 
-def get_simrel_id(timeout_py_file):
+def get_simrel_id(timeout_py_file, case_simrel_path):
     log_file = "x_simrel_flow.log"
     temp_log_file = "temp_log_file_for_getting_job_id"
     p_id = re.compile(r'jobid\s+?=\s*?(\d+)', re.I)
@@ -914,9 +965,11 @@ def get_simrel_id(timeout_py_file):
     if not job_id:
         new_line = "# abnormal results. cannot find Simrel job id"
     else:
+        bak_log_cmd = "cp {} {}/simrel_timeout.log".format(os.path.abspath(log_file), case_simrel_path)
         new_line = ['print("try to kill simrel id: {}")'.format(job_id),
                     'os.system("nc stop {}")'.format(job_id),
-                    'os.system("nc list | grep {}")'.format(job_id)
+                    'os.system("nc list | grep {}")'.format(job_id),
+                    'os.system("{}")'.format(bak_log_cmd)
                     ]
     xTools.append_file(timeout_py_file, new_line)
 
@@ -1030,7 +1083,8 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
         xTools.say_it("Error. Never got here. No device specified in ldf file.")
         return 1
     # simrel_root, branch_name, simrel_family = get_simrel_path(general_options, simrel_dirname, my_device[1].group(1))
-    this_args = (general_options, simrel_dirname, my_device[1].group(1))
+    device_in_rdf = my_device[1].group(1)
+    this_args = (general_options, simrel_dirname, device_in_rdf)
     temp_recov = xTools.ChangeDir(simrel_dirname)
     simrel_root, branch_name, simrel_family = None, None, None
     for i in range(3):
@@ -1039,8 +1093,8 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
             break
         except:
             xTools.say_tb_msg()
-            xTools.say_it("Failed to get simrel path")
-        time.sleep(15)
+            xTools.say_it("@E: Failed to get simrel path")
+        time.sleep(35)
     temp_recov.comeback()
     if not simrel_root:
         return 1
@@ -1071,12 +1125,16 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
 
     # -------------------
     # --------- generate files
-    if "apollo/apollo" in simrel_family:
+    p_avant = re.compile("lav-at", re.I)
+    if p_avant.search(device_in_rdf):
         update_avc_for_apollo(avc_file)
         update_svwf_for_apollo(svwf_file)
-    _is_jedi_d1 = "jedi_d1_80k" in simrel_family
-    _avc_dict = CHANGE_AVC_DICT_JEDI_D1 if _is_jedi_d1 else CHANGE_AVC_DICT
-    _avc_template = AVC_CHANGE_FREQ_AVC_JEDI_D1 if _is_jedi_d1 else AVC_CHANGE_FREQ_AVC
+    if "jedi_d1_80k" in simrel_family:
+        _avc_dict, _avc_template = CHANGE_AVC_DICT_JEDI_D1, AVC_CHANGE_FREQ_AVC_JEDI_D1
+    elif "apollo_400_02A" in simrel_family:
+        _avc_dict, _avc_template = CHANGE_AVC_DICT_AVANT_02A, AVC_CHANGE_FREQ_AVC_AVANT_02A
+    else:
+        _avc_dict, _avc_template = CHANGE_AVC_DICT, AVC_CHANGE_FREQ_AVC
     code = _avc_dict.get(lst_precision)
     if code:
         change_string = "{};  # change delay to {}ns"
@@ -1114,13 +1172,30 @@ def main(general_options, simrel_dirname, lst_type_name, sim_vendor_name, simrel
         xTools.say_it("Error. Not found simrel_path:%s" % my_simrel_path)
         return 1
     xTools.say_it(" Found simrel path: %s" % my_simrel_path)
-    thread_get_id = threading.Thread(target=get_simrel_id, args=(timeout_py, ))
+    thread_get_id = threading.Thread(target=get_simrel_id, args=(timeout_py, save_path))
     thread_get_id.setDaemon(True)
     thread_get_id.start()
-    run_sim_ncv(general_options, my_simrel_path, save_path, simrel_options, use_original_ctl)
-    if os.path.isfile(check_log):
-        xTools.rm_with_error(check_log)
+    fresh_log = threading.Thread(target=fresh_running_log, args=(check_log, design_path))
+    fresh_log.setDaemon(True)
+    fresh_log.start()
+    run_sim_ncv(general_options, my_simrel_path, save_path, simrel_options, use_original_ctl, device_in_rdf)
+    while True:
+        if os.path.isfile(check_log):
+            sts = xTools.rm_with_error(check_log)
+            if sts:
+                time.sleep(3)
+        else:
+            break
 
 
-if __name__ == "__main__":
-    generate_avc_file("test.avc", "dataset.lst", "top_impl.pad", "Riviera", dict())
+def fresh_running_log(check_log, design_path):
+    """ heartbeat of the check_log file
+    """
+    while True:
+        if not os.path.isfile(check_log):
+            return
+        time.sleep(60)
+        with open(check_log, "w") as wob:
+            print(design_path, file=wob)
+            print(time.asctime(), file=wob)
+

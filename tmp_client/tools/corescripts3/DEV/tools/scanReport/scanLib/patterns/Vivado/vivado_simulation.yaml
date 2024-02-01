@@ -1,0 +1,31 @@
+file_behav_elapsed:
+  name_pattern: 'behav.elapsed'
+  group_1:
+    fields:
+      - { name: 'sim_rtl_time', pattern: 'Elapsed Time: (\d+)' }
+
+file_psf_elapsed:
+  name_pattern: 'psf.elapsed'
+  group_1:
+    fields:
+      - { name: 'sim_psf_time', pattern: 'Elapsed Time: (\d+)' }
+
+file_pst_elapsed:
+  name_pattern: 'pst.elapsed'
+  group_1:
+    fields:
+      - { name: 'sim_syn_time', pattern: 'Elapsed Time: (\d+)' }
+
+file_pif_elapsed:
+  name_pattern: 'pif.elapsed'
+  group_1:
+    fields:
+      - { name: 'sim_pif_time', pattern: 'Elapsed Time: (\d+)' }
+
+file_pit_elapsed:
+  name_pattern: 'pit.elapsed'
+  group_1:
+    fields:
+      - { name: 'sim_par_time', pattern: 'Elapsed Time: (\d+)' }
+
+# END OF FILE

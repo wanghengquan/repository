@@ -1,0 +1,54 @@
+#!/bin/sh
+export INSTALLED_PATH=$1
+echo "Installed Path is:" $INSTALLED_PATH
+
+_VERILOG_READY="${INSTALLED_PATH}/cae_library/simulation/verilog"
+_DEV=${_VERILOG_READY}/%(dev_name)s
+_UAP=${_VERILOG_READY}/applatform
+_pulp=${_DEV}/pulp
+_security=${_DEV}/crea/security_rtl
+_abt_ip=${_DEV}/abt_ip
+
+_apollo_package=${_DEV}/apollo_package.sv
+_dsp_package=${_DEV}/dsp_package.sv
+_ebr_package=${_DEV}/ebr_package.sv
+_pic_package=${_DEV}/pic_package.sv
+_pll_package=${_DEV}/pll_package.sv
+_hpio_package=${_DEV}/hpio_package.sv
+_io_ref_iobuf_package=${_DEV}/io_ref_iobuf_package.sv
+_osc_package=${_DEV}/osc_package.sv
+_mppcs_package=${_DEV}/mppcs_package.sv
+_jtag_defines=${_DEV}/jtag_defines.sv
+_ddrphy_top_rtl=${_DEV}/ddrphy_top_rtl.v
+_cell_model=${_DEV}/cell_model.v
+_cells=${_DEV}/cells.v
+
+VERILOG_READY="-y ${_DEV} -y ${_UAP} -y ${_pulp} -y ${_security} -y ${_abt_ip}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_pll_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_apollo_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_dsp_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_ebr_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_pic_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_hpio_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_io_ref_iobuf_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_osc_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_mppcs_package}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_jtag_defines}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_ddrphy_top_rtl}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_cell_model}"
+VERILOG_READY="${VERILOG_READY} -sverilog ${_cells}"
+VERILOG_READY="${VERILOG_READY} +libext+.v+.sv+.h+.vh1 +incdir+${_DEV}+${_UAP}+${_pulp}+${_security}+${_abt_ip}"
+VERILOG_READY="${VERILOG_READY} +define+SW_MODEL+USE_RTL+NO_SCAN+TSMC_CM_UNIT_DELAY"
+
+PMI_READY="vlogan -v_T-2022.06 -sverilog -f ${INSTALLED_PATH}/ip/pmi/pmi.f ${VERILOG_READY}+${INSTALLED_PATH}/ip/pmi"
+echo $PMI_READY
+$PMI_READY
+
+# source files
+%(source_files)s
+
+# testbench files
+%(tb_files)s
+
+vcs -v_T-2022.06  %(sim_top)s +vcs+lic+wait
+./simv -l sim.log +vcs+lic+wait -ucli -i ucli.cmd

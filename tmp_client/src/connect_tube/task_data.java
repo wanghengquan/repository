@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.public_data;
 import flow_control.queue_enum;
 import flow_control.task_enum;
 import utility_funcs.deep_clone;
@@ -69,13 +70,17 @@ public class task_data {
 	private ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
+	private ArrayList<String> local_priority_queue_list = new ArrayList<String>();
+	// update by console
+	private ArrayList<String> local_priority_runid_list = new ArrayList<String>();
 	// ====updated by result waiter====
 	//private ArrayList<String> thread_pool_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> running_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> finished_admin_queue_list = new ArrayList<String>();	
 	private ArrayList<String> reported_admin_queue_list = new ArrayList<String>();
 	private HashMap<String, HashMap<task_enum, Integer>> client_run_case_summary_status_map = new HashMap<String, HashMap<task_enum, Integer>>();
-	private HashMap<String, HashMap<String, Float>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Float>>();
+	private HashMap<String, HashMap<String, Object>> client_run_case_summary_memory_map = new HashMap<String, HashMap<String, Object>>();
+	private HashMap<String, HashMap<String, Float>> client_run_case_summary_space_map = new HashMap<String, HashMap<String, Float>>();
 	private HashMap<String,Integer> finished_queue_dump_delay_counter = new HashMap<String,Integer>();
 	//====data not used====
 	private ArrayList<String> thread_pool_admin_queue_list  = new ArrayList<String>();
@@ -109,6 +114,8 @@ public class task_data {
 			result.put("executing_admin_queue_list", executing_admin_queue_list.toString());
 			result.put("pending_admin_queue_list", pending_admin_queue_list.toString());
 			result.put("waiting_admin_queue_list", waiting_admin_queue_list.toString());
+			result.put("local_priority_queue_list", local_priority_queue_list.toString());
+			result.put("local_priority_runid_list", local_priority_runid_list.toString());
 			result.put("emptied_admin_queue_list", emptied_admin_queue_list.toString());
 			result.put("watching_admin_queue_list", watching_admin_queue_list.toString());
 			result.put("running_admin_queue_list", running_admin_queue_list.toString());
@@ -116,6 +123,7 @@ public class task_data {
 			result.put("reported_admin_queue_list", reported_admin_queue_list.toString());
 			result.put("client_run_case_summary_status_map", client_run_case_summary_status_map.toString());
 			result.put("client_run_case_summary_memory_map", client_run_case_summary_memory_map.toString());
+			result.put("client_run_case_summary_space_map", client_run_case_summary_space_map.toString());
 			result.put("finished_queue_dump_delay_counter", finished_queue_dump_delay_counter.toString());
 			result.put("admin_queue_attribute_map", admin_queue_attribute_map.toString());
 		} finally {
@@ -124,6 +132,38 @@ public class task_data {
 		return result;
 	}
 	
+	public HashMap<String, String> console_database_update(
+			HashMap<String, String> update_data
+			) {
+		rw_lock.writeLock().lock();
+		HashMap<String, String> update_status = new HashMap<String, String>();
+		try {
+			Iterator<String> update_it = update_data.keySet().iterator();
+			while (update_it.hasNext()) {
+				String obj_name = update_it.next();
+				String optin_value = update_data.get(obj_name);
+				switch(obj_name) {
+				case "local_priority_queue_list":
+				    if (!local_priority_queue_list.contains(optin_value)) {
+				    	local_priority_queue_list.add(optin_value);
+				    }
+				    update_status.put(obj_name, "PASS");
+				    break;
+				case "local_priority_runid_list":
+				    if (!local_priority_runid_list.contains(optin_value)) {
+				    	local_priority_runid_list.add(optin_value);
+				    }
+				    update_status.put(obj_name, "PASS");
+				    break;				    
+				default:
+					update_status.put(obj_name, "FAIL, " + obj_name + " console update not supported yet.");
+				}
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+		return update_status;
+	}
 	// =============================================function
 	// start=================================
 	public HashMap<queue_attr, String> get_admin_queue_attribute_map(
@@ -1301,6 +1341,72 @@ public class task_data {
 		}
 	}
 
+	public ArrayList<String> get_local_priority_queue_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(local_priority_queue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void increase_local_priority_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if (!local_priority_queue_list.contains(queue_name)) {
+				local_priority_queue_list.add(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void decrease_local_priority_queue_list(String queue_name) {
+		rw_lock.writeLock().lock();
+		try {
+			if (local_priority_queue_list.contains(queue_name)) {
+				local_priority_queue_list.remove(queue_name);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public ArrayList<String> get_local_priority_runid_list() {
+		rw_lock.readLock().lock();
+		ArrayList<String> temp = new ArrayList<String>();
+		try {
+			temp.addAll(local_priority_runid_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public void increase_local_priority_runid_list(String run_id) {
+		rw_lock.writeLock().lock();
+		try {
+			if (!local_priority_runid_list.contains(run_id)) {
+				local_priority_runid_list.add(run_id);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public void decrease_local_priority_runid_list(String run_id) {
+		rw_lock.writeLock().lock();
+		try {
+			if (local_priority_runid_list.contains(run_id)) {
+				local_priority_runid_list.remove(run_id);
+			}
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
 	public ArrayList<String> get_thread_pool_admin_queue_list() {
 		rw_lock.readLock().lock();
 		ArrayList<String> temp = new ArrayList<String>();
@@ -1322,9 +1428,9 @@ public class task_data {
 		}
 	}
 	
-	public HashMap<String, HashMap<String, Float>> get_client_run_case_summary_memory_map() {
+	public HashMap<String, HashMap<String, Object>> get_client_run_case_summary_memory_map() {
 		rw_lock.readLock().lock();
-		HashMap<String, HashMap<String, Float>> temp = new HashMap<String, HashMap<String, Float>>();
+		HashMap<String, HashMap<String, Object>> temp = new HashMap<String, HashMap<String, Object>>();
 		try {
 			temp.putAll(client_run_case_summary_memory_map);
 		} finally {
@@ -1332,10 +1438,12 @@ public class task_data {
 		}
 		return temp;
 	}
-
-	public HashMap<String, Float> get_client_run_case_summary_memory_map(String queue_name) {
+	
+	public HashMap<String, Object> get_client_run_case_summary_memory_map(
+			String queue_name
+			) {
 		rw_lock.readLock().lock();
-		HashMap<String, Float> temp = new HashMap<String, Float>();
+		HashMap<String, Object> temp = new HashMap<String, Object>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)) {
 				temp.putAll(client_run_case_summary_memory_map.get(queue_name));
@@ -1357,9 +1465,10 @@ public class task_data {
 	
 	public void update_client_run_case_summary_memory_map(
 			String queue_name, 
-			HashMap<String, Float> memory_map) {
+			HashMap<String, Object> memory_map
+			) {
 		rw_lock.writeLock().lock();
-		HashMap<String, Float> memory_data = new HashMap<String, Float>();
+		HashMap<String, Object> memory_data = new HashMap<String, Object>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
@@ -1373,17 +1482,126 @@ public class task_data {
 	
 	public void update_client_run_case_summary_memory_map(
 			String queue_name, 
-			Float new_data) {
+			Float new_data
+			) {
 		rw_lock.writeLock().lock();
-		HashMap<String, Float> memory_data = new HashMap<String, Float>();
+		HashMap<String, Object> memory_data = new HashMap<String, Object>();
 		try {
 			if (client_run_case_summary_memory_map.containsKey(queue_name)){
 				memory_data.putAll(client_run_case_summary_memory_map.get(queue_name));
 			}
-			Float min = memory_data.getOrDefault("min", 0.0f);
-			Float max = memory_data.getOrDefault("max", 1.0f);
-			Float avg = memory_data.getOrDefault("avg", 1.0f);
-			Float num = memory_data.getOrDefault("num", 0.0f);
+			Float min = (Float) memory_data.getOrDefault("min", 99.0f);
+			Float max = (Float) memory_data.getOrDefault("max", 0.0f);
+			Float num = (Float) memory_data.getOrDefault("num", 0.0f);
+			@SuppressWarnings("unchecked")
+			ArrayList<Float> lst = (ArrayList<Float>) memory_data.getOrDefault("lst", new ArrayList<Float>());
+			if (new_data.compareTo(min) < 0) {
+				min = new_data;
+			}
+			if (new_data.compareTo(max) > 0) {
+				max = new_data;
+			}
+			lst.add(new_data);
+			if(lst.size()>20) {
+				lst.remove(0);
+			}
+			num = num + 1;
+			memory_data.put("min", min);
+			memory_data.put("max", max);
+			memory_data.put("num", num);
+			memory_data.put("avg", get_float_list_recent_data_average(lst, lst.size()));
+			memory_data.put("av5", get_float_list_recent_data_average(lst, 5));
+			memory_data.put("av1", get_float_list_recent_data_average(lst, 1));
+			memory_data.put("lst", lst);
+			client_run_case_summary_memory_map.put(queue_name, memory_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	private float get_float_list_recent_data_average(
+			ArrayList<Float> float_list,
+			int cal_num
+			) {
+		ArrayList<Float> sub_list = new ArrayList<Float>();
+		if(float_list.size() < cal_num) {
+			sub_list.addAll(float_list);
+		} else {
+			sub_list.addAll(float_list.subList(float_list.size() - cal_num, float_list.size()));
+		}
+		float total = 0.0f;
+		float avg = 1.0f;
+		for(Float data: sub_list) {
+			total += data;
+		}
+		if (sub_list.size() > 0) {
+			avg = total / sub_list.size(); 
+		}
+		return avg;
+	}
+	
+	public HashMap<String, HashMap<String, Float>> get_client_run_case_summary_space_map() {
+		rw_lock.readLock().lock();
+		HashMap<String, HashMap<String, Float>> temp = new HashMap<String, HashMap<String, Float>>();
+		try {
+			temp.putAll(client_run_case_summary_space_map);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+
+	public HashMap<String, Float> get_client_run_case_summary_space_map(String queue_name) {
+		rw_lock.readLock().lock();
+		HashMap<String, Float> temp = new HashMap<String, Float>();
+		try {
+			if (client_run_case_summary_space_map.containsKey(queue_name)) {
+				temp.putAll(client_run_case_summary_space_map.get(queue_name));
+			}
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
+	}
+	
+	public void reset_client_run_case_summary_space_map() {
+		rw_lock.writeLock().lock();
+		try {
+			client_run_case_summary_space_map.clear();
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_run_case_summary_space_map(
+			String queue_name, 
+			HashMap<String, Float> space_map) {
+		rw_lock.writeLock().lock();
+		HashMap<String, Float> space_data = new HashMap<String, Float>();
+		try {
+			if (client_run_case_summary_space_map.containsKey(queue_name)){
+				space_data.putAll(client_run_case_summary_space_map.get(queue_name));
+			}
+			space_data.putAll(space_map);
+			client_run_case_summary_space_map.put(queue_name, space_data);
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+	
+	public void update_client_run_case_summary_space_map(
+			String queue_name, 
+			Float new_data) {
+		rw_lock.writeLock().lock();
+		HashMap<String, Float> space_data = new HashMap<String, Float>();
+		try {
+			if (client_run_case_summary_space_map.containsKey(queue_name)){
+				space_data.putAll(client_run_case_summary_space_map.get(queue_name));
+			}
+			Float min = space_data.getOrDefault("min", 99.0f);
+			Float max = space_data.getOrDefault("max", public_data.TASK_DEF_ESTIMATE_SPACE);
+			Float avg = space_data.getOrDefault("avg", public_data.TASK_DEF_ESTIMATE_SPACE);
+			Float num = space_data.getOrDefault("num", 0.0f);
 			if (new_data.compareTo(min) < 0) {
 				min = new_data;
 			}
@@ -1392,11 +1610,11 @@ public class task_data {
 			}
 			avg = (avg * num + new_data) / (num + 1);
 			num = num + 1;
-			memory_data.put("min", min);
-			memory_data.put("max", max);
-			memory_data.put("avg", avg);
-			memory_data.put("num", num);
-			client_run_case_summary_memory_map.put(queue_name, memory_data);
+			space_data.put("min", min);
+			space_data.put("max", max);
+			space_data.put("avg", avg);
+			space_data.put("num", num);
+			client_run_case_summary_space_map.put(queue_name, space_data);
 		} finally {
 			rw_lock.writeLock().unlock();
 		}

@@ -59,6 +59,21 @@ public class task_report {
 		return true;
 	}	
 	
+	protected Boolean dump_disk_task_data_info(
+			String report_path,
+			String case_id,
+			HashMap<String, HashMap<String, String>> task_data
+			){
+		if (task_data == null || task_data.isEmpty()){
+			return false;
+		}
+		String report_file = report_path + "/T" + case_id + ".xml";
+		String report_str = new String("NA");
+		report_str = xml_parser.create_common_xml_string("Task_Info", task_data, "NA", public_data.SOCKET_DEF_TERMINAL);
+		file_action.append_file(report_file, report_str);
+		return true;
+	}
+	
 	protected Boolean send_tube_task_data_report(
 			HashMap<String, HashMap<String, Object>> case_report_data,
 			Boolean smart_send

@@ -1,0 +1,13 @@
+DIAMOND_LSE_SYNTHESIS_LOG_FILE:
+  name_pattern: 'synthesis.log'
+  group_1:
+    greedy: true
+    tail: 100
+    fields:
+      - { name: 'lse_cpu_time',    pattern: 'Elapsed CPU time for LSE flow : (.+)' }
+      - { name: 'lse_peak_memory', pattern: 'Peak Memory Usage: ([.\d]+)' }
+      - { name: 'lse_register', pattern: 'Number of register bits => (\d+)' }
+      - { name: 'lse_lut4',     pattern: 'LUT4 => (\d+)' }
+      - { name: 'lse_carry', pattern: 'CCU\S+ => (\d+)' }
+
+# END OF FILE

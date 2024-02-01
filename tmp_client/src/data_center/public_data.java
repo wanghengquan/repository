@@ -11,6 +11,7 @@ package data_center;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,12 +27,12 @@ public class public_data {
 	// ========================
 
 	// ========================
-	// base 
+	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.13.04"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21304; //version for code use
-	public final static String BASE_BUILDDATE = "2023/03/03";
-	public final static String BASE_SUITEFILEVERSION = "1.27";
+	public final static String BASE_CURRENTVERSION = "2.13.05"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21305; //version for code use
+	public final static String BASE_BUILDDATE = "2024/01/30";
+	public final static String BASE_SUITEFILEVERSION = "1.29";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -41,7 +42,7 @@ public class public_data {
 
 	// ========================
 	// Client sensitive environment list
-	public final static String ENV_SQUISH_RECORD = "CLIENT_SQUISH_RECORD";
+	public final static String ENV_SQUISH_RECORD = "SQUISH_RECORD";
 	
 	// ========================
 	// Software bin path
@@ -49,9 +50,9 @@ public class public_data {
 
 	// ========================
 	// Client run limitation (system requirements)
-	public final static int RUN_LIMITATION_CPU = 95;//client suspend when CPU usage large than this value
-	public final static int RUN_LIMITATION_MEM = 95;//client suspend when MEM usage large than this value
-	public final static String RUN_LIMITATION_SPACE = "5";//G, client suspend when disk space less than this value
+	public final static int RUN_LIMITATION_CPU = 90;//client suspend when CPU usage large than this value
+	public final static int RUN_LIMITATION_MEM = 90;//client suspend when MEM usage large than this value
+	public final static String RUN_LIMITATION_SPACE = "50";//G, client suspend when disk space less than this value
 	public final static int RUN_CPU_FILTER_LENGTH = 6;//client CPU monitor filter length, about 1 minute
 	public final static int RUN_MEM_FILTER_LENGTH = 6;//client MEM monitor filter length, about 1 minute
 	
@@ -129,11 +130,13 @@ public class public_data {
 	public final static String CASE_REPORT_NAME = "case_report.txt";
 	public final static String CASE_TIMEOUT_RUN = "_timeout.py";
 	public final static String CASE_USER_PATTERN = "^run\\..*";
-	public final static String CASE_STANDARD_PATTERN = "run_info.ini";
+	public final static String CASE_STANDARD_PATTERN = "^run_info.ini$";
+	public final static String CASE_RUN_FILE = "run_info.ini";
 	public final static String CASE_INFO_FILE = "bqs.info";
 	public final static String CASE_EXEC_FILE = "DEV/bin/run_radiant.py";
 	public final static String CASE_CHECK_FILE = "bqs.conf";
 	public final static String CASE_DATA_FILE = "bqs.data";
+	
 	
 	// ========================
 	// external tools based on software bin path
@@ -156,6 +159,7 @@ public class public_data {
 	public final static String TOOLS_PY_ENV = SW_HOME_PATH + "/tools/python_env.py";
 	public final static String TOOLS_UPLOAD2 = SW_HOME_PATH + "/tools/upload2/excel2testrail.py";
 	public final static String TOOLS_UPLOAD3 = SW_HOME_PATH + "/tools/upload3/run_suite.py";
+	public final static String TOOLS_UPLOAD3_DYNAMIC = REMOTE_CORE_SCRIPT_DIR + "/tools/uploadSuites/run_suite.py";
 
 	// ========================
 	// external documents based on software bin path
@@ -215,7 +219,9 @@ public class public_data {
 	// ========================
 	// task case default setting
 	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
-	public final static float TASK_DEF_ESTIMATE_MEM = 1.0f; //in G, 1G
+	public final static float TASK_DEF_ESTIMATE_MEM_MAX = 16.0f; //in G, 16G
+	public final static float TASK_DEF_ESTIMATE_MEM_MIN = 1.0f; //in G, 1G
+	public final static float TASK_DEF_ESTIMATE_SPACE = 2.0f; //in G, 2G
 	public final static String TASK_DEF_MAX_MEM_USG = "16";
 	public final static String TASK_DEF_CMD_PARALLEL = "false"; // false, true
 	public final static String TASK_DEF_CMD_DECISION = "last"; //last, all, <indiviual cmd>, <indiviual cmds> join with Python:and,or
@@ -237,14 +243,14 @@ public class public_data {
 	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
 	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
-	public final static int PERF_AUTO_MAXIMUM_CPU = 80;
+	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
-	public final static int PERF_AUTO_ADJUST_CYCLE = 6;
-	public final static float PERF_GOOD_MEM_USAGE_RATE = 0.85f;
-	public final static int PERF_SQUISH_WIN_MAX_CPU = 30;
+	public final static int PERF_AUTO_ADJUST_CYCLE = 10;
+	public final static float PERF_FREE_MEM_USAGE_RATE = 0.60f;
+	public final static int PERF_SQUISH_WIN_MAX_CPU = 50;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 60;
-	public final static int PERF_SQUISH_LIN_MAX_CPU = 20;
-	public final static int PERF_SQUISH_LIN_MAX_MEM = 30;
+	public final static int PERF_SQUISH_LIN_MAX_CPU = 30;
+	public final static int PERF_SQUISH_LIN_MAX_MEM = 60;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
 	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
@@ -295,8 +301,8 @@ public class public_data {
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_SAVE_SPACE = "";
-	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb02/sw/qa/qadata";
-	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/"};
+	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb03/sw/qa/qadata";
+	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/swrd_archive"};
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 1000;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 600;
 	//look and feel
@@ -422,5 +428,19 @@ public class public_data {
         available.intValue();
         DecimalFormat decimalformat = new DecimalFormat("0.00");
         System.out.println(decimalformat.format(rate)); 
+        //long tt = (long) 2.0854263E9;
+        //float rs = tt / (float)1024 / (float)1024 / (float)1024;
+        System.out.println(public_data.DEF_LSV_STORAGE_ID[1]);
+        
+        ArrayList<Float> float_list = new ArrayList<Float>();
+        ArrayList<Float> sub_list = new ArrayList<Float>();
+        float_list.add(1.0f);
+        float_list.add(1.2f);
+        float_list.add(2.0f);
+        float_list.add(3.0f);
+        float_list.add(1.5f);
+        
+        sub_list.addAll(float_list.subList(float_list.size() - 4, float_list.size()));
+        System.out.println(sub_list.toString());
 	}
 }

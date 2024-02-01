@@ -20,6 +20,20 @@ public class data_check {
 
 	}
 	
+	public static Boolean num_str_check(
+			String input_data
+			) {
+		Boolean check_result = Boolean.valueOf(true);
+		@SuppressWarnings("unused")
+		int input_int = 0;
+		try {
+			input_int = Integer.valueOf(input_data);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		return check_result;
+	}
+	
 	public static Boolean num_scope_check(
 			String input_data,
 			int min_value,
@@ -45,6 +59,106 @@ public class data_check {
 		}
 		return check_result;
 	}	
+	
+	public static Boolean num_greater_check(
+			String input_num,
+			String base_num
+			) {
+		Boolean check_result = Boolean.valueOf(true);
+		int input_int = 0;
+		try {
+			input_int = Integer.valueOf(input_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		int base_int = 0;
+		try {
+			base_int = Integer.valueOf(base_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		if (input_int > base_int) {
+			check_result = true;
+		} else {
+			check_result = false;
+		}
+		return check_result;
+	}
+	
+	public static Boolean num_less_check(
+			String input_num,
+			String base_num
+			) {
+		Boolean check_result = Boolean.valueOf(true);
+		int input_int = 0;
+		try {
+			input_int = Integer.valueOf(input_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		int base_int = 0;
+		try {
+			base_int = Integer.valueOf(base_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		if (input_int < base_int) {
+			check_result = true;
+		} else {
+			check_result = false;
+		}
+		return check_result;
+	}
+	
+	public static Boolean num_not_greater_check(
+			String input_num,
+			String base_num
+			) {
+		Boolean check_result = Boolean.valueOf(true);
+		int input_int = 0;
+		try {
+			input_int = Integer.valueOf(input_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		int base_int = 0;
+		try {
+			base_int = Integer.valueOf(base_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		if (input_int > base_int) {
+			check_result = false;
+		} else {
+			check_result = true;
+		}
+		return check_result;
+	}
+	
+	public static Boolean num_not_less_check(
+			String input_num,
+			String base_num
+			) {
+		Boolean check_result = Boolean.valueOf(true);
+		int input_int = 0;
+		try {
+			input_int = Integer.valueOf(input_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		int base_int = 0;
+		try {
+			base_int = Integer.valueOf(base_num);
+		} catch (NumberFormatException e){
+			return false;
+		}
+		if (input_int < base_int) {
+			check_result = false;
+		} else {
+			check_result = true;
+		}
+		return check_result;
+	}
 	
 	public static Boolean str_choice_check(
 			String input_data,

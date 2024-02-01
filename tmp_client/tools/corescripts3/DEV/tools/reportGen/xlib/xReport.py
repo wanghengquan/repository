@@ -126,7 +126,6 @@ class DataReport(DeployOptions):
             raw_src_sections = [foo.get("xSectionName") for foo in raw_src_data]
             raw_dst_sections = [foo.get("xSectionName") for foo in raw_dst_data]
             all_sections = list(set(raw_src_sections) | set(raw_dst_sections))
-            all_sections.sort(key=str.lower)
             local_src_sections = local_dst_sections = all_sections
         self.arg_dict["src_section"] = self.src_section = list()
         self.arg_dict["dst_section"] = self.dst_section = list()
@@ -193,13 +192,20 @@ class DataReport(DeployOptions):
             sheet_data["default_conf_path"] = self.default_conf_path
             sheet_data["report_conf"] = self.report_conf
             sheet_data["output"] = self.output
+            sheet_data["use_all_data"] = self.use_all_data
+            sheet_data["best_fmax"] = self.best_fmax
             sd = sheet_data["src_data"] = xUtils.get_raw("SRC", sheet_data, processed_data, self.force, self.say_error)
             dd = sheet_data["dst_data"] = xUtils.get_raw("DST", sheet_data, processed_data, self.force, self.say_error)
             x_g = sheet_data.get("case_group_name")
             sheet_data["case_group_name"] = self.case_group_name if self.case_group_name else x_g
+
+            src_design_list = list(sd.keys())
+            dst_design_list = list(dd.keys())
+            src_design_list.sort()
+            dst_design_list.sort()
             sheet_data["design_names"] = xUtils.get_design_names(self.cases_group_dict,
                                                                  sheet_data.get("case_group_name"),
-                                                                 list(sd.keys()), list(dd.keys()))
+                                                                 src_design_list, dst_design_list)
         self.say_debug(json.dumps(self.excel_data_dict, indent=2), "Second Data:", debug=self.debug)
 
     def prepare_row_data(self):
@@ -238,7 +244,7 @@ class DataReport(DeployOptions):
         if self.row_number == 1:
             _mr = dict(start_row=self.row_number, end_row=self.row_number, start_column=1, end_column=2)
             cell_data["go_home"] = dict(merge_range=_mr, value="Go Home")
-            cell_data["go_home"]["hyperlink"] = "#'{}'!A1".format(self.this_summary_sheet_name)
+            cell_data["go_home"]["hyperlink"] = "#'Content'!A1"
             cell_data["go_home"]["font"] = self.ew.font_link_home
             # cell_data["blank_1"] = dict(cell_range=dict(row=self.row_number, column=1), value="")
             # cell_data["blank_2"] = dict(cell_range=dict(row=self.row_number, column=2), value="='{}'")
@@ -248,7 +254,10 @@ class DataReport(DeployOptions):
             _s, _e = _e + 1, _e + len(dst_titles) - 1
             _mr = dict(start_row=self.row_number, end_row=self.row_number, start_column=_s, end_column=_e)
             cell_data["dst_name"] = dict(merge_range=_mr, value=dst_table_name)
-            _s, _e = _e + 1, _e + len(compare_titles) * 2
+            if self.no_ad_data:
+                _s, _e = _e + 1, _e + len(compare_titles)
+            else:
+                _s, _e = _e + 1, _e + len(compare_titles) * 2
             _mr = dict(start_row=self.row_number, end_row=self.row_number, start_column=_s, end_column=_e)
             cell_data["vs_name"] = dict(merge_range=_mr, value="{} VS {}".format(src_table_name, dst_table_name))
         else:
@@ -267,7 +276,8 @@ class DataReport(DeployOptions):
             _c = __add_cell(src_titles, 3, prefix="")
             _c = __add_cell(dst_titles, _c, prefix="#")
             _c = __add_cell(compare_titles, _c, prefix="VS_")
-            _c = __add_cell(compare_titles, _c, prefix="AD_")
+            if not self.no_ad_data:
+                _c = __add_cell(compare_titles, _c, prefix="AD_")
 
         # format
         for k, v in list(cell_data.items()):
@@ -342,7 +352,7 @@ class DataReport(DeployOptions):
             old = "_{}_".format(i)
             new = "${}{}".format(get_column_letter(now_column - i), self.row_number)
             numerator = re.sub(old, new, numerator)
-        return "=({})/({})".format(numerator, denominator)
+        return '=IFERROR(({})/({}), "-")'.format(numerator, denominator)
 
     def printout_excel_file(self):
         sheet_names = list(self.final_excel_data_dict.keys())
@@ -451,11 +461,18 @@ class DataReport(DeployOptions):
             key_left, key_right = foo, "#" + foo
             position_left = get_column_letter(list(r_data.keys()).index(key_left) + 1)
             position_right = get_column_letter(list(r_data.keys()).index(key_right) + 1)
-            x["value"] = '=IFERROR({0}{2}/{1}{2} - 1, "-")'.format(position_right, position_left, self.row_number)
+            if foo.endswith("sha1"):
+                x["value"] = '=IF({0}{2}={1}{2}, "Same", "Diff")'.format(position_right, position_left, self.row_number)
+            else:
+                x["value"] = '=IFERROR({0}{2}/{1}{2} - 1, "-")'.format(position_right, position_left, self.row_number)
             x["number_format"] = self.ew.number_percentage
             border_key = "0100" if (len(compare_titles) == cc + 1) else "0000"
             x["border"] = self.ew.borders_lrtb[border_key]
-            real_value_string = "{} / {} - 1".format(r_data.get(key_right)["value"], r_data.get(key_left)["value"])
+            if foo.endswith("sha1"):
+                real_value_string = r_data.get(key_right)["value"] == r_data.get(key_left)["value"]
+            else:
+                real_value_string = "{} / {} - 1".format(r_data.get(key_right)["value"], r_data.get(key_left)["value"])
+
             _real_value, _new_font, _will_skip = self.set_real_value_font(foo, real_value_string)
             if not will_skip_this_row_when_calculate:
                 will_skip_this_row_when_calculate = _will_skip
@@ -472,7 +489,8 @@ class DataReport(DeployOptions):
             x["number_format"] = self.ew.number_percentage
             border_key = "0100" if (len(compare_titles) == cc + 1) else "0000"
             x["border"] = self.ew.borders_lrtb[border_key]
-            r_data["AD_" + foo] = x
+            if not self.no_ad_data:
+                r_data["AD_" + foo] = x
         self.row_number += 1
         if will_skip_this_row_when_calculate:
             for k, v in list(r_data.items()):
@@ -485,6 +503,8 @@ class DataReport(DeployOptions):
         green_range = self.detail_options.get("green_{}".format(key_name), self.detail_options.get("green_default"))
         skip_this_row = 0
         real_font = self.ew.font_default
+        if isinstance(raw_string, bool):
+            return str(raw_string), real_font, 0
         try:
             real_value = eval(raw_string)
             if red_range:
