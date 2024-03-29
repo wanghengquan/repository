@@ -111,13 +111,17 @@ public class postrun_call implements Callable<Object> {
 		Boolean run_status = Boolean.valueOf(true);
         float used_space = public_data.TASK_DEF_ESTIMATE_SPACE;
 		File file = new File(case_path);
-		try {
-			used_space = FileUtils.sizeOfDirectory(file) / (float)1024 / (float)1024 / (float)1024; ;
-		} catch (Exception e) {
-			run_msg.add("Case space check error.");
-			//e.printStackTrace();
-		} finally {
-			;
+		if(file.exists()) {
+			try {
+				used_space = FileUtils.sizeOfDirectory(file) / (float)1024 / (float)1024 / (float)1024; ;
+			} catch (Exception e) {
+				run_msg.add("Case space check error.");
+				//e.printStackTrace();
+			} finally {
+				;
+			}
+		} else {
+			run_msg.add("Case space not exists, default value logged.");
 		}
 		task_info.update_client_run_case_summary_space_map(queue_name, used_space);
 		return run_status;
