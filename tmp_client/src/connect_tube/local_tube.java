@@ -38,8 +38,13 @@ public class local_tube {
 	public static String suite_path_error_msg = new String(">>>");
 	public static String[] suite_index = {"project_id", "suite_name"};
 	public static String[] suite_elements = {"CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine"}; //"Preference" --optional
-	public static String[] case_titles = { "Order", "NoUse", "Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
-			"Type", "Priority", "CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine", "Sorting", "Flow"};
+	public static String[] case_titles = { "Order", "NoUse", 
+			"Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
+			"Type", "Priority", "Automated", "Smoke", "Reusable", 
+			"CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine", 
+			"Sorting", "Author", 
+			"Family", "Slice", "DSP", "EBR",
+			"Flow"};
 	// protected property
 	// private property
 	private final Logger LOCAL_TUBE_LOGGER = LogManager.getLogger(local_tube.class.getName());
