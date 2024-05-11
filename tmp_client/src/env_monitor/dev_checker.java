@@ -4,6 +4,7 @@ import data_center.client_data;
 import data_center.public_data;
 import data_center.switch_data;
 import top_runner.run_status.exit_enum;
+import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 
 import java.io.File;
@@ -60,8 +61,8 @@ public class dev_checker extends TimerTask {
     	String svn_cmd = new String(public_data.DEF_SVN_PATH);
     	svn_cmd = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
         try {
-            String svn_info = svn_cmd + " info " + core_addr +  " --username="
-                                + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
+            String svn_info = svn_cmd + " info " + file_action.update_whitespace_name(core_addr) 
+            		+ " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
             ArrayList<String> info_return = system_cmd.run(svn_info);
             remote_version = get_version_num(info_return);
             remote_time = get_update_time(info_return);
@@ -150,8 +151,8 @@ public class dev_checker extends TimerTask {
     	svn_cmd = client_info.get_client_tools_data().getOrDefault("svn", public_data.DEF_SVN_PATH);
     	String remote_version = new String("NA");
         try {
-            String svn_info = svn_cmd + " info " + core_addr +  " --username="
-                                + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
+            String svn_info = svn_cmd + " info " + file_action.update_whitespace_name(core_addr)
+            + " --username=" + svn_user + " --password=" + svn_pwd + " --no-auth-cache";
             ArrayList<String> info_return = system_cmd.run(svn_info);
             remote_version = get_version_num(info_return);
         }catch (InterruptedException e) {

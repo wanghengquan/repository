@@ -342,9 +342,11 @@ public class postrun_call implements Callable<Object> {
         return run_status;
 	}
 	
-	private Boolean run_process_cleanup(String clean_work_path) {
+	private Boolean run_process_cleanup(
+			String clean_work_path
+			) {
 		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
-		String cmd = python_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		String cmd = python_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + file_action.update_whitespace_name(clean_work_path);
 		run_msg.add("Process cleanup cmd: " + cmd);
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
@@ -416,7 +418,7 @@ public class postrun_call implements Callable<Object> {
 				//for Linux copy extra run needed
 				String host_run = System.getProperty("os.name").toLowerCase();
 				if (host_run.startsWith("linux")) {
-					system_cmd.run("chmod -R 777 " + save_dest_folder);
+					system_cmd.run("chmod -R 777 " + file_action.update_whitespace_name(save_dest_folder.getPath()));
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

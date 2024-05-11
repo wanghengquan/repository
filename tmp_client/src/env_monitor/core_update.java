@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import data_center.client_data;
 import data_center.public_data;
 import top_runner.run_status.exit_enum;
+import utility_funcs.file_action;
 import utility_funcs.system_cmd;
 
 public class core_update {
@@ -72,7 +73,7 @@ public class core_update {
 		//remote version
     	String remote_version = new String("NA");
         try {
-            String remote_info = svn_cmd + " info " + core_addr +  usr_cmd;
+            String remote_info = svn_cmd + " info " + file_action.update_whitespace_name(core_addr) +  usr_cmd;
             ArrayList<String> remote_return = system_cmd.run(remote_info);
             remote_version = get_version_num(remote_return);
         }catch (Exception e){

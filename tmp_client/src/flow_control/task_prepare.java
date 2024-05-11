@@ -252,7 +252,7 @@ public class task_prepare {
 	}
 	
 	private url_enum get_url_type(
-			String url,
+			String url_addr,
 			String url_category,
 			HashMap<String, String> task_caseinfo_data) {
 		//task defined type
@@ -265,6 +265,7 @@ public class task_prepare {
 			}			
 		}
 		//auto identify flow
+		String url = new String(url_addr.replaceAll("\"", ""));
 		String[] url_array = url.split(":", 2);
 		String host_str = url_array[0];
 		if (url.contains(public_data.SVN_URL)) {
@@ -288,7 +289,7 @@ public class task_prepare {
 	}
 	
 	private zip_enum get_zip_type(
-			String url,
+			String url_addr,
 			String zip_category,
 			HashMap<String, String> task_caseinfo_data) {
 		//task defined type
@@ -301,6 +302,7 @@ public class task_prepare {
 			}			
 		}
 		//auto identify flow
+		String url = new String(url_addr.replaceAll("\"", ""));
 		String[] url_array = url.split("/");
 		String basename = url_array[url_array.length - 1];
 		if (!basename.contains(".")) {
@@ -350,7 +352,8 @@ public class task_prepare {
 	
 	private Boolean remove_exist_path(
 			String case_path,
-			String base_name) {
+			String base_name
+			) {
 		File case_path_dobj = new File(case_path);
 		File case_parent_path = case_path_dobj.getParentFile();
 		File zip_case_fobj = new File(case_parent_path.getAbsolutePath() + "/" + base_name);
@@ -386,7 +389,8 @@ public class task_prepare {
 	}	
 	
 	private Boolean build_parent_path(
-			String case_path) {
+			String case_path
+			) {
 		File case_path_dobj = new File(case_path);
 		synchronized (this.getClass()) {
 			// prepare export dir
@@ -409,7 +413,8 @@ public class task_prepare {
 	private Boolean run_src_unzip(
 		zip_enum dzip_type,
 		String case_path,
-		String base_name){
+		String base_name
+		){
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		//step 1:check source
@@ -488,7 +493,8 @@ public class task_prepare {
 	}	
 	
 	private String get_7z_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder("");
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
@@ -503,12 +509,13 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("x -y");
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_whitespace_name(base_name));
 		return exe_cmd.toString();
 	}
 	
 	private String get_bzip2_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder("");
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
@@ -530,26 +537,28 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_whitespace_name(base_name));
 		return exe_cmd.toString();
 	}	
 	
 	private ArrayList<String> get_tar_bzip2_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		ArrayList<String> cmd_list = new ArrayList<String>();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
 		if(os_type.startsWith("windows")){
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name);
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name.split("\\.")[0] + ".tar");
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name.split("\\.")[0] + ".tar"));
 		} else {
-			cmd_list.add("tar -xj -f " + base_name);
+			cmd_list.add("tar -xj -f " + file_action.update_whitespace_name(base_name));
 		}
 		return cmd_list;
 	}	
 	
 	private String get_gzip_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder("");
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
@@ -571,7 +580,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_whitespace_name(base_name));
 		return exe_cmd.toString();
 	}	
 	
@@ -581,10 +590,10 @@ public class task_prepare {
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
 		if(os_type.startsWith("windows")){
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name);
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name.split("\\.")[0] + ".tar");
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name.split("\\.")[0] + ".tar"));
 		} else {
-			cmd_list.add("tar -xz -f " + base_name);
+			cmd_list.add("tar -xz -f " + file_action.update_whitespace_name(base_name));
 		}
 		return cmd_list;
 	}
@@ -612,7 +621,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_whitespace_name(base_name));
 		return exe_cmd.toString();
 	}
 
@@ -639,7 +648,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_whitespace_name(base_name));
 		return exe_cmd.toString();
 	}
 	
@@ -652,7 +661,8 @@ public class task_prepare {
 			String pass_word, 
 			String case_path,
 			String base_name,
-			HashMap<String, String> client_tools) {
+			HashMap<String, String> client_tools
+			) {
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		switch (url_type) {
 		case SVN:
@@ -691,7 +701,8 @@ public class task_prepare {
 			String user_name, 
 			String pass_word,
 			String case_path,
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		//get export command
@@ -711,9 +722,9 @@ public class task_prepare {
 		//generate command
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_whitespace_name(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_whitespace_name(export_path));
 		exe_cmd.append(" --username=");
 		exe_cmd.append(user_name);
 		exe_cmd.append(" --password=");
@@ -726,7 +737,8 @@ public class task_prepare {
 			String case_url,
 			zip_enum zip_type,
 			String case_path,
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
@@ -743,9 +755,9 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_whitespace_name(case_url));
 		exe_cmd.append(" -P ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_whitespace_name(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append("--no-check-certificate");
 		return exe_cmd.toString();
@@ -781,9 +793,9 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_whitespace_name(case_url));
 		exe_cmd.append(" -P ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_whitespace_name(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
 		return exe_cmd.toString();
@@ -794,7 +806,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
@@ -820,11 +833,11 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_whitespace_name(case_url));
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -q -nH --cut-dirs=" + String.valueOf(cut_depth) + " -P");
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_whitespace_name(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
 		return exe_cmd.toString();
@@ -835,7 +848,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		String remote_cmd = new String();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		String[] url_array = case_url.split(":", 2);
@@ -859,7 +873,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
         // win client Lin source
@@ -880,9 +895,9 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -p -batch -l " + user_name + " -pw " + pass_word);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_whitespace_name(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_whitespace_name(export_path));
 		return exe_cmd.toString();		
 	}
 	
@@ -891,7 +906,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		String[] url_array = case_url.split(":", 2);
@@ -920,7 +936,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("\\\\" + url_array[0] + "\\" +url_array[1].replaceFirst(":", "\\$").replace("/", "\\"));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path.replace("/", "\\"));
+		exe_cmd.append(file_action.update_whitespace_name(export_path.replace("/", "\\")));
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		return exe_cmd.toString();		
@@ -931,7 +947,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
         // win client Lin source
@@ -951,15 +968,16 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(" -p " + pass_word + " scp -r -p ");
 		exe_cmd.append(" ");
-		exe_cmd.append(user_name + "@" + case_url);
+		exe_cmd.append(file_action.update_whitespace_name(user_name + "@" + case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_whitespace_name(export_path));
 		return exe_cmd.toString();		
 	}	
 	
 	private String get_local_cmd_str(
 			String case_url,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		String os_type = System.getProperty("os.name").toLowerCase();
@@ -975,15 +993,16 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -p");
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_whitespace_name(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(case_parent_path);
+		exe_cmd.append(file_action.update_whitespace_name(case_parent_path));
 		return exe_cmd.toString();
 	}
 	
 	private Boolean run_common_cmds(
 			ArrayList<String> export_cmd_list,
-			String work_path) {
+			String work_path
+			) {
 		synchronized (this.getClass()) {
 			// export design
 			for (String run_cmd : export_cmd_list) {
@@ -1187,19 +1206,19 @@ public class task_prepare {
 		if (launch_path.equalsIgnoreCase(case_path))
 			cmd_list = launch_cmd.split("\\s+");
 		else if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_vivado.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
 		else
 			cmd_list = launch_cmd.split("\\s+");
 		// replace the @#@
