@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 public class file_action {
 	private static final Logger FILE_ACTION_LOGGER = LogManager.getLogger(file_action.class.getName());
 	private static List<String> key_file_list;
+	private static Pattern patt_whitespace = Pattern.compile("\\s");
 	
 	public file_action() {
 
@@ -518,6 +519,19 @@ public class file_action {
 			return_list.add(raw_path.replaceAll("/\\.", ""));
 		}
 		return String.join(",", return_list);
+	}
+	
+	public static String update_whitespace_name(
+			String ori_path
+			) {
+		String new_path = new String("");
+		Matcher m = patt_whitespace.matcher(ori_path);
+		if (m.find()) {
+			new_path = '\"' + ori_path + '\"';
+		} else {
+			new_path = ori_path;
+		}
+		return new_path;
 	}
 	
 	public static void main1(String[] args) {

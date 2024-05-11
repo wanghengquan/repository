@@ -26,19 +26,44 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import data_center.public_data;
+
 public class system_cmd {
 	// public property
 	// protected property
 	// private property
 	private static final Logger SYSTEM_CMD_LOGGER = LogManager.getLogger(system_cmd.class.getName());
+	private static Pattern patt_space_option = Pattern.compile("\\s(\\S+?)?\".+?\"", Pattern.CASE_INSENSITIVE);
+	private static String internal_white_space = new String(public_data.INTERNAL_STRING_BLANKSPACE);
 
 	public system_cmd() {
 
 	}
 
+	public static String[] cmd_string_to_list(
+			String cmd_string
+			) {
+		// python --option1="test1  test2   test3" -o "test1   test3" --test
+		String[] cmd_list = null;
+		Matcher match2 = patt_space_option.matcher(cmd_string);
+		while(match2.find()){
+			String match_str = new String(match2.group().trim());
+			cmd_string = cmd_string.replace(match_str, match_str.replaceAll("\\s+", internal_white_space).replaceAll("\"", ""));
+        }
+		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
+		cmd_list = cmd_string.split("\\s+");
+		// replace the @#@(back)
+		String array[] = new String[cmd_list.length];              
+		for(int j =0;j<cmd_list.length;j++){
+		  array[j] = cmd_list[j].replaceAll(internal_white_space, " ");
+		}
+		return array;
+	}
+
 	// run0 command single string, export case, scripts
 	public static ArrayList<String> run(
-			String cmd) throws IOException, InterruptedException {
+			String cmd
+			) throws IOException, InterruptedException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -46,8 +71,8 @@ public class system_cmd {
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
 		ArrayList<String> string_list = new ArrayList<String>();
 		string_list.add(cmd);
-		String[] cmd_list = cmd.split("\\s+");
-		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
+		//String[] cmd_list = cmd.split("\\s+");
+		ProcessBuilder proce_build = new ProcessBuilder(cmd_string_to_list(cmd));
 		proce_build.redirectErrorStream(true);
 		Process process = proce_build.start();
 		InputStream out_str = process.getInputStream();
@@ -77,7 +102,8 @@ public class system_cmd {
 	// run1 run command with in 60 seconds
 	public static ArrayList<String> run(
 			String cmd, 
-			String work_path) throws IOException {
+			String work_path
+			) throws IOException {
 		/*
 		 * a command line will be execute.
 		 */
@@ -85,8 +111,8 @@ public class system_cmd {
 		ArrayList<String> string_list = new ArrayList<String>();
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
 		string_list.add("Run CMD: " + cmd);
-		String[] cmd_list = cmd.split("\\s+");
-		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
+		//String[] cmd_list = cmd.split("\\s+");
+		ProcessBuilder proce_build = new ProcessBuilder(cmd_string_to_list(cmd));
 		proce_build.redirectErrorStream(true);
 		File run_dir = new File(work_path);
 		if (!run_dir.exists()) {
@@ -127,7 +153,8 @@ public class system_cmd {
 	// run2 command with environment
 	public static ArrayList<String> run(
 			String[] cmds, 
-			Map<String, String> envs) throws InterruptedException {
+			Map<String, String> envs
+			) throws InterruptedException {
 		/*
 		 * This function used to run command in another way: ProcessBuilder
 		 */
@@ -361,13 +388,14 @@ public class system_cmd {
 
 	// run0 command single string, export case, scripts
 	public static void run_immediately(
-			String cmd) {
+			String cmd
+			) {
 		/*
 		 * a command line will be execute.
 		 */
 		SYSTEM_CMD_LOGGER.debug("Run CMD: " + cmd);
-		String[] cmd_list = cmd.split("\\s+");
-		ProcessBuilder proce_build = new ProcessBuilder(cmd_list);
+		//String[] cmd_list = cmd.split("\\s+");
+		ProcessBuilder proce_build = new ProcessBuilder(cmd_string_to_list(cmd));
 		proce_build.redirectErrorStream(true);
 		try {
 			proce_build.start();
