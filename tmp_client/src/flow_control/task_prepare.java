@@ -1115,10 +1115,10 @@ public class task_prepare {
 		String design_path = new String("");
 		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
-		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
+		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath().replaceAll("/$", "");
 		launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_space);
 		launch_cmd = launch_cmd.replaceAll("\\$case_path", " " + case_path);
-		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);		
+		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		//step 1: update command line tool path
 		for (String tool:client_tools.keySet()) {
 			Pattern tool_patt = Pattern.compile(String.format("^\\s*(%s)\\s", tool), Pattern.CASE_INSENSITIVE);
