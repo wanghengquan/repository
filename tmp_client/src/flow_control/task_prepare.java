@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -509,7 +510,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("x -y");
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(base_name));
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}
 	
@@ -537,7 +538,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(base_name));
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}	
 	
@@ -548,10 +549,10 @@ public class task_prepare {
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
 		if(os_type.startsWith("windows")){
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name));
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name.split("\\.")[0] + ".tar"));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name.split("\\.")[0] + ".tar"));
 		} else {
-			cmd_list.add("tar -xj -f " + file_action.update_whitespace_name(base_name));
+			cmd_list.add("tar -xj -f " + file_action.update_special_character_in_path(base_name));
 		}
 		return cmd_list;
 	}	
@@ -580,7 +581,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(base_name));
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}	
 	
@@ -590,10 +591,10 @@ public class task_prepare {
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
 		if(os_type.startsWith("windows")){
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name));
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_whitespace_name(base_name.split("\\.")[0] + ".tar"));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name.split("\\.")[0] + ".tar"));
 		} else {
-			cmd_list.add("tar -xz -f " + file_action.update_whitespace_name(base_name));
+			cmd_list.add("tar -xz -f " + file_action.update_special_character_in_path(base_name));
 		}
 		return cmd_list;
 	}
@@ -621,7 +622,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(base_name));
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}
 
@@ -648,7 +649,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(base_name));
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}
 	
@@ -722,9 +723,9 @@ public class task_prepare {
 		//generate command
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" --username=");
 		exe_cmd.append(user_name);
 		exe_cmd.append(" --password=");
@@ -755,9 +756,9 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" -P ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append("--no-check-certificate");
 		return exe_cmd.toString();
@@ -793,9 +794,9 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" -P ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
 		return exe_cmd.toString();
@@ -833,11 +834,11 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -q -nH --cut-dirs=" + String.valueOf(cut_depth) + " -P");
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
 		return exe_cmd.toString();
@@ -895,9 +896,9 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -p -batch -l " + user_name + " -pw " + pass_word);
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		return exe_cmd.toString();		
 	}
 	
@@ -936,7 +937,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("\\\\" + url_array[0] + "\\" +url_array[1].replaceFirst(":", "\\$").replace("/", "\\"));
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path.replace("/", "\\")));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path.replace("/", "\\")));
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		return exe_cmd.toString();		
@@ -968,9 +969,9 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(" -p " + pass_word + " scp -r -p ");
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(user_name + "@" + case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(user_name + "@" + case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(export_path));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		return exe_cmd.toString();		
 	}	
 	
@@ -993,9 +994,9 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -p");
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_url));
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(file_action.update_whitespace_name(case_parent_path));
+		exe_cmd.append(file_action.update_special_character_in_path(case_parent_path));
 		return exe_cmd.toString();
 	}
 	
@@ -1175,7 +1176,7 @@ public class task_prepare {
 			launch_cmd = exe_match.replaceFirst(" " + corescript_path.replace(public_data.CORE_SCRIPT_NAME, "") + exe_path);
 		}
 		//step 3: update launch command design path(if have)
-		Pattern src_patt = Pattern.compile("(?:=|\\s)(" + case_name + ")\\s");
+		Pattern src_patt = Pattern.compile("(?:=|\\s)(" + updateEscapeExprSpecialWord(case_name) + ")\\s");
 		Matcher src_match = src_patt.matcher(launch_cmd);
 		String src_path = new String("");
 		if (src_match.find()) {
@@ -1197,8 +1198,7 @@ public class task_prepare {
 		Matcher match2 = patt2.matcher(launch_cmd);
 		while(match2.find()){
 			String match_str = new String(match2.group().trim());
-            launch_cmd = launch_cmd.replace(match_str, match_str.replaceAll("\\s+", tmp_str)
-                    .replaceAll("\"", ""));
+            launch_cmd = launch_cmd.replace(match_str, match_str.replaceAll("\\s+", tmp_str));//.replaceAll("\"", ""));
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		//step 5: add default --design option for Core scripts
@@ -1206,19 +1206,19 @@ public class task_prepare {
 		if (launch_path.equalsIgnoreCase(case_path))
 			cmd_list = launch_cmd.split("\\s+");
 		else if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_vivado.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_whitespace_name(design_path) + " --test-id=" + task_name).split("\\s+");
+			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
 		else
 			cmd_list = launch_cmd.split("\\s+");
 		// replace the @#@
@@ -1228,6 +1228,18 @@ public class task_prepare {
 		}
 		return array;
 	}	
+	
+	private String updateEscapeExprSpecialWord(String keyword) {
+		if (StringUtils.isNotBlank(keyword)) {
+			String[] special_characters = { "\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|" };
+			for (String key : special_characters) {
+				if (keyword.contains(key)) {
+					keyword = keyword.replace(key, "\\" + key);
+				}
+			}
+		}
+		return keyword;
+	}
 	
 	private int get_cmd_index(
 			String cmd_index

@@ -73,7 +73,7 @@ public class core_update {
 		//remote version
     	String remote_version = new String("NA");
         try {
-            String remote_info = svn_cmd + " info " + file_action.update_whitespace_name(core_addr) +  usr_cmd;
+            String remote_info = svn_cmd + " info " + file_action.update_special_character_in_path(core_addr) +  usr_cmd;
             ArrayList<String> remote_return = system_cmd.run(remote_info);
             remote_version = get_version_num(remote_return);
         }catch (Exception e){
