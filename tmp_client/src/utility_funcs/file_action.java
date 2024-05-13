@@ -29,6 +29,8 @@ public class file_action {
 	private static final Logger FILE_ACTION_LOGGER = LogManager.getLogger(file_action.class.getName());
 	private static List<String> key_file_list;
 	private static Pattern patt_whitespace = Pattern.compile("\\s");
+	private static Pattern patt_quotation1 = Pattern.compile("'");
+	private static Pattern patt_quotation2 = Pattern.compile("\"");
 	
 	public file_action() {
 
@@ -521,12 +523,18 @@ public class file_action {
 		return String.join(",", return_list);
 	}
 	
-	public static String update_whitespace_name(
+	public static String update_special_character_in_path(
 			String ori_path
 			) {
 		String new_path = new String("");
-		Matcher m = patt_whitespace.matcher(ori_path);
-		if (m.find()) {
+		Matcher space = patt_whitespace.matcher(ori_path);
+		Matcher quotation1 = patt_quotation1.matcher(ori_path);
+		Matcher quotation2 = patt_quotation2.matcher(ori_path);
+		if (quotation1.find()) {
+			new_path = '\"' + ori_path + '\"';
+		} else if (quotation2.find()) {
+			new_path = "'" + ori_path + "'";
+		} else if (space.find()) {
 			new_path = '\"' + ori_path + '\"';
 		} else {
 			new_path = ori_path;

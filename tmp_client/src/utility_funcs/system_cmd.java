@@ -48,7 +48,7 @@ public class system_cmd {
 		Matcher match2 = patt_space_option.matcher(cmd_string);
 		while(match2.find()){
 			String match_str = new String(match2.group().trim());
-			cmd_string = cmd_string.replace(match_str, match_str.replaceAll("\\s+", internal_white_space).replaceAll("\"", ""));
+			cmd_string = cmd_string.replace(match_str, match_str.replaceAll("\\s+", internal_white_space));
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		cmd_list = cmd_string.split("\\s+");
