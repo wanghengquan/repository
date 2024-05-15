@@ -840,22 +840,31 @@ public class result_waiter extends Thread {
 		return case_data;
 	}
 
-
-    private String get_scan_result(ArrayList<String> cmd_output) {
-        String scan_result = new String("");
+    private String get_scan_result(
+    		ArrayList<String> cmd_output
+    		) {
+        //String scan_result = new String("");
+        ArrayList<String> scan_result = new ArrayList<String>();
+        String json_string = new String("");
+        String cmd_title = new String("cmdx");
         if (cmd_output == null || cmd_output.isEmpty()) {
-            return scan_result;
+            return json_string;
         }
-        Pattern p = Pattern.compile("^(\\{.+?\\})$");
+        Pattern lcmd_patt = Pattern.compile("^>>>LC:(.+?)$");
+        Pattern scan_patt = Pattern.compile("^\\{(.+?)\\}$");
         for (String line : cmd_output) {
-            Matcher m = p.matcher(line);
-            if (m.find()) {
-                scan_result = m.group(1);
+            Matcher lcmd_match = lcmd_patt.matcher(line);
+            Matcher scan_match = scan_patt.matcher(line);
+            if (lcmd_match.find()) {
+            	cmd_title = lcmd_match.group(1);
+            }
+            if (scan_match.find()) {
+                scan_result.add(scan_match.group(1).replaceAll("^\"Report\"", "\"" + cmd_title + "\""));
             }
         }
-        return scan_result;
+        json_string = "{" + String.join(",", scan_result) + "}";
+        return json_string;
     }
-
 
 	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output) {
 		HashMap<String, String> report_data = new HashMap<String, String>();
