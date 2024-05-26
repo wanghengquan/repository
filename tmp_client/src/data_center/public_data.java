@@ -29,9 +29,9 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.08"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21608; //version for code use
-	public final static String BASE_BUILDDATE = "2024/05/15";
+	public final static String BASE_CURRENTVERSION = "2.16.09"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21609; //version for code use
+	public final static String BASE_BUILDDATE = "2024/05/26";
 	public final static String BASE_SUITEFILEVERSION = "1.29";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -249,10 +249,13 @@ public class public_data {
 	public final static float PERF_FREE_MEM_USAGE_RATE = 0.60f;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 50;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 60;
+	public final static int PERF_SQUISH_WIN_MAX_THD = 3;
 	public final static int PERF_SQUISH_LIN_MAX_CPU = 30;
 	public final static int PERF_SQUISH_LIN_MAX_MEM = 60;
+	public final static int PERF_SQUISH_LIN_MAX_THD = 6;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
 	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
+	public final static int PERF_SQUISH_MAXIMUM_THD = get_squish_max_thd();
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
 	public final static int PERF_MAX_LIN_WAITER	= 12;
@@ -333,6 +336,15 @@ public class public_data {
 			return public_data.PERF_SQUISH_WIN_MAX_MEM;
 		} else {
 			return public_data.PERF_SQUISH_LIN_MAX_MEM;
+		}
+	}
+	
+	private static int get_squish_max_thd(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_SQUISH_WIN_MAX_THD;
+		} else {
+			return public_data.PERF_SQUISH_LIN_MAX_THD;
 		}
 	}
 	
