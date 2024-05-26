@@ -373,9 +373,6 @@ public class task_waiter extends Thread {
 		Boolean status = Boolean.valueOf(true);
 		//request data
 		int request = 99;
-		if (admin_data.get("Software").containsKey("squish")) {
-			request = public_data.PERF_SQUISH_MAXIMUM_CPU;
-		}
 		if (admin_data.get("System").containsKey("max_cpu")) {
 			try {
 				request = Integer.valueOf(admin_data.get("System").get("max_cpu")).intValue();
@@ -404,9 +401,6 @@ public class task_waiter extends Thread {
 		Boolean status = Boolean.valueOf(true);
 		//request data
 		int request = 99;
-		if (admin_data.get("Software").containsKey("squish")) {
-			request = public_data.PERF_SQUISH_MAXIMUM_MEM;
-		}
 		if (admin_data.get("System").containsKey("max_mem")) {
 			try {
 				request = Integer.valueOf(admin_data.get("System").get("max_mem")).intValue();
@@ -453,6 +447,54 @@ public class task_waiter extends Thread {
 		}
 		if (request > current) {
 			status = false;
+		}
+		return status;
+	}
+	
+	private Boolean system_env_meet_squish_request(
+			HashMap<String, HashMap<String, String>> admin_data
+			) {
+		Boolean status = Boolean.valueOf(true);
+		if (!admin_data.get("Software").containsKey("squish")) {
+			return status;
+		}
+		//task 1: memory check
+		//request data
+		int mem_request = public_data.PERF_SQUISH_MAXIMUM_MEM;
+		//current data
+		int mem_current = 0;
+		if (client_info.get_client_system_data().containsKey("mem")) {
+			try {
+				mem_current = Integer.valueOf(client_info.get_client_system_data().get("mem")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}	
+		}
+		if (mem_request < mem_current) {
+			return false;
+		}
+		//task 2: CPU check
+		//request data
+		int cpu_request = public_data.PERF_SQUISH_MAXIMUM_CPU;
+		//current data
+		int cpu_current = 0;
+		if (client_info.get_client_system_data().containsKey("cpu")) {
+			try {
+				cpu_current = Integer.valueOf(client_info.get_client_system_data().get("cpu")).intValue();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}	
+		}
+		if (cpu_request < cpu_current) {
+			return false;
+		}
+		//task 3: Client running threads check
+		//request data
+		int thd_request = public_data.PERF_SQUISH_MAXIMUM_THD;
+		//current data
+		int thd_current = pool_info.get_pool_used_threads();
+		if (thd_request < thd_current) {
+			return false;
 		}
 		return status;
 	}
@@ -544,6 +586,10 @@ public class task_waiter extends Thread {
 		if (!system_space_meet_admin_request(admin_data)) {
 			TASK_WAITER_LOGGER.info(waiter_name + ":Required Space not available, skipping:" + queue_name);
 			booking_issue.add("req_space");
+		}
+		if (!system_env_meet_squish_request(admin_data)) {
+			TASK_WAITER_LOGGER.info(waiter_name + ":Squish run ENV not available, skipping:" + queue_name);
+			booking_issue.add("req_squish");
 		}
 		if (booking_issue.size()> 0) {
 			return booking_issue;
