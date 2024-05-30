@@ -2307,18 +2307,18 @@ public class local_tube {
 	public static void main(String[] argv) {
 		task_data task_info = new task_data();
 		local_tube sheet_parser = new local_tube(task_info);
-		String current_terminal = "LSHITD0097";
+		//String current_terminal = "LSHITD0097";
 		HashMap<String, String> imported_data = new HashMap<String, String>();
 		imported_data.put("env", "a=b");
 		imported_data.put("sort", "");
 		imported_data.put("key", public_data.CASE_USER_PATTERN + "|" + public_data.CASE_STANDARD_PATTERN);
-		sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
-		System.out.println(task_info.get_received_task_queues_map().toString());
-		System.out.println(task_info.get_received_admin_queues_treemap().toString()); 
-		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
-		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "D:/work_space/tcl_suite/aa/pn_00_tcl_plus/msg/msg_suppress", "D:/tmp_work", imported_data);
+		//sheet_parser.generate_suite_file_local_admin_task_queues(time_info.get_date_time(), "C:\\Users\\jwang1\\Desktop\\radiant_regression.xlsx", imported_data, current_terminal);
 		//System.out.println(task_info.get_received_task_queues_map().toString());
-		//System.out.println(task_info.get_received_admin_queues_treemap().toString());
+		//System.out.println(task_info.get_received_admin_queues_treemap().toString()); 
+		//sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/cmdall_tt", "D:/tmp_work", imported_data);
+		sheet_parser.generate_suite_path_local_admin_task_queues(time_info.get_date_time(), "C:/Users/jwang1/Desktop/quo_tt", "D:/tmp_work", imported_data);
+		System.out.println(task_info.get_received_task_queues_map().toString());
+		System.out.println(task_info.get_received_admin_queues_treemap().toString());
 		/*
 		xml_parser xml_parser2 = new xml_parser();
 		Iterator<String> dump_queue_it = task_info.get_received_admin_queues_treemap().keySet().iterator();
