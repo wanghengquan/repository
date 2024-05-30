@@ -1202,29 +1202,39 @@ public class task_prepare {
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		//step 5: add default --design option for Core scripts
-		String[] cmd_list = null;
-		if (launch_path.equalsIgnoreCase(case_path))
-			cmd_list = launch_cmd.split("\\s+");
-		else if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_vivado.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + file_action.update_special_character_in_path(design_path) + " --test-id=" + task_name).split("\\s+");
-		else
-			cmd_list = launch_cmd.split("\\s+");
+		List<String> cmd_list = new ArrayList<String>();
+		cmd_list.addAll(Arrays.asList(launch_cmd.split("\\s+")));
+		//String[] cmd_list = null;
+		if (launch_path.equalsIgnoreCase(case_path)) {
+			;
+		} else if (launch_cmd.contains("run_lattice.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+			cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_icecube.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_diamond.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_diamondng.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_radiant.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_vivado.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_classic.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else {
+			;
+		}
 		// replace the @#@
-		String array[] = new String[cmd_list.length];              
-		for(int j =0;j<cmd_list.length;j++){
-		  array[j] = cmd_list[j].replaceAll(tmp_str, " ");
+		String array[] = new String[cmd_list.size()];              
+		for(int j =0;j<cmd_list.size();j++){
+		  array[j] = cmd_list.get(j).replaceAll(tmp_str, " ");
 		}
 		return array;
 	}	

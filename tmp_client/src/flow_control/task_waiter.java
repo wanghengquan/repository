@@ -576,19 +576,19 @@ public class task_waiter extends Thread {
 		ArrayList<String> booking_issue = new ArrayList<String>();
 		//system ready? CPU, MEM, Space
 		if (!system_cpu_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":Required CPU not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Required CPU not available, skipping:" + queue_name);
 			booking_issue.add("req_cpu");
 		}
 		if (!system_mem_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":Required MEM not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Required MEM not available, skipping:" + queue_name);
 			booking_issue.add("req_mem");
 		}
 		if (!system_space_meet_admin_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":Required Space not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Required Space not available, skipping:" + queue_name);
 			booking_issue.add("req_space");
 		}
 		if (!system_env_meet_squish_request(admin_data)) {
-			TASK_WAITER_LOGGER.info(waiter_name + ":Squish run ENV not available, skipping:" + queue_name);
+			TASK_WAITER_LOGGER.debug(waiter_name + ":Squish run ENV not available, skipping:" + queue_name);
 			booking_issue.add("req_squish");
 		}
 		if (booking_issue.size()> 0) {
