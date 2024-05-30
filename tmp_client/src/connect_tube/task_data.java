@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import data_center.public_data;
+import flow_control.book_enum;
 import flow_control.queue_enum;
 import flow_control.task_enum;
 import utility_funcs.deep_clone;
@@ -68,6 +69,7 @@ public class task_data {
 	// Queues updated by task waiter
 	private ArrayList<String> waiting_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> emptied_admin_queue_list = new ArrayList<String>();
+	private HashMap<String, ArrayList<book_enum>> tasks_booking_issue_list = new HashMap<String, ArrayList<book_enum>>();
 	// update by gui
 	private ArrayList<String> watching_admin_queue_list = new ArrayList<String>();
 	private ArrayList<String> local_priority_queue_list = new ArrayList<String>();
@@ -117,6 +119,7 @@ public class task_data {
 			result.put("local_priority_queue_list", local_priority_queue_list.toString());
 			result.put("local_priority_runid_list", local_priority_runid_list.toString());
 			result.put("emptied_admin_queue_list", emptied_admin_queue_list.toString());
+			result.put("tasks_booking_issue_list", tasks_booking_issue_list.toString());
 			result.put("watching_admin_queue_list", watching_admin_queue_list.toString());
 			result.put("running_admin_queue_list", running_admin_queue_list.toString());
 			result.put("finished_admin_queue_list", finished_admin_queue_list.toString());
@@ -1201,6 +1204,35 @@ public class task_data {
 		} finally {
 			rw_lock.writeLock().unlock();
 		}
+	}
+	
+	public void update_tasks_booking_issue_list(
+			String queue_name,
+			ArrayList<book_enum> update_data
+			) {
+		rw_lock.writeLock().lock();
+		try {
+			if (update_data.isEmpty()) {
+				if (this.tasks_booking_issue_list.containsKey(queue_name)) {
+					this.tasks_booking_issue_list.remove(queue_name);
+				}
+			} else {
+				this.tasks_booking_issue_list.put(queue_name, update_data);
+			}		
+		} finally {
+			rw_lock.writeLock().unlock();
+		}
+	}
+
+	public HashMap<String, ArrayList<book_enum>> get_tasks_booking_issue_list() {
+		rw_lock.readLock().lock();
+		HashMap<String, ArrayList<book_enum>> temp = new HashMap<String, ArrayList<book_enum>>();
+		try {
+			temp.putAll(this.tasks_booking_issue_list);
+		} finally {
+			rw_lock.readLock().unlock();
+		}
+		return temp;
 	}
 	
 	public ArrayList<String> get_finished_admin_queue_list() {
