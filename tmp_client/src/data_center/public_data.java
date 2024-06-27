@@ -29,8 +29,8 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.14"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21614; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.16.15"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21615; //version for code use
 	public final static String BASE_BUILDDATE = "2024/06/27";
 	public final static String BASE_SUITEFILEVERSION = "1.29";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -218,7 +218,7 @@ public class public_data {
 
 	// ========================
 	// task case default setting
-	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
+	public final static String TASK_DEF_TIMEOUT = "7200"; // in Seconds, 2 hours
 	public final static float TASK_DEF_ESTIMATE_MEM_MAX = 16.0f; //in G, 16G
 	public final static float TASK_DEF_ESTIMATE_MEM_MIN = 1.0f; //in G, 1G
 	public final static float TASK_DEF_ESTIMATE_SPACE = 2.0f; //in G, 2G
