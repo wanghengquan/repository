@@ -542,6 +542,29 @@ public class file_action {
 		return new_path;
 	}
 	
+	/**	@author Jerry_Zhou
+	 *	@apiNote Used to delete the folder contains files
+	 *	@param save_path is "\\lsh-smb04\sw\qa\qadata\results\prjx\runxxxxxx\Txxxxxxx"
+	 *	@return Status of delete behavior
+	 */	
+	public static Boolean delete_folder_recursively(File folder) throws SecurityException {
+        File[] files = folder.listFiles();
+        Boolean delete_status = Boolean.valueOf(false);
+        
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    file.delete();
+                } else if (file.isDirectory()) {
+                	delete_folder_recursively(file);
+                }
+            }
+        }
+        folder.delete();
+        delete_status = Boolean.valueOf(true);
+        return delete_status;
+    }
+	
 	public static void main1(String[] args) {
 		//System.out.println(get_key_path_list("C:/Users/jwang1/Desktop/eit_run/demo_suite/user_suite", "run_par.py").toString());
 		String work_dir = System.getProperty("user.dir");
