@@ -882,6 +882,7 @@ public class task_data {
 	public HashMap<String, HashMap<String, String>> get_case_from_processed_task_queues_map(
 			String queue_name,
 			String case_id) {
+		
 		HashMap<String, HashMap<String, String>> case_data = new HashMap<String, HashMap<String, String>>();
 		rw_lock.readLock().lock();
 		try {
