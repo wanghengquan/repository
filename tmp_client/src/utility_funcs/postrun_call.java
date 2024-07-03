@@ -12,7 +12,10 @@ package utility_funcs;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.FileUtils;
@@ -22,6 +25,9 @@ import data_center.public_data;
 import flow_control.task_enum;
 //import utility_funcs.system_cmd;
 
+/**
+ * 
+ */
 public class postrun_call implements Callable<Object> {
 	private long start_time = 0;
 	private String queue_name;
@@ -73,6 +79,7 @@ public class postrun_call implements Callable<Object> {
 	public Object call() throws Exception {
 		Boolean run_status = Boolean.valueOf(true);
 		start_time = System.currentTimeMillis() / 1000;
+
 		//cleanup run processes
 		if (!run_process_cleanup(case_path)){
 			run_status = false;
@@ -93,6 +100,7 @@ public class postrun_call implements Callable<Object> {
 		if (!run_disk_cleanup(report_path, save_space, work_space, save_suite, save_path, local_clean, result_keep)){
 			run_status = false;
 		}
+		
 		return run_status;
 	}
 	
@@ -137,20 +145,27 @@ public class postrun_call implements Callable<Object> {
 			String result_keep
 			){
 		Boolean run_status = Boolean.valueOf(true);
+		
 		//task 1: copy run results
         String[] tmp_space = save_space.split("\\s*,\\s*");
         String[] tmp_suite = save_suite.split("\\s*,\\s*");
         String[] tmp_path = save_path.split("\\s*,\\s*");
+
         String os_type = System.getProperty("os.name").toLowerCase();
+		
         for(int i=0; i<tmp_space.length; i++) {
             String save_space_index = tmp_space[i].trim();
             String save_suite_index = tmp_suite[i].trim();
             String save_path_index = tmp_path[i].trim();
+            
+            
             if (save_space_index.equalsIgnoreCase(work_space)) {
+            	// unclear condition
                 continue;
             }
             if (save_space_index.trim().equals("")) {
                 // no save path, skip copy
+            	System.out.println("No save path, skip copy");
                 continue;
             }
             //skip unreachable path
@@ -183,6 +198,7 @@ public class postrun_call implements Callable<Object> {
     		}
     		//backup original results
     		backup_previous_results(report_path, save_path_index);
+
             //start detail case copy
             switch (result_keep.toLowerCase()) {
                 case "zipped":
@@ -204,8 +220,17 @@ public class postrun_call implements Callable<Object> {
                         if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
                     }
                 	break;
-            }            
+            }     
+            
+    		//delete useless failed cases
+    		if (cmd_status.equals(task_enum.FAILED)) {
+    			if(!delete_useless_result_fail(save_path_index)) run_status = false; // delete remote
+    		} else if (cmd_status.equals(task_enum.PASSED)) {
+    			if(!delete_useless_result_pass(save_path_index)) run_status = false;
+    		}
+            
         }
+        
         if (!run_status){
         	run_msg.add("Remote copy Failed.");
         	return run_status;
@@ -227,6 +252,135 @@ public class postrun_call implements Callable<Object> {
         }
         return run_status;
 	}
+
+	
+/**	@author Jerry_Zhou
+ *	@apiNote Preserve the latest, the second latest and the oldest result, if the result is Fail
+ *	@param save_path is "\\lsh-smb04\sw\qa\qadata\results\prjx\runxxxxxx\Txxxxxxx"
+ *	@return Status of delete behavior
+ */	
+	private Boolean delete_useless_result_fail (
+			String save_path) {
+		
+		Boolean delete_process_status = Boolean.valueOf(false);
+		
+		File save_path_fobj = new File(save_path);
+		if (!save_path_fobj.exists()) {
+			run_msg.add("Nothing to delete, save path doesn't exist.");
+			return delete_process_status;
+		}
+		
+		if (!save_path_fobj.canWrite()) {
+			run_msg.add("Case remote save path not writeable, Skip case copy");
+			delete_process_status = false;
+			return delete_process_status;
+		}
+
+		ArrayList<File> folders = new ArrayList<File>();
+		folders.addAll(Arrays.asList(save_path_fobj.listFiles()));
+		
+		//define a TreeMap to sort results by date
+		TreeMap<Long, File> date_folders_map = new TreeMap<>();
+		String date=new String();
+		ArrayList<String> splitArray = new ArrayList<String>();
+		
+		ArrayList<File> save_folder_list = new ArrayList<File>();
+		for (File f:folders) {
+			 splitArray.clear();
+			 splitArray.addAll(Arrays.asList(f.getName().split("_")));
+			 
+			 if (splitArray.size()>=3) {
+				 date=splitArray.get(splitArray.size()-2)+splitArray.get(splitArray.size()-1);
+				 date_folders_map.put(Long.parseLong(date), f);
+			 } else if (splitArray.size()==1) {
+				 save_folder_list.add(f);
+			 } else {
+				 run_msg.add("File name has wrong format, please check your file in the save path");
+				 return delete_process_status;
+			 }
+				 
+		}
+		
+		// find the oldest, newest, second newest folder
+		if (date_folders_map.size() >= 2) {
+			save_folder_list.add(date_folders_map.remove(date_folders_map.firstKey()));
+			save_folder_list.add(date_folders_map.remove(date_folders_map.lastKey()));
+		
+		
+			// delete target files
+			if (date_folders_map.size() > 0) {
+				for (File folder: date_folders_map.values()) {
+					System.out.println("Info >>> Removing "+ folder.getName());
+					if (folder.exists() && folder.isDirectory()) {
+						delete_folder_recursively(folder);
+					} else {
+						System.out.println("ERROR >>> " + folder.getName() + "isn't a folder or doesn't exist");
+						return delete_process_status;
+					}
+				}
+			}
+		}
+		
+		delete_process_status = Boolean.valueOf(true);
+		return delete_process_status;
+	}
+	
+/**	@author Jerry_Zhou
+ *	@apiNote Only save the compressed result, if the result is Passed
+ *	@param save_path is "\\lsh-smb04\sw\qa\qadata\results\prjx\runxxxxxx\Txxxxxxx"
+ *	@return Status of delete behavior
+ */
+	public Boolean delete_useless_result_pass (
+			String save_path) {
+		Boolean delete_process_status = Boolean.valueOf(false);
+		
+		File save_path_fobj = new File(save_path);
+		if (!save_path_fobj.exists()) {
+			run_msg.add("Nothing to delete, save path doesn't exist.");
+			return delete_process_status;
+		}
+		
+		if (!save_path_fobj.canWrite()) {
+			run_msg.add("Case remote save path not writeable, Skip case copy");
+			delete_process_status = false;
+			return delete_process_status;
+		}
+
+		ArrayList<File> folders = new ArrayList<File>();
+		folders.addAll(Arrays.asList(save_path_fobj.listFiles()));
+		
+		for (File f:folders) {
+			 if (f.isDirectory()) {
+				 delete_folder_recursively(f);
+			 } 
+		}
+		
+		return delete_process_status;
+	}
+	
+/**	@author Jerry_Zhou
+ *	@apiNote Used to delete the folder contains files
+ *	@param save_path is "\\lsh-smb04\sw\qa\qadata\results\prjx\runxxxxxx\Txxxxxxx"
+ *	@return Status of delete behavior
+ */	
+	public static Boolean delete_folder_recursively(File folder) throws SecurityException {
+        File[] files = folder.listFiles();
+        Boolean delete_status = Boolean.valueOf(false);
+        
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    file.delete();
+                } else if (file.isDirectory()) {
+                	delete_folder_recursively(file);
+                }
+            }
+        }
+        folder.delete();
+        delete_status = Boolean.valueOf(true);
+        
+        return delete_status;
+    }
 	
 	private Boolean lsv_storage_identify(
 			String save_path) {
@@ -404,6 +558,7 @@ public class postrun_call implements Callable<Object> {
 		String case_folder_name = case_path_obj.getName();
 		File save_dest_folder = new File(save_path, case_folder_name);
 		File save_dest_file = new File(save_path, case_folder_name + ".zip");
+		
 		if (save_dest_folder.exists()) {
 			FileUtils.deleteQuietly(save_dest_folder);
 		}
