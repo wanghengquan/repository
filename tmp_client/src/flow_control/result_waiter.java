@@ -165,7 +165,7 @@ public class result_waiter extends Thread {
 					save_suite,
 					save_path,
 					cmd_status,
-					"keep",
+					"auto",
 					result_keep,
 					client_info.get_client_tools_data()
 					);
