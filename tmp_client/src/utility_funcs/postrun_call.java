@@ -95,7 +95,7 @@ public class postrun_call implements Callable<Object> {
 			run_status = false;
 		}		
 		//cleanup and copy run dir
-		if (!run_disk_cleanup(report_path, save_space, work_space, save_suite, save_path, local_clean, result_keep)){
+		if (!run_disk_cleanup(case_path, report_path, save_space, work_space, save_suite, save_path, local_clean, result_keep)){
 			run_status = false;
 		}
 		return run_status;
@@ -133,6 +133,7 @@ public class postrun_call implements Callable<Object> {
 	}
 	
 	private Boolean run_disk_cleanup(
+			String case_path,
 			String report_path,
 			String save_space,
 			String work_space,
@@ -220,21 +221,28 @@ public class postrun_call implements Callable<Object> {
         }
         if (!run_status){
         	run_msg.add("Remote copy Failed.");
-        	return run_status;
         } else {
         	run_msg.add("Remote copy Passed.");
         }
         //task 2: copy OK, start delete local copy
-        File report_path_fobj = new File(report_path);
+        File case_path_fobj = new File(case_path);
         switch (local_clean.toLowerCase()) {
         case "keep":
             break;
         case "remove":
-        	FileUtils.deleteQuietly(report_path_fobj);
+        	FileUtils.deleteQuietly(case_path_fobj);
+        	run_msg.add("Local run results deleted.");
+            break;
+        case "auto":
+            if (cmd_status.equals(task_enum.PASSED) && run_status) {
+            	FileUtils.deleteQuietly(case_path_fobj);
+            	run_msg.add("Local run results deleted.");
+            }
             break;
         default:// auto and any other inputs treated as auto
             if (run_status) {
-            	FileUtils.deleteQuietly(report_path_fobj);;
+            	FileUtils.deleteQuietly(case_path_fobj);
+            	run_msg.add("Local run results deleted.");
             }
         }
         return run_status;
@@ -476,7 +484,8 @@ public class postrun_call implements Callable<Object> {
 	public Boolean copy_case_to_save_path(
 			String case_path, 
 			String save_path, 
-			String copy_type) {
+			String copy_type
+			) {
 		//save_suite: top path for all save cases
 		Boolean copy_status = Boolean.valueOf(true);
 		if (case_path.equalsIgnoreCase(save_path)){
