@@ -150,6 +150,13 @@ public class result_waiter extends Thread {
 			String report_path = task_data.get("Paths").get("report_path");
 			String result_keep = task_data.get("Preference").get("result_keep");
 			task_enum cmd_status = (task_enum) case_report_map.get(call_index).get("status");
+			String local_clean = new String(public_data.DEF_WORK_SPACE_RESULT_CLEAN);
+			String unattended_mode = new String(client_info.get_client_machine_data().getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE));
+			if(unattended_mode.equals("1")){
+				local_clean = "auto";
+			} else {
+				local_clean = "keep";
+			}
 			ArrayList<String> post_report_list = new ArrayList<String>();
 			post_report_list.add("");
 			post_report_list.add("[PostRun]");				
@@ -165,7 +172,7 @@ public class result_waiter extends Thread {
 					save_suite,
 					save_path,
 					cmd_status,
-					"auto",
+					local_clean,
 					result_keep,
 					client_info.get_client_tools_data()
 					);
