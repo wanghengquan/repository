@@ -29,8 +29,8 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.20"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21620; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.16.21"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21621; //version for code use
 	public final static String BASE_BUILDDATE = "2024/07/09";
 	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -303,6 +303,7 @@ public class public_data {
 	public final static String DEF_AUTO_RESTART = "0";
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	public final static String DEF_WORK_SPACE_RESULT_CLEAN = "auto"; // "keep", "delete", "auto"
 	public final static String DEF_SAVE_SPACE = "";
 	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb03/sw/qa/qadata";
 	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/swrd_archive"};

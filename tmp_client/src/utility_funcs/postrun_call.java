@@ -220,34 +220,33 @@ public class postrun_call implements Callable<Object> {
             }
         }
         if (!run_status){
-        	run_msg.add("Remote copy Failed.");
+        	run_msg.add("Remote space update Failed.");
         } else {
-        	run_msg.add("Remote copy Passed.");
+        	run_msg.add("Remote space update Passed.");
         }
         //task 2: copy OK, start delete local copy
         File case_path_fobj = new File(case_path);
         switch (local_clean.toLowerCase()) {
         case "keep":
             break;
-        case "remove":
+        case "delete":
         	FileUtils.deleteQuietly(case_path_fobj);
-        	run_msg.add("Local run results deleted.");
+        	run_msg.add("Local space results deleted.");
             break;
         case "auto":
             if (cmd_status.equals(task_enum.PASSED) && run_status) {
             	FileUtils.deleteQuietly(case_path_fobj);
-            	run_msg.add("Local run results deleted.");
+            	run_msg.add("Local space results deleted.");
             }
             break;
         default:// auto and any other inputs treated as auto
             if (run_status) {
             	FileUtils.deleteQuietly(case_path_fobj);
-            	run_msg.add("Local run results deleted.");
+            	run_msg.add("Local space results deleted.");
             }
         }
         return run_status;
 	}
-
 	
 /**	@author Jerry_Zhou
  *	@apiNote Preserve the latest, the second latest and the oldest result, if the result is Fail
