@@ -1307,6 +1307,9 @@ public class task_prepare {
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
 			while (software_request_it.hasNext()) {
 				String software_name = software_request_it.next();
+				if(software_name.equalsIgnoreCase("override")) {
+					continue;
+				}
 				//request_build can be: ng3_1p.1@cmd_2, ng3_1p.2@cmd_1, ng3_1p.33
 				String request_build = task_data.get("Software").get(software_name);
 				String software_path = new String("");

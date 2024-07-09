@@ -759,6 +759,9 @@ public class hall_manager extends Thread {
 			}
 			Boolean sw_available = Boolean.valueOf(true);
 			for(String software: queue_data.get("Software").keySet()) {
+				if (software.equalsIgnoreCase("override")) {
+					continue;
+				}
 				if (client_data.containsKey(software)) {
 					Integer insts_value = Integer.valueOf(client_data.get(software).getOrDefault("max_insts", public_data.DEF_SW_MAX_INSTANCES));
 					if (insts_value < 1) {

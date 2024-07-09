@@ -38,11 +38,11 @@ public class local_tube {
 	public static String suite_path_error_msg = new String(">>>");
 	public static String[] suite_index = {"project_id", "suite_name"};
 	public static String[] suite_elements = {"CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine"}; //"Preference" --optional
-	public static String[] case_titles = { "Order", "NoUse", 
+	public static String[] case_titles = {"Order", "NoUse", 
 			"Title", "Section", "design_name", "TestLevel", "TestScenarios", "Description",
-			"Type", "Priority", "Automated", "Smoke", "Reusable", 
+			"Type", "Priority", "Automated", "Smoke", 
 			"CaseInfo", "Environment", "LaunchCommand", "Software", "System", "Machine", 
-			"Sorting", "Author", 
+			"Sorting", 
 			"Family", "Slice", "DSP", "EBR",
 			"Flow"};
 	// protected property
@@ -714,7 +714,7 @@ public class local_tube {
 					if (case_value_map.containsKey(option)) {
 						if(case_value_map.containsKey("override") && case_value_map.getOrDefault("override", "").equals("local")) {
 							continue;
-						} else if (case_value_map.containsKey("override") && case_value_map.getOrDefault("override", "").equals("globle")) {
+						} else if (case_value_map.containsKey("override") && case_value_map.getOrDefault("override", "").equals("global")) {
 							case_value_map.put(option, value);
 						} else {
 							if (option.startsWith("cmd")) {
@@ -829,7 +829,8 @@ public class local_tube {
 			Map<String, String> suite_data,
 			Map<String, String> case_data,
 			String extra_env,
-			String xlsx_dest) {
+			String xlsx_dest
+			) {
 		HashMap<String, HashMap<String, String>> merge_data = new HashMap<String, HashMap<String, String>>();
 		// insert id data
 		String project_id = suite_data.get("project_id").trim();
@@ -934,20 +935,20 @@ public class local_tube {
 			String case_info,
 			String section
 			) {
-		String globle_str = suite_info.replaceAll("^;", "");
+		String global_str = suite_info.replaceAll("^;", "");
 		String local_str = case_info.replaceAll("^;", "");
-		String[] globle_array = globle_str.split("\\s*;\\s*");
+		String[] global_array = global_str.split("\\s*;\\s*");
 		String[] local_array = local_str.split("\\s*;\\s*");
-		HashMap<String, String> globle_data = new HashMap<String, String>();
-		for (String globle_item : globle_array) {
-			if (!globle_item.contains("=")) {
+		HashMap<String, String> global_data = new HashMap<String, String>();
+		for (String global_item : global_array) {
+			if (!global_item.contains("=")) {
 				// System.out.println(">>>Warning: skip suite item:" +
-				// globle_item + " .");
+				// global_item + " .");
 				continue;
 			}
-			String globle_key = globle_item.split("=", 2)[0].trim();
-			String globle_value = globle_item.split("=", 2)[1].trim();
-			globle_data.put(globle_key, globle_value);
+			String global_key = global_item.split("=", 2)[0].trim();
+			String global_value = global_item.split("=", 2)[1].trim();
+			global_data.put(global_key, global_value);
 		}
 		HashMap<String, String> local_data = new HashMap<String, String>();
 		for (String local_item : local_array) {
@@ -961,51 +962,26 @@ public class local_tube {
 			local_data.put(local_key, local_value);
 		}
 		HashMap<String, String> merged_data = new HashMap<String, String>();
-		merged_data = comm_admin_task_merge(globle_data, local_data, section);
+		merged_data = comm_admin_task_merge(global_data, local_data, section);
 		return merged_data;
 	}
 
 	public static HashMap<String, String> comm_admin_task_merge(
-			HashMap<String, String> globle_data,
+			HashMap<String, String> global_data,
 			HashMap<String, String> local_data,
 			String section
 			) {
 		HashMap<String, String> merge_data = new HashMap<String, String>();
-		switch(section) {
-		case "LaunchCommand":
-			merge_data.putAll(get_command_merge_data(globle_data, local_data));
-			break;
-		case "Environment":
-			merge_data.putAll(get_environ_merge_data(globle_data, local_data));
-			break;
-		default:
-			merge_data.putAll(get_typical_merge_data(globle_data, local_data));
-			break;
+		if (section.equalsIgnoreCase("LaunchCommand")) {
+			merge_data.putAll(get_command_merge_data(global_data, local_data));
+		} else {
+			merge_data.putAll(get_typical_merge_data(global_data, local_data));
 		}
 		return merge_data;
 	}
-
-	public static HashMap<String, String> get_typical_merge_data(
-			HashMap<String, String> globle_data,
-			HashMap<String, String> local_data
-			) {
-		Iterator<String> local_it = local_data.keySet().iterator();
-		while (local_it.hasNext()) {
-			String local_key = local_it.next();
-			String local_value = local_data.get(local_key);
-			if (globle_data.containsKey(local_key)) {
-				if (!(local_value == null) && !local_value.equals("")) {
-					globle_data.put(local_key, local_value);
-				}
-			} else {
-				globle_data.put(local_key, local_value);
-			}
-		}
-		return globle_data;
-	}
 	
-	public static HashMap<String, String> get_environ_merge_data(
-			HashMap<String, String> globle_data,
+	public static HashMap<String, String> get_typical_merge_data(
+			HashMap<String, String> global_data,
 			HashMap<String, String> local_data
 			) {
 		Iterator<String> local_it = local_data.keySet().iterator();
@@ -1013,36 +989,30 @@ public class local_tube {
 			String local_key = local_it.next();
 			String local_value = local_data.get(local_key);
 			if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
-				globle_data.put(local_key, local_value);
-			} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
-				if(!globle_data.containsKey(local_key)) {
-					globle_data.put(local_key, local_value);
+				global_data.put(local_key, local_value);
+			} else if (local_data.containsKey("override") && local_data.get("override").equals("global")) {
+				if(!global_data.containsKey(local_key)) {
+					global_data.put(local_key, local_value);
 				}
-			} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
-				globle_data.put(local_key, local_value);
-			} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
-				if(!globle_data.containsKey(local_key)) {
-					globle_data.put(local_key, local_value);
+			} else if (global_data.containsKey("override") && global_data.get("override").equals("local")) {
+				global_data.put(local_key, local_value);
+			} else if (global_data.containsKey("override") && global_data.get("override").equals("global")) {
+				if(!global_data.containsKey(local_key)) {
+					global_data.put(local_key, local_value);
 				}
 			} else {
-				if (globle_data.containsKey(local_key)) {
-					if (!(local_value == null) && !local_value.equals("")) {
-						globle_data.put(local_key, local_value);
-					}
-				} else {
-					globle_data.put(local_key, local_value);
-				}
+				global_data.put(local_key, local_value);
 			}
 		}
-		return globle_data;
+		return global_data;
 	}
 	
 	public static HashMap<String, String> get_command_merge_data(
-			HashMap<String, String> globle_data,
+			HashMap<String, String> global_data,
 			HashMap<String, String> local_data
 			) {
 		HashMap<String, String> merge_data = new HashMap<String, String>();
-		merge_data.putAll(globle_data);
+		merge_data.putAll(global_data);
 		Pattern cmd_patt = Pattern.compile("(cmd|cmd_\\d+)$");
 		Iterator<String> local_it = local_data.keySet().iterator();
 		while (local_it.hasNext()) {
@@ -1052,26 +1022,26 @@ public class local_tube {
 			if (cmd_match.find() && !local_value.equals("")) {
 				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
 					merge_data.put(local_key, local_value);
-				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
-					if(!globle_data.containsKey(local_key)) {
+				} else if (local_data.containsKey("override") && local_data.get("override").equals("global")) {
+					if(!global_data.containsKey(local_key)) {
 						merge_data.put(local_key, local_value);
 					}
-				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
+				} else if (global_data.containsKey("override") && global_data.get("override").equals("local")) {
 					merge_data.put(local_key, local_value);
-				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
-					if(!globle_data.containsKey(local_key)) {
+				} else if (global_data.containsKey("override") && global_data.get("override").equals("global")) {
+					if(!global_data.containsKey(local_key)) {
 						merge_data.put(local_key, local_value);
 					}
 				} else {
 					String local_cmd = local_data.get(local_key);
-					String globle_cmd = globle_data.getOrDefault(local_key, "");
-					String overall_cmd = globle_cmd + " " + local_cmd;
+					String global_cmd = global_data.getOrDefault(local_key, "");
+					String overall_cmd = global_cmd + " " + local_cmd;
 					merge_data.put(local_key, overall_cmd.trim());
 				}
 			} else {
 				// non command key 1)global have value, local must have value
 				// then overwrite
-				if (globle_data.containsKey(local_key)) {
+				if (global_data.containsKey(local_key)) {
 					if (!(local_value == null) && !local_value.equals("")) {
 						merge_data.put(local_key, local_value);
 					}
@@ -1085,7 +1055,7 @@ public class local_tube {
 	
 	//not used
 	public static HashMap<String, String> comm_admin_task_merge_old(
-			HashMap<String, String> globle_data,
+			HashMap<String, String> global_data,
 			HashMap<String, String> local_data
 			) {
 		Pattern cmd_patt = Pattern.compile("(cmd|cmd_\\d+)$");
@@ -1095,54 +1065,54 @@ public class local_tube {
 			String local_value = local_data.get(local_key);
 			Matcher cmd_match = cmd_patt.matcher(local_key);
 			if (local_key.equalsIgnoreCase("cmd_all")) {
-				Iterator<String> globle_it = globle_data.keySet().iterator();
-				while (globle_it.hasNext()) {
-					String globle_key = globle_it.next();
-					String globle_value = globle_data.get(globle_key);
-					if(!globle_key.startsWith("cmd")) {
+				Iterator<String> global_it = global_data.keySet().iterator();
+				while (global_it.hasNext()) {
+					String global_key = global_it.next();
+					String global_value = global_data.get(global_key);
+					if(!global_key.startsWith("cmd")) {
 						continue;
 					}
 					if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
-						globle_data.put(globle_key, local_value);
-					} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
+						global_data.put(global_key, local_value);
+					} else if (local_data.containsKey("override") && local_data.get("override").equals("global")) {
 						continue;
-					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
-						globle_data.put(globle_key, local_value);
-					} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
+					} else if (global_data.containsKey("override") && global_data.get("override").equals("local")) {
+						global_data.put(global_key, local_value);
+					} else if (global_data.containsKey("override") && global_data.get("override").equals("global")) {
 						continue;
 					} else {
-						String overall_cmd = globle_value + " " + local_value;
-						globle_data.put(globle_key, overall_cmd.trim());
+						String overall_cmd = global_value + " " + local_value;
+						global_data.put(global_key, overall_cmd.trim());
 					}
 				}
 			} else if (cmd_match.find() && !local_value.equals("")) {
 				if (local_data.containsKey("override") && local_data.get("override").equals("local")) {
-					globle_data.put(local_key, local_value);
-				} else if (local_data.containsKey("override") && local_data.get("override").equals("globle")) {
+					global_data.put(local_key, local_value);
+				} else if (local_data.containsKey("override") && local_data.get("override").equals("global")) {
 					continue;
-				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("local")) {
-					globle_data.put(local_key, local_value);
-				} else if (globle_data.containsKey("override") && globle_data.get("override").equals("globle")) {
+				} else if (global_data.containsKey("override") && global_data.get("override").equals("local")) {
+					global_data.put(local_key, local_value);
+				} else if (global_data.containsKey("override") && global_data.get("override").equals("global")) {
 					continue;
 				} else {
 					String local_cmd = local_data.get(local_key);
-					String globle_cmd = globle_data.getOrDefault(local_key, "");
-					String overall_cmd = globle_cmd + " " + local_cmd;
-					globle_data.put(local_key, overall_cmd.trim());
+					String global_cmd = global_data.getOrDefault(local_key, "");
+					String overall_cmd = global_cmd + " " + local_cmd;
+					global_data.put(local_key, overall_cmd.trim());
 				}
 			} else {
 				// non command key 1)global have value, local must have value
 				// then overwrite
-				if (globle_data.containsKey(local_key)) {
+				if (global_data.containsKey(local_key)) {
 					if (!(local_value == null) && !local_value.equals("")) {
-						globle_data.put(local_key, local_value);
+						global_data.put(local_key, local_value);
 					}
 				} else {
-					globle_data.put(local_key, local_value);
+					global_data.put(local_key, local_value);
 				}
 			}
 		}
-		return globle_data;
+		return global_data;
 	}
 
 	private Boolean is_request_match(
