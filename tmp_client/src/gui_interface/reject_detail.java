@@ -82,6 +82,9 @@ public class reject_detail extends JFrame {
 			while (option_it.hasNext()) {
 				String option = option_it.next();
 				String value = section_data.get(option);
+				if(option.equalsIgnoreCase("override")) {
+					continue;
+				}
 				Vector<String> new_line = new Vector<String>();
 				new_line.add(admin_section + "." + option);
 				new_line.add(value);

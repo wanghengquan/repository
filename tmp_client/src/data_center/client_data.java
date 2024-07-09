@@ -573,6 +573,9 @@ public class client_data {
 				Iterator<String> release_data_it = release_data.keySet().iterator();
 				while (release_data_it.hasNext()) {
 					String sw_name = release_data_it.next();
+					if(sw_name.equalsIgnoreCase("override")) {
+						continue;
+					}
 					Integer sw_insts = future_soft_insts.get(sw_name);
 					String sw_builds = release_data.get(sw_name);
 					ArrayList<String> sw_build_list = new ArrayList<String>();		
@@ -724,6 +727,9 @@ public class client_data {
 				while (booking_data_it.hasNext()) {
 					String sw_name = booking_data_it.next();
 					String sw_builds = booking_data.get(sw_name);
+					if(sw_name.equalsIgnoreCase("override")) {
+						continue;
+					}
 					ArrayList<String> sw_build_list = new ArrayList<String>();		
 					if (sw_builds.contains(",")){
 						sw_build_list.addAll(Arrays.asList(sw_builds.split("\\s*,\\s*")));

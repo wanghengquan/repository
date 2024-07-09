@@ -95,10 +95,13 @@ public class tube_server extends Thread {
 		while (system_require_it.hasNext()) {
 			String request_key = system_require_it.next();
 			String request_value = system_require_data.get(request_key).toLowerCase();
+			if (request_key.equalsIgnoreCase("override")) {
+				continue;
+			}
 			if (!client_hash.get("System").containsKey(request_key)){
 				system_match = false;
 				break;
-			}			
+			}
 			if (request_key.equals("min_space")) {
 				String client_available_space = client_hash.get("System").get("space");
 				if (Integer.valueOf(request_value) > Integer.valueOf(client_available_space)) {
@@ -174,6 +177,9 @@ public class tube_server extends Thread {
 		while (machine_require_it.hasNext()) {
 			String request_key = machine_require_it.next();
 			String request_value = machine_require_data.get(request_key).toLowerCase();
+			if (request_key.equals("override")) {
+				continue;
+			}
 			ArrayList<String> request_value_list = new ArrayList<String>();		
 			if (request_value.contains(",")){
 				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
@@ -232,6 +238,9 @@ public class tube_server extends Thread {
 		while (software_require_it.hasNext()) {
 			String request_key = software_require_it.next();
 			String request_value = software_require_data.get(request_key);
+			if (request_key.equals("override")) {
+				continue;
+			}
 			ArrayList<String> request_value_list = new ArrayList<String>();		
 			if (request_value.contains(",")){
 				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));

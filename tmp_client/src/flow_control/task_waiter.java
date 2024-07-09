@@ -269,6 +269,9 @@ public class task_waiter extends Thread {
 			Iterator<String> sw_request_it = sw_request_data.keySet().iterator();
 			while (sw_request_it.hasNext()) {
 				String sw_request_name = sw_request_it.next();
+				if(sw_request_name.equalsIgnoreCase("override")) {
+					continue;
+				}
 				if (!available_software_insts.containsKey(sw_request_name)) {
 					match_request = false;
 					break;
@@ -1012,10 +1015,15 @@ public class task_waiter extends Thread {
 				case_data.remove("timeout");
 			}
 		}
+		if (case_data.containsKey("override")) {
+			if (!data_check.str_choice_check(case_data.get("override"), new String [] {"local", "global"} )){
+				case_data.remove("override");
+			}
+		}		
 		//Environment check
 		HashMap<String, String> env_data = checked_data.get("Environment");
 		if (env_data.containsKey("override")) {
-			if (!data_check.str_choice_check(env_data.get("override"), new String [] {"local", "globle"} )){
+			if (!data_check.str_choice_check(env_data.get("override"), new String [] {"local", "global"} )){
 				env_data.remove("override");
 			}
 		}
@@ -1027,11 +1035,17 @@ public class task_waiter extends Thread {
 			}
 		}
 		if (lcmd_data.containsKey("override")) {
-			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"local", "globle"} )){
+			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"local", "global"} )){
 				lcmd_data.remove("override");
 			}
 		}
 		//Software check
+		HashMap<String, String> soft_data = checked_data.get("Software");
+		if (soft_data.containsKey("override")) {
+			if (!data_check.str_choice_check(soft_data.get("override"), new String [] {"local", "global"} )){
+				soft_data.remove("override");
+			}
+		}		
 		//System check
 		HashMap<String, String> system_data = checked_data.get("System");
 		if (system_data.containsKey("max_cpu")) {
@@ -1058,7 +1072,18 @@ public class task_waiter extends Thread {
 				system_data.remove("min_space");
 			}
 		}
+		if (system_data.containsKey("override")) {
+			if (!data_check.str_choice_check(system_data.get("override"), new String [] {"local", "global"} )){
+				system_data.remove("override");
+			}
+		}		
 		//Machine check
+		HashMap<String, String> machine_data = checked_data.get("Machine");
+		if (machine_data.containsKey("override")) {
+			if (!data_check.str_choice_check(machine_data.get("override"), new String [] {"local", "global"} )){
+				machine_data.remove("override");
+			}
+		}		
 		//Preference check
 		HashMap<String, String> preference_data = checked_data.get("Preference");
 		if (preference_data.containsKey("case_mode")) {
@@ -1103,6 +1128,11 @@ public class task_waiter extends Thread {
 		if (preference_data.containsKey("video_record")) {
 			if (!data_check.str_choice_check(preference_data.get("video_record"), new String [] {"false", "true"} )){
 				preference_data.remove("video_record");
+			}
+		}
+		if (preference_data.containsKey("override")) {
+			if (!data_check.str_choice_check(preference_data.get("override"), new String [] {"local", "global"} )){
+				preference_data.remove("override");
 			}
 		}		
 		return checked_data;
@@ -1157,7 +1187,7 @@ public class task_waiter extends Thread {
 		//Environment check
 		HashMap<String, String> environ_data = checked_data.get("Environment");
 		if (environ_data.containsKey("override")) {
-			if (!data_check.str_choice_check(environ_data.get("override"), new String [] {"globle", "local"} )){
+			if (!data_check.str_choice_check(environ_data.get("override"), new String [] {"global", "local"} )){
 				environ_data.remove("override");
 			}
 		}		
@@ -1169,7 +1199,7 @@ public class task_waiter extends Thread {
 			}
 		}
 		if (lcmd_data.containsKey("override")) {
-			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"globle", "local"} )){
+			if (!data_check.str_choice_check(lcmd_data.get("override"), new String [] {"global", "local"} )){
 				lcmd_data.remove("override");
 			}
 		}
@@ -1536,7 +1566,8 @@ public class task_waiter extends Thread {
 	
 	private HashMap<String, HashMap<String, String>> get_merged_remote_task_info(
 			HashMap<String, HashMap<String, String>> admin_hash, 
-			HashMap<String, HashMap<String, String>> case_hash) {
+			HashMap<String, HashMap<String, String>> case_hash
+			) {
 		HashMap<String, HashMap<String, String>> merged_data = new HashMap<String, HashMap<String, String>>();
 		// case_hash is formated
 		Iterator<String> case_hash_it = case_hash.keySet().iterator();
