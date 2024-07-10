@@ -1001,7 +1001,13 @@ public class local_tube {
 					global_data.put(local_key, local_value);
 				}
 			} else {
-				global_data.put(local_key, local_value);
+				if (global_data.containsKey(local_key)) {
+					if (!(local_value == null) && !local_value.equals("")) {
+						global_data.put(local_key, local_value);
+					}
+				} else {
+					global_data.put(local_key, local_value);
+				}
 			}
 		}
 		return global_data;
