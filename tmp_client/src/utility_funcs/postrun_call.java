@@ -77,7 +77,6 @@ public class postrun_call implements Callable<Object> {
 	public Object call() throws Exception {
 		Boolean run_status = Boolean.valueOf(true);
 		start_time = System.currentTimeMillis() / 1000;
-
 		//cleanup run processes
 		if (!run_process_cleanup(case_path)){
 			run_status = false;
@@ -513,7 +512,6 @@ public class postrun_call implements Callable<Object> {
 		String case_folder_name = case_path_obj.getName();
 		File save_dest_folder = new File(save_path, case_folder_name);
 		File save_dest_file = new File(save_path, case_folder_name + ".zip");
-		
 		if (save_dest_folder.exists()) {
 			FileUtils.deleteQuietly(save_dest_folder);
 		}
