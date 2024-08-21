@@ -480,7 +480,7 @@ public class task_prepare {
 		task_prepare_info.addAll(cmd_array);
 		task_prepare_info.add("Work Path:" + case_parent_path);
 		//step 4:unzip commands run check
-		Boolean run_ok = run_common_cmds(cmd_array, case_parent_path);
+		Boolean run_ok = run_common_cmds(cmd_array, false, null, null, case_parent_path);
 		if (!run_ok) {
 			return false;
 		}
@@ -689,8 +689,8 @@ public class task_prepare {
 			break;
 		} 
 		task_prepare_info.add(">Export Task case with CMD(s):");
-		task_prepare_info.addAll(cmd_array);
-		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
+		//task_prepare_info.addAll(cmd_array);
+		Boolean export_ok = run_common_cmds(cmd_array, true, user_name, pass_word, System.getProperty("user.dir"));
 		return export_ok;
 	}
     
@@ -1002,20 +1002,31 @@ public class task_prepare {
 	
 	private Boolean run_common_cmds(
 			ArrayList<String> export_cmd_list,
+			Boolean PWD_REPLACE,
+			String user_name,
+			String pass_word,
 			String work_path
 			) {
 		synchronized (this.getClass()) {
-			// export design
+			ArrayList<String> cmd_outputs = new ArrayList<String>();
 			for (String run_cmd : export_cmd_list) {
 				try {
-					task_prepare_info.addAll(system_cmd.run(run_cmd, work_path));
+					cmd_outputs.addAll(system_cmd.run(run_cmd, work_path));
 				} catch (Exception e) {
 					// e.printStackTrace();
-					task_prepare_info.add("Error: Run cmd Fail:" + run_cmd);
+					cmd_outputs.add("Error: Run cmd Fail:" + run_cmd);
 					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
 					return false;
 				}
 			}
+			if (PWD_REPLACE) {
+				for(String line:cmd_outputs) {
+					task_prepare_info.add(line.replaceAll(user_name, "<user_name>").replaceAll(pass_word, "<pass_word>"));
+				}
+			} else {
+				task_prepare_info.addAll(cmd_outputs);
+			}
+
 		}
 		return true;
 	}
