@@ -275,9 +275,10 @@ public class console_server extends Thread {
 	}
 	
 	private void exit_command_answer(){
-		System.out.println("Exiting TMP client Interactive Mode");
-		switch_info.set_client_stop_request(exit_enum.CRN);
+		System.out.println("Exiting TMP client Interactive Mode...");
+		switch_info.set_client_stop_request(exit_enum.CSN);
 		switch_info.set_client_soft_stop_request(false);
+		soft_stop();
 	}
 	
 	private Boolean link_command_answer(String [] cmd_list){

@@ -29,9 +29,9 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.24"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21624; //version for code use
-	public final static String BASE_BUILDDATE = "2024/08/21";
+	public final static String BASE_CURRENTVERSION = "2.16.25"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21625; //version for code use
+	public final static String BASE_BUILDDATE = "2024/08/23";
 	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -458,6 +458,5 @@ public class public_data {
         
         String hh = new String("pyton update.py --post-process=\"syn_t.py -fix_gated_clocks 0\"");
         System.out.println(hh.replaceAll("\"", "\\\\\""));
-        
 	}
 }
