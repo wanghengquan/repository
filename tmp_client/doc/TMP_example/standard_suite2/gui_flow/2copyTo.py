@@ -91,7 +91,6 @@ def process():
     copy_into_testdata("suite.conf")
     copy_into_testdata("ini")
     
-    copy_into_testmethod("public.pl")
     delete_scratch()
     
 if __name__ == "__main__":

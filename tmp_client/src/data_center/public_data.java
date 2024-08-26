@@ -29,9 +29,9 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.27"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21627; //version for code use
-	public final static String BASE_BUILDDATE = "2024/08/23";
+	public final static String BASE_CURRENTVERSION = "2.16.28"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21628; //version for code use
+	public final static String BASE_BUILDDATE = "2024/08/26";
 	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -240,8 +240,8 @@ public class public_data {
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 120;   //Case same status report interval
 	public final static int PERF_POOL_CURRENT_SIZE = 3;      //Current max size to external
-	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
-	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
+	public final static int PERF_POOL_WIN_MAX_SIZE = 20;
+	public final static int PERF_POOL_LIN_MAX_SIZE = 200;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
 	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
@@ -276,7 +276,7 @@ public class public_data {
 	// Software GUI have higher priority
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	public final static int DEF_SCAN_CMD_TAKE_LINE = 10;
-	public final static int DEF_GUI_BUILD_SHOW_LINE = 50;
+	public final static int DEF_GUI_BUILD_SHOW_LINE = 80;
 	// Tools
 	public final static String DEF_PYTHON_PATH = "python";
 	public final static String DEF_PERL_PATH = "perl";

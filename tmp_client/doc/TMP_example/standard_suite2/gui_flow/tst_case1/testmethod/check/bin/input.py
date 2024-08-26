@@ -113,6 +113,11 @@ environ.add_argument(
 )
 
 environ.add_argument(
+    "--test-id",
+    help="show test id when executing 'ps -ef | grep python'"
+)
+
+environ.add_argument(
     "--all-conf",
     action="store_true",
     help="Check all config files"

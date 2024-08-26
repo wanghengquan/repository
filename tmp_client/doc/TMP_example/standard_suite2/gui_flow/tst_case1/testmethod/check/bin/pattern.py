@@ -1,3 +1,6 @@
+import sys
+
+
 def get_gbb_synthesis(args):
     if "now_chk_gbb" in args:
         if "check_logic_timing_not" in args:
@@ -36,7 +39,7 @@ def get_impl_lse(args):
             return 1
         if __run_scuba_only(args):
             return 0
-        if "+lse+" in args:
+        if "+lse" in args:
             return 1
 
 
@@ -46,7 +49,7 @@ def get_impl_synplify(args):
             return 1
         if __run_scuba_only(args):
             return 0
-        if "+synplify+" in args:
+        if "+synplify" in args:
             return 1
 
 
@@ -119,6 +122,18 @@ def get_sim_par(args):
             return 1
 
 
+def get_sim_bit(args):
+    if sys.platform.startswith("win"):
+        return 0
+    if "now_chk_sim" in args:
+        if "now_chk_smart" not in args:
+            return 1
+        if __ssm_only(args):
+            return 0
+        if __in_args(("sim_bit_vlg", "sim_bit_vhd", "sim_all"), args):
+            return 1
+            
+            
 def get_cov_bitstream(args):
     if "now_chk_cov" in args:
         if "now_chk_smart" not in args:
@@ -231,6 +246,7 @@ FILE_PATTERNS = {
             'pattern': [
                 r'.+?\.bit$',
                 r'.+?\.rbt$',
+                r'.+?\.rbt\.hex$',
             ],
             'func': get_impl_bitstream
         },
@@ -265,6 +281,14 @@ FILE_PATTERNS = {
                 'sim_par_.+?\/.+?$',
             ],
             'func': get_sim_par
+        },
+        
+        'sim_bit':
+        {
+            'pattern': [
+                'sim_bit_.+?\/.+?$',
+            ],
+            'func': get_sim_bit
         },
 
         'cov_bitstream':
