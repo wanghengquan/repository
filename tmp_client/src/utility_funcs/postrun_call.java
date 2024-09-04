@@ -339,7 +339,10 @@ public class postrun_call implements Callable<Object> {
 		folders.addAll(Arrays.asList(save_path_fobj.listFiles()));
 		for (File f:folders) {
 			 if (f.isDirectory()) {
-				 file_action.delete_folder_recursively(f);
+				 if(f.getName().split("_\\d{6}_").length > 1) {
+					 file_action.delete_folder_recursively(f);
+					 run_msg.add("Save space history result deleted:" + f.getName());
+				 }
 			 } 
 		}
 		delete_process_status = Boolean.valueOf(true);
