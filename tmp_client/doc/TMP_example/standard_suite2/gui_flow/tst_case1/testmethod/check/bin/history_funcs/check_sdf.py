@@ -71,7 +71,7 @@ def run_sdf_check_old(check_dir):
     else:
         print('Error: can not find directory %s'%check_dir)
          
-    log_hand = file(os.path.dirname(os.path.abspath(__file__))+r'\sdf_check.csv','w')
+    log_hand = open(os.path.dirname(os.path.abspath(__file__))+r'\sdf_check.csv','w')
     for root1,dir1,files in os.walk(check_dir):
         for f in files:
             if f.endswith('.sdf'):
@@ -101,7 +101,7 @@ def sdf_check(check_file):
         pass
     else:
         return '%s,can not get file'%check_file
-    gloden_lines = file(check_file).readlines()
+    gloden_lines = open(check_file).readlines()
     re_str = [re.compile(url, re.I) for url in all_resource_re];
     re_dict = dict( list(zip(all_resource,re_str)) )
     file_begin = '';

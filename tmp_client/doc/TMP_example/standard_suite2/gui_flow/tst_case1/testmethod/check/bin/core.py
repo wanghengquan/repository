@@ -1,3 +1,4 @@
+import os
 import sys
 from .input import parser
 from .tools import \
@@ -10,9 +11,13 @@ from .tools import \
      )
 
 
-def main(args=sys.argv[1:]):
+def main(args=None):
     """ Entry point """
+    if args is None:
+        args = sys.argv[1:]
     args = parser.parse_args(args)
+
+    os.environ["TOP_REAL_TAG"] = args.tag if args.tag else ""
 
     designs = get_designs(args)
 

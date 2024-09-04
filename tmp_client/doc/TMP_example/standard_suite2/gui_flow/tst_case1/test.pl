@@ -51,18 +51,18 @@ sub main
     my $prj_path = &getprjfile($PrjInfoFile);
     &openProject($prj_path);
     test::log("GUI test start.");
-    &write_log("GUI test start.");    
+    &write_log("GUI test start.");
+    setWindowState(waitForObject(":PNMainWindow_PNMainWindow"), WindowState::Maximize);
     #======================================================
     #======================================================
     #Your GUI test start from here
-    setWindowState(waitForObject(":PNMainWindow_PNMainWindow"), WindowState::Maximize);
 
     snooze(2);  
-    
     rerunAllProcess();
+    
+    #======================================================
+    #======================================================
     saveProject();
-    #======================================================
-    #======================================================
     test::log("GUI test end.");
     &write_log("GUI test end.");    
     &closeProject();
