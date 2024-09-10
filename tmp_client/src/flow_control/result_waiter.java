@@ -149,10 +149,11 @@ public class result_waiter extends Thread {
 			String work_space = task_data.get("Paths").get("work_space");
 			String report_path = task_data.get("Paths").get("report_path");
 			String result_keep = task_data.get("Preference").get("result_keep");
+			String lazy_copy = task_data.get("Preference").get("lazy_copy");
 			task_enum cmd_status = (task_enum) case_report_map.get(call_index).get("status");
 			String local_clean = new String(public_data.DEF_WORK_SPACE_RESULT_CLEAN);
 			String unattended_mode = new String(client_info.get_client_machine_data().getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE));
-			if(unattended_mode.equals("1")){
+			if(unattended_mode.equals("1") && lazy_copy.equalsIgnoreCase("false")){
 				local_clean = "auto";
 			} else {
 				local_clean = "keep";

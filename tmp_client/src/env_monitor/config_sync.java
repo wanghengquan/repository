@@ -192,11 +192,11 @@ public class config_sync extends Thread {
 				case "save_space":
 					if (option_value.equals("")){
 						;
-					} else if (option_value.equalsIgnoreCase(public_data.DEF_LSH_SAVE_SPACE)){
+					} else if (data_check.str_regexp_check(option_value,public_data.DEF_LSH_SAVE_SPACE_PATTERN)) {
 						;
 					} else if (!data_check.str_path_check(option_value)){
 						option_value = public_data.DEF_SAVE_SPACE;
-						CONFIG_SYNC_LOGGER.warn("Config file:Invalid save_space setting:" + section_name + ">" + option_key + ", default value will be used.");
+						CONFIG_SYNC_LOGGER.warn("Config file:Invalid save_space setting:" + section_name + ">" + option_key + ":" + option_value + ", default value will be used.");
 					}
 					break;
 				case "work_space":

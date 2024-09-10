@@ -224,6 +224,13 @@ public class postrun_call implements Callable<Object> {
             }
         }
         //task 2: copy OK, start delete local copy
+        try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        //delete directory may not work here
         File case_path_fobj = new File(case_path);
         switch (local_clean.toLowerCase()) {
         case "keep":
@@ -237,7 +244,7 @@ public class postrun_call implements Callable<Object> {
             break;
         case "auto":
             if (cmd_status.equals(task_enum.PASSED) && run_status) {
-            	if(file_action.delete_folder_recursively(case_path_fobj)) {
+            	if(FileUtils.deleteQuietly(case_path_fobj)) {
             		run_msg.add("Local space results deleted2:" + case_path);
             	} else {
             		run_msg.add("Local space delete failed2:" + case_path);

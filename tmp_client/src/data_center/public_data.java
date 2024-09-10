@@ -29,9 +29,9 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.29"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21629; //version for code use
-	public final static String BASE_BUILDDATE = "2024/09/04";
+	public final static String BASE_CURRENTVERSION = "2.16.30"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21630; //version for code use
+	public final static String BASE_BUILDDATE = "2024/09/10";
 	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
@@ -151,6 +151,7 @@ public class public_data {
 	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
 	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
+	public final static String TOOLS_RM = SW_HOME_PATH + "/tools/rm.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
 	public final static String TOOLS_7ZA = SW_HOME_PATH + "/tools/7za.exe";
 	public final static String TOOLS_TAR = SW_HOME_PATH + "/tools/tar.exe";
@@ -305,7 +306,9 @@ public class public_data {
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
 	public final static String DEF_WORK_SPACE_RESULT_CLEAN = "auto"; // "keep", "delete", "auto"
 	public final static String DEF_SAVE_SPACE = "";
-	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb03/sw/qa/qadata";
+	public final static String DEF_LSH_SAVE_SPACE_PATTERN = "//?lsh.*/sw/qa/qadata"; 
+	public final static String DEF_LSH_WIN_SAVE_SPACE = "//lsh-smb04/sw/qa/qadata";
+	public final static String DEF_LSH_LIN_SAVE_SPACE = "/lsh/sw/qa/qadata";
 	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/swrd_archive"};
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 1000;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 600;
