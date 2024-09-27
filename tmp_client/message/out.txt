@@ -31,6 +31,21 @@ client send
 <processNum>4/0</processNum>
 </client>
 
+<?xml version="1.0" encoding="UTF-8" ?>  //not used
+<host>
+<host_name>D27639</host_name>
+<user_name>jwang1</user_name>
+<max_cpu>10</max_cpu>
+<max_mem>70</max_mem>
+<max_thread>20</max_thread>
+<avg_cpu>10</avg_cpu>
+<avg_mem>70</avg_mem>
+<avg_thread>20</avg_thread>
+<timestamp>1656573710</timestamp>
+<period>300</period>
+</host>
+
+
 result sent
 =================================================
 <?xml version="1.0" encoding="UTF-8" ?>

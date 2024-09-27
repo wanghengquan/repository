@@ -362,7 +362,7 @@ public class hall_manager extends Thread {
 		}
 		//make exit report
 		local_cmd_exit_counter++;
-		if (local_cmd_exit_counter < 4){ //3 * 2 * base_interval
+		if (local_cmd_exit_counter < 5){ //5 * 2 * base_interval
 			return;
 		}
 		local_cmd_exit_counter = 0;
@@ -759,6 +759,9 @@ public class hall_manager extends Thread {
 			}
 			Boolean sw_available = Boolean.valueOf(true);
 			for(String software: queue_data.get("Software").keySet()) {
+				if (software.equalsIgnoreCase("override")) {
+					continue;
+				}
 				if (client_data.containsKey(software)) {
 					Integer insts_value = Integer.valueOf(client_data.get(software).getOrDefault("max_insts", public_data.DEF_SW_MAX_INSTANCES));
 					if (insts_value < 1) {

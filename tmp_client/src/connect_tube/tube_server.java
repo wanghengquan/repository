@@ -95,10 +95,13 @@ public class tube_server extends Thread {
 		while (system_require_it.hasNext()) {
 			String request_key = system_require_it.next();
 			String request_value = system_require_data.get(request_key).toLowerCase();
+			if (request_key.equalsIgnoreCase("override")) {
+				continue;
+			}
 			if (!client_hash.get("System").containsKey(request_key)){
 				system_match = false;
 				break;
-			}			
+			}
 			if (request_key.equals("min_space")) {
 				String client_available_space = client_hash.get("System").get("space");
 				if (Integer.valueOf(request_value) > Integer.valueOf(client_available_space)) {
@@ -174,6 +177,9 @@ public class tube_server extends Thread {
 		while (machine_require_it.hasNext()) {
 			String request_key = machine_require_it.next();
 			String request_value = machine_require_data.get(request_key).toLowerCase();
+			if (request_key.equals("override")) {
+				continue;
+			}
 			ArrayList<String> request_value_list = new ArrayList<String>();		
 			if (request_value.contains(",")){
 				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
@@ -232,6 +238,9 @@ public class tube_server extends Thread {
 		while (software_require_it.hasNext()) {
 			String request_key = software_require_it.next();
 			String request_value = software_require_data.get(request_key);
+			if (request_key.equals("override")) {
+				continue;
+			}
 			ArrayList<String> request_value_list = new ArrayList<String>();		
 			if (request_value.contains(",")){
 				request_value_list.addAll(Arrays.asList(request_value.split("\\s*,\\s*")));
@@ -376,23 +385,27 @@ public class tube_server extends Thread {
 		String system_status = client_hash.get("System").getOrDefault("status", status_enum.UNKNOWN.get_description());
 		int used_thread = pool_info.get_pool_used_threads();
 		int max_thread = pool_info.get_pool_current_size();
+		String cpu_used = client_hash.get("System").get("cpu");
+		String memory_used = client_hash.get("System").get("mem");
+		String disk_left = client_hash.get("System").get("space");
+		String os = client_hash.get("System").get("os");
 		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
+		simple_data.put("os", os);
 		simple_data.put("account", System.getProperty("user.name"));
-		simple_data.put("status", system_status);
+		simple_data.put("cpu_used", cpu_used);
+		simple_data.put("memory_used", memory_used);
+		simple_data.put("disk_left", disk_left);
 		simple_data.put("used_thread", rpt_thread);
 		simple_data.put("task_take", String.join(line_separator, processing_admin_queue_list));
+		simple_data.put("status", system_status);
 		//client only sent request(1), server side will response and reset the value to 0
 		if (switch_info.impl_send_admin_request()) {
 			simple_data.put("admin_request", admin_request);
 		}		
 		// complex data send
 		String host_ip = client_hash.get("Machine").get("ip");
-		String os = client_hash.get("System").get("os");
 		String group_name = client_hash.get("Machine").get("group");
-		String cpu_used = client_hash.get("System").get("cpu");
-		String memory_used = client_hash.get("System").get("mem");
-		String disk_left = client_hash.get("System").get("space");
 		String os_type = client_hash.get("System").get("os_type");
 		String private_mode = client_hash.get("Machine").get("private");
 		String unattended_mode = client_hash.get("Machine").get("unattended");
@@ -405,11 +418,8 @@ public class tube_server extends Thread {
 		//String max_threads = String.valueOf(max_thread);
 		complex_data.putAll(simple_data);
 		complex_data.put("host_ip", host_ip);
-		complex_data.put("os", os);
+		complex_data.put("host_time", time_info.get_date_time());
 		complex_data.put("group_name", group_name);
-		complex_data.put("memory_used", memory_used);
-		complex_data.put("disk_left", disk_left);
-		complex_data.put("cpu_used", cpu_used);
 		complex_data.put("os_type", os_type);
 		complex_data.put("private_mode", private_mode);
 		complex_data.put("unattended_mode", unattended_mode);

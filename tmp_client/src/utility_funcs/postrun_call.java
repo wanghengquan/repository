@@ -12,7 +12,9 @@ package utility_funcs;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.FileUtils;
@@ -20,8 +22,10 @@ import org.apache.commons.io.FileUtils;
 import connect_tube.task_data;
 import data_center.public_data;
 import flow_control.task_enum;
-//import utility_funcs.system_cmd;
 
+/**
+ * 
+ */
 public class postrun_call implements Callable<Object> {
 	private long start_time = 0;
 	private String queue_name;
@@ -90,7 +94,7 @@ public class postrun_call implements Callable<Object> {
 			run_status = false;
 		}		
 		//cleanup and copy run dir
-		if (!run_disk_cleanup(report_path, save_space, work_space, save_suite, save_path, local_clean, result_keep)){
+		if (!run_disk_cleanup(case_path, report_path, save_space, work_space, save_suite, save_path, local_clean, result_keep)){
 			run_status = false;
 		}
 		return run_status;
@@ -111,19 +115,24 @@ public class postrun_call implements Callable<Object> {
 		Boolean run_status = Boolean.valueOf(true);
         float used_space = public_data.TASK_DEF_ESTIMATE_SPACE;
 		File file = new File(case_path);
-		try {
-			used_space = FileUtils.sizeOfDirectory(file) / (float)1024 / (float)1024 / (float)1024; ;
-		} catch (Exception e) {
-			run_msg.add("Case space check error.");
-			//e.printStackTrace();
-		} finally {
-			;
+		if(file.exists()) {
+			try {
+				used_space = FileUtils.sizeOfDirectory(file) / (float)1024 / (float)1024 / (float)1024; ;
+			} catch (Exception e) {
+				run_msg.add("Case space check error.");
+				//e.printStackTrace();
+			} finally {
+				;
+			}
+		} else {
+			run_msg.add("Case space not exists, default value logged.");
 		}
 		task_info.update_client_run_case_summary_space_map(queue_name, used_space);
 		return run_status;
 	}
 	
 	private Boolean run_disk_cleanup(
+			String case_path,
 			String report_path,
 			String save_space,
 			String work_space,
@@ -132,7 +141,7 @@ public class postrun_call implements Callable<Object> {
 			String local_clean,
 			String result_keep
 			){
-		Boolean run_status = Boolean.valueOf(true);
+		Boolean run_status = Boolean.valueOf(false);
 		//task 1: copy run results
         String[] tmp_space = save_space.split("\\s*,\\s*");
         String[] tmp_suite = save_suite.split("\\s*,\\s*");
@@ -143,10 +152,13 @@ public class postrun_call implements Callable<Object> {
             String save_suite_index = tmp_suite[i].trim();
             String save_path_index = tmp_path[i].trim();
             if (save_space_index.equalsIgnoreCase(work_space)) {
+            	// Save space same as work space, no more action
+            	run_msg.add("Save Space same as Work Space, skip copy");
                 continue;
             }
             if (save_space_index.trim().equals("")) {
-                // no save path, skip copy
+            	// No more action for empty save space
+            	run_msg.add("No save path, skip copy");
                 continue;
             }
             //skip unreachable path
@@ -162,7 +174,7 @@ public class postrun_call implements Callable<Object> {
             		continue;
             	}
             }
-            //make suite level folder
+            //make save space suite level folder
     		File save_suite_fobj = new File(save_suite_index);
     		if (!save_suite_fobj.exists()) {
     			try {
@@ -172,8 +184,7 @@ public class postrun_call implements Callable<Object> {
     			} catch (IOException e) {
     				// TODO Auto-generated catch block
     				// e.printStackTrace();
-    				run_msg.add("Create top leve save suite folder failed.");
-    				run_status = false;
+    				run_msg.add("Create top level save suite path failed:" + save_suite_index);
     				continue;
     			}
     		}
@@ -182,50 +193,172 @@ public class postrun_call implements Callable<Object> {
             //start detail case copy
             switch (result_keep.toLowerCase()) {
                 case "zipped":
-                    if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
+                    if(copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = true;
                     break;
                 case "unzipped":
-                    if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
+                    if(copy_case_to_save_path(report_path, save_path_index, "source")) run_status = true;
                     break;
                 default:// auto and any other inputs treated as auto
                 	if (lsv_storage_identify(save_path_index)) {
                 		if (cmd_status.equals(task_enum.PASSED)) {
                 			run_msg.add("PASSED case result copy to LSV skipped.");
                 		} else {
-                			if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
+                			if(copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = true;
                 		}
                 	} else if (cmd_status.equals(task_enum.PASSED)) {
-                        if(!copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = false;
+                        if(copy_case_to_save_path(report_path, save_path_index, "archive")) run_status = true;
                     } else {
-                        if(!copy_case_to_save_path(report_path, save_path_index, "source")) run_status = false;
+                        if(copy_case_to_save_path(report_path, save_path_index, "source")) run_status = true;
                     }
                 	break;
-            }            
-        }
-        if (!run_status){
-        	run_msg.add("Remote copy Failed.");
-        	return run_status;
-        } else {
-        	run_msg.add("Remote copy Passed.");
+            }  
+            //preserve latest, the second latest and the earliest result
+            if (cmd_status.equals(task_enum.PASSED)) {
+    			if(!delete_useless_result_pass(save_path_index)) {
+    				run_msg.add("History results update Failed1:" + save_path_index);
+    			}
+            } else {
+            	if(!delete_useless_result_fail(save_path_index)) {
+            		run_msg.add("History results update Failed2:" + save_path_index);
+            	}
+            }
         }
         //task 2: copy OK, start delete local copy
-        File report_path_fobj = new File(report_path);
+        try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        //delete directory may not work here
+        File case_path_fobj = new File(case_path);
         switch (local_clean.toLowerCase()) {
         case "keep":
             break;
-        case "remove":
-        	FileUtils.deleteQuietly(report_path_fobj);
+        case "delete":
+        	if(file_action.delete_folder_recursively(case_path_fobj)) {
+        		run_msg.add("Local space results deleted1:" + case_path);
+        	} else {
+        		run_msg.add("Local space delete failed1:" + case_path);
+        	}
             break;
-        default:// auto and any other inputs treated as auto
+        case "auto":
+            if (cmd_status.equals(task_enum.PASSED) && run_status) {
+            	if(FileUtils.deleteQuietly(case_path_fobj)) {
+            		run_msg.add("Local space results deleted2:" + case_path);
+            	} else {
+            		run_msg.add("Local space delete failed2:" + case_path);
+            	}
+            }
+            break;
+        default:// remove local results if results backup to any of save space
             if (run_status) {
-            	FileUtils.deleteQuietly(report_path_fobj);;
+            	if(file_action.delete_folder_recursively(case_path_fobj)) {
+            		run_msg.add("Local space results deleted3:" + case_path);
+            	} else {
+            		run_msg.add("Local space delete failed3:" + case_path);
+            	}
             }
         }
         return run_status;
 	}
 	
+/**	@author Jerry_Zhou
+ *	@apiNote Preserve the latest, the second latest and the oldest result, if the result is Fail
+ *	@param save_path is "\\lsh-smb04\sw\qa\qadata\results\prjx\runxxxxxx\Txxxxxxx"
+ *	@return Status of delete behavior
+ */	
+	private Boolean delete_useless_result_fail (
+			String save_path
+			) {
+		Boolean delete_process_status = Boolean.valueOf(false);
+		File save_path_fobj = new File(save_path);
+		if (!save_path_fobj.exists()) {
+			run_msg.add("Nothing to delete, save path doesn't exist.");
+			return delete_process_status;
+		}
+		if (!save_path_fobj.canWrite()) {
+			run_msg.add("Case remote save path not writeable, Skip case copy");
+			delete_process_status = false;
+			return delete_process_status;
+		}
+		ArrayList<File> folders = new ArrayList<File>();
+		folders.addAll(Arrays.asList(save_path_fobj.listFiles()));
+		//define a TreeMap to sort results by date
+		TreeMap<Long, File> date_folders_map = new TreeMap<>();
+		String date=new String();
+		ArrayList<String> splitArray = new ArrayList<String>();
+		ArrayList<File> save_folder_list = new ArrayList<File>();
+		for (File f:folders) {
+			 splitArray.clear();
+			 splitArray.addAll(Arrays.asList(f.getName().split("_")));
+			 
+			 if (splitArray.size()>=3) {
+				 date=splitArray.get(splitArray.size()-2)+splitArray.get(splitArray.size()-1);
+				 date_folders_map.put(Long.parseLong(date), f);
+			 } else if (splitArray.size()==1) {
+				 save_folder_list.add(f);
+			 } else {
+				 run_msg.add("File name has wrong format, please check your file in the save path");
+				 return delete_process_status;
+			 }
+		}
+		// find the oldest, newest, second newest folder
+		if (date_folders_map.size() >= 2) {
+			save_folder_list.add(date_folders_map.remove(date_folders_map.firstKey()));
+			save_folder_list.add(date_folders_map.remove(date_folders_map.lastKey()));
+			// delete target files
+			if (date_folders_map.size() > 0) {
+				for (File folder: date_folders_map.values()) {
+					if (folder.exists() && folder.isDirectory()) {
+						file_action.delete_folder_recursively(folder);
+					} else {
+						System.out.println("ERROR >>> " + folder.getName() + "isn't a folder or doesn't exist");
+						return delete_process_status;
+					}
+				}
+			}
+		}
+		delete_process_status = Boolean.valueOf(true);
+		return delete_process_status;
+	}
+	
+/**	@author Jerry_Zhou
+ *	@apiNote Only save the compressed result, if the result is Passed
+ *	@param save_path is "\\lsh-smb04\sw\qa\qadata\results\prjx\runxxxxxx\Txxxxxxx"
+ *	@return Status of delete behavior
+ */
+	public Boolean delete_useless_result_pass (
+			String save_path
+			) {
+		Boolean delete_process_status = Boolean.valueOf(false);
+		File save_path_fobj = new File(save_path);
+		if (!save_path_fobj.exists()) {
+			run_msg.add("Nothing to delete, save path doesn't exist.");
+			return delete_process_status;
+		}
+		if (!save_path_fobj.canWrite()) {
+			run_msg.add("Case remote save path not writeable, Skip case copy");
+			delete_process_status = false;
+			return delete_process_status;
+		}
+		ArrayList<File> folders = new ArrayList<File>();
+		folders.addAll(Arrays.asList(save_path_fobj.listFiles()));
+		for (File f:folders) {
+			 if (f.isDirectory()) {
+				 if(f.getName().split("_\\d{6}_").length > 1) {
+					 file_action.delete_folder_recursively(f);
+					 run_msg.add("Save space history result deleted:" + f.getName());
+				 }
+			 } 
+		}
+		delete_process_status = Boolean.valueOf(true);
+		return delete_process_status;
+	}
+	
 	private Boolean lsv_storage_identify(
-			String save_path) {
+			String save_path
+			) {
 		Boolean lsv_storage = Boolean.valueOf(false);
 		for (String key_str: public_data.DEF_LSV_STORAGE_ID) {
 			if (save_path.contains(key_str)) {
@@ -338,9 +471,11 @@ public class postrun_call implements Callable<Object> {
         return run_status;
 	}
 	
-	private Boolean run_process_cleanup(String clean_work_path) {
+	private Boolean run_process_cleanup(
+			String clean_work_path
+			) {
 		String python_cmd = new String(tools_data.getOrDefault("python", public_data.DEF_PYTHON_PATH));
-		String cmd = python_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + clean_work_path;
+		String cmd = python_cmd + " " + public_data.TOOLS_KILL_PROCESS + " " + file_action.update_special_character_in_path(clean_work_path);
 		run_msg.add("Process cleanup cmd: " + cmd);
 		ArrayList<String> excute_retruns = new ArrayList<String>();
 		try {
@@ -369,7 +504,8 @@ public class postrun_call implements Callable<Object> {
 	public Boolean copy_case_to_save_path(
 			String case_path, 
 			String save_path, 
-			String copy_type) {
+			String copy_type
+			) {
 		//save_suite: top path for all save cases
 		Boolean copy_status = Boolean.valueOf(true);
 		if (case_path.equalsIgnoreCase(save_path)){
@@ -412,7 +548,7 @@ public class postrun_call implements Callable<Object> {
 				//for Linux copy extra run needed
 				String host_run = System.getProperty("os.name").toLowerCase();
 				if (host_run.startsWith("linux")) {
-					system_cmd.run("chmod -R 777 " + save_dest_folder);
+					system_cmd.run("chmod -R 777 " + file_action.update_special_character_in_path(save_dest_folder.getPath()));
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -455,7 +591,7 @@ public class postrun_call implements Callable<Object> {
 				save_dest_file.renameTo(new File(save_path, case_folder_name + "_" + m_time + ".zip"));
 			}
 		} catch (Exception e) {
-			run_msg.add("Result back up error:" + case_folder_name);
+			run_msg.add("Result backup error:" + case_folder_name);
 			bak_status = false;
 		}
 		return bak_status;

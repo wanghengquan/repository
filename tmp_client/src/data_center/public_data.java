@@ -29,10 +29,10 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.15.01"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21501; //version for code use
-	public final static String BASE_BUILDDATE = "2024/02/02";
-	public final static String BASE_SUITEFILEVERSION = "1.29";
+	public final static String BASE_CURRENTVERSION = "2.15.02"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21502; //version for code use
+	public final static String BASE_BUILDDATE = "2024/09/27";
+	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_OPERATOR_MAIL = "Jason.Wang@latticesemi.com";
 	public final static String BASE_JAVABASEVERSION = "1.8";
@@ -151,6 +151,7 @@ public class public_data {
 	public final static String TOOLS_GET_MEM = SW_HOME_PATH + "/tools/get_mem.py";
 	public final static String TOOLS_PSCP = SW_HOME_PATH + "/tools/pscp.exe";
 	public final static String TOOLS_CP = SW_HOME_PATH + "/tools/cp.exe";
+	public final static String TOOLS_RM = SW_HOME_PATH + "/tools/rm.exe";
 	public final static String TOOLS_WGET = SW_HOME_PATH + "/tools/wget.exe";
 	public final static String TOOLS_7ZA = SW_HOME_PATH + "/tools/7za.exe";
 	public final static String TOOLS_TAR = SW_HOME_PATH + "/tools/tar.exe";
@@ -197,13 +198,13 @@ public class public_data {
 	// ========================
 	// Encryption public key
 	public final static String ENCRY_KEY = "@Lattice";
-	//SVN encryption string for: guest_+_welcome
-	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/f0c3/eaa3otw==";
+	//SVN encryption string for: guest_+_we1come321
+	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/fYJFFTV2UcnpIfxN5656MO";
 
 	// ========================
 	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
-	public final static String SVN_PWD = "welcome";
+	public final static String SVN_PWD = "we1come321";
 	public final static String SVN_URL = "http://lsh-tmp";//lsh-tmp, lsh-guitar
 
 	// ========================
@@ -214,11 +215,11 @@ public class public_data {
 	// ========================
 	// link to FTP default user shown here
 	public final static String FTP_USER = "guest";
-	public final static String FTP_PWD = "welcome";
+	public final static String FTP_PWD = "we1come321";
 
 	// ========================
 	// task case default setting
-	public final static String TASK_DEF_TIMEOUT = "3600"; // in Seconds, 1 hour
+	public final static String TASK_DEF_TIMEOUT = "7200"; // in Seconds, 2 hours
 	public final static float TASK_DEF_ESTIMATE_MEM_MAX = 16.0f; //in G, 16G
 	public final static float TASK_DEF_ESTIMATE_MEM_MIN = 1.0f; //in G, 1G
 	public final static float TASK_DEF_ESTIMATE_SPACE = 2.0f; //in G, 2G
@@ -240,8 +241,8 @@ public class public_data {
 	public final static int PERF_THREAD_BASE_INTERVAL = 5;
 	public final static int PERF_DUP_REPORT_INTERVAL = 120;   //Case same status report interval
 	public final static int PERF_POOL_CURRENT_SIZE = 3;      //Current max size to external
-	public final static int PERF_POOL_WIN_MAX_SIZE = 10;
-	public final static int PERF_POOL_LIN_MAX_SIZE = 100;
+	public final static int PERF_POOL_WIN_MAX_SIZE = 20;
+	public final static int PERF_POOL_LIN_MAX_SIZE = 200;
 	public final static int PERF_POOL_MAXIMUM_SIZE = get_maximum_threads();	
 	public final static int PERF_AUTO_MAXIMUM_CPU = 70;
 	public final static int PERF_AUTO_MAXIMUM_MEM = 80;
@@ -249,10 +250,13 @@ public class public_data {
 	public final static float PERF_FREE_MEM_USAGE_RATE = 0.60f;
 	public final static int PERF_SQUISH_WIN_MAX_CPU = 50;
 	public final static int PERF_SQUISH_WIN_MAX_MEM = 60;
+	public final static int PERF_SQUISH_WIN_MAX_THD = 3;
 	public final static int PERF_SQUISH_LIN_MAX_CPU = 30;
 	public final static int PERF_SQUISH_LIN_MAX_MEM = 60;
+	public final static int PERF_SQUISH_LIN_MAX_THD = 6;
 	public final static int PERF_SQUISH_MAXIMUM_CPU = get_squish_max_cpu();
 	public final static int PERF_SQUISH_MAXIMUM_MEM = get_squish_max_mem();
+	public final static int PERF_SQUISH_MAXIMUM_THD = get_squish_max_thd();
 	public final static int PERF_QUEUE_DUMP_DELAY = 720;    // one hour
 	public final static int PERF_MAX_WIN_WAITER	= 3;
 	public final static int PERF_MAX_LIN_WAITER	= 12;
@@ -273,7 +277,7 @@ public class public_data {
 	// Software GUI have higher priority
 	public final static String DEF_SW_MAX_INSTANCES = "10";
 	public final static int DEF_SCAN_CMD_TAKE_LINE = 10;
-	public final static int DEF_GUI_BUILD_SHOW_LINE = 50;
+	public final static int DEF_GUI_BUILD_SHOW_LINE = 80;
 	// Tools
 	public final static String DEF_PYTHON_PATH = "python";
 	public final static String DEF_PERL_PATH = "perl";
@@ -300,8 +304,11 @@ public class public_data {
 	public final static String DEF_AUTO_RESTART = "0";
 	public final static String DEF_AUTO_RESTART_DAY = "7";
 	public final static String DEF_WORK_SPACE = System.getProperty("user.dir").replaceAll("\\\\", "/");
+	public final static String DEF_WORK_SPACE_RESULT_CLEAN = "auto"; // "keep", "delete", "auto"
 	public final static String DEF_SAVE_SPACE = "";
-	public final static String DEF_LSH_SAVE_SPACE = "//lsh-smb03/sw/qa/qadata";
+	public final static String DEF_LSH_SAVE_SPACE_PATTERN = "//?lsh.*/sw/qa/qadata"; 
+	public final static String DEF_LSH_WIN_SAVE_SPACE = "//lsh-smb04/sw/qa/qadata";
+	public final static String DEF_LSH_LIN_SAVE_SPACE = "/lsh/sw/qa/qadata";
 	public final static String [] DEF_LSV_STORAGE_ID = {"\\\\ldc-smb01\\", "/disks/swrd_archive"};
 	public final static int DEF_CLEANUP_QUEUE_SIZE = 1000;
 	public final static int DEF_CLEANUP_TASK_TIMEOUT = 600;
@@ -333,6 +340,15 @@ public class public_data {
 			return public_data.PERF_SQUISH_WIN_MAX_MEM;
 		} else {
 			return public_data.PERF_SQUISH_LIN_MAX_MEM;
+		}
+	}
+	
+	private static int get_squish_max_thd(){
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			return public_data.PERF_SQUISH_WIN_MAX_THD;
+		} else {
+			return public_data.PERF_SQUISH_LIN_MAX_THD;
 		}
 	}
 	
@@ -442,5 +458,8 @@ public class public_data {
         
         sub_list.addAll(float_list.subList(float_list.size() - 4, float_list.size()));
         System.out.println(sub_list.toString());
+        
+        String hh = new String("pyton update.py --post-process=\"syn_t.py -fix_gated_clocks 0\"");
+        System.out.println(hh.replaceAll("\"", "\\\\\""));
 	}
 }

@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -252,7 +253,7 @@ public class task_prepare {
 	}
 	
 	private url_enum get_url_type(
-			String url,
+			String url_addr,
 			String url_category,
 			HashMap<String, String> task_caseinfo_data) {
 		//task defined type
@@ -265,6 +266,7 @@ public class task_prepare {
 			}			
 		}
 		//auto identify flow
+		String url = new String(url_addr.replaceAll("\"", ""));
 		String[] url_array = url.split(":", 2);
 		String host_str = url_array[0];
 		if (url.contains(public_data.SVN_URL)) {
@@ -288,7 +290,7 @@ public class task_prepare {
 	}
 	
 	private zip_enum get_zip_type(
-			String url,
+			String url_addr,
 			String zip_category,
 			HashMap<String, String> task_caseinfo_data) {
 		//task defined type
@@ -301,6 +303,7 @@ public class task_prepare {
 			}			
 		}
 		//auto identify flow
+		String url = new String(url_addr.replaceAll("\"", ""));
 		String[] url_array = url.split("/");
 		String basename = url_array[url_array.length - 1];
 		if (!basename.contains(".")) {
@@ -350,7 +353,8 @@ public class task_prepare {
 	
 	private Boolean remove_exist_path(
 			String case_path,
-			String base_name) {
+			String base_name
+			) {
 		File case_path_dobj = new File(case_path);
 		File case_parent_path = case_path_dobj.getParentFile();
 		File zip_case_fobj = new File(case_parent_path.getAbsolutePath() + "/" + base_name);
@@ -386,7 +390,8 @@ public class task_prepare {
 	}	
 	
 	private Boolean build_parent_path(
-			String case_path) {
+			String case_path
+			) {
 		File case_path_dobj = new File(case_path);
 		synchronized (this.getClass()) {
 			// prepare export dir
@@ -409,7 +414,8 @@ public class task_prepare {
 	private Boolean run_src_unzip(
 		zip_enum dzip_type,
 		String case_path,
-		String base_name){
+		String base_name
+		){
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		//step 1:check source
@@ -474,7 +480,7 @@ public class task_prepare {
 		task_prepare_info.addAll(cmd_array);
 		task_prepare_info.add("Work Path:" + case_parent_path);
 		//step 4:unzip commands run check
-		Boolean run_ok = run_common_cmds(cmd_array, case_parent_path);
+		Boolean run_ok = run_common_cmds(cmd_array, false, null, null, case_parent_path);
 		if (!run_ok) {
 			return false;
 		}
@@ -488,7 +494,8 @@ public class task_prepare {
 	}	
 	
 	private String get_7z_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder("");
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
@@ -503,12 +510,13 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("x -y");
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}
 	
 	private String get_bzip2_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder("");
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
@@ -530,26 +538,28 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}	
 	
 	private ArrayList<String> get_tar_bzip2_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		ArrayList<String> cmd_list = new ArrayList<String>();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
 		if(os_type.startsWith("windows")){
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name);
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name.split("\\.")[0] + ".tar");
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name.split("\\.")[0] + ".tar"));
 		} else {
-			cmd_list.add("tar -xj -f " + base_name);
+			cmd_list.add("tar -xj -f " + file_action.update_special_character_in_path(base_name));
 		}
 		return cmd_list;
 	}	
 	
 	private String get_gzip_cmd_str(
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder("");
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
@@ -571,7 +581,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}	
 	
@@ -581,10 +591,10 @@ public class task_prepare {
 		String os_type = System.getProperty("os.name").toLowerCase();
 		//Step1: cmd_str 
 		if(os_type.startsWith("windows")){
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name);
-			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + base_name.split("\\.")[0] + ".tar");
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name));
+			cmd_list.add(public_data.TOOLS_7ZA + " x -y " + file_action.update_special_character_in_path(base_name.split("\\.")[0] + ".tar"));
 		} else {
-			cmd_list.add("tar -xz -f " + base_name);
+			cmd_list.add("tar -xz -f " + file_action.update_special_character_in_path(base_name));
 		}
 		return cmd_list;
 	}
@@ -612,7 +622,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}
 
@@ -639,7 +649,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(base_name);
+		exe_cmd.append(file_action.update_special_character_in_path(base_name));
 		return exe_cmd.toString();
 	}
 	
@@ -652,7 +662,8 @@ public class task_prepare {
 			String pass_word, 
 			String case_path,
 			String base_name,
-			HashMap<String, String> client_tools) {
+			HashMap<String, String> client_tools
+			) {
 		ArrayList<String> cmd_array = new ArrayList<String>();
 		switch (url_type) {
 		case SVN:
@@ -678,8 +689,8 @@ public class task_prepare {
 			break;
 		} 
 		task_prepare_info.add(">Export Task case with CMD(s):");
-		task_prepare_info.addAll(cmd_array);
-		Boolean export_ok = run_common_cmds(cmd_array, System.getProperty("user.dir"));
+		//task_prepare_info.addAll(cmd_array);
+		Boolean export_ok = run_common_cmds(cmd_array, true, user_name, pass_word, System.getProperty("user.dir"));
 		return export_ok;
 	}
     
@@ -691,7 +702,8 @@ public class task_prepare {
 			String user_name, 
 			String pass_word,
 			String case_path,
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		//get export command
@@ -711,9 +723,9 @@ public class task_prepare {
 		//generate command
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" --username=");
 		exe_cmd.append(user_name);
 		exe_cmd.append(" --password=");
@@ -726,7 +738,8 @@ public class task_prepare {
 			String case_url,
 			zip_enum zip_type,
 			String case_path,
-			String base_name) {
+			String base_name
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
@@ -743,9 +756,9 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" -P ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append("--no-check-certificate");
 		return exe_cmd.toString();
@@ -781,9 +794,9 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" -P ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
 		return exe_cmd.toString();
@@ -794,7 +807,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));		
@@ -820,11 +834,11 @@ public class task_prepare {
 		//Stepx:command build start	
 		exe_cmd.append(cmd_str);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -q -nH --cut-dirs=" + String.valueOf(cut_depth) + " -P");
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		exe_cmd.append(" ");
 		exe_cmd.append(account_str);
 		return exe_cmd.toString();
@@ -835,7 +849,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		String remote_cmd = new String();
 		String os_type = System.getProperty("os.name").toLowerCase();
 		String[] url_array = case_url.split(":", 2);
@@ -859,7 +874,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
         // win client Lin source
@@ -880,9 +896,9 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -p -batch -l " + user_name + " -pw " + pass_word);
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		return exe_cmd.toString();		
 	}
 	
@@ -891,7 +907,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		String[] url_array = case_url.split(":", 2);
@@ -920,7 +937,7 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("\\\\" + url_array[0] + "\\" +url_array[1].replaceFirst(":", "\\$").replace("/", "\\"));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path.replace("/", "\\"));
+		exe_cmd.append(file_action.update_special_character_in_path(export_path.replace("/", "\\")));
 		exe_cmd.append(" ");
 		exe_cmd.append(option_str);
 		return exe_cmd.toString();		
@@ -931,7 +948,8 @@ public class task_prepare {
 			zip_enum zip_type,
 			String user_name, 
 			String pass_word,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
         // win client Lin source
@@ -951,15 +969,16 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append(" -p " + pass_word + " scp -r -p ");
 		exe_cmd.append(" ");
-		exe_cmd.append(user_name + "@" + case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(user_name + "@" + case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(export_path);
+		exe_cmd.append(file_action.update_special_character_in_path(export_path));
 		return exe_cmd.toString();		
 	}	
 	
 	private String get_local_cmd_str(
 			String case_url,
-			String case_path) {
+			String case_path
+			) {
 		StringBuilder exe_cmd = new StringBuilder();
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
 		String os_type = System.getProperty("os.name").toLowerCase();
@@ -975,27 +994,39 @@ public class task_prepare {
 		exe_cmd.append(" ");
 		exe_cmd.append("-r -p");
 		exe_cmd.append(" ");
-		exe_cmd.append(case_url);
+		exe_cmd.append(file_action.update_special_character_in_path(case_url));
 		exe_cmd.append(" ");
-		exe_cmd.append(case_parent_path);
+		exe_cmd.append(file_action.update_special_character_in_path(case_parent_path));
 		return exe_cmd.toString();
 	}
 	
 	private Boolean run_common_cmds(
 			ArrayList<String> export_cmd_list,
-			String work_path) {
+			Boolean PWD_REPLACE,
+			String user_name,
+			String pass_word,
+			String work_path
+			) {
 		synchronized (this.getClass()) {
-			// export design
+			ArrayList<String> cmd_outputs = new ArrayList<String>();
 			for (String run_cmd : export_cmd_list) {
 				try {
-					task_prepare_info.addAll(system_cmd.run(run_cmd, work_path));
+					cmd_outputs.addAll(system_cmd.run(run_cmd, work_path));
 				} catch (Exception e) {
 					// e.printStackTrace();
-					task_prepare_info.add("Error: Run cmd Fail:" + run_cmd);
+					cmd_outputs.add("Error: Run cmd Fail:" + run_cmd);
 					CASE_PREPARE_LOGGER.error("Run cmd Fail:" + run_cmd);
 					return false;
 				}
 			}
+			if (PWD_REPLACE) {
+				for(String line:cmd_outputs) {
+					task_prepare_info.add(line.replaceAll(user_name, "<user_name>").replaceAll(pass_word, "<pass_word>"));
+				}
+			} else {
+				task_prepare_info.addAll(cmd_outputs);
+			}
+
 		}
 		return true;
 	}
@@ -1095,10 +1126,10 @@ public class task_prepare {
 		String design_path = new String("");
 		String tmp_str = new String(public_data.INTERNAL_STRING_BLANKSPACE);
 		String case_parent_path = case_path.substring(0, case_path.lastIndexOf("/"));
-		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath();
+		design_path = new File(launch_path).toURI().relativize(new File(case_path).toURI()).getPath().replaceAll("/$", "");
 		launch_cmd = launch_cmd.replaceAll("\\$work_path", " " + work_space);
 		launch_cmd = launch_cmd.replaceAll("\\$case_path", " " + case_path);
-		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);		
+		launch_cmd = launch_cmd.replaceAll("\\$tool_path", " " + public_data.TOOLS_ROOT_PATH);
 		//step 1: update command line tool path
 		for (String tool:client_tools.keySet()) {
 			Pattern tool_patt = Pattern.compile(String.format("^\\s*(%s)\\s", tool), Pattern.CASE_INSENSITIVE);
@@ -1156,7 +1187,7 @@ public class task_prepare {
 			launch_cmd = exe_match.replaceFirst(" " + corescript_path.replace(public_data.CORE_SCRIPT_NAME, "") + exe_path);
 		}
 		//step 3: update launch command design path(if have)
-		Pattern src_patt = Pattern.compile("(?:=|\\s)(" + case_name + ")\\s");
+		Pattern src_patt = Pattern.compile("(?:=|\\s)(" + updateEscapeExprSpecialWord(case_name) + ")\\s");
 		Matcher src_match = src_patt.matcher(launch_cmd);
 		String src_path = new String("");
 		if (src_match.find()) {
@@ -1178,37 +1209,58 @@ public class task_prepare {
 		Matcher match2 = patt2.matcher(launch_cmd);
 		while(match2.find()){
 			String match_str = new String(match2.group().trim());
-            launch_cmd = launch_cmd.replace(match_str, match_str.replaceAll("\\s+", tmp_str)
-                    .replaceAll("\"", ""));
+            launch_cmd = launch_cmd.replace(match_str, match_str.replaceAll("\\s+", tmp_str));//.replaceAll("\"", ""));
         }
 		// python --option1="test1@@@test2@@@test3" -o "test1@@@test3" --test
 		//step 5: add default --design option for Core scripts
-		String[] cmd_list = null;
-		if (launch_path.equalsIgnoreCase(case_path))
-			cmd_list = launch_cmd.split("\\s+");
-		else if (launch_cmd.contains("run_lattice.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_icecube.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_diamond.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_diamondng.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_radiant.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_vivado.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else if (launch_cmd.contains("run_classic.py"))
-			cmd_list = (launch_cmd + " --design=" + design_path + " --test-id=" + task_name).split("\\s+");
-		else
-			cmd_list = launch_cmd.split("\\s+");
+		List<String> cmd_list = new ArrayList<String>();
+		cmd_list.addAll(Arrays.asList(launch_cmd.split("\\s+")));
+		//String[] cmd_list = null;
+		if (launch_path.equalsIgnoreCase(case_path)) {
+			;
+		} else if (launch_cmd.contains("run_lattice.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+			cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_icecube.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_diamond.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_diamondng.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_radiant.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_vivado.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else if (launch_cmd.contains("run_classic.py")) {
+			cmd_list.add("--design=" + file_action.update_special_character_in_path(design_path));
+		    cmd_list.add("--test-id=" + task_name);
+		} else {
+			;
+		}
 		// replace the @#@
-		String array[] = new String[cmd_list.length];              
-		for(int j =0;j<cmd_list.length;j++){
-		  array[j] = cmd_list[j].replaceAll(tmp_str, " ");
+		String array[] = new String[cmd_list.size()];              
+		for(int j =0;j<cmd_list.size();j++){
+		  array[j] = cmd_list.get(j).replaceAll(tmp_str, " ");
 		}
 		return array;
 	}	
+	
+	private String updateEscapeExprSpecialWord(String keyword) {
+		if (StringUtils.isNotBlank(keyword)) {
+			String[] special_characters = { "\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|" };
+			for (String key : special_characters) {
+				if (keyword.contains(key)) {
+					keyword = keyword.replace(key, "\\" + key);
+				}
+			}
+		}
+		return keyword;
+	}
 	
 	private int get_cmd_index(
 			String cmd_index
@@ -1266,6 +1318,9 @@ public class task_prepare {
 			Iterator<String> software_request_it = task_data.get("Software").keySet().iterator();
 			while (software_request_it.hasNext()) {
 				String software_name = software_request_it.next();
+				if(software_name.equalsIgnoreCase("override")) {
+					continue;
+				}
 				//request_build can be: ng3_1p.1@cmd_2, ng3_1p.2@cmd_1, ng3_1p.33
 				String request_build = task_data.get("Software").get(software_name);
 				String software_path = new String("");

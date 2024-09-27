@@ -164,11 +164,20 @@ class HandleExceptionProcess:
             process_work_path = process_work_path.lower()
             kill_work_path = kill_work_path.replace('\\', '/')
             process_work_path = process_work_path.replace('\\', '/')            
-        kill_patt = re.compile(kill_work_path + "(/|$)", re.I)
+        kill_patt = re.compile(self.update_expr_word(kill_work_path) + "(/|$)", re.I)
         if kill_patt.search(process_work_path):
             return 1
         else:
             return 0 
+    
+    def update_expr_word(self, in_str):
+        #print("In string:" + in_str)
+        expr_lst = ["\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|"]
+        for character in expr_lst:
+            if character in in_str:
+                in_str = in_str.replace(character, "\\" + character)
+        #print("Out string:" + in_str)
+        return in_str
 
 if __name__ == "__main__":
     my_tst = HandleExceptionProcess(debug=False)

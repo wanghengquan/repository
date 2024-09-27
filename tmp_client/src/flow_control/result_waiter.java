@@ -149,7 +149,15 @@ public class result_waiter extends Thread {
 			String work_space = task_data.get("Paths").get("work_space");
 			String report_path = task_data.get("Paths").get("report_path");
 			String result_keep = task_data.get("Preference").get("result_keep");
+			String lazy_copy = task_data.get("Preference").get("lazy_copy");
 			task_enum cmd_status = (task_enum) case_report_map.get(call_index).get("status");
+			String local_clean = new String(public_data.DEF_WORK_SPACE_RESULT_CLEAN);
+			String unattended_mode = new String(client_info.get_client_machine_data().getOrDefault("unattended", public_data.DEF_UNATTENDED_MODE));
+			if(unattended_mode.equals("1") && lazy_copy.equalsIgnoreCase("false")){
+				local_clean = "auto";
+			} else {
+				local_clean = "keep";
+			}
 			ArrayList<String> post_report_list = new ArrayList<String>();
 			post_report_list.add("");
 			post_report_list.add("[PostRun]");				
@@ -165,7 +173,7 @@ public class result_waiter extends Thread {
 					save_suite,
 					save_path,
 					cmd_status,
-					"keep",
+					local_clean,
 					result_keep,
 					client_info.get_client_tools_data()
 					);
@@ -616,38 +624,38 @@ public class result_waiter extends Thread {
 
 	private String save_location_generate(
 			String save_paths,
-			task_enum status){
+			task_enum status
+			){
 		StringBuilder loc_rpt = new StringBuilder();
         String win_href = "<a href=file:///%s target='_explorer.exe'>%s";
         String lin_href = "<a href=file:///%s  target='_blank'>%s";		
         String[] ori_paths = save_paths.split("\\s*,\\s*");
-        Pattern smb_patt = Pattern.compile("^\\\\\\\\lsh-smb\\d\\d\\\\",Pattern.CASE_INSENSITIVE);
+        Pattern smb_patt = Pattern.compile("^//lsh-smb\\d\\d/",Pattern.CASE_INSENSITIVE);
         //get effective and unique paths
         ArrayList<String> uniq_paths = new ArrayList<String>();
         for(String path: ori_paths) {
-        	String ori_path = new String(path);
+        	String ori_path = new String(path.replace("\\", "/"));
         	String match_str1 = new String("");
         	String match_str2 = new String("");
-        	Matcher smb_match = smb_patt.matcher(path);
-        	if (path.startsWith("/lsh/")) {
-        		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("/lsh/", "//lsh-smb03/").replace("\\", "/");
+        	Matcher smb_match = smb_patt.matcher(ori_path);
+        	if (ori_path.startsWith("/lsh/")) {
+        		match_str1 = ori_path;
+        		match_str2 = ori_path.replace("/lsh/", "//lsh-smb03/");
         	} else if (smb_match.find()){
-        		match_str1 = ori_path.replace("\\", "/");
+        		match_str1 = ori_path;
         		match_str2 = smb_match.replaceAll("/lsh/");        		
-        	} else if (path.startsWith("/disks/")){
-        		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("/disks/", "//ldc-smb01/").replace("\\", "/");
-        	} else if (path.startsWith("\\\\ldc-smb01\\")){
-        		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\\\ldc-smb01\\", "/disks/").replace("\\", "/");
+        	} else if (ori_path.startsWith("/disks/")){
+        		match_str1 = ori_path;
+        		match_str2 = ori_path.replace("/disks/", "//ldc-smb01/");
+        	} else if (ori_path.startsWith("//ldc-smb01/")){
+        		match_str1 = ori_path;
+        		match_str2 = ori_path.replace("//ldc-smb01/", "/disks/");
         	} else {
-        		match_str1 = ori_path.replace("\\", "/");
-        		match_str2 = ori_path.replace("\\", "/");
+        		match_str1 = ori_path;
+        		match_str2 = ori_path;
         	}
         	Boolean path_exist = Boolean.valueOf(false);
         	for (String path_str: uniq_paths) {
-        		path_str = path_str.replace("\\", "/");
         		if (path_str.equalsIgnoreCase(match_str1) || path_str.equalsIgnoreCase(match_str2)) {
         			path_exist = true;
         			break;
@@ -663,9 +671,9 @@ public class result_waiter extends Thread {
             path = path.trim();
             Matcher smb_match = smb_patt.matcher(path);
             String site = new String("");
-            if (path.startsWith("/lsh/") || path.startsWith("\\\\lsh-smb")) {
+            if (path.startsWith("/lsh/") || path.startsWith("//lsh-smb")) {
             	site = "(LSH)";
-            } else if (path.startsWith("/disks/") || path.startsWith("\\\\ldc-smb")) {
+            } else if (path.startsWith("/disks/") || path.startsWith("//ldc-smb")) {
             	site = "(LSV)";
             } else {
             	site = "";
@@ -680,9 +688,9 @@ public class result_waiter extends Thread {
             	loc_rpt.append("</a>" + line_separator);
             } else if (smb_match.find()) {	
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
-            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
+            	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
-            	path = smb_match.replaceAll("/lsh/").replace("\\", "/");
+            	path = smb_match.replaceAll("/lsh/");
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);	          	
@@ -698,26 +706,26 @@ public class result_waiter extends Thread {
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
             	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
-            } else if (path.startsWith("\\\\ldc-smb01\\")) {
+            } else if (path.startsWith("//ldc-smb01/")) {
             	//for LSV path, passed case will not be copy, so don't show link
             	if (status.equals(task_enum.PASSED)) {
             		continue;
             	}         	
             	loc_rpt.append("Save location " + i + " for (Win) access " + site + " ==> ");
-            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
+            	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
             	loc_rpt.append("</a>" + line_separator);
-            	path = path.replace("\\\\ldc-smb01\\", "/disks/").replace("\\", "/");
+            	path = path.replace("//ldc-smb01/", "/disks/");
             	loc_rpt.append("Save location " + i + " for (Lin) access " + site + " ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);
-            } else if (path.startsWith("/")) {
+            } else if (path.startsWith("//")) {
+            	loc_rpt.append("Save location " + i + " for (Win) access ==> ");
+            	loc_rpt.append(String.format(win_href, path, path.replace("/", "\\")));
+                loc_rpt.append("</a>" + line_separator);
+            } else {
             	loc_rpt.append("Save location " + i + " for (Lin) access ==> ");
             	loc_rpt.append(String.format(lin_href, path, path));
             	loc_rpt.append("</a>" + line_separator);
-            } else {
-            	loc_rpt.append("Save location " + i + " for (Win) access ==> ");
-            	loc_rpt.append(String.format(win_href, path.replace("\\", "/"), path));
-                loc_rpt.append("</a>" + line_separator);
             }
             i++;
         }
@@ -841,22 +849,31 @@ public class result_waiter extends Thread {
 		return case_data;
 	}
 
-
-    private String get_scan_result(ArrayList<String> cmd_output) {
-        String scan_result = new String("");
+    private String get_scan_result(
+    		ArrayList<String> cmd_output
+    		) {
+        //String scan_result = new String("");
+        ArrayList<String> scan_result = new ArrayList<String>();
+        String json_string = new String("");
+        String cmd_title = new String("cmdx");
         if (cmd_output == null || cmd_output.isEmpty()) {
-            return scan_result;
+            return json_string;
         }
-        Pattern p = Pattern.compile("^(\\{.+?\\})$");
+        Pattern lcmd_patt = Pattern.compile("^>>>LC:(.+?)$");
+        Pattern scan_patt = Pattern.compile("^\\{(.+?)\\}$");
         for (String line : cmd_output) {
-            Matcher m = p.matcher(line);
-            if (m.find()) {
-                scan_result = m.group(1);
+            Matcher lcmd_match = lcmd_patt.matcher(line);
+            Matcher scan_match = scan_patt.matcher(line);
+            if (lcmd_match.find()) {
+            	cmd_title = lcmd_match.group(1);
+            }
+            if (scan_match.find()) {
+                scan_result.add(scan_match.group(1).replaceAll("^\"Report\"", "\"" + cmd_title + "\""));
             }
         }
-        return scan_result;
+        json_string = "{" + String.join(",", scan_result) + "}";
+        return json_string;
     }
-
 
 	private HashMap<String, String> get_detail_report(ArrayList<String> cmd_output) {
 		HashMap<String, String> report_data = new HashMap<String, String>();

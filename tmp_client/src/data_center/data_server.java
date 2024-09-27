@@ -275,7 +275,11 @@ public class data_server extends Thread {
 			preference_data.put("debug_mode", config_hash.get("tmp_machine").get("debug"));
 		}
 		preference_data.putAll(config_hash.get("tmp_preference"));
+		if(System.getProperty("interface_mode", "").equals("gui")) {
+			preference_data.put("interface_mode", public_data.DEF_INTERFACE_MODE);
+		}
 		preference_data.putAll(cmd_hash);
+		//interface mode updated based on system property
 		client_data.put("preference", preference_data);
 		client_info.set_client_data(client_data);
 		DATA_SERVER_LOGGER.debug(client_data.toString());

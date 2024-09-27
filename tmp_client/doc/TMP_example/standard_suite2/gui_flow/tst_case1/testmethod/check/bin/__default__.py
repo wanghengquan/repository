@@ -55,17 +55,7 @@ class Default(object):
              # user 1 -----------
              (decrypt('P-R-M-R-L-R-I-Q-E-Q-G-Q-E-Q'),
               decrypt('P-T-M-R-L-T-I-Q-E-S-G-Q-E-Q-E-U')),
-             # user 2 -----------
-             (decrypt('P-R-C-R-L-Q-H-Q'),
-              decrypt('P-V-L-V-P-S-L-R-E-Q-O-Q-E-V-F-V-G-V-D-V')),
-             # user 3 -----------
-             (decrypt('G-Q-M-R-L-Q-H-Q-P-Q-G-V'),
-              decrypt('N-T-O-R-L-Q-H-Q-I-S-L-Q-H-Q-B-R-A-R-K-Q-B-Q-E-Q-B-V-N-W-N-W')),
-             # user 4 -----------
-             (decrypt('G-Q-C-R-P-Q'),
-              decrypt('A-Q-K-Q-O-R-N-R-B-Q-E-Q-D-Q-F-S-F-V-B-V-B-V')),
-             # ---
-             ]
+    ]
 
     MAX_TRIES = 5
 
