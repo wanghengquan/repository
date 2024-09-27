@@ -54,7 +54,7 @@ public class des_decode {
     }
     
     public static void main(String[] args) throws Exception {
-        //String data = "PjjD2J1CCLKLyYaFY9z+b50AGVKc7MBh";
+        //String data = "Yjt7LEio8/fYJFFTV2UcnpIfxN5656MO";
         String data = "mWz8BslYuSBDfJMUWfk/UB5jDoQSlk79";
         System.err.println(decrypt(data, public_data.ENCRY_KEY));
     }    

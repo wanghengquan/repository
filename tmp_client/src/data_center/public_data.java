@@ -29,8 +29,8 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.33"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21633; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.16.34"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21634; //version for code use
 	public final static String BASE_BUILDDATE = "2024/09/27";
 	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -198,8 +198,8 @@ public class public_data {
 	// ========================
 	// Encryption public key
 	public final static String ENCRY_KEY = "@Lattice";
-	//SVN encryption string for: guest_+_welcome
-	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/f0c3/eaa3otw==";
+	//SVN encryption string for: guest_+_we1come321
+	public final static String ENCRY_DEF_STRING = "Yjt7LEio8/fYJFFTV2UcnpIfxN5656MO";
 
 	// ========================
 	// link to SVN default user shown here
@@ -215,7 +215,7 @@ public class public_data {
 	// ========================
 	// link to FTP default user shown here
 	public final static String FTP_USER = "guest";
-	public final static String FTP_PWD = "welcome";
+	public final static String FTP_PWD = "we1come321";
 
 	// ========================
 	// task case default setting
