@@ -29,8 +29,8 @@ public class public_data {
 	// ========================
 	// base
 	// end with 0: long term version, otherwise developing version
-	public final static String BASE_CURRENTVERSION = "2.16.32"; //main.xx.build. xx:odd for stable, even for develop
-	public final static int BASE_CURRENTVERSION_INT = 21632; //version for code use
+	public final static String BASE_CURRENTVERSION = "2.16.33"; //main.xx.build. xx:odd for stable, even for develop
+	public final static int BASE_CURRENTVERSION_INT = 21633; //version for code use
 	public final static String BASE_BUILDDATE = "2024/09/27";
 	public final static String BASE_SUITEFILEVERSION = "1.30";
 	public final static String BASE_DEVELOPER_MAIL = "Jason.Wang@latticesemi.com";
@@ -204,7 +204,7 @@ public class public_data {
 	// ========================
 	// link to SVN default user shown here
 	public final static String SVN_USER = "guest";
-	public final static String SVN_PWD = "we!come@321";
+	public final static String SVN_PWD = "we1come321";
 	public final static String SVN_URL = "http://lsh-tmp";//lsh-tmp, lsh-guitar
 
 	// ========================
