@@ -388,8 +388,10 @@ public class tube_server extends Thread {
 		String cpu_used = client_hash.get("System").get("cpu");
 		String memory_used = client_hash.get("System").get("mem");
 		String disk_left = client_hash.get("System").get("space");
+		String os = client_hash.get("System").get("os");
 		String rpt_thread = String.valueOf(used_thread) + "/" + String.valueOf(max_thread);
 		simple_data.put("host_name", host_name);
+		simple_data.put("os", os);
 		simple_data.put("account", System.getProperty("user.name"));
 		simple_data.put("cpu_used", cpu_used);
 		simple_data.put("memory_used", memory_used);
@@ -403,7 +405,6 @@ public class tube_server extends Thread {
 		}		
 		// complex data send
 		String host_ip = client_hash.get("Machine").get("ip");
-		String os = client_hash.get("System").get("os");
 		String group_name = client_hash.get("Machine").get("group");
 		String os_type = client_hash.get("System").get("os_type");
 		String private_mode = client_hash.get("Machine").get("private");
@@ -418,7 +419,6 @@ public class tube_server extends Thread {
 		complex_data.putAll(simple_data);
 		complex_data.put("host_ip", host_ip);
 		complex_data.put("host_time", time_info.get_date_time());
-		complex_data.put("os", os);
 		complex_data.put("group_name", group_name);
 		complex_data.put("os_type", os_type);
 		complex_data.put("private_mode", private_mode);
